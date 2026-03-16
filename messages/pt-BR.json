@@ -1,0 +1,8 @@
+{
+  "common": {
+    "appName": "Project Landlord",
+    "loading": "Carregando...",
+    "error": "Algo deu errado",
+    "retry": "Tentar novamente"
+  }
+}

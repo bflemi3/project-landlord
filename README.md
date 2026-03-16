@@ -7,6 +7,7 @@ A Brazil-first rental billing and utility coordination app that replaces spreads
 Project Landlord helps landlords manage rent and recurring property charges across multiple properties while giving tenants clear visibility into what they owe and why.
 
 ### For landlords
+
 - Create and manage properties and units
 - Define expected charges and recurring billing rules
 - Upload and ingest utility bills
@@ -15,6 +16,7 @@ Project Landlord helps landlords manage rent and recurring property charges acro
 - Confirm or reject tenant payment claims
 
 ### For tenants
+
 - View published statements with full charge transparency
 - Understand where each charge came from (manual entry, imported bill, corrected bill)
 - Preview source documents when available
@@ -22,6 +24,7 @@ Project Landlord helps landlords manage rent and recurring property charges acro
 - Mark payments and track confirmation status
 
 ### For shared households
+
 - Invite additional tenants into a property
 - Coordinate split responsibilities without changing landlord-defined obligations
 

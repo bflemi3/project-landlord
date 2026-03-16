@@ -25,19 +25,20 @@ The app should feel calm, modern, mobile-first, and trustworthy. It should feel 
 
 When making implementation decisions, use the following priority order:
 
-1. `DESIGN.md` — source of truth for visual design, UX polish, component feel, spacing, hierarchy, typography, motion, and interaction style
+1. `docs/project/design.md` — source of truth for visual design, UX polish, component feel, spacing, hierarchy, typography, motion, and interaction style
 2. `CLAUDE.md` — source of truth for engineering execution guidance, architecture boundaries, product guardrails, and working conventions
 3. project planning markdown docs — source of truth for product scope, roadmap, workflows, and business intent
 4. the existing codebase — source of truth for what is already implemented
 
 If these conflict:
 
-- prefer `DESIGN.md` for design/UI decisions
+- prefer `docs/project/design.md` for design/UI decisions
 - prefer this file for implementation approach and engineering guardrails
 - prefer the latest project plan for product scope and roadmap intent
 - do not silently invent product behavior that conflicts with the plan
 
 If something is ambiguous, choose the option that:
+
 - keeps the MVP simple
 - preserves trust and transparency
 - avoids overbuilding
@@ -65,6 +66,7 @@ These principles should shape implementation decisions:
 Stay focused on the MVP.
 
 ### Build now
+
 - auth
 - property + unit setup
 - multi-property landlord support
@@ -95,6 +97,7 @@ Stay focused on the MVP.
 - tenant-invites-landlord flow
 
 ### Do not overbuild yet
+
 - in-app payments
 - full banking / Open Finance / DDA dependency
 - native mobile apps
@@ -108,6 +111,7 @@ Stay focused on the MVP.
 - overcomplicated role systems
 
 ### Treat as later / bounded spikes
+
 - Pluggy / DDA integrations
 - Pix / card payments
 - AI-assisted validation
@@ -120,7 +124,9 @@ Stay focused on the MVP.
 ## Target Users
 
 ### Landlord
+
 Needs to:
+
 - create properties and units
 - define expected charges
 - ingest bills
@@ -130,7 +136,9 @@ Needs to:
 - confirm or reject payment claims
 
 ### Tenant
+
 Needs to:
+
 - view published statements
 - understand what is owed and why
 - see whether charges came from a bill, manual entry, or bill correction
@@ -139,7 +147,9 @@ Needs to:
 - mark payment activity
 
 ### Shared household / additional tenant
+
 Needs to:
+
 - be invited into the property
 - see statement visibility
 - coordinate split responsibilities on the tenant side without changing landlord-defined obligations
@@ -148,7 +158,7 @@ Needs to:
 
 ## UX Philosophy
 
-Use `DESIGN.md` for the specifics, but the default product behavior should follow these rules:
+Use `docs/project/design.md` for the specifics, but the default product behavior should follow these rules:
 
 - one primary job per screen
 - large readable typography
@@ -169,7 +179,7 @@ Do not ship spreadsheet-like primary interfaces unless there is no better option
 
 ## Design Implementation Rules
 
-Always consult `DESIGN.md` before making UI decisions.
+Always consult `docs/project/design.md` before making UI decisions.
 
 If a design detail is not specified there, default to:
 
@@ -185,6 +195,7 @@ If a design detail is not specified there, default to:
 When in doubt, reduce complexity instead of adding more UI.
 
 ### Never do this
+
 - tiny text to fit more content
 - dashboard clutter
 - multiple competing primary CTAs
@@ -199,21 +210,26 @@ When in doubt, reduce complexity instead of adding more UI.
 ## Technical Direction
 
 ### Framework
+
 Use **Next.js App Router**.
 
 Reasoning:
+
 - public SEO landing pages matter
 - authenticated product can still be mostly client-driven
 - shared codebase for marketing + product is simpler for MVP
 
 ### Rendering strategy
+
 - public marketing pages: static by default
 - authenticated product: mostly client-rendered
 - use server-side logic only when it materially improves security or reduces complexity
 - do not make routine product UX depend on dynamic SSR
 
 ### Backend
+
 Use **Supabase** as the core platform:
+
 - Postgres
 - Auth
 - Storage
@@ -221,13 +237,16 @@ Use **Supabase** as the core platform:
 - optional Realtime where useful
 
 ### Analytics
+
 Use **PostHog** from day one for product analytics and funnel instrumentation.
 
 ### Hosting
+
 Assume **paid hosting** if needed for a production MVP.
 Do not optimize architecture around free-tier constraints.
 
 ### PWA
+
 Ship as a **Progressive Web App** first.
 Do not build native apps for MVP.
 
@@ -236,6 +255,7 @@ Do not build native apps for MVP.
 ## Engineering Priorities
 
 Optimize for:
+
 1. speed to first usable product
 2. trust and clarity in the billing workflow
 3. low operational complexity
@@ -244,6 +264,7 @@ Optimize for:
 6. secure, privacy-conscious access control
 
 Do not optimize prematurely for:
+
 - hypothetical scale
 - extreme customization
 - complex infrastructure
@@ -257,6 +278,7 @@ Do not optimize prematurely for:
 Design the schema for future flexibility, even when the MVP UI exposes only the narrow version.
 
 ### Important modeling ideas
+
 - money stored in minor units + currency
 - country-aware model even if operations are Brazil-only
 - monthly billing first, but avoid baking in assumptions that make future cadence expansion impossible
@@ -274,6 +296,7 @@ Design the schema for future flexibility, even when the MVP UI exposes only the 
 - make extracted data reviewable and correctable
 
 ### Likely core entities
+
 - users
 - properties
 - units
@@ -299,6 +322,7 @@ Design the schema for future flexibility, even when the MVP UI exposes only the 
 This product is handling sensitive billing and document data. Treat security and privacy as first-class.
 
 ### Required
+
 - Row Level Security on all property-scoped and user-scoped data
 - role-aware access control
 - secure document storage
@@ -309,6 +333,7 @@ This product is handling sensitive billing and document data. Treat security and
 - privacy-conscious handling of uploaded files and extracted data
 
 ### Never do this
+
 - expose cross-property data accidentally
 - trust client-only authorization
 - allow silent mutation of published financial records
@@ -322,11 +347,13 @@ This product is handling sensitive billing and document data. Treat security and
 MVP extraction is **deterministic, not AI-first**.
 
 ### Supported inputs
+
 - manual PDF/image upload
 - landlord-level bill-ingestion email flow
 - manual email forwarding
 
 ### Workflow expectations
+
 1. document received
 2. raw source stored
 3. provider invoice profile applied
@@ -337,9 +364,11 @@ MVP extraction is **deterministic, not AI-first**.
 8. only approved data can reach a published statement
 
 ### Important rule
+
 Never treat extraction output as the source of truth without human review in MVP flows that affect published charges.
 
 ### Every extraction failure should create useful product data
+
 - source document reference
 - provider/profile used
 - failure category
@@ -355,17 +384,20 @@ This feedback loop matters.
 The statement flow is central. Protect it.
 
 ### Draft phase
+
 - recurring monthly charges can be generated into a draft statement
 - variable charges come from ingestion or manual entry
 - show completeness warnings for expected missing charges
 - warnings should help, not block
 
 ### Publish phase
+
 - published statements are the shared monthly system of record
 - publishing should feel explicit and deliberate
 - publishing should snapshot the statement state
 
 ### Revision phase
+
 - published statements may later change
 - revisions must be explicit
 - preserve history
@@ -380,6 +412,7 @@ The statement flow is central. Protect it.
 The MVP payment model is manual coordination, not payment processing.
 
 ### Supported flow
+
 - tenant marks statement paid
 - landlord reviews
 - landlord confirms or rejects
@@ -387,6 +420,7 @@ The MVP payment model is manual coordination, not payment processing.
 - issue can return to review/resolution
 
 ### Do not build
+
 - actual payment rails
 - wallet logic
 - payout systems
@@ -401,11 +435,13 @@ Keep this workflow clear and lightweight.
 Tenant-facing UX must reinforce trust.
 
 For relevant charges, aim to surface:
+
 - manual entry
 - imported from bill
 - imported from bill and corrected before publish
 
 Where possible, let the tenant:
+
 - preview the source document
 - understand the amount
 - understand the reason
@@ -420,6 +456,7 @@ Avoid forcing trust through opacity.
 Notifications should support important workflow moments without creating noise.
 
 ### MVP notifications
+
 - statement ready
 - statement updated
 - due reminders
@@ -431,6 +468,7 @@ Notifications should support important workflow moments without creating noise.
 - new invoice profile ready
 
 Support:
+
 - email
 - in-app notifications
 
@@ -443,6 +481,7 @@ Push can come later if it is easy and clearly valuable.
 Instrument the product from day one.
 
 ### Track at minimum
+
 - property_created
 - charge_definition_created
 - bill_received
@@ -459,7 +498,9 @@ Instrument the product from day one.
 - pulse_survey_answered
 
 ### Analytics philosophy
+
 Track events that answer:
+
 - are landlords activating?
 - are tenants viewing?
 - is the workflow replacing the spreadsheet?
@@ -474,11 +515,13 @@ Do not instrument random noise. Track moments tied to product value.
 ## Localization
 
 The MVP should support:
+
 - English
 - Brazilian Portuguese
 - Spanish
 
 Implementation expectations:
+
 - do not hardcode user-facing copy if avoidable
 - design layouts to tolerate longer translated strings
 - prioritize Brazilian Portuguese quality where tradeoffs exist
@@ -491,6 +534,7 @@ Implementation expectations:
 Prioritize perceived speed and simplicity.
 
 ### Do
+
 - keep public pages lightweight
 - keep product screens responsive
 - use intentional skeleton states
@@ -500,6 +544,7 @@ Prioritize perceived speed and simplicity.
 - polish transitions and action feedback
 
 ### Do not
+
 - overuse SSR for authenticated screens
 - add infrastructure complexity to solve problems that do not exist yet
 - sacrifice clarity for premature optimization
@@ -520,11 +565,13 @@ When helping in this repo:
 - leave the codebase cleaner than you found it
 
 ### Before implementing meaningful changes
+
 Check:
+
 - does this fit the MVP scope?
 - does this preserve trust and transparency?
 - does this stay mobile-first?
-- does this align with `DESIGN.md`?
+- does this align with `docs/project/design.md`?
 - is there a simpler version that gets the value sooner?
 
 If the answer is no, simplify.
@@ -534,6 +581,7 @@ If the answer is no, simplify.
 ## Preferred Frontend Patterns
 
 Default to:
+
 - server components only where they are clearly beneficial
 - client components for interactive authenticated product flows
 - query-based client fetching for app data
@@ -545,6 +593,7 @@ Default to:
 - deliberate state transitions
 
 Avoid:
+
 - giant all-in-one page components
 - hidden business logic inside presentational components
 - brittle state spaghetti
@@ -556,6 +605,7 @@ Avoid:
 ## Preferred Backend Patterns
 
 Default to:
+
 - explicit domain modeling
 - narrow, understandable APIs / actions
 - idempotent ingestion workflows where possible
@@ -565,6 +615,7 @@ Default to:
 - background processing only when truly useful
 
 Avoid:
+
 - magical pipelines that are hard to debug
 - AI-dependent core workflows
 - complex event choreography too early
@@ -575,6 +626,7 @@ Avoid:
 ## Testing Priorities
 
 Prioritize tests around:
+
 - permissions and access control
 - money calculations
 - responsibility allocation
@@ -596,6 +648,7 @@ The sensitive workflow logic does.
 Organize around product domains, not just technical layers.
 
 Example domains:
+
 - auth
 - properties
 - memberships
@@ -619,11 +672,12 @@ Avoid a repo structure that makes core workflows hard to trace.
 A feature is not done just because it "works."
 
 It should also:
+
 - match the intended product behavior
 - respect access control
 - handle loading / empty / error states
 - work on mobile sizes first
-- feel aligned with `DESIGN.md`
+- feel aligned with `docs/project/design.md`
 - avoid obvious trust-breaking edge cases
 - emit required analytics if it is a key workflow
 - preserve statement / billing integrity where relevant
@@ -633,6 +687,7 @@ It should also:
 ## Final Reminders
 
 This product wins by being:
+
 - simpler than spreadsheets
 - clearer than email threads
 - more trustworthy than ad hoc billing
@@ -641,6 +696,7 @@ This product wins by being:
 Every implementation decision should protect that.
 
 When in doubt:
+
 - simplify
 - make it clearer
 - preserve trust
