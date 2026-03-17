@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Preview — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #18181b; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar (dark) -->
+    <div class="px-4 py-4 flex items-center justify-between">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-zinc-300"></i>
+      </button>
+      <div class="text-center">
+        <p class="text-sm font-medium text-white">CPFL_Mar2026.pdf</p>
+        <p class="text-xs text-zinc-400">Electric · March 2026</p>
+      </div>
+      <button class="p-1">
+        <i data-lucide="download" class="w-5 h-5 text-zinc-300"></i>
+      </button>
+    </div>
+
+    <!-- Document Preview Area -->
+    <div class="flex-1 mx-3 mb-3 bg-white rounded-xl overflow-hidden flex flex-col">
+      <!-- Simulated PDF content -->
+      <div class="p-6 flex-1">
+        <!-- Simulated provider header -->
+        <div class="flex items-center gap-3 mb-6 pb-4 border-b border-zinc-200">
+          <div class="w-10 h-10 bg-zinc-200 rounded-lg"></div>
+          <div>
+            <p class="font-bold text-zinc-800 text-sm">CPFL Energia</p>
+            <p class="text-xs text-zinc-500">Conta de Energia Elétrica</p>
+          </div>
+        </div>
+
+        <!-- Simulated bill fields -->
+        <div class="space-y-4 text-sm">
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Nº da Conta</span>
+            <span class="text-zinc-800 font-medium">0912-3456-789</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Período</span>
+            <span class="text-zinc-800 font-medium">05/02/2026 a 04/03/2026</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Vencimento</span>
+            <span class="text-zinc-800 font-medium">08/03/2026</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-zinc-500">Consumo</span>
+            <span class="text-zinc-800 font-medium">185 kWh</span>
+          </div>
+
+          <div class="border-t border-zinc-200 pt-4">
+            <div class="flex justify-between">
+              <span class="text-zinc-500">Tarifa</span>
+              <span class="text-zinc-800 font-medium">R$ 0,78/kWh</span>
+            </div>
+            <div class="flex justify-between mt-2">
+              <span class="text-zinc-500">ICMS</span>
+              <span class="text-zinc-800 font-medium">R$ 42,30</span>
+            </div>
+            <div class="flex justify-between mt-2">
+              <span class="text-zinc-500">Contrib. Iluminação</span>
+              <span class="text-zinc-800 font-medium">R$ 8,40</span>
+            </div>
+          </div>
+
+          <div class="border-t-2 border-zinc-300 pt-4">
+            <div class="flex justify-between">
+              <span class="text-zinc-800 font-bold">Total</span>
+              <span class="text-zinc-800 font-bold text-lg">R$ 295,00</span>
+            </div>
+          </div>
+
+          <!-- Simulated barcode area -->
+          <div class="mt-6 pt-4 border-t border-zinc-200">
+            <div class="h-10 bg-zinc-100 rounded flex items-center justify-center">
+              <div class="flex gap-[2px]">
+                <div class="w-[2px] h-6 bg-zinc-400"></div>
+                <div class="w-[1px] h-6 bg-zinc-400"></div>
+                <div class="w-[3px] h-6 bg-zinc-400"></div>
+                <div class="w-[1px] h-6 bg-zinc-400"></div>
+                <div class="w-[2px] h-6 bg-zinc-400"></div>
+                <div class="w-[1px] h-6 bg-zinc-400"></div>
+                <div class="w-[3px] h-6 bg-zinc-400"></div>
+                <div class="w-[2px] h-6 bg-zinc-400"></div>
+                <div class="w-[1px] h-6 bg-zinc-400"></div>
+                <div class="w-[2px] h-6 bg-zinc-400"></div>
+                <div class="w-[3px] h-6 bg-zinc-400"></div>
+                <div class="w-[1px] h-6 bg-zinc-400"></div>
+                <div class="w-[2px] h-6 bg-zinc-400"></div>
+                <div class="w-[1px] h-6 bg-zinc-400"></div>
+                <div class="w-[3px] h-6 bg-zinc-400"></div>
+                <div class="w-[1px] h-6 bg-zinc-400"></div>
+                <div class="w-[2px] h-6 bg-zinc-400"></div>
+              </div>
+            </div>
+            <p class="text-xs text-zinc-400 text-center mt-2">83620.00009 12345.678901 23456.789012 3 12340000029500</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page indicator -->
+    <div class="flex items-center justify-center gap-2 pb-4">
+      <div class="w-2 h-2 bg-white rounded-full"></div>
+      <div class="w-2 h-2 bg-zinc-600 rounded-full"></div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

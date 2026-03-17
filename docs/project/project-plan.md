@@ -123,10 +123,24 @@ These metrics should be defined at the business level in the product plan first,
 #### Lightweight Product Pulse Surveys
 
 Some of the most important product questions are better answered through short in-app prompts than behavioral analytics alone. The MVP should include occasional one-question surveys such as:
-- **Tenant:** “Was this statement clear?”
-- **Tenant:** “Do you trust the listed charges?”
+- **Tenant:** “Do you trust the charges on this statement?”
 - **Landlord:** “Did this month’s billing take less time than your previous process?”
-- **Landlord:** “How confident are you that this statement was accurate?”
+
+##### Tenant trust pulse — placement and display rules
+
+- **When:** Shown on the tenant’s payment-confirmed screen — the end of a completed billing cycle, when the tenant has reviewed, paid, and received confirmation
+- **First cycle:** Always shown
+- **After that:** Shown occasionally (e.g. every 3rd cycle, or ~30% random)
+- **Open disputes:** Never shown if the tenant has an open/unresolved dispute on this statement
+- **Resolved disputes:** DO show if there was a dispute that has since been resolved — this captures whether the dispute resolution process itself built or eroded trust
+- **Rationale:** Asking at payment confirmation is the natural moment of reflection. Asking on the statement view (before action) creates friction. Asking after a dispute submission is a false positive — of course they don’t trust it, that’s why they disputed.
+
+##### Landlord confidence pulse — placement and display rules
+
+- **When:** Shown after the landlord publishes a statement (post-publish success screen)
+- **First statement:** Always shown
+- **After that:** Shown occasionally
+- **Rationale:** Publishing is the landlord’s moment of commitment — the right time to gauge confidence
 
 These should be used sparingly and tied to key workflow moments so they feel useful rather than intrusive.
 
@@ -218,6 +232,8 @@ At the end of setup, Alex gets a quick one-question prompt such as: **“Was set
 
 Alex creates a variable charge such as electric or water. He selects the provider and then selects the matching **provider invoice profile** for that charge. Because a single provider may issue multiple invoice formats, the app should show example document previews or example PDFs for each available invoice profile to help him choose the correct one.
 
+**Important:** All example document previews shown to users must have personal information redacted (names, addresses, account numbers, CPF/CNPJ, etc.). Example documents should demonstrate the bill layout and format without exposing real personal data.
+
 If Alex sees the right invoice profile, he selects it and the system uses that profile for future extraction. If he does not see the correct one, he can submit a request for a new invoice profile.
 
 That request should include:
@@ -243,6 +259,8 @@ After completing review, Alex may occasionally see a one-question prompt such as
 Each unit should have configurable billing settings that determine when a monthly statement is generated and when payment is due. For the MVP, this can be a simple configuration such as statement generation day and due day within the month, rather than a complex billing engine.
 
 At the appropriate time, the app generates draft charge instances for recurring monthly charges such as rent and condo fee. Variable charges arrive through bill ingestion or manual entry. Before publishing, the app shows a **statement completeness indicator** based on the expected charges configured for the property. This indicator should warn the landlord when an expected charge is still missing from the current period’s draft statement, but it should not block publishing.
+
+**Source document support for all charge types:** Any charge — including fixed recurring charges like rent or condo fees — should support optional source document attachment (e.g. a boleto, invoice, or receipt). This reinforces trust and transparency by letting tenants see the backing document for any charge, not just variable ones extracted from bills.
 
 This keeps the workflow helpful and transparent without introducing overly rigid or noisy automation in the MVP.
 
@@ -280,6 +298,16 @@ Tenant invitation should be treated as a core part of tenant UX and should be av
 ### Journey 8: Payment Marked and Confirmed
 
 Brandon pays the landlord outside the app and marks the statement as paid. Alex receives a notification and confirms whether payment was received. If confirmed, the statement is closed as paid. If rejected, the statement moves into a review state and all relevant parties are notified so the issue can be resolved inside the app.
+
+#### Landlord Pix key
+
+Landlords can optionally add their Pix key (CPF, email, phone, or random key). The Pix key is set at the **landlord profile level** and automatically inherited by all units. If a landlord uses a different Pix key for a specific property or unit (e.g. a separate bank account), they can override it in that unit's billing settings. When a tenant selects Pix as their payment method on the mark-as-paid screen, the landlord's Pix key is displayed with a copy button — removing the friction of "what's your Pix?" conversations outside the app. This supports the most common Brazilian payment method without adding payment processing complexity.
+
+#### Payment receipt upload
+
+When marking a payment as paid, the tenant can optionally upload a payment receipt (e.g. Pix comprovante screenshot). This gives the landlord something concrete to verify against and reduces "I sent it" / "I didn't get it" ambiguity. The receipt is stored as part of the payment event and visible to both parties.
+
+#### Rejection reasons
 
 The rejection flow should require a reason such as:
 - payment not received

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extraction Failed — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-failed { background: #27272a; color: #ffffff; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div class="flex-1">
+        <p class="font-semibold text-wf-text">Extraction Failed</p>
+        <p class="text-sm text-wf-muted">Comgás Gas</p>
+      </div>
+      <span class="wf-badge wf-badge-failed">
+        <i data-lucide="alert-triangle" class="w-3 h-3"></i> Failed
+      </span>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1">
+      <!-- Failure State -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="file-x" class="w-8 h-8 text-zinc-400"></i>
+        </div>
+        <h1 class="wf-page-title mb-2">Couldn't extract this bill</h1>
+        <p class="text-wf-muted text-[15px]">We weren't able to read the data from this document. You can enter the details manually or try again.</p>
+      </div>
+
+      <!-- Failure Details -->
+      <div class="wf-card bg-zinc-50 mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-3">What happened</p>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <i data-lucide="file-text" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+            <div>
+              <p class="text-sm text-wf-text">Document received</p>
+              <p class="text-xs text-wf-muted">comgas_fatura_mar2026.pdf · 2.3 MB</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <i data-lucide="scan" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+            <div>
+              <p class="text-sm text-wf-text">Bill format used: Comgás Standard</p>
+              <p class="text-xs text-wf-muted">Extraction template matched but fields not found</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <i data-lucide="alert-circle" class="w-4 h-4 text-wf-dark mt-0.5 flex-shrink-0"></i>
+            <div>
+              <p class="text-sm text-wf-text font-medium">Failure: Unreadable format</p>
+              <p class="text-xs text-wf-muted">The bill layout didn't match the expected format. This may be a new format from the provider.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Document Preview -->
+      <div class="mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-3">Source document</p>
+        <div class="wf-card bg-zinc-100 h-40 flex items-center justify-center rounded-xl">
+          <div class="text-center">
+            <i data-lucide="file-text" class="w-8 h-8 text-wf-mid mx-auto mb-2"></i>
+            <button class="text-sm font-medium text-wf-secondary">View PDF</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Options -->
+      <div>
+        <p class="text-sm font-medium text-wf-secondary mb-3">What you can do</p>
+        <div class="space-y-3">
+          <button class="w-full wf-card flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i data-lucide="pencil" class="w-5 h-5 text-wf-secondary"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-wf-text text-[15px]">Enter data manually</p>
+              <p class="text-sm text-wf-muted">Type in the bill details yourself</p>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-wf-accent"></i>
+          </button>
+
+          <button class="w-full wf-card flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i data-lucide="refresh-cw" class="w-5 h-5 text-wf-secondary"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-wf-text text-[15px]">Try again</p>
+              <p class="text-sm text-wf-muted">Re-upload or select a different bill format</p>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-wf-accent"></i>
+          </button>
+
+          <button class="w-full wf-card flex items-center gap-3 text-left">
+            <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i data-lucide="message-circle" class="w-5 h-5 text-wf-secondary"></i>
+            </div>
+            <div class="flex-1">
+              <p class="font-medium text-wf-text text-[15px]">Report new format</p>
+              <p class="text-sm text-wf-muted">Let us know so we can support this bill layout</p>
+            </div>
+            <i data-lucide="chevron-right" class="w-5 h-5 text-wf-accent"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

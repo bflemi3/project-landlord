@@ -238,6 +238,21 @@ Do not use the brand teal for every semantic state.
 
 ## Typography
 
+### Typeface
+
+Use **Inter** as the primary font family.
+
+- Load via Google Fonts or self-host for performance
+- Enable `font-feature-settings: 'tnum'` (tabular numbers) for monetary amounts and aligned columns
+- Fallback stack: `Inter, system-ui, -apple-system, sans-serif`
+
+Why Inter:
+
+- Excellent tabular figures for a billing-heavy product
+- Consistent rendering across platforms (avoids per-OS visual drift)
+- Matches the calm, modern, premium feel of reference products (Wise, Linear)
+- Pairs naturally with Tailwind and shadcn/ui
+
 ### General direction
 
 Typography should be larger than typical SaaS applications.

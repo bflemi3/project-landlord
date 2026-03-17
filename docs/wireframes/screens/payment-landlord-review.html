@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Review (Landlord) — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #f4f4f5; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-amount { font-size: 36px; font-weight: 700; color: #18181b; letter-spacing: -0.5px; }
+    .wf-bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 390px; width: 100%; background: #ffffff; border-top: 1px solid #e4e4e7; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone pb-36">
+    <!-- Top Bar -->
+    <div class="bg-white px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div class="flex-1">
+        <p class="font-semibold text-wf-text">Review Payment</p>
+        <p class="text-sm text-wf-muted">March 2026 · Apt 201</p>
+      </div>
+      <span class="wf-badge bg-zinc-200 text-wf-dark">
+        <i data-lucide="clock" class="w-3 h-3"></i> Pending
+      </span>
+    </div>
+
+    <!-- Tenant Info -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl p-5">
+      <div class="flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 bg-zinc-200 rounded-full flex items-center justify-center">
+          <span class="text-lg font-bold text-wf-secondary">M</span>
+        </div>
+        <div>
+          <p class="text-lg font-semibold text-wf-text">Maria</p>
+          <p class="text-sm text-wf-muted">says she paid</p>
+        </div>
+      </div>
+      <div class="wf-amount text-center mb-1">R$ 1.300<span class="text-xl">,00</span></div>
+      <p class="text-sm text-wf-muted text-center">of R$ 2.600,00 total</p>
+    </div>
+
+    <!-- Payment Details -->
+    <div class="px-4 mt-6">
+      <h2 class="text-lg font-semibold text-wf-text mb-3">Payment details</h2>
+      <div class="wf-card space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-wf-muted">Method</span>
+          <span class="text-sm text-wf-text font-medium">Pix</span>
+        </div>
+        <div class="border-t border-zinc-100"></div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-wf-muted">Date paid</span>
+          <span class="text-sm text-wf-text font-medium">March 8, 2026</span>
+        </div>
+        <div class="border-t border-zinc-100"></div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-wf-muted">Marked on</span>
+          <span class="text-sm text-wf-text font-medium">March 8, 2026 at 14:32</span>
+        </div>
+        <div class="border-t border-zinc-100"></div>
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-wf-muted">Note</span>
+          <span class="text-sm text-wf-text font-medium">Sent via Pix</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statement Context -->
+    <div class="px-4 mt-6">
+      <h2 class="text-lg font-semibold text-wf-text mb-3">Statement</h2>
+      <div class="wf-card">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[15px] font-medium text-wf-text">March 2026</p>
+          <span class="wf-badge bg-zinc-100 text-wf-muted">
+            <i data-lucide="check" class="w-3 h-3"></i> Published
+          </span>
+        </div>
+        <div class="space-y-1.5 text-sm">
+          <div class="flex justify-between">
+            <span class="text-wf-muted">Total statement</span>
+            <span class="text-wf-text font-medium">R$ 2.600,00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-wf-muted">Maria's share (50%)</span>
+            <span class="text-wf-text font-medium">R$ 1.300,00</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-wf-muted">Ana's share (50%)</span>
+            <span class="text-wf-text font-medium text-wf-muted">Not yet paid</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-6"></div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar">
+      <div class="px-4 py-3 space-y-2">
+        <button class="wf-btn-primary">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Confirm Payment
+        </button>
+        <button class="wf-btn-secondary">
+          <i data-lucide="x" class="w-4 h-4"></i>
+          Reject
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

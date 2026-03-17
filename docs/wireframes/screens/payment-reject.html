@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reject Payment — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; position: relative; overflow: hidden; height: 844px; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-input { width: 100%; padding: 14px 16px; border: 1px solid #d4d4d8; border-radius: 1rem; font-size: 16px; color: #18181b; background: #ffffff; outline: none; }
+    .wf-input::placeholder { color: #a1a1aa; }
+    .wf-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); }
+    .wf-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: #ffffff; border-radius: 1.5rem 1.5rem 0 0; padding: 1.5rem; height: 480px; display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone">
+    <!-- Background: payment review (dimmed) -->
+    <div class="opacity-30 pointer-events-none">
+      <div class="bg-white px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+        <div class="flex-1">
+          <p class="font-semibold text-wf-text">Review Payment</p>
+          <p class="text-sm text-wf-muted">March 2026 · Apt 201</p>
+        </div>
+      </div>
+      <div class="bg-white mx-4 mt-4 rounded-2xl p-5 text-center">
+        <p class="text-sm text-wf-muted mb-1">Maria says she paid</p>
+        <p class="text-3xl font-bold text-wf-text">R$ 1.300,00</p>
+      </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="wf-overlay"></div>
+
+    <!-- Bottom Sheet -->
+    <div class="wf-sheet">
+      <!-- Handle -->
+      <div class="w-10 h-1 bg-zinc-300 rounded-full mx-auto mb-4"></div>
+
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-wf-text">Reject payment</h2>
+        <button class="p-1">
+          <i data-lucide="x" class="w-5 h-5 text-wf-muted"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 flex-1">
+        <!-- Reason -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-3">Why are you rejecting?</label>
+          <div class="space-y-2">
+            <button class="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-zinc-900 bg-zinc-50">
+              <div class="w-4 h-4 rounded-full border-2 border-zinc-900 flex items-center justify-center flex-shrink-0">
+                <div class="w-2 h-2 rounded-full bg-zinc-900"></div>
+              </div>
+              <span class="text-sm font-medium text-wf-text">Payment not received</span>
+            </button>
+            <button class="w-full flex items-center gap-3 p-3 rounded-xl border border-zinc-200">
+              <div class="w-4 h-4 rounded-full border-2 border-zinc-300 flex-shrink-0"></div>
+              <span class="text-sm text-wf-text">Wrong amount</span>
+            </button>
+            <button class="w-full flex items-center gap-3 p-3 rounded-xl border border-zinc-200">
+              <div class="w-4 h-4 rounded-full border-2 border-zinc-300 flex-shrink-0"></div>
+              <span class="text-sm text-wf-text">Other</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Note -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Note to tenant</label>
+          <textarea class="wf-input h-16 resize-none" placeholder="e.g. I haven't received a Pix transfer yet"></textarea>
+        </div>
+      </div>
+
+      <div class="pt-4 space-y-2">
+        <button class="wf-btn-primary">
+          <i data-lucide="x" class="w-4 h-4"></i>
+          Reject Payment
+        </button>
+        <button class="wf-btn-secondary !border-0 !bg-transparent text-wf-muted">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

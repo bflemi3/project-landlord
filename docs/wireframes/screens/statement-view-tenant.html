@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tenant Statement View — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #f4f4f5; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-published { background: #e4e4e7; color: #3f3f46; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-amount { font-size: 36px; font-weight: 700; color: #18181b; letter-spacing: -0.5px; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 390px; width: 100%; background: #ffffff; border-top: 1px solid #e4e4e7; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone pb-24">
+    <!-- Top Bar -->
+    <div class="bg-white px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div class="flex-1">
+        <p class="font-semibold text-wf-text">March 2026 Statement</p>
+        <p class="text-sm text-wf-muted">Apt 201 · Rua Augusta 123</p>
+      </div>
+      <span class="wf-badge wf-badge-published">
+        <i data-lucide="check" class="w-3.5 h-3.5"></i> Published
+      </span>
+    </div>
+
+    <!-- Summary — Your Share (primary) -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl p-5">
+      <p class="text-sm text-wf-muted mb-1">You owe</p>
+      <div class="wf-amount mb-1">R$ 1.300<span class="text-xl">,00</span></div>
+      <p class="text-sm text-wf-muted">Due March 10, 2026</p>
+    </div>
+
+    <!-- Total & Split Context -->
+    <div class="mx-4 mt-4">
+      <div class="wf-card flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-zinc-100 rounded-full flex items-center justify-center">
+            <i data-lucide="users" class="w-4 h-4 text-wf-mid"></i>
+          </div>
+          <div>
+            <p class="text-[15px] font-medium text-wf-text">50% split with Ana</p>
+            <p class="text-sm text-wf-muted">Total statement: R$ 2.600,00</p>
+          </div>
+        </div>
+        <i data-lucide="chevron-right" class="w-4 h-4 text-wf-accent"></i>
+      </div>
+    </div>
+
+    <!-- Charges -->
+    <div class="px-4 mt-6">
+      <h2 class="wf-section-title mb-3">Charges</h2>
+
+      <div class="wf-card space-y-0">
+        <!-- Rent -->
+        <button class="w-full flex items-center justify-between py-3 border-b border-zinc-50">
+          <div class="flex items-center gap-3">
+            <i data-lucide="home" class="w-4 h-4 text-wf-mid"></i>
+            <div>
+              <span class="text-[15px] text-wf-text">Rent</span>
+              <span class="ml-2 text-xs text-wf-muted bg-zinc-100 px-1.5 py-0.5 rounded">recurring</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-wf-text">R$ 1.800,00</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-wf-accent"></i>
+          </div>
+        </button>
+
+        <!-- Electric -->
+        <button class="w-full flex items-center justify-between py-3 border-b border-zinc-50">
+          <div class="flex items-center gap-3">
+            <i data-lucide="zap" class="w-4 h-4 text-wf-mid"></i>
+            <div>
+              <span class="text-[15px] text-wf-text">Electric</span>
+              <span class="ml-2 text-xs text-wf-muted bg-zinc-100 px-1.5 py-0.5 rounded">from bill</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-wf-text">R$ 295,00</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-wf-accent"></i>
+          </div>
+        </button>
+
+        <!-- Water -->
+        <button class="w-full flex items-center justify-between py-3 border-b border-zinc-50">
+          <div class="flex items-center gap-3">
+            <i data-lucide="droplets" class="w-4 h-4 text-wf-mid"></i>
+            <div>
+              <span class="text-[15px] text-wf-text">Water</span>
+              <span class="ml-2 text-xs text-wf-muted bg-zinc-100 px-1.5 py-0.5 rounded">from bill</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-wf-text">R$ 165,00</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-wf-accent"></i>
+          </div>
+        </button>
+
+        <!-- Condo Fee -->
+        <button class="w-full flex items-center justify-between py-3 border-b border-zinc-50">
+          <div class="flex items-center gap-3 min-w-0">
+            <i data-lucide="building" class="w-4 h-4 text-wf-mid flex-shrink-0"></i>
+            <div class="text-left">
+              <span class="text-[15px] text-wf-text block">Condo fee</span>
+              <span class="text-xs text-wf-muted bg-zinc-100 px-1.5 py-0.5 rounded inline-block mt-0.5">recurring · 70%</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+            <span class="font-semibold text-wf-text">R$ 245,00</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-wf-accent"></i>
+          </div>
+        </button>
+
+        <!-- Gas -->
+        <button class="w-full flex items-center justify-between py-3 border-b border-zinc-50">
+          <div class="flex items-center gap-3">
+            <i data-lucide="flame" class="w-4 h-4 text-wf-mid"></i>
+            <div>
+              <span class="text-[15px] text-wf-text">Gas</span>
+              <span class="ml-2 text-xs text-wf-dark bg-zinc-200 px-1.5 py-0.5 rounded font-medium">corrected</span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-semibold text-wf-text">R$ 95,00</span>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-wf-accent"></i>
+          </div>
+        </button>
+
+        <!-- Total -->
+        <div class="flex items-center justify-between py-3">
+          <p class="text-[15px] font-semibold text-wf-text">Total</p>
+          <span class="text-lg font-bold text-wf-text">R$ 2.600,00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transparency Hint -->
+    <div class="px-4 mt-3">
+      <button class="flex items-center gap-1.5 text-sm text-wf-muted">
+        <i data-lucide="info" class="w-3.5 h-3.5"></i>
+        <span>What do these labels mean?</span>
+      </button>
+    </div>
+
+    <!-- Statement Info -->
+    <div class="px-4 mt-4">
+      <div class="flex items-center gap-2 text-sm text-wf-muted">
+        <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+        <span>Published Mar 5, 2026</span>
+      </div>
+    </div>
+
+    <div class="h-6"></div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar">
+      <div class="px-4 py-3 space-y-2">
+        <button class="wf-btn-primary">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Mark as Paid
+        </button>
+        <button class="wf-btn-secondary !border-0 !bg-transparent text-wf-muted">
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          Something doesn't look right?
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Rejected — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Simulated Notification -->
+    <div class="bg-zinc-100 px-4 py-3 flex items-center gap-3 border-b border-zinc-200">
+      <div class="w-8 h-8 bg-zinc-300 rounded-lg flex items-center justify-center flex-shrink-0">
+        <i data-lucide="bell" class="w-4 h-4 text-zinc-600"></i>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-xs font-medium text-wf-secondary">mavenn</p>
+        <p class="text-xs text-wf-muted truncate">Your payment was not confirmed</p>
+      </div>
+      <p class="text-xs text-wf-muted">now</p>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1 flex flex-col">
+      <!-- Header -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="alert-circle" class="w-8 h-8 text-zinc-500"></i>
+        </div>
+        <h1 class="wf-page-title mb-3">Payment not confirmed</h1>
+        <p class="text-wf-muted text-[15px] max-w-[300px] mx-auto">
+          Your landlord could not confirm the payment you marked for March 2026.
+        </p>
+      </div>
+
+      <!-- Details -->
+      <div class="wf-card mb-6">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-wf-muted">Amount</span>
+            <span class="text-[15px] text-wf-text font-bold">R$ 1.300,00</span>
+          </div>
+          <div class="border-t border-zinc-100"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-wf-muted">Method</span>
+            <span class="text-sm text-wf-text font-medium">Pix</span>
+          </div>
+          <div class="border-t border-zinc-100"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-wf-muted">Date marked</span>
+            <span class="text-sm text-wf-text font-medium">March 8, 2026</span>
+          </div>
+          <div class="border-t border-zinc-100"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-wf-muted">Status</span>
+            <span class="wf-badge bg-zinc-800 text-white">
+              <i data-lucide="x" class="w-3 h-3"></i> Rejected
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Landlord's Reason -->
+      <div class="wf-card bg-zinc-50 mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-2">Reason from landlord</p>
+        <div class="flex items-start gap-3">
+          <i data-lucide="message-square" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          <p class="text-[15px] text-wf-text">"I haven't received a Pix transfer yet. Please double-check the key you sent to."</p>
+        </div>
+      </div>
+
+      <!-- What To Do -->
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-wf-text mb-3">What you can do</h2>
+        <div class="space-y-3">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-wf-secondary">1</span>
+            </div>
+            <div>
+              <p class="text-[15px] font-medium text-wf-text">Check your payment</p>
+              <p class="text-sm text-wf-muted">Verify the transfer went through in your bank app</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-wf-secondary">2</span>
+            </div>
+            <div>
+              <p class="text-[15px] font-medium text-wf-text">Upload your receipt</p>
+              <p class="text-sm text-wf-muted">Send your payment confirmation so your landlord can verify</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receipt Upload -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-wf-secondary mb-2">Receipt</label>
+        <button class="w-full p-4 border border-dashed border-zinc-300 rounded-2xl flex items-center justify-center gap-2 text-wf-muted">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          Upload receipt
+        </button>
+        <p class="text-sm text-wf-muted mt-2">Screenshot or PDF of your payment confirmation</p>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar">
+      <div class="space-y-2">
+        <button class="wf-btn-primary">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          Send Receipt
+        </button>
+        <button class="wf-btn-secondary">
+          Mark as Paid Again
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Landing Page — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb',
+              surface: '#ffffff',
+              card: '#ffffff',
+              text: '#18181b',
+              secondary: '#52525b',
+              muted: '#71717a',
+              border: '#d4d4d8',
+              accent: '#a1a1aa',
+              'accent-soft': '#f4f4f5',
+              dark: '#27272a',
+              mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-draft { background: #f4f4f5; color: #71717a; border: 1px dashed #d4d4d8; }
+    .wf-badge-published { background: #f4f4f5; color: #3f3f46; }
+    .wf-badge-paid { background: #e4e4e7; color: #27272a; }
+    .wf-badge-overdue { background: #27272a; color: #ffffff; }
+    .wf-badge-review { background: #f4f4f5; color: #52525b; border: 1px solid #d4d4d8; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-amount { font-size: 36px; font-weight: 700; color: #18181b; letter-spacing: -0.5px; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone">
+    <!-- Nav -->
+    <nav class="flex items-center justify-between px-4 py-4 border-b border-wf-border">
+      <div class="text-xl font-bold text-wf-text tracking-tight">mavenn</div>
+      <button class="wf-btn-primary !w-auto !py-2 !px-5 !text-sm !rounded-xl">Sign In</button>
+    </nav>
+
+    <!-- Hero -->
+    <div class="px-6 pt-12 pb-10">
+      <h1 class="text-[32px] font-bold text-wf-text leading-tight mb-4">
+        Billing clarity<br>for landlords<br>and tenants.
+      </h1>
+      <p class="text-lg text-wf-secondary leading-relaxed mb-8">
+        Replace spreadsheets and email threads with a shared billing workspace everyone can trust.
+      </p>
+      <button class="wf-btn-primary">Get Started — Free</button>
+      <p class="text-center text-sm text-wf-muted mt-3">No credit card required</p>
+    </div>
+
+    <!-- How It Works -->
+    <div class="px-6 pb-8">
+      <h2 class="wf-section-title mb-6">How it works</h2>
+
+      <div class="space-y-5">
+        <div class="flex gap-4 items-start">
+          <div class="flex-shrink-0 w-10 h-10 bg-zinc-100 rounded-2xl flex items-center justify-center">
+            <i data-lucide="building-2" class="w-5 h-5 text-wf-secondary"></i>
+          </div>
+          <div>
+            <p class="font-semibold text-wf-text mb-1">Set up your property</p>
+            <p class="text-sm text-wf-muted">Add units, define charges, invite tenants in minutes.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 items-start">
+          <div class="flex-shrink-0 w-10 h-10 bg-zinc-100 rounded-2xl flex items-center justify-center">
+            <i data-lucide="file-scan" class="w-5 h-5 text-wf-secondary"></i>
+          </div>
+          <div>
+            <p class="font-semibold text-wf-text mb-1">Forward your bills</p>
+            <p class="text-sm text-wf-muted">Email or upload utility bills. We extract the data for you to review.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 items-start">
+          <div class="flex-shrink-0 w-10 h-10 bg-zinc-100 rounded-2xl flex items-center justify-center">
+            <i data-lucide="file-check" class="w-5 h-5 text-wf-secondary"></i>
+          </div>
+          <div>
+            <p class="font-semibold text-wf-text mb-1">Publish monthly statements</p>
+            <p class="text-sm text-wf-muted">Review, approve, and share a clear breakdown every month.</p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 items-start">
+          <div class="flex-shrink-0 w-10 h-10 bg-zinc-100 rounded-2xl flex items-center justify-center">
+            <i data-lucide="shield-check" class="w-5 h-5 text-wf-secondary"></i>
+          </div>
+          <div>
+            <p class="font-semibold text-wf-text mb-1">Build trust</p>
+            <p class="text-sm text-wf-muted">Every charge is traceable. Tenants can see the source and ask questions.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Social Proof -->
+    <div class="bg-zinc-50 px-6 py-8">
+      <div class="wf-card text-center">
+        <p class="text-wf-secondary italic mb-3">"Finally, my tenants stopped texting me asking what they owe."</p>
+        <p class="text-sm text-wf-muted">— Landlord, São Paulo</p>
+      </div>
+    </div>
+
+    <!-- For Landlords / Tenants -->
+    <div class="px-6 py-8 space-y-5">
+      <h2 class="wf-section-title">For landlords</h2>
+      <ul class="space-y-3 text-wf-secondary text-[15px]">
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          Manage multiple properties from one place
+        </li>
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          Auto-extract bill data — just review and approve
+        </li>
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          Publish clear statements tenants can trust
+        </li>
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          Track payments without spreadsheets
+        </li>
+      </ul>
+
+      <h2 class="wf-section-title mt-8">For tenants</h2>
+      <ul class="space-y-3 text-wf-secondary text-[15px]">
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          See exactly what you owe and why
+        </li>
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          Preview source documents behind each charge
+        </li>
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          Coordinate splits with roommates
+        </li>
+        <li class="flex gap-3 items-start">
+          <i data-lucide="check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          Flag questions — no more awkward messages
+        </li>
+      </ul>
+    </div>
+
+    <!-- CTA -->
+    <div class="px-6 py-10 text-center">
+      <h2 class="wf-section-title mb-3">Ready to simplify billing?</h2>
+      <p class="text-wf-muted mb-6 text-[15px]">Set up your first property in under 5 minutes.</p>
+      <button class="wf-btn-primary">Create Free Account</button>
+    </div>
+
+    <!-- Footer -->
+    <div class="px-6 py-6 border-t border-wf-border text-center">
+      <div class="inline-flex items-center gap-3 text-sm text-wf-muted mb-3">
+        <span class="font-medium text-wf-text">EN</span>
+        <span>·</span>
+        <span>PT-BR</span>
+        <span>·</span>
+        <span>ES</span>
+      </div>
+      <p class="text-xs text-wf-muted">© 2026 mavenn · Privacy · Terms</p>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

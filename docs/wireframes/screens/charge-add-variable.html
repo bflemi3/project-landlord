@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Variable Charge — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-input { width: 100%; padding: 14px 16px; border: 1px solid #d4d4d8; border-radius: 1rem; font-size: 16px; color: #18181b; background: #ffffff; outline: none; }
+    .wf-input:focus { border-color: #a1a1aa; box-shadow: 0 0 0 3px rgba(161,161,170,0.15); }
+    .wf-input::placeholder { color: #a1a1aa; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="x" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <p class="font-semibold text-wf-text">Add Variable Charge</p>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1">
+      <h1 class="wf-page-title mb-2">New variable charge</h1>
+      <p class="text-wf-muted text-[15px] mb-8">Variable charges change each month based on the bill. You'll upload or forward the bill and we'll extract the amount.</p>
+
+      <div class="space-y-5">
+        <!-- Charge Name -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Charge name</label>
+          <input type="text" class="wf-input" placeholder="e.g. Electric, Water, Gas" value="Electric">
+        </div>
+
+        <!-- Category -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Category</label>
+          <div class="flex gap-2 flex-wrap">
+            <button class="py-2.5 px-4 rounded-xl bg-zinc-900 text-white text-sm font-semibold">
+              <i data-lucide="zap" class="w-4 h-4 inline -mt-0.5"></i> Electric
+            </button>
+            <button class="py-2.5 px-4 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium border border-zinc-200">
+              <i data-lucide="droplets" class="w-4 h-4 inline -mt-0.5"></i> Water
+            </button>
+            <button class="py-2.5 px-4 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium border border-zinc-200">
+              <i data-lucide="flame" class="w-4 h-4 inline -mt-0.5"></i> Gas
+            </button>
+            <button class="py-2.5 px-4 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium border border-zinc-200">
+              <i data-lucide="more-horizontal" class="w-4 h-4 inline -mt-0.5"></i> Other
+            </button>
+          </div>
+        </div>
+
+        <!-- Provider -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Provider</label>
+          <div class="relative">
+            <select class="wf-input appearance-none pr-10">
+              <option>Select provider...</option>
+              <option selected>CPFL Energia</option>
+              <option>SABESP</option>
+              <option>Comgás</option>
+              <option>Enel São Paulo</option>
+            </select>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-wf-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- Who Pays -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Who pays?</label>
+          <div class="space-y-2">
+            <button class="w-full flex items-center gap-3 p-4 rounded-xl bg-zinc-900 text-white">
+              <div class="w-5 h-5 rounded-full border-2 border-white flex items-center justify-center">
+                <div class="w-2.5 h-2.5 bg-white rounded-full"></div>
+              </div>
+              <span class="font-medium">Tenant</span>
+            </button>
+            <button class="w-full flex items-center gap-3 p-4 rounded-xl bg-zinc-50 text-wf-secondary border border-zinc-200">
+              <div class="w-5 h-5 rounded-full border-2 border-zinc-300"></div>
+              <span class="font-medium">Landlord</span>
+            </button>
+            <button class="w-full flex items-center gap-3 p-4 rounded-xl bg-zinc-50 text-wf-secondary border border-zinc-200">
+              <div class="w-5 h-5 rounded-full border-2 border-zinc-300"></div>
+              <span class="font-medium">Shared split</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="wf-card bg-zinc-50 flex items-start gap-3">
+          <i data-lucide="info" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+          <p class="text-sm text-wf-muted">After saving, you'll select a bill format so we know how to read this provider's bills.</p>
+        </div>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        Save & Select Format
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

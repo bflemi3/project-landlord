@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Recurring Charges — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-fixed { background: #e4e4e7; color: #3f3f46; }
+    .wf-badge-variable { background: #f4f4f5; color: #71717a; border: 1px dashed #d4d4d8; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div>
+        <p class="text-sm text-wf-muted">Step 2 of 3</p>
+        <p class="font-semibold text-wf-text">Define charges</p>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="px-4 pt-3">
+      <div class="w-full h-1.5 bg-zinc-100 rounded-full">
+        <div class="w-2/3 h-full bg-zinc-400 rounded-full"></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1">
+      <h1 class="wf-page-title mb-2">Expected charges</h1>
+      <p class="text-wf-muted text-[15px] mb-6">Add the regular charges for Apt 201. You can edit these later.</p>
+
+      <!-- Already Added -->
+      <div class="mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-3">Added</p>
+        <div class="wf-card flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center">
+              <i data-lucide="home" class="w-5 h-5 text-wf-secondary"></i>
+            </div>
+            <div>
+              <p class="font-medium text-wf-text">Rent</p>
+              <p class="text-sm text-wf-muted">R$ 1.800,00 · Tenant pays</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="wf-badge wf-badge-fixed">Fixed</span>
+            <i data-lucide="check-circle" class="w-5 h-5 text-zinc-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- Common Charges to Add -->
+      <div>
+        <p class="text-sm font-medium text-wf-secondary mb-3">Common charges</p>
+        <p class="text-sm text-wf-muted mb-3">Tap to add. Choose fixed or variable for each.</p>
+
+        <div class="space-y-2">
+          <!-- Electric -->
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center">
+                <i data-lucide="zap" class="w-5 h-5 text-wf-mid"></i>
+              </div>
+              <div>
+                <p class="font-medium text-wf-text">Electric</p>
+                <span class="wf-badge wf-badge-variable text-xs">Variable</span>
+              </div>
+            </div>
+            <button class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
+              <i data-lucide="plus" class="w-4 h-4 text-wf-secondary"></i>
+            </button>
+          </div>
+
+          <!-- Water -->
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center">
+                <i data-lucide="droplets" class="w-5 h-5 text-wf-mid"></i>
+              </div>
+              <div>
+                <p class="font-medium text-wf-text">Water</p>
+                <span class="wf-badge wf-badge-variable text-xs">Variable</span>
+              </div>
+            </div>
+            <button class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
+              <i data-lucide="plus" class="w-4 h-4 text-wf-secondary"></i>
+            </button>
+          </div>
+
+          <!-- Gas -->
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center">
+                <i data-lucide="flame" class="w-5 h-5 text-wf-mid"></i>
+              </div>
+              <div>
+                <p class="font-medium text-wf-text">Gas</p>
+                <span class="wf-badge wf-badge-variable text-xs">Variable</span>
+              </div>
+            </div>
+            <button class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
+              <i data-lucide="plus" class="w-4 h-4 text-wf-secondary"></i>
+            </button>
+          </div>
+
+          <!-- Condo Fee -->
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center">
+                <i data-lucide="building" class="w-5 h-5 text-wf-mid"></i>
+              </div>
+              <div>
+                <p class="font-medium text-wf-text">Condo fee</p>
+                <span class="wf-badge wf-badge-fixed text-xs">Fixed</span>
+              </div>
+            </div>
+            <button class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
+              <i data-lucide="plus" class="w-4 h-4 text-wf-secondary"></i>
+            </button>
+          </div>
+
+          <!-- Internet -->
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center">
+                <i data-lucide="wifi" class="w-5 h-5 text-wf-mid"></i>
+              </div>
+              <div>
+                <p class="font-medium text-wf-text">Internet</p>
+                <span class="wf-badge wf-badge-fixed text-xs">Fixed</span>
+              </div>
+            </div>
+            <button class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center">
+              <i data-lucide="plus" class="w-4 h-4 text-wf-secondary"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Custom Charge -->
+        <button class="wf-btn-secondary mt-4">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          Add custom charge
+        </button>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        Continue
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

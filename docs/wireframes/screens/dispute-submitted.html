@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dispute Submitted — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-end px-4 py-4">
+      <button class="p-1">
+        <i data-lucide="x" class="w-5 h-5 text-wf-muted"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1 flex flex-col">
+      <!-- Success Icon -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="message-circle" class="w-8 h-8 text-zinc-500"></i>
+        </div>
+        <h1 class="wf-page-title mb-3">Question submitted</h1>
+        <p class="text-wf-muted text-[15px] max-w-[300px] mx-auto">
+          Your landlord has been notified and will review this charge.
+        </p>
+      </div>
+
+      <!-- Summary Card -->
+      <div class="wf-card mb-6">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-wf-muted">Charge</span>
+            <span class="text-sm text-wf-text font-medium">Electric · R$ 295,00</span>
+          </div>
+          <div class="border-t border-zinc-100"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-wf-muted">Issue</span>
+            <span class="text-sm text-wf-text font-medium">The amount seems wrong</span>
+          </div>
+          <div class="border-t border-zinc-100"></div>
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-wf-muted">Status</span>
+            <span class="wf-badge bg-zinc-100 text-wf-secondary">
+              <i data-lucide="clock" class="w-3 h-3"></i> Waiting for review
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- What Happens Next -->
+      <div class="mb-6">
+        <h2 class="text-lg font-semibold text-wf-text mb-3">What happens next</h2>
+        <div class="space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-wf-secondary">1</span>
+            </div>
+            <div>
+              <p class="text-[15px] font-medium text-wf-text">Landlord reviews</p>
+              <p class="text-sm text-wf-muted">They'll see your question and the charge details</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-wf-secondary">2</span>
+            </div>
+            <div>
+              <p class="text-[15px] font-medium text-wf-text">You'll be notified</p>
+              <p class="text-sm text-wf-muted">We'll let you know when they respond or update the charge</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-7 h-7 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span class="text-xs font-bold text-wf-secondary">3</span>
+            </div>
+            <div>
+              <p class="text-[15px] font-medium text-wf-text">Statement may update</p>
+              <p class="text-sm text-wf-muted">If the charge changes, your statement will be revised</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1"></div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        Back to Statement
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

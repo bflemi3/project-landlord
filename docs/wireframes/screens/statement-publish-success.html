@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statement Published — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-published { background: #e4e4e7; color: #3f3f46; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-end px-4 py-4">
+      <button class="p-1">
+        <i data-lucide="x" class="w-5 h-5 text-wf-muted"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-4 flex-1 flex flex-col">
+      <!-- Success -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="check" class="w-8 h-8 text-zinc-500"></i>
+        </div>
+        <h1 class="wf-page-title mb-3">Statement published</h1>
+        <p class="text-wf-muted text-[15px] max-w-[300px] mx-auto">
+          The March 2026 statement for Apt 201 is now live. Ana Silva has been notified.
+        </p>
+      </div>
+
+      <!-- Summary -->
+      <div class="wf-card mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <p class="font-semibold text-wf-text">March 2026</p>
+          <span class="wf-badge wf-badge-published">
+            <i data-lucide="check" class="w-3 h-3"></i> Published
+          </span>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-wf-muted">Total</span>
+            <span class="font-bold text-wf-text text-lg">R$ 2.600,00</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-wf-muted">Due</span>
+            <span class="text-wf-text">March 10, 2026</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-wf-muted">Charges</span>
+            <span class="text-wf-text">5 charges included</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-wf-muted">Published</span>
+            <span class="text-wf-text">Mar 5, 2026 at 2:15 PM</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notifications sent -->
+      <div class="wf-card bg-zinc-50 mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-3">Notifications sent</p>
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-zinc-200 rounded-full flex items-center justify-center">
+            <span class="text-xs font-semibold text-wf-secondary">A</span>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-wf-text">Ana Silva</p>
+            <div class="flex items-center gap-2 text-xs text-wf-muted">
+              <i data-lucide="mail" class="w-3 h-3"></i> Email sent
+              <span>·</span>
+              <i data-lucide="bell" class="w-3 h-3"></i> In-app
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1"></div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar space-y-2">
+      <button class="wf-btn-primary">
+        View Statement
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+      <button class="wf-btn-secondary !border-0 !bg-transparent text-wf-muted">
+        Back to Home
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

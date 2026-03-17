@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Split Confirmation — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-end px-4 py-4">
+      <button class="p-1">
+        <i data-lucide="x" class="w-5 h-5 text-wf-muted"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1 flex flex-col">
+      <!-- Success Icon -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="check" class="w-8 h-8 text-zinc-500"></i>
+        </div>
+        <h1 class="wf-page-title mb-3">Split updated</h1>
+        <p class="text-wf-muted text-[15px] max-w-[300px] mx-auto">
+          Your roommate split has been saved. Ana has been notified of the change.
+        </p>
+      </div>
+
+      <!-- Summary Card -->
+      <div class="wf-card mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-3">New split</p>
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-zinc-200 rounded-full flex items-center justify-center">
+                <span class="text-xs font-bold text-wf-secondary">M</span>
+              </div>
+              <div>
+                <p class="text-[15px] font-medium text-wf-text">Maria</p>
+                <p class="text-sm text-wf-muted">60%</p>
+              </div>
+            </div>
+            <span class="font-bold text-wf-text">R$ 1.560,00</span>
+          </div>
+
+          <div class="border-t border-zinc-100"></div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-zinc-200 rounded-full flex items-center justify-center">
+                <span class="text-xs font-bold text-wf-secondary">A</span>
+              </div>
+              <div>
+                <p class="text-[15px] font-medium text-wf-text">Ana</p>
+                <p class="text-sm text-wf-muted">40%</p>
+              </div>
+            </div>
+            <span class="font-bold text-wf-text">R$ 1.040,00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Sent -->
+      <div class="wf-card bg-zinc-50 mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 bg-zinc-200 rounded-full flex items-center justify-center flex-shrink-0">
+            <i data-lucide="bell" class="w-4 h-4 text-wf-mid"></i>
+          </div>
+          <div>
+            <p class="text-[15px] font-medium text-wf-text">Ana notified</p>
+            <p class="text-sm text-wf-muted">She'll see the updated split on her dashboard</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="flex items-start gap-3 p-3 bg-zinc-50 rounded-xl">
+        <i data-lucide="info" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-wf-muted">This split applies to the current and future statements until changed again.</p>
+      </div>
+
+      <div class="flex-1"></div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        Back to Split View
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pre-Publish Review — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-amount { font-size: 36px; font-weight: 700; color: #18181b; letter-spacing: -0.5px; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <p class="font-semibold text-wf-text">Publish Statement</p>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-6 flex-1">
+      <h1 class="wf-page-title mb-2">Ready to publish?</h1>
+      <p class="text-wf-muted text-[15px] mb-6">This will share the March 2026 statement with your tenants. They'll be notified by email and in-app.</p>
+
+      <!-- Summary -->
+      <div class="wf-card mb-6 text-center">
+        <p class="text-sm text-wf-muted mb-1">Apt 201 · Rua Augusta 123</p>
+        <div class="wf-amount mb-1">R$ 2.600<span class="text-xl">,00</span></div>
+        <p class="text-sm text-wf-muted">Due March 10, 2026</p>
+      </div>
+
+      <!-- What's included -->
+      <div class="mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-3">What's included</p>
+        <div class="wf-card space-y-0">
+          <div class="flex items-center justify-between py-2.5 border-b border-zinc-50">
+            <span class="text-sm text-wf-text">Rent</span>
+            <span class="text-sm font-semibold text-wf-text">R$ 1.800,00</span>
+          </div>
+          <div class="flex items-center justify-between py-2.5 border-b border-zinc-50">
+            <span class="text-sm text-wf-text">Electric</span>
+            <span class="text-sm font-semibold text-wf-text">R$ 295,00</span>
+          </div>
+          <div class="flex items-center justify-between py-2.5 border-b border-zinc-50">
+            <span class="text-sm text-wf-text">Water</span>
+            <span class="text-sm font-semibold text-wf-text">R$ 165,00</span>
+          </div>
+          <div class="flex items-center justify-between py-2.5 border-b border-zinc-50">
+            <span class="text-sm text-wf-text">Condo fee (70%)</span>
+            <span class="text-sm font-semibold text-wf-text">R$ 245,00</span>
+          </div>
+          <div class="flex items-center justify-between py-2.5 border-b border-zinc-50">
+            <span class="text-sm text-wf-text">Gas</span>
+            <span class="text-sm font-semibold text-wf-text">R$ 95,00</span>
+          </div>
+          <div class="flex items-center justify-between py-2.5">
+            <span class="text-sm font-semibold text-wf-text">Total</span>
+            <span class="text-sm font-bold text-wf-text">R$ 2.600,00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Who gets notified -->
+      <div class="mb-6">
+        <p class="text-sm font-medium text-wf-secondary mb-3">Who gets notified</p>
+        <div class="wf-card flex items-center gap-3">
+          <div class="w-8 h-8 bg-zinc-200 rounded-full flex items-center justify-center">
+            <span class="text-xs font-semibold text-wf-secondary">A</span>
+          </div>
+          <div>
+            <p class="text-[15px] font-medium text-wf-text">Ana Silva</p>
+            <p class="text-xs text-wf-muted">Email + in-app notification</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revision note -->
+      <div class="wf-card bg-zinc-50 flex items-start gap-3">
+        <i data-lucide="info" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-wf-muted">You can revise this statement after publishing. Tenants will be notified of any changes.</p>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar space-y-2">
+      <button class="wf-btn-primary">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        Publish Statement
+      </button>
+      <button class="wf-btn-secondary !border-0 !bg-transparent text-wf-muted">
+        Back to Draft
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>
