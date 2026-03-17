@@ -93,24 +93,45 @@ It starts simple and stays simple. If the core workflow proves valuable, it can 
 
 ## What I'd like from you
 
-I'd like you to be my first real user.
+I'd like you to be my first real user — starting with the unit I rent from you.
 
-That means:
-- Set up one of your properties in the app
-- Use it for a few monthly billing cycles
-- Tell us what works, what doesn't, and what's missing
+That's the simplest way to prove this works: one property, one tenant (me), real bills, real billing cycles. Once the initial experience is solid and we've worked out the kinks, I'd like you to expand to your other properties and tenants so we can see how it scales.
 
-In return, you get a tool built around your actual workflow — not a generic product that sort of fits. Your feedback shapes what this becomes. I'm building this for landlords like you, and getting it right matters to me.
+Your feedback is critical. I'll set up a Slack channel where you can tell me what's working, what's broken, and what's missing — in real time, as you use it. That direct line is how I'll make sure this thing actually fits the way you work.
+
+Outside of using the app, I'd like you to help cover the running costs. The monthly infrastructure cost is low — around **R$ 250–300/month** (details below). I'm covering the development tooling myself. Splitting the infrastructure cost, or having you cover it, keeps the project moving without either of us overcommitting.
+
+---
+
+## What it costs to run
+
+The platform runs on modern cloud infrastructure. Costs are minimal at this stage.
+
+### Monthly costs
+
+| Service | What it does | Monthly cost |
+|---|---|---|
+| Supabase | Database, authentication, file storage | $25 (~R$ 145) |
+| Vercel | App hosting | $20 (~R$ 115) |
+| Claude Max | AI development tooling (covered by me) | $100 (~R$ 575) |
+| Email (Resend) | Notifications, invites | $0 (free tier) |
+| PostHog | Product analytics | $0 (free tier) |
+| **Total** | | **~$145/mo (~R$ 835)** |
+| **Your share (infrastructure only)** | | **~$45/mo (~R$ 260)** |
+
+I'm covering Claude Max, the domain purchases, and the development work — that's my investment in building this. The infrastructure cost (~$45/mo) is what I'd like help with.
+
+At scale, costs grow gradually with usage, but for the MVP with a handful of properties, this is it.
 
 ---
 
 ## If you want to go further
 
-Beyond being the first user, there's an opportunity to be part of building this.
+Beyond being a user, there's an opportunity to be part of building this from the ground floor.
 
-The monthly cost to run the platform is low — we can split it or you can cover it. Either way, it's minimal. In return, you'd be in on the ground floor as a founding partner — helping shape the product, the direction, and the vision.
+Right now it's just us — I'm building it, we're both using it. If this thing proves valuable and we decide to take it further, we can figure out what that looks like together. No pressure to commit to anything beyond trying it and helping keep the lights on.
 
-We don't need to figure out paperwork or partnership splits right now. If this thing ever goes somewhere, we'll sort that out properly. For now, it's just two guys building something cool that solves a real problem.
+For now, the ask is simple: use it, give me honest feedback, and help cover the infrastructure costs so I can keep building.
 
 ---
 
