@@ -28,6 +28,10 @@ Project Landlord helps landlords manage rent and recurring property charges acro
 - Invite additional tenants into a property
 - Coordinate split responsibilities without changing landlord-defined obligations
 
+## Documentation
+
+Browse the project documentation, wireframes, and journey walkthroughs at [bflemi3.github.io/project-landlord](https://bflemi3.github.io/project-landlord/)
+
 ## Tech stack
 
 - **Framework:** Next.js (App Router)
