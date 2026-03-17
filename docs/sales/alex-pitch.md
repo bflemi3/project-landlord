@@ -1,163 +1,125 @@
-# Rental Billing & Utility Automation
+# Alex, you spend too many hours on something that shouldn't be this hard.
 
-## A shared billing workspace for landlords and tenants
+Every month, the same cycle: collect bills, update the spreadsheet, explain the math, answer the same questions, chase payment confirmation. It works — but it costs you time you don't get back.
 
-A simpler, more transparent alternative to the monthly spreadsheet workflow.
-
----
-
-## The problem today
-
-- Monthly billing lives across spreadsheets, PDFs, provider portals, and side conversations
-- The landlord has to gather bills, update values manually, and explain the same math over and over
-- The tenant often sees the result, but not the full logic behind it
-- Even when everyone is acting in good faith, the workflow is fragile
+What if that entire process took minutes instead of hours?
 
 ---
 
-## Why the spreadsheet breaks down
+## What your month looks like today
 
-- It depends on manual entry every month
-- It is easy to make mistakes or forget a charge
-- It creates repeated clarification and follow-up
-- It is not a clean shared system of record
-- It becomes harder to manage as properties, charges, or tenants increase
+- Gather bills from Celesc, Casan, Ultragaz, the condo, and others
+- Open the spreadsheet and update every value by hand
+- Double-check the math, the splits, the responsibility allocations
+- Send it to your tenants and wait
+- Answer questions on WhatsApp — "why did this go up?" "what's this charge?"
+- Confirm who paid, track who didn't
+- Repeat next month
 
----
-
-## What a better experience looks like
-
-Instead of rebuilding the process every month:
-
-- bills come in through upload or forwarding
-- charges are reviewed before anything is published
-- a clean monthly statement gets generated
-- everyone sees what they owe and why
-- payment status and questions happen around the same shared record
+You've been doing this for years. It works — but it's fragile, repetitive, and it takes more of your time than it should.
 
 ---
 
-## The product vision
+## Now imagine this instead
 
-A trust-first billing system for landlords and tenants.
+- Bills arrive by email or upload — values are extracted automatically
+- You review everything in one place before anything is shared
+- One tap publishes a clean monthly statement to all your tenants
+- Your tenants see exactly what they owe and why — no follow-up needed
+- They mark payment, you confirm, and the month is closed
 
-The first version is not trying to be a full payment platform or a giant property management suite. It focuses on one job:
-
-**Make recurring rent and property-charge coordination simpler, clearer, and easier to trust.**
-
----
-
-## Who it helps
-
-### Alex — the landlord
-- spends less time updating spreadsheets
-- stops repeating the same explanations every month
-- gets a cleaner workflow for publishing statements and confirming payment
-
-### Brandon — the tenant
-- sees a clear statement instead of reconstructing spreadsheet math
-- understands what changed and why
-- has a structured way to question a charge if needed
-
-### Shared households
-- can coordinate splits with the same source of truth
-- avoid rebuilding the math in other apps or side chats
+No spreadsheets. No repeated explanations. No chasing.
 
 ---
 
-## Core workflow
+## The difference, side by side
 
-1. Create the property and expected charges
-2. Upload or forward bills
-3. Review extracted values before publishing
-4. Publish the monthly statement
-5. Tenant reviews the statement and sees charge transparency
-6. Tenant marks paid, landlord confirms, and the month is closed
-
----
-
-## Why this is better than the spreadsheet
-
-- shared source of truth
-- less monthly admin
-- better transparency into charges
-- cleaner communication
-- more confidence on both sides
-- stronger foundation for future automation
-
-The spreadsheet solved the problem up to now. This is about replacing the fragile parts with something much cleaner.
+| Today | With mavenn |
+|---|---|
+| Spreadsheets + PDFs + WhatsApp | A single dashboard |
+| Manually updating values every month | Bills extracted and reviewed for you |
+| Explaining the same charges repeatedly | Tenants see the breakdown themselves |
+| Information scattered across apps | Organized history in one place |
+| Chasing payment confirmation | Tenants mark paid, you confirm |
+| Hours of admin every month | Minutes |
 
 ---
 
-## What the MVP includes
+## What you get back
 
-- landlord account and property setup
-- recurring and variable charge definitions
-- bill upload and forwarding
-- bill review and correction before publish
-- monthly statement publishing
-- tenant statement view
-- payment marked / payment confirmed workflow
-- structured charge dispute flow
+**Time.** The monthly billing cycle that takes you hours could take minutes. Set up your charges once — rent, utilities, condo fees, splits — and the system handles the repetitive work each month.
 
----
+**Control.** One place to see every property, every charge, every statement. Nothing falls through the cracks.
 
-## What the MVP does **not** try to do
+**Peace of mind.** No more worrying about missed charges or incorrect splits. Review everything before it goes out. Keep a clean history of every month.
 
-To keep the first version focused, it does **not** need to:
-
-- become a full accounting suite
-- solve every property-management workflow
-- lead with in-app payments
-- automate everything from day one
-
-The goal is to prove a better monthly billing workflow first.
+**Fewer conversations.** When tenants can see exactly where each charge came from — the original bill, the amount, the split — they stop asking. That's fewer WhatsApp messages and fewer awkward conversations.
 
 ---
 
-## Why this could work
+## What your tenants get
 
-- it starts from a real workflow already happening today
-- it solves a repeated monthly pain point
-- it improves trust, not just convenience
-- it can be piloted immediately with real usage
-- if the workflow proves valuable, it creates a foundation for future expansion
+**Clarity.** A clean monthly statement that shows what they owe and exactly why. No more reconstructing spreadsheet math.
 
----
+**Trust.** Every charge shows its source — imported from a bill, entered manually, or corrected before publishing. They can even preview the original document.
 
-## What success looks like
+**A proper channel.** If something looks wrong, they can flag it inside the app instead of starting an untracked side conversation.
 
-The first win is simple:
-
-- "Yeah, this is better than the spreadsheet."
-- "I'd actually use this."
-- "This would save me time every month."
-- "This gives tenants a clearer view of what they owe."
-
-That is enough to validate the direction.
+When tenants trust the billing, the relationship gets better for everyone.
 
 ---
 
-## Suggested next step
+## How it works
 
-Build a focused MVP around the monthly billing workflow:
+1. **Set up once** — Add your properties, define the expected charges (rent, electric, water, condo fee, internet), and set who's responsible for what
+2. **Bills come in** — Forward utility bills by email or upload them. The system extracts the values automatically
+3. **Review before publishing** — You see everything in a draft. Fix anything that looks off. Nothing goes out until you say so
+4. **Publish the statement** — One tap. Your tenants are notified instantly
+5. **Close the month** — Tenants mark payment, you confirm, done
 
-- landlord setup
-- bill ingestion
-- statement publishing
-- tenant transparency
-- payment coordination
-
-Then test it in real usage before expanding into broader features.
+The first month takes a few minutes to set up. After that, it's mostly review and publish.
 
 ---
 
-## Closing thought
+## What this is — and what it isn't
 
-Your spreadsheet works.
+This is **not** trying to be a giant property management suite or a complex accounting tool.
 
-But it puts too much burden on you every month.
+It does one job really well: **make the monthly billing cycle simpler, clearer, and easier to trust — for both sides.**
 
-I think there's a real product here that starts simple: bills come in, charges get reviewed, a clean statement gets published, and everyone sees what they owe and why.
+It starts simple and stays simple. If the core workflow proves valuable, it can grow from there.
 
-The first version would not try to do everything. It would just replace the fragile parts with something much cleaner.
+---
+
+## What I'd like from you
+
+I'd like you to be my first real user.
+
+That means:
+- Set up one of your properties in the app
+- Use it for a few monthly billing cycles
+- Tell us what works, what doesn't, and what's missing
+
+In return, you get a tool built around your actual workflow — not a generic product that sort of fits. Your feedback shapes what this becomes. I'm building this for landlords like you, and getting it right matters to me.
+
+---
+
+## If you want to go further
+
+Beyond being the first user, there's an opportunity to be part of building this.
+
+The monthly cost to run the platform is low — we can split it or you can cover it. Either way, it's minimal. In return, you'd be in on the ground floor as a founding partner — helping shape the product, the direction, and the vision.
+
+We don't need to figure out paperwork or partnership splits right now. If this thing ever goes somewhere, we'll sort that out properly. For now, it's just two guys building something cool that solves a real problem.
+
+---
+
+## The bottom line
+
+You've made the spreadsheet work for years. But every month it costs you hours, creates friction with tenants, and depends entirely on you not making a mistake.
+
+This replaces the fragile parts with something much cleaner — without adding complexity to your life.
+
+**Less time on admin. Fewer repeated conversations. More confidence that everything is correct.**
+
+That's what we're building.
