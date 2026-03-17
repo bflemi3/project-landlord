@@ -228,6 +228,8 @@ At the end of setup, Alex gets a quick one-question prompt such as: **“Was set
 
 **Note:** Address verification in Brazil may be useful later, but it does not need to block the MVP. The MVP can start with user-entered addresses plus basic validation rules, then evolve into stronger verification if needed.
 
+**Wireframes:** [Journey 1 — First-Time Landlord Setup](../wireframes/journeys/01-landlord-first-setup.html)
+
 ### Journey 2: Defining a Variable Charge and Selecting the Correct Invoice Profile
 
 Alex creates a variable charge such as electric or water. He selects the provider and then selects the matching **provider invoice profile** for that charge. Because a single provider may issue multiple invoice formats, the app should show example document previews or example PDFs for each available invoice profile to help him choose the correct one.
@@ -246,13 +248,17 @@ For the MVP, the engineering/admin team handles all extraction configuration beh
 
 This workflow is important because it keeps the MVP trustable and operationally manageable while still making the extraction system data-driven from the beginning.
 
+**Wireframes:** [Journey 2 — Variable Charge & Invoice Profile](../wireframes/journeys/02-variable-charge-invoice-profile.html)
+
 ### Journey 3: Bill Ingestion and Validation
 
 Alex forwards a utility bill email to the app’s ingestion address or uploads the bill manually in the app. The system stores the raw email and attachment, applies the selected provider invoice profile, and creates a draft charge instance with extracted fields. Alex receives a notification prompting him to review the extraction. For the MVP, notifications should support email and in-app delivery, with push notifications treated as optional if implementation remains lightweight.
 
 If Alex sees that a field was extracted incorrectly, he can identify what was wrong, optionally note why, and correct the value before approval. If extraction fails or key fields are missing, Alex is notified immediately and the app asks him to correct the fields before the charge can be used. These corrections become useful product data for improving invoice profiles and reducing future failures.
 
-After completing review, Alex may occasionally see a one-question prompt such as: **“Did this review process feel accurate and trustworthy?”**
+After completing review, Alex may occasionally see a one-question prompt such as: **”Did this review process feel accurate and trustworthy?”**
+
+**Wireframes:** [Journey 3 — Bill Ingestion & Validation](../wireframes/journeys/03-bill-ingestion-validation.html)
 
 ### Journey 4: Monthly Statement Drafting and Completeness Review
 
@@ -264,11 +270,15 @@ At the appropriate time, the app generates draft charge instances for recurring 
 
 This keeps the workflow helpful and transparent without introducing overly rigid or noisy automation in the MVP.
 
+**Wireframes:** [Journey 4 — Statement Drafting & Completeness](../wireframes/journeys/04-statement-drafting-completeness.html)
+
 ### Journey 5: Monthly Statement Publishing
 
 Once everything is reviewed, Alex publishes the monthly statement. Brandon and the other tenants are notified by email and in-app that the statement is ready, and can later receive a due reminder if the statement remains unpaid.
 
 Each published statement should preserve a clear snapshot of the published data. If the statement is later changed, the app should retain revision history and notify the affected tenants that the statement was updated. This journey is important because it tests whether the app is becoming the monthly system of record rather than just a helper around the spreadsheet.
+
+**Wireframes:** [Journey 5 — Statement Publishing](../wireframes/journeys/05-statement-publishing.html)
 
 ### Journey 6: Tenant Review, Trust, and Charge Questions
 
@@ -287,13 +297,17 @@ The dispute flow should let him:
 - add a short note
 - notify the landlord immediately
 
-After reviewing the statement, Brandon may see a one-question prompt such as: **“Was this statement clear?”** or **“Do you trust the listed charges?”**
+After reviewing the statement, Brandon may see a one-question prompt such as: **”Was this statement clear?”** or **”Do you trust the listed charges?”**
+
+**Wireframes:** [Journey 6 — Tenant Review, Trust & Charge Questions](../wireframes/journeys/06-tenant-review-trust.html)
 
 ### Journey 7: Multi-Tenant Split Coordination
 
 Mariana opens the published statement and chooses to divide the tenant-side portion with the other tenants in the household. All tenants on the property should have the same permission scope for statement visibility, and split coordination should happen on top of that shared visibility model.
 
 Tenant invitation should be treated as a core part of tenant UX and should be available wherever it naturally makes sense, including during statement review and split setup. This journey is important not only for usability, but also because it supports one of the product’s strongest organic growth loops.
+
+**Wireframes:** [Journey 7 — Multi-Tenant Split Coordination](../wireframes/journeys/07-multi-tenant-split.html)
 
 ### Journey 8: Payment Marked and Confirmed
 
@@ -318,13 +332,17 @@ The rejection flow should require a reason such as:
 
 This helps the team measure statement payment resolution time and understand where the workflow is breaking down.
 
-After resolving the payment workflow, Alex may occasionally see a one-question prompt such as: **“Did this month’s billing take less time than your previous process?”**
+After resolving the payment workflow, Alex may occasionally see a one-question prompt such as: **”Did this month’s billing take less time than your previous process?”**
+
+**Wireframes:** [Journey 8 — Payment Marked & Confirmed](../wireframes/journeys/08-payment-marked-confirmed.html)
 
 ### Journey 9: Tenant-Initiated Landlord Invite
 
 A tenant hears about the product or begins using it through another property and wants their own landlord to adopt it. The app should allow the tenant to provide the landlord’s email address and trigger a lightweight invite flow such as: **“Your tenant wants a shared billing workspace instead of spreadsheets.”**
 
 This is not the same as full landlord-to-landlord collaboration. It is a simple landlord acquisition path that should be tracked separately from public landing-page sign-ups and future landlord referral flows.
+
+**Wireframes:** [Journey 9 — Tenant-Initiated Landlord Invite](../wireframes/journeys/09-tenant-initiated-landlord-invite.html)
 
 ### Core Workflow Diagrams
 
