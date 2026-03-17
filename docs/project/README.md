@@ -228,7 +228,7 @@ At the end of setup, Alex gets a quick one-question prompt such as: **“Was set
 
 **Note:** Address verification in Brazil may be useful later, but it does not need to block the MVP. The MVP can start with user-entered addresses plus basic validation rules, then evolve into stronger verification if needed.
 
-**Wireframes:** [Journey 1 — First-Time Landlord Setup](../wireframes/journeys/01-landlord-first-setup.html)
+**Wireframes:** <a href="../wireframes/journeys/01-landlord-first-setup.html" target="_blank">Journey 1 — First-Time Landlord Setup</a>
 
 ### Journey 2: Defining a Variable Charge and Selecting the Correct Invoice Profile
 
@@ -248,7 +248,7 @@ For the MVP, the engineering/admin team handles all extraction configuration beh
 
 This workflow is important because it keeps the MVP trustable and operationally manageable while still making the extraction system data-driven from the beginning.
 
-**Wireframes:** [Journey 2 — Variable Charge & Invoice Profile](../wireframes/journeys/02-variable-charge-invoice-profile.html)
+**Wireframes:** <a href="../wireframes/journeys/02-variable-charge-invoice-profile.html" target="_blank">Journey 2 — Variable Charge & Invoice Profile</a>
 
 ### Journey 3: Bill Ingestion and Validation
 
@@ -258,7 +258,7 @@ If Alex sees that a field was extracted incorrectly, he can identify what was wr
 
 After completing review, Alex may occasionally see a one-question prompt such as: **”Did this review process feel accurate and trustworthy?”**
 
-**Wireframes:** [Journey 3 — Bill Ingestion & Validation](../wireframes/journeys/03-bill-ingestion-validation.html)
+**Wireframes:** <a href="../wireframes/journeys/03-bill-ingestion-validation.html" target="_blank">Journey 3 — Bill Ingestion & Validation</a>
 
 ### Journey 4: Monthly Statement Drafting and Completeness Review
 
@@ -270,7 +270,7 @@ At the appropriate time, the app generates draft charge instances for recurring 
 
 This keeps the workflow helpful and transparent without introducing overly rigid or noisy automation in the MVP.
 
-**Wireframes:** [Journey 4 — Statement Drafting & Completeness](../wireframes/journeys/04-statement-drafting-completeness.html)
+**Wireframes:** <a href="../wireframes/journeys/04-statement-drafting-completeness.html" target="_blank">Journey 4 — Statement Drafting & Completeness</a>
 
 ### Journey 5: Monthly Statement Publishing
 
@@ -278,7 +278,7 @@ Once everything is reviewed, Alex publishes the monthly statement. Brandon and t
 
 Each published statement should preserve a clear snapshot of the published data. If the statement is later changed, the app should retain revision history and notify the affected tenants that the statement was updated. This journey is important because it tests whether the app is becoming the monthly system of record rather than just a helper around the spreadsheet.
 
-**Wireframes:** [Journey 5 — Statement Publishing](../wireframes/journeys/05-statement-publishing.html)
+**Wireframes:** <a href="../wireframes/journeys/05-statement-publishing.html" target="_blank">Journey 5 — Statement Publishing</a>
 
 ### Journey 6: Tenant Review, Trust, and Charge Questions
 
@@ -299,7 +299,7 @@ The dispute flow should let him:
 
 After reviewing the statement, Brandon may see a one-question prompt such as: **”Was this statement clear?”** or **”Do you trust the listed charges?”**
 
-**Wireframes:** [Journey 6 — Tenant Review, Trust & Charge Questions](../wireframes/journeys/06-tenant-review-trust.html)
+**Wireframes:** <a href="../wireframes/journeys/06-tenant-review-trust.html" target="_blank">Journey 6 — Tenant Review, Trust & Charge Questions</a>
 
 ### Journey 7: Multi-Tenant Split Coordination
 
@@ -307,7 +307,7 @@ Mariana opens the published statement and chooses to divide the tenant-side port
 
 Tenant invitation should be treated as a core part of tenant UX and should be available wherever it naturally makes sense, including during statement review and split setup. This journey is important not only for usability, but also because it supports one of the product’s strongest organic growth loops.
 
-**Wireframes:** [Journey 7 — Multi-Tenant Split Coordination](../wireframes/journeys/07-multi-tenant-split.html)
+**Wireframes:** <a href="../wireframes/journeys/07-multi-tenant-split.html" target="_blank">Journey 7 — Multi-Tenant Split Coordination</a>
 
 ### Journey 8: Payment Marked and Confirmed
 
@@ -334,7 +334,7 @@ This helps the team measure statement payment resolution time and understand whe
 
 After resolving the payment workflow, Alex may occasionally see a one-question prompt such as: **”Did this month’s billing take less time than your previous process?”**
 
-**Wireframes:** [Journey 8 — Payment Marked & Confirmed](../wireframes/journeys/08-payment-marked-confirmed.html)
+**Wireframes:** <a href="../wireframes/journeys/08-payment-marked-confirmed.html" target="_blank">Journey 8 — Payment Marked & Confirmed</a>
 
 ### Journey 9: Tenant-Initiated Landlord Invite
 
@@ -342,7 +342,7 @@ A tenant hears about the product or begins using it through another property and
 
 This is not the same as full landlord-to-landlord collaboration. It is a simple landlord acquisition path that should be tracked separately from public landing-page sign-ups and future landlord referral flows.
 
-**Wireframes:** [Journey 9 — Tenant-Initiated Landlord Invite](../wireframes/journeys/09-tenant-initiated-landlord-invite.html)
+**Wireframes:** <a href="../wireframes/journeys/09-tenant-initiated-landlord-invite.html" target="_blank">Journey 9 — Tenant-Initiated Landlord Invite</a>
 
 ### Core Workflow Diagrams
 
