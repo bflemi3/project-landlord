@@ -6,17 +6,17 @@ _A shared billing and charge-coordination app for landlords and tenants in Brazi
 
 ## Table of Contents
 
-[[#1. The Problem & Vision]]  
-[[#2. User Personas]]  
-[[#3. User Experience & App Walkthrough]]  
-[[#4. Competitive Landscape]]  
-[[#5. Feature Prioritization]]  
-[[#6. Design Direction]]  
-[[#7. Technical Approach]]  
-[[#8. Cost & Investment Overview]]  
-[[#9. Development Roadmap]]  
-[[#10. Risks & Considerations]]  
-[[#11. Recommended Next Steps]]
+[1. The Problem & Vision](#1-the-problem--vision)
+[2. User Personas](#2-user-personas)
+[3. User Experience & App Walkthrough](#3-user-experience--app-walkthrough)
+[4. Competitive Landscape](#4-competitive-landscape)
+[5. Feature Prioritization](#5-feature-prioritization)
+[6. Design Direction](#6-design-direction)
+[7. Technical Approach](#7-technical-approach)
+[8. Cost & Investment Overview](#8-cost--investment-overview)
+[9. Development Roadmap](#9-development-roadmap)
+[10. Risks & Considerations](#10-risks--considerations)
+[11. Recommended Next Steps](#11-recommended-next-steps)
 
 ---
 
