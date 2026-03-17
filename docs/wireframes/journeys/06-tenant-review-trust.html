@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey 6: Tenant Review & Trust</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f4f4f5; }
+    .journey-title { font-size: 32px; font-weight: 700; color: #18181b; }
+    .journey-desc { font-size: 18px; color: #52525b; }
+    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #27272a; color: #ffffff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .step-caption { font-size: 15px; color: #52525b; max-width: 390px; }
+    .step-label { font-size: 17px; font-weight: 600; color: #18181b; }
+    .arrow-connector { color: #a1a1aa; font-size: 28px; display: flex; align-items: center; padding: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="max-w-[2200px] mx-auto px-8 py-12">
+    <!-- Journey Header -->
+    <div class="mb-10">
+      <p class="text-sm font-medium text-zinc-400 mb-2 tracking-wide uppercase">Journey 6</p>
+      <h1 class="journey-title mb-3">Tenant Review & Trust</h1>
+      <p class="journey-desc max-w-2xl">
+        The tenant opens a published statement, reviews charges with transparency indicators, previews source documents, and raises questions about charges they don't understand. Trust is built through clarity.
+      </p>
+    </div>
+
+    <!-- Journey Flow -->
+    <div class="flex flex-wrap gap-8 items-start">
+
+      <!-- Step 1: Tenant Statement View -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">1</span>
+          <span class="step-label">View Statement</span>
+        </div>
+        <iframe src="../screens/statement-view-tenant.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Tenant sees full statement with amount due, split context, charge breakdown, and transparency indicators showing how each charge was sourced.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 2: Charge Source Detail -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">2</span>
+          <span class="step-label">Charge Detail</span>
+        </div>
+        <iframe src="../screens/charge-source-detail.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Drill into any charge to see source details — provider, billing period, usage, corrections, and responsibility allocation. Access source document directly.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 3: Document Preview -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">3</span>
+          <span class="step-label">Source Document</span>
+        </div>
+        <iframe src="../screens/document-preview.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Preview the actual provider bill. Tenant can verify the charge matches the source document. Download available for records.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 4: Dispute Flow -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">4</span>
+          <span class="step-label">Raise a Question</span>
+        </div>
+        <iframe src="../screens/dispute-flow.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">If something doesn't look right, select a reason, add context, and submit. Structured questions replace awkward WhatsApp conversations.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 5: Question Submitted -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">5</span>
+          <span class="step-label">Submitted + Feedback</span>
+        </div>
+        <iframe src="../screens/dispute-submitted.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Confirmation with clear next steps. Landlord is notified. Trust pulse survey captures whether the statement felt clear and understandable.</p>
+      </div>
+
+    </div>
+
+    <!-- Journey Footer -->
+    <div class="mt-12 pt-8 border-t border-zinc-200">
+      <p class="text-sm text-zinc-400">Journey 6 · 5 screens · Tenant statement review, source transparency, and dispute flow</p>
+    </div>
+  </div>
+</body>
+</html>

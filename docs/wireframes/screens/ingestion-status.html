@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ingestion Status — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #f4f4f5; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-review { background: #f4f4f5; color: #52525b; border: 1px solid #d4d4d8; }
+    .wf-badge-done { background: #e4e4e7; color: #3f3f46; }
+    .wf-badge-failed { background: #27272a; color: #ffffff; }
+    .wf-badge-processing { background: #f4f4f5; color: #71717a; border: 1px dashed #d4d4d8; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 390px; width: 100%; background: #ffffff; border-top: 1px solid #e4e4e7; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone pb-20">
+    <!-- Top Bar -->
+    <div class="bg-white px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <h1 class="font-semibold text-wf-text text-lg">Bills & Ingestion</h1>
+    </div>
+
+    <!-- Summary -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl p-5">
+      <p class="text-sm text-wf-muted mb-1">Apt 201 · Rua Augusta 123</p>
+      <div class="flex items-baseline gap-3 mb-3">
+        <p class="text-2xl font-bold text-wf-text">4 bills</p>
+        <p class="text-sm text-wf-muted">this month</p>
+      </div>
+      <div class="flex gap-2 flex-wrap">
+        <span class="wf-badge wf-badge-review">
+          <i data-lucide="eye" class="w-3 h-3"></i> 1 Needs review
+        </span>
+        <span class="wf-badge wf-badge-done">
+          <i data-lucide="check" class="w-3 h-3"></i> 2 Approved
+        </span>
+        <span class="wf-badge wf-badge-failed">
+          <i data-lucide="alert-triangle" class="w-3 h-3"></i> 1 Failed
+        </span>
+      </div>
+    </div>
+
+    <!-- Needs Review -->
+    <div class="px-4 mt-6">
+      <h2 class="wf-section-title mb-3">Needs review</h2>
+      <div class="wf-card flex items-center gap-3">
+        <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="zap" class="w-5 h-5 text-wf-secondary"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-wf-text text-[15px]">CPFL Energia</p>
+          <p class="text-sm text-wf-muted">Received today · R$ 285,00 extracted</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="wf-badge wf-badge-review text-xs">Review</span>
+          <i data-lucide="chevron-right" class="w-5 h-5 text-wf-accent flex-shrink-0"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Failed -->
+    <div class="px-4 mt-6">
+      <h2 class="wf-section-title mb-3">Failed</h2>
+      <div class="wf-card flex items-center gap-3">
+        <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="flame" class="w-5 h-5 text-wf-secondary"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-wf-text text-[15px]">Comgás Gas</p>
+          <p class="text-sm text-wf-muted">Received yesterday · Could not extract</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="wf-badge wf-badge-failed text-xs">Failed</span>
+          <i data-lucide="chevron-right" class="w-5 h-5 text-wf-accent flex-shrink-0"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approved -->
+    <div class="px-4 mt-6">
+      <h2 class="wf-section-title mb-3">Approved</h2>
+      <div class="space-y-2">
+        <div class="wf-card flex items-center gap-3">
+          <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="droplets" class="w-5 h-5 text-wf-secondary"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-wf-text text-[15px]">SABESP Water</p>
+            <p class="text-sm text-wf-muted">Mar 11 · R$ 165,00</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="wf-badge wf-badge-done text-xs">
+              <i data-lucide="check" class="w-3 h-3"></i> Approved
+            </span>
+          </div>
+        </div>
+
+        <div class="wf-card flex items-center gap-3">
+          <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="building" class="w-5 h-5 text-wf-secondary"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-wf-text text-[15px]">Condo Admin Fee</p>
+            <p class="text-sm text-wf-muted">Mar 8 · R$ 350,00</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="wf-badge wf-badge-done text-xs">
+              <i data-lucide="check" class="w-3 h-3"></i> Approved
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-6"></div>
+
+    <!-- Bottom Bar -->
+    <div class="wf-bottom-bar">
+      <div class="px-4 py-3">
+        <button class="wf-btn-primary">
+          <i data-lucide="upload" class="w-4 h-4"></i>
+          Upload Bill
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

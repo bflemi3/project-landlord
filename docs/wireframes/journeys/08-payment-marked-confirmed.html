@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey 8: Payment Marked & Confirmed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f4f4f5; }
+    .journey-title { font-size: 32px; font-weight: 700; color: #18181b; }
+    .journey-desc { font-size: 18px; color: #52525b; }
+    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #27272a; color: #ffffff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .step-caption { font-size: 15px; color: #52525b; max-width: 390px; }
+    .step-label { font-size: 17px; font-weight: 600; color: #18181b; }
+    .arrow-connector { color: #a1a1aa; font-size: 28px; display: flex; align-items: center; padding: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="max-w-[2800px] mx-auto px-8 py-12">
+    <!-- Journey Header -->
+    <div class="mb-10">
+      <p class="text-sm font-medium text-zinc-400 mb-2 tracking-wide uppercase">Journey 8</p>
+      <h1 class="journey-title mb-3">Payment Marked & Confirmed</h1>
+      <p class="journey-desc max-w-2xl">
+        The tenant marks a statement as paid, the landlord receives a notification and reviews the payment, then confirms or rejects. Rejection includes a reason and returns the issue to the tenant for resolution.
+      </p>
+    </div>
+
+    <!-- Journey Flow -->
+    <div class="flex flex-wrap gap-8 items-start">
+
+      <!-- Step 1: Mark as Paid -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">1</span>
+          <span class="step-label">Mark as Paid</span>
+        </div>
+        <iframe src="../screens/payment-mark-paid.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Tenant records payment method, date, and optional note. This doesn't process a payment — it tells the landlord that payment was made outside the app.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 2: Landlord Notification -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">2</span>
+          <span class="step-label">Landlord Notified</span>
+        </div>
+        <iframe src="../screens/payment-marked-notification.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Landlord receives a notification with payment details. One tap to review and confirm or reject.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 3: Landlord Review -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">3</span>
+          <span class="step-label">Review Payment</span>
+        </div>
+        <iframe src="../screens/payment-landlord-review.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Landlord sees tenant info, amount, method, date, and statement context. Can confirm or reject with full visibility.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 4a: Landlord Confirms -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">4a</span>
+          <span class="step-label">Landlord Confirms</span>
+        </div>
+        <iframe src="../screens/payment-confirmed.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Landlord confirms payment received. Statement updates with payment status for all tenants. Tenant is notified.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 5a: Tenant Sees Confirmation -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">5a</span>
+          <span class="step-label">Tenant Confirmed</span>
+        </div>
+        <iframe src="../screens/payment-confirmed-tenant.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Tenant sees confirmation with payment summary. Trust pulse survey shown on first billing cycle, then occasionally — the natural moment to measure trust.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 4b: Landlord Rejects -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">4b</span>
+          <span class="step-label">Landlord Rejects</span>
+        </div>
+        <iframe src="../screens/payment-reject.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">If payment isn't received, landlord selects a reason and adds a note. Rejection requires explanation — no silent rejections.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 5b: Tenant Resolution -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">5b</span>
+          <span class="step-label">Tenant Resolution</span>
+        </div>
+        <iframe src="../screens/payment-rejected-resolution.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Tenant sees why payment was rejected with landlord's note. Clear next steps: check payment, then mark as paid again with updated details.</p>
+      </div>
+
+    </div>
+
+    <!-- Journey Footer -->
+    <div class="mt-12 pt-8 border-t border-zinc-200">
+      <p class="text-sm text-zinc-400">Journey 8 · 7 screens · Payment marking, confirmation, rejection, and resolution flow</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Select Bill Format — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-card-selected { border-color: #27272a; border-width: 2px; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div>
+        <p class="font-semibold text-wf-text">Select Bill Format</p>
+        <p class="text-sm text-wf-muted">CPFL Energia · Electric</p>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1">
+      <h1 class="wf-page-title mb-2">Which bill format?</h1>
+      <p class="text-wf-muted text-[15px] mb-6">Pick the format that matches your bill. Preview the example to make sure it looks right.</p>
+
+      <div class="space-y-4">
+        <!-- Profile 1 — selected -->
+        <div class="wf-card wf-card-selected">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="font-semibold text-wf-text">CPFL Paulista</p>
+              <p class="text-sm text-wf-muted">Standard residential format</p>
+            </div>
+            <div class="w-6 h-6 bg-zinc-900 rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+          </div>
+          <!-- Example Preview -->
+          <div class="bg-zinc-100 rounded-xl h-36 flex items-center justify-center mb-2">
+            <div class="text-center">
+              <i data-lucide="file-text" class="w-8 h-8 text-wf-mid mx-auto mb-1"></i>
+              <p class="text-xs text-wf-muted">Example bill preview</p>
+            </div>
+          </div>
+          <button class="text-sm font-medium text-wf-secondary flex items-center gap-1">
+            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+            View full example
+          </button>
+        </div>
+
+        <!-- Profile 2 -->
+        <div class="wf-card">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="font-semibold text-wf-text">CPFL Piratininga</p>
+              <p class="text-sm text-wf-muted">Greater SP metropolitan format</p>
+            </div>
+            <div class="w-6 h-6 bg-zinc-100 rounded-full flex-shrink-0"></div>
+          </div>
+          <div class="bg-zinc-100 rounded-xl h-36 flex items-center justify-center mb-2">
+            <div class="text-center">
+              <i data-lucide="file-text" class="w-8 h-8 text-wf-mid mx-auto mb-1"></i>
+              <p class="text-xs text-wf-muted">Example bill preview</p>
+            </div>
+          </div>
+          <button class="text-sm font-medium text-wf-secondary flex items-center gap-1">
+            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+            View full example
+          </button>
+        </div>
+
+        <!-- Profile 3 -->
+        <div class="wf-card">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <p class="font-semibold text-wf-text">CPFL Santa Cruz</p>
+              <p class="text-sm text-wf-muted">Interior SP format</p>
+            </div>
+            <div class="w-6 h-6 bg-zinc-100 rounded-full flex-shrink-0"></div>
+          </div>
+          <div class="bg-zinc-100 rounded-xl h-36 flex items-center justify-center mb-2">
+            <div class="text-center">
+              <i data-lucide="file-text" class="w-8 h-8 text-wf-mid mx-auto mb-1"></i>
+              <p class="text-xs text-wf-muted">Example bill preview</p>
+            </div>
+          </div>
+          <button class="text-sm font-medium text-wf-secondary flex items-center gap-1">
+            <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+            View full example
+          </button>
+        </div>
+
+        <!-- Manual option -->
+        <div class="wf-card flex items-center gap-3">
+          <div class="w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="pencil" class="w-5 h-5 text-wf-mid"></i>
+          </div>
+          <div class="flex-1">
+            <p class="font-semibold text-wf-text">I'll enter this manually</p>
+            <p class="text-sm text-wf-muted">Skip extraction — type in the amount each month</p>
+          </div>
+          <div class="w-6 h-6 bg-zinc-100 rounded-full flex-shrink-0"></div>
+        </div>
+
+        <!-- Not found -->
+        <div class="text-center py-4">
+          <p class="text-sm text-wf-muted mb-2">Don't see your bill format?</p>
+          <button class="text-sm font-semibold text-wf-text">Request a new bill format</button>
+        </div>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        Use This Format
+        <i data-lucide="check" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Extraction Review — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #f4f4f5; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-review { background: #f4f4f5; color: #52525b; border: 1px solid #d4d4d8; }
+    .wf-badge-extracted { background: #e4e4e7; color: #3f3f46; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="bg-white flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div class="flex-1">
+        <p class="font-semibold text-wf-text">Review Extraction</p>
+        <p class="text-sm text-wf-muted">CPFL Energia</p>
+      </div>
+      <span class="wf-badge wf-badge-review">Needs review</span>
+    </div>
+
+    <!-- Document Preview -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl overflow-hidden">
+      <div class="bg-zinc-100 h-48 flex items-center justify-center">
+        <div class="text-center">
+          <i data-lucide="file-text" class="w-10 h-10 text-wf-mid mx-auto mb-2"></i>
+          <p class="text-sm text-wf-muted">CPFL_fatura_mar2026.pdf</p>
+          <button class="text-sm font-medium text-wf-secondary mt-1">View full document</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Extracted Fields -->
+    <div class="px-4 mt-6">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="wf-section-title">Extracted data</h2>
+        <span class="wf-badge wf-badge-extracted">
+          <i data-lucide="scan" class="w-3 h-3"></i> Auto-extracted
+        </span>
+      </div>
+
+      <div class="wf-card space-y-0">
+        <!-- Provider -->
+        <div class="flex items-center justify-between py-3 border-b border-zinc-50">
+          <span class="text-sm text-wf-muted">Provider</span>
+          <span class="font-medium text-wf-text text-[15px]">CPFL Energia</span>
+        </div>
+
+        <!-- Account -->
+        <div class="flex items-center justify-between py-3 border-b border-zinc-50">
+          <span class="text-sm text-wf-muted">Account</span>
+          <span class="font-medium text-wf-text text-[15px]">0412.345.678-9</span>
+        </div>
+
+        <!-- Billing Period -->
+        <div class="flex items-center justify-between py-3 border-b border-zinc-50">
+          <span class="text-sm text-wf-muted">Billing period</span>
+          <span class="font-medium text-wf-text text-[15px]">Feb 15 – Mar 14, 2026</span>
+        </div>
+
+        <!-- Due Date -->
+        <div class="flex items-center justify-between py-3 border-b border-zinc-50">
+          <span class="text-sm text-wf-muted">Due date</span>
+          <span class="font-medium text-wf-text text-[15px]">Mar 20, 2026</span>
+        </div>
+
+        <!-- Amount -->
+        <div class="flex items-center justify-between py-3 border-b border-zinc-50">
+          <span class="text-sm text-wf-muted">Amount</span>
+          <span class="text-xl font-bold text-wf-text">R$ 285,00</span>
+        </div>
+
+        <!-- Usage -->
+        <div class="flex items-center justify-between py-3">
+          <span class="text-sm text-wf-muted">Usage</span>
+          <span class="font-medium text-wf-text text-[15px]">312 kWh</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confidence Note -->
+    <div class="px-4 mt-4">
+      <div class="wf-card bg-zinc-50 flex items-start gap-3">
+        <i data-lucide="info" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-wf-muted">All fields were extracted automatically. Please verify before approving.</p>
+      </div>
+    </div>
+
+    <div class="h-6"></div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar space-y-2">
+      <button class="wf-btn-primary">
+        <i data-lucide="check" class="w-4 h-4"></i>
+        Approve Extraction
+      </button>
+      <button class="wf-btn-secondary">
+        <i data-lucide="pencil" class="w-4 h-4"></i>
+        Correct Fields
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

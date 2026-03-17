@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unit Billing Config — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #f4f4f5; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-fixed { background: #e4e4e7; color: #3f3f46; }
+    .wf-badge-variable { background: #f4f4f5; color: #71717a; border: 1px dashed #d4d4d8; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-input { width: 100%; padding: 14px 16px; border: 1px solid #d4d4d8; border-radius: 1rem; font-size: 16px; color: #18181b; background: #ffffff; outline: none; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone">
+    <!-- Top Bar -->
+    <div class="bg-white px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div>
+        <p class="font-semibold text-wf-text">Billing Settings</p>
+        <p class="text-sm text-wf-muted">Apt 201 · Rua Augusta 123</p>
+      </div>
+    </div>
+
+    <div class="px-4 pt-6">
+      <!-- Statement Generation -->
+      <div class="mb-6">
+        <h2 class="wf-section-title mb-3">Statement generation</h2>
+        <div class="wf-card space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-wf-secondary mb-2">Generate draft on day</label>
+            <div class="relative">
+              <select class="wf-input appearance-none pr-10">
+                <option>1st of each month</option>
+              </select>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-wf-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+            <p class="text-sm text-wf-muted mt-2">A draft statement will be created automatically with recurring charges included.</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-wf-secondary mb-2">Payment due day</label>
+            <div class="relative">
+              <select class="wf-input appearance-none pr-10">
+                <option>10th of each month</option>
+              </select>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-wf-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+          </div>
+          <!-- Pix Key -->
+          <div>
+            <label class="block text-sm font-medium text-wf-secondary mb-2">Pix key (optional)</label>
+            <div class="relative">
+              <select class="wf-input appearance-none pr-10 mb-2">
+                <option>Email</option>
+              </select>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-wf-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+            <input type="text" class="wf-input" value="carlos@email.com">
+            <p class="text-sm text-wf-muted mt-2">Shown to tenants when they mark a payment as Pix. Inherited from your profile — override here if this unit uses a different key.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charges Overview -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="wf-section-title">Charges</h2>
+          <button class="text-sm font-medium text-wf-secondary flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i> Add
+          </button>
+        </div>
+
+        <div class="space-y-2">
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i data-lucide="home" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Rent</p>
+                <p class="text-sm text-wf-muted">R$ 1.800,00 · Tenant</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-fixed">Fixed</span>
+          </div>
+
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i data-lucide="zap" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Electric</p>
+                <p class="text-sm text-wf-muted">CPFL Energia · Tenant</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-variable">Variable</span>
+          </div>
+
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i data-lucide="droplets" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Water</p>
+                <p class="text-sm text-wf-muted">SABESP · Tenant</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-variable">Variable</span>
+          </div>
+
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i data-lucide="building" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Condo fee</p>
+                <p class="text-sm text-wf-muted">R$ 350,00 · 70% Tenant / 30% Landlord</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-fixed">Fixed</span>
+          </div>
+
+          <div class="wf-card flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i data-lucide="wifi" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Internet</p>
+                <p class="text-sm text-wf-muted">R$ 120,00 · Landlord</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-fixed">Fixed</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tenants -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="wf-section-title">Tenants</h2>
+          <button class="text-sm font-medium text-wf-secondary flex items-center gap-1">
+            <i data-lucide="plus" class="w-4 h-4"></i> Invite
+          </button>
+        </div>
+        <div class="wf-card flex items-center gap-3">
+          <div class="w-10 h-10 bg-zinc-200 rounded-full flex items-center justify-center">
+            <span class="text-sm font-semibold text-wf-secondary">A</span>
+          </div>
+          <div class="flex-1">
+            <p class="font-medium text-wf-text">Ana Silva</p>
+            <p class="text-sm text-wf-muted">ana.silva@email.com</p>
+          </div>
+          <i data-lucide="chevron-right" class="w-5 h-5 text-wf-accent"></i>
+        </div>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add/Edit Charge Sheet — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; height: 844px; margin: 0 auto; background: #ffffff; position: relative; overflow: hidden; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-draft { background: #f4f4f5; color: #71717a; border: 1px dashed #d4d4d8; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-input { width: 100%; padding: 14px 16px; border: 1px solid #d4d4d8; border-radius: 1rem; font-size: 16px; color: #18181b; background: #ffffff; outline: none; }
+    .wf-input::placeholder { color: #a1a1aa; }
+    .wf-amount { font-size: 36px; font-weight: 700; color: #18181b; letter-spacing: -0.5px; }
+    .wf-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); }
+    .wf-sheet { position: absolute; bottom: 0; left: 0; right: 0; background: #ffffff; border-radius: 1.5rem 1.5rem 0 0; padding: 1.5rem; height: 633px; display: flex; flex-direction: column; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone">
+    <!-- Background: draft statement (dimmed) -->
+    <div class="opacity-30 pointer-events-none">
+      <div class="bg-white px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+        <div class="flex-1">
+          <p class="font-semibold text-wf-text">March 2026 Statement</p>
+          <p class="text-sm text-wf-muted">Apt 201 · Rua Augusta 123</p>
+        </div>
+        <span class="wf-badge wf-badge-draft">Draft</span>
+      </div>
+      <div class="bg-zinc-50 mx-4 mt-4 rounded-2xl p-5">
+        <p class="text-sm text-wf-muted mb-1">Total due</p>
+        <div class="wf-amount">R$ 2.505<span class="text-xl">,00</span></div>
+      </div>
+    </div>
+
+    <!-- Overlay -->
+    <div class="wf-overlay"></div>
+
+    <!-- Bottom Sheet -->
+    <div class="wf-sheet">
+      <!-- Handle -->
+      <div class="w-10 h-1 bg-zinc-300 rounded-full mx-auto mb-4"></div>
+
+      <div class="flex items-center justify-between mb-6">
+        <h2 class="text-xl font-bold text-wf-text">Add charge</h2>
+        <button class="p-1">
+          <i data-lucide="x" class="w-5 h-5 text-wf-muted"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 flex-1">
+        <!-- Charge Name -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Charge name</label>
+          <input type="text" class="wf-input bg-zinc-50 text-wf-muted" value="Gas" disabled>
+        </div>
+
+        <!-- Amount -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Amount</label>
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-wf-muted font-medium">R$</span>
+            <input type="text" class="wf-input pl-12 font-bold" placeholder="0,00" value="95,00">
+          </div>
+        </div>
+
+        <!-- Source -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">How are you adding this?</label>
+          <div class="flex gap-2">
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-semibold text-center">I know the amount</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">I have a bill</button>
+          </div>
+        </div>
+
+        <!-- Note (shown for manual entry) -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Note (optional)</label>
+          <input type="text" class="wf-input" placeholder="e.g. Late bill, estimated amount">
+        </div>
+      </div>
+
+      <div class="pt-4 space-y-2">
+        <button class="wf-btn-primary">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          Add to Statement
+        </button>
+        <button class="wf-btn-secondary !border-0 !bg-transparent text-wf-muted">
+          Cancel
+        </button>
+      </div>
+
+      <!-- Alt state: "I have a bill" selected -->
+      <!--
+      When "I have a bill" is tapped:
+      - Amount field is hidden
+      - Note field is hidden
+      - CTA changes to "Upload Bill" with upload icon
+      - Tapping takes them to the bill upload flow
+        with charge name (Gas) pre-filled
+      -->
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

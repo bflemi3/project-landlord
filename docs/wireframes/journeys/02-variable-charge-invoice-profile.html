@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey 2: Variable Charge & Bill Format</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f4f4f5; }
+    .journey-title { font-size: 32px; font-weight: 700; color: #18181b; }
+    .journey-desc { font-size: 18px; color: #52525b; }
+    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #27272a; color: #ffffff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .step-caption { font-size: 15px; color: #52525b; max-width: 390px; }
+    .step-label { font-size: 17px; font-weight: 600; color: #18181b; }
+    .arrow-connector { color: #a1a1aa; font-size: 28px; display: flex; align-items: center; padding: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="max-w-[1800px] mx-auto px-8 py-12">
+    <!-- Journey Header -->
+    <div class="mb-10">
+      <p class="text-sm font-medium text-zinc-400 mb-2 tracking-wide uppercase">Journey 2</p>
+      <h1 class="journey-title mb-3">Variable Charge & Bill Format</h1>
+      <p class="journey-desc max-w-2xl">
+        A landlord creates a variable charge, selects the matching bill format by previewing example documents, or requests a new format if none match. They're notified when the new format is ready.
+      </p>
+    </div>
+
+    <!-- Journey Flow -->
+    <div class="flex flex-wrap gap-8 items-start">
+
+      <!-- Step 1: Add Variable Charge -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">1</span>
+          <span class="step-label">Add Variable Charge</span>
+        </div>
+        <iframe src="../screens/charge-add-variable.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Create a new variable charge — name, category, provider, and responsibility. Amount comes from bills each month.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 2: Select Bill Format -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">2</span>
+          <span class="step-label">Select Bill Format</span>
+        </div>
+        <iframe src="../screens/invoice-profile-select.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Browse available bill formats for the provider. Preview example documents to find the one that matches. Can also enter manually or request a new format if none match.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 3: Request New Format -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">3</span>
+          <span class="step-label">Request New Format</span>
+        </div>
+        <iframe src="../screens/invoice-profile-request.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">If no format matches: submit provider name, label, sample PDF, and optional notes. Team builds the extraction config.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 4: Format Ready -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">4</span>
+          <span class="step-label">Format Ready</span>
+        </div>
+        <iframe src="../screens/invoice-profile-ready-notification.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Landlord receives notification when the bill format is ready. Can immediately upload the first bill for extraction.</p>
+      </div>
+
+    </div>
+
+    <!-- Journey Footer -->
+    <div class="mt-12 pt-8 border-t border-zinc-200">
+      <p class="text-sm text-zinc-400">Journey 2 · 4 screens · Variable charge and bill format setup</p>
+      <p class="text-sm text-zinc-400 mt-1">Note: Steps 2 and 3 are alternate paths — existing format (happy path) vs. new format request.</p>
+    </div>
+  </div>
+</body>
+</html>

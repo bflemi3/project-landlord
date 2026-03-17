@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey 3: Bill Ingestion & Validation</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f4f4f5; }
+    .journey-title { font-size: 32px; font-weight: 700; color: #18181b; }
+    .journey-desc { font-size: 18px; color: #52525b; }
+    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #27272a; color: #ffffff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .step-caption { font-size: 15px; color: #52525b; max-width: 390px; }
+    .step-label { font-size: 17px; font-weight: 600; color: #18181b; }
+    .arrow-connector { color: #a1a1aa; font-size: 28px; display: flex; align-items: center; padding: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="max-w-[1800px] mx-auto px-8 py-12">
+    <!-- Journey Header -->
+    <div class="mb-10">
+      <p class="text-sm font-medium text-zinc-400 mb-2 tracking-wide uppercase">Journey 3</p>
+      <h1 class="journey-title mb-3">Bill Ingestion & Validation</h1>
+      <p class="journey-desc max-w-2xl">
+        A landlord uploads or forwards a utility bill. The system extracts data using the matching bill format. The landlord reviews, corrects if needed, and approves. Failed extractions are handled gracefully.
+      </p>
+    </div>
+
+    <!-- Journey Flow -->
+    <div class="flex flex-wrap gap-8 items-start">
+
+      <!-- Step 1: Ingestion Status -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">1</span>
+          <span class="step-label">Ingestion Overview</span>
+        </div>
+        <iframe src="../screens/ingestion-status.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Landlord sees all bills for the property — what's been approved, what needs review, what failed.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 2: Upload Bill -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">2</span>
+          <span class="step-label">Upload Bill</span>
+        </div>
+        <iframe src="../screens/bill-upload.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Upload a PDF/image or forward via the property's ingestion email. Select the provider so we know which bill format to use for extraction.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 3: Review Extraction -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">3</span>
+          <span class="step-label">Review Extraction</span>
+        </div>
+        <iframe src="../screens/bill-extraction-review.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">View extracted fields alongside the source document. Approve if correct, or continue to correct.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 4: Correct Fields -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">4</span>
+          <span class="step-label">Correct Fields</span>
+        </div>
+        <iframe src="../screens/bill-field-correction.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Edit incorrect values. Original values shown for comparison. Optional note on why it was wrong.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 5: Extraction Failure -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">5</span>
+          <span class="step-label">Extraction Failure</span>
+        </div>
+        <iframe src="../screens/bill-extraction-failure.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">When extraction fails: clear explanation, source document access, and options to enter manually or report the format.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 6: Confirmation + Trust Prompt -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">6</span>
+          <span class="step-label">Approved + Feedback</span>
+        </div>
+        <iframe src="../screens/bill-review-confirmation.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Bill approved with summary. Trust pulse: "Did this review process feel accurate and trustworthy?"</p>
+      </div>
+
+    </div>
+
+    <!-- Journey Footer -->
+    <div class="mt-12 pt-8 border-t border-zinc-200">
+      <p class="text-sm text-zinc-400">Journey 3 · 6 screens · Bill ingestion and validation flow</p>
+      <p class="text-sm text-zinc-400 mt-1">Note: Steps 4 and 5 are alternate paths — correction (happy path) vs. failure (error path).</p>
+    </div>
+  </div>
+</body>
+</html>

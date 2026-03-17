@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notification Center — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #f4f4f5; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 390px; width: 100%; background: #ffffff; border-top: 1px solid #e4e4e7; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone pb-20">
+    <!-- Top Bar -->
+    <div class="bg-white px-4 py-4 flex items-center justify-between border-b border-zinc-100">
+      <h1 class="wf-page-title">Notifications</h1>
+      <button class="text-sm font-medium text-wf-secondary">Mark all read</button>
+    </div>
+
+    <!-- Notification List -->
+    <div class="divide-y divide-zinc-100">
+      <!-- Unread: Landlord joined -->
+      <button class="w-full bg-white px-4 py-4 flex items-start gap-3 text-left">
+        <div class="w-10 h-10 bg-zinc-200 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="user-plus" class="w-4 h-4 text-wf-dark"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[15px] text-wf-text font-medium">Carlos joined mavenn!</p>
+          <p class="text-sm text-wf-muted mt-0.5">Your landlord accepted the invitation and set up Rua Augusta 123.</p>
+          <p class="text-xs text-wf-accent mt-1">2 hours ago</p>
+        </div>
+        <div class="w-2 h-2 bg-zinc-800 rounded-full mt-2 flex-shrink-0"></div>
+      </button>
+
+      <!-- Unread: Statement published -->
+      <button class="w-full bg-white px-4 py-4 flex items-start gap-3 text-left">
+        <div class="w-10 h-10 bg-zinc-200 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="file-text" class="w-4 h-4 text-wf-dark"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[15px] text-wf-text font-medium">March statement published</p>
+          <p class="text-sm text-wf-muted mt-0.5">R$ 2.600,00 due March 10. Tap to view charges.</p>
+          <p class="text-xs text-wf-accent mt-1">1 day ago</p>
+        </div>
+        <div class="w-2 h-2 bg-zinc-800 rounded-full mt-2 flex-shrink-0"></div>
+      </button>
+
+      <!-- Read: Payment confirmed -->
+      <button class="w-full bg-zinc-50 px-4 py-4 flex items-start gap-3 text-left">
+        <div class="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="check-circle" class="w-4 h-4 text-wf-mid"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[15px] text-wf-text">Payment confirmed</p>
+          <p class="text-sm text-wf-muted mt-0.5">Your February payment of R$ 1.250,00 was confirmed by Carlos.</p>
+          <p class="text-xs text-wf-accent mt-1">Mar 2</p>
+        </div>
+      </button>
+
+      <!-- Read: Due reminder -->
+      <button class="w-full bg-zinc-50 px-4 py-4 flex items-start gap-3 text-left">
+        <div class="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="calendar" class="w-4 h-4 text-wf-mid"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[15px] text-wf-text">Payment due in 3 days</p>
+          <p class="text-sm text-wf-muted mt-0.5">February statement · R$ 1.250,00 due Feb 10.</p>
+          <p class="text-xs text-wf-accent mt-1">Feb 7</p>
+        </div>
+      </button>
+
+      <!-- Read: Split updated -->
+      <button class="w-full bg-zinc-50 px-4 py-4 flex items-start gap-3 text-left">
+        <div class="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4 text-wf-mid"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[15px] text-wf-text">Split updated</p>
+          <p class="text-sm text-wf-muted mt-0.5">Ana adjusted the roommate split to 60/40.</p>
+          <p class="text-xs text-wf-accent mt-1">Feb 15</p>
+        </div>
+      </button>
+
+      <!-- Read: Dispute response -->
+      <button class="w-full bg-zinc-50 px-4 py-4 flex items-start gap-3 text-left">
+        <div class="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="message-circle" class="w-4 h-4 text-wf-mid"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[15px] text-wf-text">Landlord responded to your question</p>
+          <p class="text-sm text-wf-muted mt-0.5">Electric charge for January has been updated.</p>
+          <p class="text-xs text-wf-accent mt-1">Jan 20</p>
+        </div>
+      </button>
+
+      <!-- Read: Bill format ready -->
+      <button class="w-full bg-zinc-50 px-4 py-4 flex items-start gap-3 text-left">
+        <div class="w-10 h-10 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0">
+          <i data-lucide="sparkles" class="w-4 h-4 text-wf-mid"></i>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-[15px] text-wf-text">New bill format ready</p>
+          <p class="text-sm text-wf-muted mt-0.5">CPFL Energia format is now available for automatic extraction.</p>
+          <p class="text-xs text-wf-accent mt-1">Jan 15</p>
+        </div>
+      </button>
+    </div>
+
+    <div class="h-6"></div>
+
+    <!-- Bottom Nav -->
+    <div class="wf-bottom-nav">
+      <div class="flex items-center justify-around py-2">
+        <button class="flex flex-col items-center gap-1 py-1 px-3">
+          <i data-lucide="home" class="w-5 h-5 text-wf-accent"></i>
+          <span class="text-[11px] text-wf-muted">Home</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 py-1 px-3">
+          <i data-lucide="file-text" class="w-5 h-5 text-wf-accent"></i>
+          <span class="text-[11px] text-wf-muted">Statements</span>
+        </button>
+        <button class="flex flex-col items-center gap-1 py-1 px-3 relative">
+          <i data-lucide="bell" class="w-5 h-5 text-wf-dark"></i>
+          <span class="text-[11px] text-wf-text font-medium">Notifications</span>
+          <div class="absolute -top-0.5 right-1 w-4 h-4 bg-zinc-800 rounded-full flex items-center justify-center">
+            <span class="text-[9px] text-white font-bold">2</span>
+          </div>
+        </button>
+        <button class="flex flex-col items-center gap-1 py-1 px-3">
+          <i data-lucide="settings" class="w-5 h-5 text-wf-accent"></i>
+          <span class="text-[11px] text-wf-muted">Settings</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

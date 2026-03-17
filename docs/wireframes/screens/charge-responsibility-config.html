@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Charge Responsibility — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-fixed { background: #e4e4e7; color: #3f3f46; }
+    .wf-badge-variable { background: #f4f4f5; color: #71717a; border: 1px dashed #d4d4d8; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div>
+        <p class="text-sm text-wf-muted">Step 2 of 3</p>
+        <p class="font-semibold text-wf-text">Define charges</p>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="px-4 pt-3">
+      <div class="w-full h-1.5 bg-zinc-100 rounded-full">
+        <div class="w-2/3 h-full bg-zinc-400 rounded-full"></div>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1">
+      <h1 class="wf-page-title mb-2">Who pays what?</h1>
+      <p class="text-wf-muted text-[15px] mb-6">Review responsibility for each charge on Apt 201.</p>
+
+      <div class="space-y-3">
+        <!-- Rent -->
+        <div class="wf-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <i data-lucide="home" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Rent</p>
+                <p class="text-sm text-wf-muted">R$ 1.800,00/mo</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-fixed">Fixed</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-semibold text-center">Tenant</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Landlord</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Split</button>
+          </div>
+        </div>
+
+        <!-- Electric -->
+        <div class="wf-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <i data-lucide="zap" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Electric</p>
+                <p class="text-sm text-wf-muted">Variable · from bill</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-variable">Variable</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-semibold text-center">Tenant</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Landlord</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Split</button>
+          </div>
+        </div>
+
+        <!-- Water -->
+        <div class="wf-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <i data-lucide="droplets" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Water</p>
+                <p class="text-sm text-wf-muted">Variable · from bill</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-variable">Variable</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-semibold text-center">Tenant</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Landlord</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Split</button>
+          </div>
+        </div>
+
+        <!-- Condo Fee -->
+        <div class="wf-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <i data-lucide="building" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Condo fee</p>
+                <p class="text-sm text-wf-muted">R$ 350,00/mo</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-fixed">Fixed</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Tenant</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Landlord</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-semibold text-center">Split</button>
+          </div>
+          <!-- Split detail -->
+          <div class="mt-3 pt-3 border-t border-zinc-100">
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-wf-muted">Tenant pays</span>
+              <span class="font-medium text-wf-text">70% · R$ 245,00</span>
+            </div>
+            <div class="flex items-center justify-between text-sm mt-1">
+              <span class="text-wf-muted">Landlord pays</span>
+              <span class="font-medium text-wf-text">30% · R$ 105,00</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Internet -->
+        <div class="wf-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <i data-lucide="wifi" class="w-5 h-5 text-wf-mid"></i>
+              <div>
+                <p class="font-medium text-wf-text">Internet</p>
+                <p class="text-sm text-wf-muted">R$ 120,00/mo</p>
+              </div>
+            </div>
+            <span class="wf-badge wf-badge-fixed">Fixed</span>
+          </div>
+          <div class="flex gap-2">
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Tenant</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-900 text-white text-sm font-semibold text-center">Landlord</button>
+            <button class="flex-1 py-2.5 rounded-xl bg-zinc-50 text-wf-muted text-sm font-medium text-center border border-zinc-200">Split</button>
+          </div>
+          <p class="text-sm text-wf-muted mt-2">Landlord covers this — won't appear on tenant statements.</p>
+        </div>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        Continue
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

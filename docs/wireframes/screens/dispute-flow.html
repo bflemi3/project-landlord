@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dispute Flow — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-input { width: 100%; padding: 14px 16px; border: 1px solid #d4d4d8; border-radius: 1rem; font-size: 16px; color: #18181b; background: #ffffff; outline: none; }
+    .wf-input::placeholder { color: #a1a1aa; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div class="flex-1">
+        <p class="font-semibold text-wf-text">Ask about a charge</p>
+        <p class="text-sm text-wf-muted">March 2026 Statement</p>
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="px-4 pt-6 flex-1">
+      <!-- Charge Context -->
+      <div class="wf-card flex items-center gap-3 mb-6 bg-zinc-50">
+        <i data-lucide="zap" class="w-5 h-5 text-wf-mid flex-shrink-0"></i>
+        <div class="flex-1">
+          <p class="text-[15px] font-medium text-wf-text">Electric</p>
+          <p class="text-sm text-wf-muted">R$ 295,00 · from bill</p>
+        </div>
+      </div>
+
+      <!-- Reason Selection -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-wf-secondary mb-3">What's the issue?</label>
+        <div class="space-y-2">
+          <button class="w-full flex items-center gap-3 p-4 rounded-2xl border-2 border-zinc-900 bg-zinc-50">
+            <div class="w-5 h-5 rounded-full border-2 border-zinc-900 flex items-center justify-center flex-shrink-0">
+              <div class="w-2.5 h-2.5 rounded-full bg-zinc-900"></div>
+            </div>
+            <span class="text-[15px] font-medium text-wf-text">The amount seems wrong</span>
+          </button>
+
+          <button class="w-full flex items-center gap-3 p-4 rounded-2xl border border-zinc-200">
+            <div class="w-5 h-5 rounded-full border-2 border-zinc-300 flex-shrink-0"></div>
+            <span class="text-[15px] text-wf-text">I don't understand this charge</span>
+          </button>
+
+          <button class="w-full flex items-center gap-3 p-4 rounded-2xl border border-zinc-200">
+            <div class="w-5 h-5 rounded-full border-2 border-zinc-300 flex-shrink-0"></div>
+            <span class="text-[15px] text-wf-text">The split is incorrect</span>
+          </button>
+
+          <button class="w-full flex items-center gap-3 p-4 rounded-2xl border border-zinc-200">
+            <div class="w-5 h-5 rounded-full border-2 border-zinc-300 flex-shrink-0"></div>
+            <span class="text-[15px] text-wf-text">Wrong billing period</span>
+          </button>
+
+          <button class="w-full flex items-center gap-3 p-4 rounded-2xl border border-zinc-200">
+            <div class="w-5 h-5 rounded-full border-2 border-zinc-300 flex-shrink-0"></div>
+            <span class="text-[15px] text-wf-text">Other</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Note -->
+      <div class="mb-6">
+        <label class="block text-sm font-medium text-wf-secondary mb-2">Tell us more</label>
+        <textarea class="wf-input h-24 resize-none" placeholder="e.g. Last month the bill was R$ 180 — this seems too high for our usage"></textarea>
+      </div>
+
+      <!-- Info Note -->
+      <div class="flex items-start gap-3 p-3 bg-zinc-50 rounded-xl">
+        <i data-lucide="info" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-wf-muted">Your landlord will be notified and can review this charge. You'll be updated when they respond.</p>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        Submit Question
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

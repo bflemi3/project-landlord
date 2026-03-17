@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey 4: Statement Drafting & Completeness</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #f4f4f5; }
+    .journey-title { font-size: 32px; font-weight: 700; color: #18181b; }
+    .journey-desc { font-size: 18px; color: #52525b; }
+    .step-number { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #27272a; color: #ffffff; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+    .step-caption { font-size: 15px; color: #52525b; max-width: 390px; }
+    .step-label { font-size: 17px; font-weight: 600; color: #18181b; }
+    .arrow-connector { color: #a1a1aa; font-size: 28px; display: flex; align-items: center; padding: 0 8px; }
+  </style>
+</head>
+<body>
+  <div class="max-w-[1800px] mx-auto px-8 py-12">
+    <!-- Journey Header -->
+    <div class="mb-10">
+      <p class="text-sm font-medium text-zinc-400 mb-2 tracking-wide uppercase">Journey 4</p>
+      <h1 class="journey-title mb-3">Statement Drafting & Completeness</h1>
+      <p class="journey-desc max-w-2xl">
+        A monthly statement draft is generated automatically with recurring charges. Variable charges arrive through ingestion or manual entry. The landlord reviews completeness warnings and adds missing charges before publishing.
+      </p>
+    </div>
+
+    <!-- Journey Flow -->
+    <div class="flex flex-wrap gap-8 items-start">
+
+      <!-- Step 1: Billing Config -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">1</span>
+          <span class="step-label">Billing Settings</span>
+        </div>
+        <iframe src="../screens/unit-billing-config.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Configure when drafts generate, payment due dates, and view all charges and tenants for the unit.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 2: Draft Statement -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">2</span>
+          <span class="step-label">Draft Statement</span>
+        </div>
+        <iframe src="../screens/statement-draft.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Auto-generated draft with recurring charges included. Variable charges added as bills are approved. Completeness warning shows missing charges.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 3: Add/Edit Charge -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">3</span>
+          <span class="step-label">Add Charge</span>
+        </div>
+        <iframe src="../screens/charge-add-edit-sheet.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Bottom sheet for adding missing charges manually — name, amount, source, and optional note. Light and quick.</p>
+      </div>
+
+      <div class="arrow-connector self-center mt-12">→</div>
+
+      <!-- Step 4: Completeness Review -->
+      <div class="flex flex-col items-center">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="step-number">4</span>
+          <span class="step-label">Completeness Review</span>
+        </div>
+        <iframe src="../screens/statement-completeness-review.html" class="w-[390px] h-[844px] border border-zinc-200 rounded-2xl shadow-sm bg-white" loading="lazy"></iframe>
+        <p class="step-caption mt-3 text-center">Review what's included and what's missing. Warnings are helpful, not blocking — landlord can publish without all charges.</p>
+      </div>
+
+    </div>
+
+    <!-- Journey Footer -->
+    <div class="mt-12 pt-8 border-t border-zinc-200">
+      <p class="text-sm text-zinc-400">Journey 4 · 4 screens · Statement drafting and completeness flow</p>
+    </div>
+  </div>
+</body>
+</html>

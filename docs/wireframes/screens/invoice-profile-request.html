@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Bill Format — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-input { width: 100%; padding: 14px 16px; border: 1px solid #d4d4d8; border-radius: 1rem; font-size: 16px; color: #18181b; background: #ffffff; outline: none; }
+    .wf-input:focus { border-color: #a1a1aa; box-shadow: 0 0 0 3px rgba(161,161,170,0.15); }
+    .wf-input::placeholder { color: #a1a1aa; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center gap-3 px-4 py-4 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <p class="font-semibold text-wf-text">Request New Bill Format</p>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-8 flex-1">
+      <h1 class="wf-page-title mb-2">Request a bill format</h1>
+      <p class="text-wf-muted text-[15px] mb-8">Send us a sample bill and we'll set up extraction for this format. We'll notify you when it's ready.</p>
+
+      <div class="space-y-5">
+        <!-- Provider Name -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Provider name</label>
+          <input type="text" class="wf-input" placeholder="e.g. Enel São Paulo" value="Enel São Paulo">
+        </div>
+
+        <!-- Profile Label -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Format label</label>
+          <input type="text" class="wf-input" placeholder="e.g. Residential Standard, Commercial" value="Residential Standard">
+          <p class="text-sm text-wf-muted mt-2">A short name to describe this bill format. e.g. "CPFL Paulista Residential" or "Enel Commercial"</p>
+        </div>
+
+        <!-- Upload Sample -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Sample bill</label>
+          <div class="border-2 border-dashed border-zinc-300 rounded-2xl p-6 text-center">
+            <div class="w-12 h-12 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <i data-lucide="upload" class="w-5 h-5 text-wf-secondary"></i>
+            </div>
+            <p class="font-medium text-wf-text text-sm mb-1">Upload a sample bill</p>
+            <p class="text-xs text-wf-muted">PDF or image · We use this to build the extraction template</p>
+          </div>
+          <!-- Uploaded state -->
+          <div class="wf-card mt-3 flex items-center gap-3">
+            <div class="w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <i data-lucide="file-text" class="w-5 h-5 text-wf-secondary"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-wf-text truncate">enel_fatura_fev2026.pdf</p>
+              <p class="text-xs text-wf-muted">1.8 MB · Uploaded</p>
+            </div>
+            <button class="p-1.5 rounded-lg hover:bg-zinc-100">
+              <i data-lucide="x" class="w-4 h-4 text-wf-muted"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Optional Note -->
+        <div>
+          <label class="block text-sm font-medium text-wf-secondary mb-2">Notes (optional)</label>
+          <textarea class="wf-input resize-none h-20" placeholder="Anything that might help us — e.g. 'total is on page 2, bottom right'"></textarea>
+        </div>
+      </div>
+
+      <div class="h-6"></div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        <i data-lucide="send" class="w-4 h-4"></i>
+        Submit Request
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

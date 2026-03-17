@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Confirmed — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #ffffff; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-badge-done { background: #e4e4e7; color: #3f3f46; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-page-title { font-size: 28px; font-weight: 700; color: #18181b; }
+    .wf-bottom-bar { position: sticky; bottom: 0; background: #ffffff; border-top: 1px solid #e4e4e7; padding: 12px 16px; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  </style>
+</head>
+<body>
+  <div class="wf-phone flex flex-col">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-end px-4 py-4">
+      <button class="p-1">
+        <i data-lucide="x" class="w-5 h-5 text-wf-muted"></i>
+      </button>
+    </div>
+
+    <!-- Content -->
+    <div class="px-6 pt-4 flex-1 flex flex-col">
+      <!-- Success State -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 bg-zinc-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <i data-lucide="check" class="w-8 h-8 text-zinc-500"></i>
+        </div>
+        <h1 class="wf-page-title mb-3">Bill approved</h1>
+        <p class="text-wf-muted text-[15px] max-w-[280px] mx-auto">
+          The CPFL Energia charge has been approved and is ready for this month's statement.
+        </p>
+      </div>
+
+      <!-- Summary Card -->
+      <div class="wf-card mb-6">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <i data-lucide="zap" class="w-5 h-5 text-wf-mid"></i>
+            <p class="font-medium text-wf-text">CPFL Energia</p>
+          </div>
+          <span class="wf-badge wf-badge-done">
+            <i data-lucide="check" class="w-3 h-3"></i> Approved
+          </span>
+        </div>
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-wf-muted">Amount</span>
+            <span class="font-bold text-wf-text text-lg">R$ 295,00</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-wf-muted">Period</span>
+            <span class="text-wf-text">Feb 15 – Mar 14, 2026</span>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span class="text-wf-muted">Source</span>
+            <span class="text-wf-text">Extracted & corrected</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- What's next -->
+      <div class="wf-card bg-zinc-50">
+        <p class="text-sm font-medium text-wf-secondary mb-3">What happens next</p>
+        <div class="space-y-3">
+          <div class="flex gap-3 items-start">
+            <i data-lucide="file-text" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+            <p class="text-sm text-wf-muted">This charge will appear on the March 2026 draft statement</p>
+          </div>
+          <div class="flex gap-3 items-start">
+            <i data-lucide="eye" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+            <p class="text-sm text-wf-muted">Tenants will see it was imported from a bill (with correction noted)</p>
+          </div>
+          <div class="flex gap-3 items-start">
+            <i data-lucide="file-check" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+            <p class="text-sm text-wf-muted">The source document will be accessible for transparency</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-1"></div>
+
+      <!-- Trust Survey Prompt -->
+      <div class="text-center py-6">
+        <p class="text-lg font-semibold text-wf-text mb-6">Did this review process feel accurate and trustworthy?</p>
+        <div class="flex justify-center gap-6">
+          <button class="flex flex-col items-center gap-2">
+            <div class="w-14 h-14 bg-zinc-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">👍</span>
+            </div>
+            <span class="text-sm text-wf-muted">Yes</span>
+          </button>
+          <button class="flex flex-col items-center gap-2">
+            <div class="w-14 h-14 bg-zinc-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">🤷</span>
+            </div>
+            <span class="text-sm text-wf-muted">Somewhat</span>
+          </button>
+          <button class="flex flex-col items-center gap-2">
+            <div class="w-14 h-14 bg-zinc-100 rounded-full flex items-center justify-center">
+              <span class="text-2xl">👎</span>
+            </div>
+            <span class="text-sm text-wf-muted">Not really</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Action -->
+    <div class="wf-bottom-bar">
+      <button class="wf-btn-primary">
+        Back to Bills
+        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>

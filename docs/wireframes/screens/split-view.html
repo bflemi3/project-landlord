@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Split View — Wireframe</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            wf: {
+              bg: '#e5e7eb', surface: '#ffffff', card: '#ffffff', text: '#18181b',
+              secondary: '#52525b', muted: '#71717a', border: '#d4d4d8',
+              accent: '#a1a1aa', 'accent-soft': '#f4f4f5', dark: '#27272a', mid: '#a1a1aa',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { background: #e5e7eb; }
+    .wf-phone { max-width: 390px; min-height: 100vh; margin: 0 auto; background: #f4f4f5; }
+    .wf-card { background: #ffffff; border: 1px solid #e4e4e7; border-radius: 1rem; padding: 1rem; }
+    .wf-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 9999px; font-size: 13px; font-weight: 500; }
+    .wf-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #3f3f46; color: #ffffff; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; }
+    .wf-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #f4f4f5; color: #3f3f46; font-weight: 600; font-size: 16px; padding: 14px 24px; border-radius: 1rem; width: 100%; border: 1px solid #e4e4e7; }
+    .wf-amount { font-size: 36px; font-weight: 700; color: #18181b; letter-spacing: -0.5px; }
+    .wf-section-title { font-size: 20px; font-weight: 600; color: #18181b; }
+    .wf-bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); max-width: 390px; width: 100%; background: #ffffff; border-top: 1px solid #e4e4e7; }
+  </style>
+</head>
+<body>
+  <div class="wf-phone pb-24">
+    <!-- Top Bar -->
+    <div class="bg-white px-4 py-4 flex items-center gap-3 border-b border-zinc-100">
+      <button class="p-1">
+        <i data-lucide="arrow-left" class="w-5 h-5 text-wf-secondary"></i>
+      </button>
+      <div class="flex-1">
+        <p class="font-semibold text-wf-text">Roommate Split</p>
+        <p class="text-sm text-wf-muted">March 2026 · Apt 201</p>
+      </div>
+      <button class="p-1">
+        <i data-lucide="settings" class="w-5 h-5 text-wf-accent"></i>
+      </button>
+    </div>
+
+    <!-- Total -->
+    <div class="bg-white mx-4 mt-4 rounded-2xl p-5">
+      <p class="text-sm text-wf-muted mb-1">Total tenant responsibility</p>
+      <div class="wf-amount mb-1">R$ 2.600<span class="text-xl">,00</span></div>
+      <p class="text-sm text-wf-muted">Split between 2 roommates</p>
+    </div>
+
+    <!-- Roommate Breakdown -->
+    <div class="px-4 mt-6">
+      <h2 class="wf-section-title mb-3">Roommates</h2>
+
+      <div class="space-y-3">
+        <!-- Maria (current user) -->
+        <div class="wf-card">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 bg-zinc-200 rounded-full flex items-center justify-center">
+              <span class="text-sm font-bold text-wf-secondary">M</span>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-2">
+                <p class="text-[15px] font-semibold text-wf-text">Maria</p>
+                <span class="wf-badge bg-zinc-100 text-wf-muted text-xs">You</span>
+              </div>
+              <p class="text-sm text-wf-muted">50% share</p>
+            </div>
+            <span class="text-lg font-bold text-wf-text">R$ 1.300,00</span>
+          </div>
+          <!-- Per-charge breakdown -->
+          <div class="bg-zinc-50 rounded-xl p-3 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-wf-muted">Rent</span>
+              <span class="text-sm text-wf-text font-medium">R$ 900,00</span>
+            </div>
+            <div class="border-t border-zinc-200"></div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-wf-muted">Electric</span>
+              <span class="text-sm text-wf-text font-medium">R$ 147,50</span>
+            </div>
+            <div class="border-t border-zinc-200"></div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-wf-muted">Water</span>
+              <span class="text-sm text-wf-text font-medium">R$ 82,50</span>
+            </div>
+            <div class="border-t border-zinc-200"></div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-wf-muted">Condo fee</span>
+              <span class="text-sm text-wf-text font-medium">R$ 122,50</span>
+            </div>
+            <div class="border-t border-zinc-200"></div>
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-wf-muted">Gas</span>
+              <span class="text-sm text-wf-text font-medium">R$ 47,50</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ana -->
+        <div class="wf-card">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-zinc-200 rounded-full flex items-center justify-center">
+              <span class="text-sm font-bold text-wf-secondary">A</span>
+            </div>
+            <div class="flex-1">
+              <p class="text-[15px] font-semibold text-wf-text">Ana</p>
+              <p class="text-sm text-wf-muted">50% share</p>
+            </div>
+            <span class="text-lg font-bold text-wf-text">R$ 1.300,00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Split Info -->
+    <div class="px-4 mt-4">
+      <div class="flex items-start gap-3 p-3 bg-zinc-50 rounded-xl">
+        <i data-lucide="info" class="w-4 h-4 text-wf-mid mt-0.5 flex-shrink-0"></i>
+        <p class="text-sm text-wf-muted">The split is between roommates only. Your landlord's total doesn't change — they see the full amount owed by all tenants.</p>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="px-4 mt-6">
+      <h2 class="wf-section-title mb-3">Activity</h2>
+      <div class="wf-card space-y-3">
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i data-lucide="user-plus" class="w-3.5 h-3.5 text-wf-mid"></i>
+          </div>
+          <div>
+            <p class="text-sm text-wf-text">Ana joined the split</p>
+            <p class="text-xs text-wf-muted">Feb 15, 2026</p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <div class="w-8 h-8 bg-zinc-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+            <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-wf-mid"></i>
+          </div>
+          <div>
+            <p class="text-sm text-wf-text">Split set to 50/50</p>
+            <p class="text-xs text-wf-muted">Feb 15, 2026</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-6"></div>
+
+    <!-- Bottom Actions -->
+    <div class="wf-bottom-bar">
+      <div class="px-4 py-3 space-y-2">
+        <button class="wf-btn-secondary">
+          <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          Adjust Split
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>lucide.createIcons();</script>
+</body>
+</html>
