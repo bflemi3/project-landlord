@@ -2,8 +2,6 @@
 
 Project documentation for mavenn — a Brazil-first rental billing and utility coordination app.
 
-Browse the rendered documentation and wireframes at [bflemi3.github.io/project-landlord](https://bflemi3.github.io/project-landlord/)
-
 ## Folders
 
 ### [`project/`](project/)
