@@ -709,6 +709,8 @@ If the answer is no, simplify.
 
 ## Preferred Frontend Patterns
 
+Before creating a new UI component manually, always check if it's available via `npx shadcn@latest add <component>`. Prefer shadcn components over hand-written ones.
+
 Default to:
 
 - server components only where they are clearly beneficial
