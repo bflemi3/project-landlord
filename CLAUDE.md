@@ -275,27 +275,59 @@ Do not optimize prematurely for:
 
 ## Data Modeling Principles
 
-Design the schema for future flexibility, even when the MVP UI exposes only the narrow version.
+Design the schema for future flexibility, even when the MVP UI exposes only the narrow version. The data model should support later phases without major rework.
+
+### Money model
+
+All money stored in minor units plus currency. Example:
+- `amount_minor = 12345` (integer, never float)
+- `currency = 'BRL'` (text)
+
+This avoids floating-point issues and creates a foundation for future international support.
 
 ### Important modeling ideas
 
-- money stored in minor units + currency
-- country-aware model even if operations are Brazil-only
+- country-aware model (country_code column) even if operations are Brazil-only
 - monthly billing first, but avoid baking in assumptions that make future cadence expansion impossible
 - provider invoice profiles stored as data, not hardcoded logic
 - clear distinction between:
-  - charge definitions
-  - charge instances
-  - statements
-  - source documents
-  - payment events
-  - audit history
+  - charge definitions (what is expected)
+  - charge instances (what actually happened this month)
+  - statements (the published monthly record)
+  - source documents (raw uploaded bills)
+  - payment events (mark paid, confirm, reject)
+  - audit history (who changed what and when)
 - support multiple tenants per property
 - support tenant-side splits without changing landlord-defined obligations
 - preserve published statement history and revisions
 - make extracted data reviewable and correctable
+- draft → review → publish workflow for statements (never auto-publish)
 
-### Likely core entities
+### Provider invoice profiles
+
+Provider profiles should include:
+- provider reference
+- parser strategy
+- extraction configuration JSON
+- validation configuration JSON
+- example document reference
+- versioning metadata
+- notes
+
+This allows the product to evolve from manual internal profile management to future internal/admin tooling without requiring a rewrite.
+
+### Extraction feedback loop
+
+Every extraction failure should produce useful product data:
+- raw document reference
+- failure category
+- provider/profile used
+- corrected values
+- final validated output
+
+This creates a feedback loop for improving provider profiles over time.
+
+### Core entities
 
 - users
 - properties
@@ -314,6 +346,9 @@ Design the schema for future flexibility, even when the MVP UI exposes only the 
 - payment events
 - notifications
 - audit events
+- invitations (landlord and tenant invites with status tracking)
+- disputes (charge questions with status and resolution)
+- portfolio summaries / analytics views (read-only, derived)
 
 ---
 
