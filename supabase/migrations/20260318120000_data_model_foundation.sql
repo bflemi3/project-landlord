@@ -3,9 +3,6 @@
 -- PRO-5: Core Postgres schema, RLS policies, indexes
 -- =============================================================================
 
--- Enable required extensions
-create extension if not exists "uuid-ossp";
-
 -- =============================================================================
 -- ENUMS
 -- =============================================================================
@@ -46,7 +43,7 @@ create table profiles (
 -- =============================================================================
 
 create table properties (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,
   street text,
   number text,
@@ -67,7 +64,7 @@ create table properties (
 -- =============================================================================
 
 create table units (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   property_id uuid not null references properties(id) on delete cascade,
   name text not null,
   due_day_of_month integer not null default 10,
@@ -86,7 +83,7 @@ create index idx_units_property_id on units(property_id);
 -- =============================================================================
 
 create table memberships (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(id) on delete cascade,
   property_id uuid not null references properties(id) on delete cascade,
   role user_role not null,
@@ -104,7 +101,7 @@ create index idx_memberships_property_id on memberships(property_id);
 -- =============================================================================
 
 create table providers (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   name text not null,
   country_code text not null default 'BR',
   tax_id text,
@@ -122,7 +119,7 @@ comment on column providers.tax_id is 'CNPJ for Brazilian companies. Used for ex
 -- =============================================================================
 
 create table provider_invoice_profiles (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   provider_id uuid not null references providers(id) on delete cascade,
   name text not null,
   parser_strategy text not null,
@@ -142,7 +139,7 @@ create index idx_provider_invoice_profiles_provider_id on provider_invoice_profi
 -- =============================================================================
 
 create table example_documents (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   profile_id uuid not null references provider_invoice_profiles(id) on delete cascade,
   file_path text not null,
   file_name text not null,
@@ -157,7 +154,7 @@ create index idx_example_documents_profile_id on example_documents(profile_id);
 -- =============================================================================
 
 create table charge_definitions (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   unit_id uuid not null references units(id) on delete cascade,
   name text not null,
   charge_type charge_type not null,
@@ -177,7 +174,7 @@ create index idx_charge_definitions_unit_id on charge_definitions(unit_id);
 -- =============================================================================
 
 create table recurring_rules (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   charge_definition_id uuid not null references charge_definitions(id) on delete cascade,
   start_date date not null,
   end_date date,
@@ -193,7 +190,7 @@ create index idx_recurring_rules_charge_definition_id on recurring_rules(charge_
 -- =============================================================================
 
 create table responsibility_allocations (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   charge_definition_id uuid not null references charge_definitions(id) on delete cascade,
   role user_role not null,
   allocation_type split_type not null default 'percentage',
@@ -219,7 +216,7 @@ comment on column responsibility_allocations.fixed_minor is 'Fixed amount in min
 -- =============================================================================
 
 create table statements (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   unit_id uuid not null references units(id) on delete cascade,
   period_year integer not null,
   period_month integer not null,
@@ -245,7 +242,7 @@ create index idx_statements_status on statements(status);
 -- =============================================================================
 
 create table source_documents (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   property_id uuid not null references properties(id) on delete cascade,
   file_path text not null,
   file_name text not null,
@@ -269,7 +266,7 @@ create index idx_source_documents_ingestion_status on source_documents(ingestion
 -- =============================================================================
 
 create table charge_instances (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   statement_id uuid not null references statements(id) on delete cascade,
   charge_definition_id uuid references charge_definitions(id),
   source_document_id uuid references source_documents(id),
@@ -303,7 +300,7 @@ comment on column charge_instances.tenant_fixed_minor is 'Fixed amount in minor 
 -- =============================================================================
 
 create table tenant_splits (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   charge_instance_id uuid not null references charge_instances(id) on delete cascade,
   user_id uuid not null references profiles(id),
   percentage integer not null,
@@ -322,7 +319,7 @@ comment on column tenant_splits.percentage is 'Basis points (0-10000). 10000 = 1
 -- =============================================================================
 
 create table payment_events (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   statement_id uuid not null references statements(id) on delete cascade,
   user_id uuid not null references profiles(id),
   status payment_status not null default 'pending',
@@ -347,7 +344,7 @@ create index idx_payment_events_status on payment_events(status);
 -- =============================================================================
 
 create table invitations (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   property_id uuid references properties(id) on delete cascade,
   invited_by uuid not null references profiles(id),
   invited_email text not null,
@@ -372,7 +369,7 @@ create index idx_invitations_status on invitations(status);
 -- =============================================================================
 
 create table disputes (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   charge_instance_id uuid not null references charge_instances(id) on delete cascade,
   raised_by uuid not null references profiles(id),
   issue_type text not null,
@@ -394,7 +391,7 @@ create index idx_disputes_status on disputes(status);
 -- =============================================================================
 
 create table notifications (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   user_id uuid not null references profiles(id) on delete cascade,
   title text not null,
   body text,
@@ -413,7 +410,7 @@ create index idx_notifications_is_read on notifications(user_id, is_read);
 -- =============================================================================
 
 create table audit_events (
-  id uuid primary key default uuid_generate_v4(),
+  id uuid primary key default gen_random_uuid(),
   actor_id uuid references profiles(id),
   action audit_action not null,
   entity_type text not null,
