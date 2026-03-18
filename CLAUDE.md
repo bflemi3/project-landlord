@@ -833,6 +833,35 @@ Resolves PRO-123
 
 ---
 
+## Versioning & releases
+
+- Use **semantic versioning** (`MAJOR.MINOR.PATCH`).
+  - `MAJOR` — breaking or milestone releases
+  - `MINOR` — new features
+  - `PATCH` — bug fixes, small improvements
+- Create a **GitHub Release** for each feature PR merged to `main`.
+- Workflow after merging a feature PR:
+  1. If there are new Supabase migrations, push them to production: `npx supabase db push --linked`
+  2. Bump `version` in `package.json`
+  3. Commit the bump to `main`
+  4. Tag: `git tag vX.Y.Z`
+  5. Push tag: `git push origin vX.Y.Z`
+  6. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
+
+---
+
+## Changelog & update notifications
+
+- **`CHANGELOG.md`** lives at the project root and is the single source of truth for release notes.
+- Write changelog entries for **lay users**, not developers (e.g., "Install mabenn to your home screen" instead of "PWA support with Serwist").
+- Each version gets a `## vX.Y.Z` heading followed by bullet points.
+- At build time, `next.config.ts` parses `CHANGELOG.md` to extract notes for the current `package.json` version and exposes them as `NEXT_PUBLIC_APP_VERSION` and `NEXT_PUBLIC_RELEASE_NOTES`.
+- When the service worker activates an update, `SwUpdateNotifier` shows a toast with the current version's release notes and a "View past updates" link to `/changelog`.
+- The `/changelog` route is a static page that renders the full `CHANGELOG.md` with `react-markdown`.
+- When releasing a new version, update `CHANGELOG.md` **before** bumping the version in `package.json`.
+
+---
+
 ## Final Reminders
 
 This product wins by being:
