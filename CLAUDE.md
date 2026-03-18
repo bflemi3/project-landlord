@@ -179,6 +179,22 @@ Do not ship spreadsheet-like primary interfaces unless there is no better option
 
 ## Design Implementation Rules
 
+### Wireframes
+
+Wireframes in `docs/wireframes/` are **low-fidelity structural guides**, not pixel-perfect design specs. They use placeholder grays, generic spacing, and simplified layouts to communicate structure, hierarchy, and flow — not final visual design.
+
+When implementing a screen:
+
+- use the wireframe for **layout structure, content hierarchy, and user flow**
+- apply **your own design judgment** for color, spacing, typography, polish, and interaction details
+- follow `docs/project/design.md` and the design tokens in `globals.css` for the actual visual language
+- never copy wireframe grays, exact pixel values, or placeholder styling into production code
+- if the wireframe conflicts with design.md or good design sense, trust design.md and your judgment
+
+The goal is a calm, premium, mobile-first product — the wireframe tells you *what* goes on the screen, not *how* it should look.
+
+### General rules
+
 Always consult `docs/project/design.md` before making UI decisions.
 
 If a design detail is not specified there, default to:
@@ -193,6 +209,60 @@ If a design detail is not specified there, default to:
 - subtle and purposeful motion
 
 When in doubt, reduce complexity instead of adding more UI.
+
+### Established design patterns
+
+These patterns have been validated in the product and should be followed for consistency.
+
+**Button hierarchy**
+- Third-party actions (Google, Apple, etc.): high-contrast neutral — never use our brand color on third-party buttons
+- Our primary actions: teal primary
+- Secondary/alternative actions: secondary variant (muted solid fill)
+- Destructive actions: destructive variant
+- Tertiary/dismissal: ghost or link style
+
+**Inputs and controls**
+- Inputs should feel generous on mobile — tall enough for comfortable tapping, rounded to match the overall soft aesthetic
+- Always include appropriate `autocomplete` attributes for password manager and autofill support
+- Labels above inputs, not floating or inline
+
+**Cards and containers**
+- Cards group related content — use them intentionally, not as decoration
+- Elevated in light mode (shadow), bordered in dark mode
+- Info/message containers use a subtle tinted background with borders and dividers between distinct messages
+
+**Success and error states**
+- Success states replace the full page content — don't just slap a banner on an existing form
+- Structure: icon → heading → message container → action link
+- Error messages belong near the action that caused them, not at the top of the page
+
+**Navigation**
+- Back links always include a left chevron
+- Sticky bottom bars for primary actions on mobile
+- Top bars for context (title, status, back button)
+
+**Amounts and money**
+- Large, bold, prominent — money is always the primary visual element when present
+- Right-aligned in lists/rows
+- Use tabular figures (Inter with `tnum`)
+
+**Theme-aware assets**
+- Provide light and dark variants, toggle with `dark:hidden` / `dark:block`
+- Never hardcode colors in SVGs that only work in one mode
+
+**Spacing philosophy**
+- Use spacing to create hierarchy before reaching for borders or backgrounds
+- Generous vertical rhythm — the app should breathe
+- Sections separated by meaningful whitespace, major blocks by more
+- Mobile-first padding on sides and inside cards
+
+**Page-level utility UI**
+- Footer elements (language selector, legal links) live at the viewport bottom, outside content cards
+- Smaller, more muted than content — utility, not feature
+
+**Status indicators**
+- Badge with icon + text — never color-only
+- Consistent placement (top-right of card or inline in row)
 
 ### Never do this
 
