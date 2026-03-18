@@ -1,6 +1,6 @@
 # Wireframes
 
-Grayscale, mobile-first HTML wireframes covering all 9 MVP user journeys for mavenn. Each file is standalone and can be opened directly in a browser — no build step required.
+Grayscale, mobile-first HTML wireframes covering all 9 MVP user journeys for mabenn. Each file is standalone and can be opened directly in a browser — no build step required.
 
 Built with Tailwind CDN and Lucide icons, rendered in a 390px phone frame.
 

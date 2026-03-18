@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Project Landlord',
+  title: 'mabenn',
   description: 'Shared billing workspace for landlords and tenants',
   manifest: '/manifest.json',
 }

@@ -1,6 +1,6 @@
 # Screens
 
-46 individual HTML wireframes, each representing a single screen in the mavenn app. Screens are standalone files that can be opened directly in a browser and are embedded via iframes into [journey files](../journeys/).
+46 individual HTML wireframes, each representing a single screen in the mabenn app. Screens are standalone files that can be opened directly in a browser and are embedded via iframes into [journey files](../journeys/).
 
 ## Screen List
 

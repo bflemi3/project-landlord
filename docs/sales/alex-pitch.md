@@ -34,7 +34,7 @@ No spreadsheets. No repeated explanations. No chasing.
 
 ## The difference, side by side
 
-| Today | With mavenn |
+| Today | With mabenn |
 |---|---|
 | Spreadsheets + PDFs + WhatsApp | A single dashboard |
 | Manually updating values every month | Bills extracted and reviewed for you |
@@ -119,7 +119,7 @@ The platform runs on modern cloud infrastructure. Costs are minimal at this stag
 | **Total** | | **~$145/mo (~R$ 835)** |
 | **Your share (infrastructure only)** | | **~$45/mo (~R$ 260)** |
 
-I'm covering Claude Max, the domain purchases, and the development work — that's my investment in building this. The infrastructure cost (~$45/mo) is what I'd like help with.
+I'm covering Claude Max, the domain purchases (.com at $11.59 + .com.br at R$ 40), and the development work — that's my investment in building this. The infrastructure cost (~$45/mo) is what I'd like help with.
 
 At scale, costs grow gradually with usage, but for the MVP with a handful of properties, this is it.
 

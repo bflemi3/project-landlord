@@ -1016,10 +1016,12 @@ Below is a practical estimate for getting the MVP from plan to launch. This assu
 |Analytics, QA, Launch|PostHog, testing, deployment, polish, docs|20–30|$1,800–$2,700|
 |**Total**||**180–250**|**$16,200–$22,500**|
 
-### One-Time / Discovery Costs Worth Noting
+### One-Time Costs
 
-|Item|Estimated Range|Notes|
+|Item|Cost|Notes|
 |---|---|---|
+|Domain (.com)|$11.59|Purchased|
+|Domain (.com.br)|R$ 40 (~$7)|Purchased via Registro.br|
 |Pluggy / DDA feasibility spike|$900–$2,700|10–30 hours depending on depth|
 |Initial provider invoice-profile setup|included in MVP or modest add-on|Depends on how many real providers and invoice formats are supported in v1|
 |Legal/privacy review for LGPD|varies|Strongly recommended before broader launch|
@@ -1029,15 +1031,12 @@ Below is a practical estimate for getting the MVP from plan to launch. This assu
 | Service                        | Estimated Monthly Cost | Notes                                          |
 | ------------------------------ | ---------------------- | ---------------------------------------------- |
 | Claude Code                    | $100                   | Founder-covered internal build cost during MVP |
-| Vercel                         | $0–$20                 | Free or Pro depending on need                  |
-| Supabase                       | $0–$25                 | Free to start; likely upgrade once usage grows |
-| PostHog                        | $0 initially           | Generous free tier for MVP analytics           |
-| Email / inbound processing     | ~$0–$20                | Depends on provider and volume                 |
-| Storage                        | low                    | Included or modest depending on volume         |
-| Monitoring / error tracking    | optional               | Add as needed                                  |
-| AI document validation (later) | usage-based            | Not required for MVP                           |
+| Vercel                         | $20                    | Pro plan for commercial use                    |
+| Supabase                       | $25                    | Pro plan for production reliability            |
+| PostHog                        | $0                     | Generous free tier for MVP analytics           |
+| Email (Resend)                 | $0                     | Free tier (3,000 emails/month)                 |
 
-**Early MVP operating range:** roughly **$100–$165/month** including the current Claude Code subscription.
+**Early MVP operating range:** **$145/month**, of which **$45/month is infrastructure** and $100/month is founder-covered development tooling.
 
 ### Future Cost Considerations
 

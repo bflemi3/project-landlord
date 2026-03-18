@@ -823,8 +823,9 @@ Resolves PRO-123
 
 ### Notes for Linear Setup
 
-- Create one **Project** per milestone (M1–M5)
-- Create **Issues** for each feature within the corresponding project
+- One **Project** named "mabenn" containing all work
+- Create **Milestones** (M1–M5) inside the project
+- Create **Issues** for each feature, assigned to the corresponding milestone
 - Larger features should be broken into sub-issues during implementation
 - Use **Labels** for feature categories: `auth`, `properties`, `charges`, `statements`, `ingestion`, `tenants`, `payments`, `notifications`, `analytics`, `infrastructure`
 - Set milestone target dates based on the roadmap timeline

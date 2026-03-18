@@ -1,6 +1,6 @@
 # Docs
 
-Project documentation for mavenn — a Brazil-first rental billing and utility coordination app.
+Project documentation for mabenn — a Brazil-first rental billing and utility coordination app.
 
 ## Folders
 

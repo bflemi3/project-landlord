@@ -1,10 +1,10 @@
-# Project Landlord
+# mabenn
 
 A Brazil-first rental billing and utility coordination app that replaces spreadsheet- and email-driven workflows with a shared billing workspace for landlords and tenants.
 
 ## What it does
 
-Project Landlord helps landlords manage rent and recurring property charges across multiple properties while giving tenants clear visibility into what they owe and why.
+mabenn helps landlords manage rent and recurring property charges across multiple properties while giving tenants clear visibility into what they owe and why.
 
 ### For landlords
 
