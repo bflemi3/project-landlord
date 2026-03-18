@@ -1,4 +1,5 @@
 import { ThemeToggle } from '@/components/theme-toggle'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -13,15 +14,8 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         </div>
       </div>
 
-      {/* Language selector (visual only — PRO-7 will make functional) */}
       <footer className="py-6 text-center">
-        <div className="inline-flex items-center gap-3 text-xs text-muted-foreground/60">
-          <span className="font-medium text-muted-foreground">EN</span>
-          <span>·</span>
-          <span>PT-BR</span>
-          <span>·</span>
-          <span>ES</span>
-        </div>
+        <LanguageSwitcher />
       </footer>
     </div>
   )
