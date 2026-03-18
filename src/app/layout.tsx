@@ -1,12 +1,13 @@
 import type { Metadata } from 'next'
-import { Geist, Geist_Mono } from 'next/font/google'
+import { Inter, Geist_Mono } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from '@/components/theme-provider'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { PostHogProvider } from '@/components/posthog-provider'
 import './globals.css'
 
-const geistSans = Geist({
+const inter = Inter({
   variable: '--font-sans',
   subsets: ['latin'],
 })
@@ -34,11 +35,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages()
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+    <html lang={locale} className={`${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
+      <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <PostHogProvider>{children}</PostHogProvider>
+            <TooltipProvider>
+              <PostHogProvider>{children}</PostHogProvider>
+            </TooltipProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

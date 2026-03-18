@@ -38,6 +38,12 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -45,6 +51,23 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Typography scale per design.md */
+  --font-size-xs: 0.8125rem;
+  --font-size-xs--line-height: 1.125rem;
+  --font-size-sm: 0.875rem;
+  --font-size-sm--line-height: 1.25rem;
+  --font-size-base: 1rem;
+  --font-size-base--line-height: 1.5rem;
+  --font-size-lg: 1.0625rem;
+  --font-size-lg--line-height: 1.5rem;
+  --font-size-xl: 1.25rem;
+  --font-size-xl--line-height: 1.75rem;
+  --font-size-2xl: 1.75rem;
+  --font-size-2xl--line-height: 2.125rem;
+  --font-size-3xl: 2rem;
+  --font-size-3xl--line-height: 2.375rem;
+  --font-size-4xl: 2.25rem;
+  --font-size-4xl--line-height: 2.5rem;
 }
 
 :root {
@@ -86,6 +109,16 @@
   --chart-3: oklch(0.511 0.096 186.391);
   --chart-4: oklch(0.765 0.177 163.223);
   --chart-5: oklch(0.696 0.17 162.48);
+  /* semantic status colors */
+  /* emerald-500 success */
+  --success: oklch(0.696 0.17 162.48);
+  --success-foreground: oklch(1 0 0);
+  /* amber-500 warning */
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.21 0.006 285.885);
+  /* sky-500 info */
+  --info: oklch(0.685 0.169 237.323);
+  --info-foreground: oklch(1 0 0);
   /* sidebar */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.21 0.006 285.885);
@@ -134,6 +167,13 @@
   --chart-3: oklch(0.6 0.118 184.704);
   --chart-4: oklch(0.765 0.177 163.223);
   --chart-5: oklch(0.696 0.17 162.48);
+  /* semantic status colors */
+  --success: oklch(0.696 0.17 162.48);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.769 0.188 70.08);
+  --warning-foreground: oklch(0.21 0.006 285.885);
+  --info: oklch(0.685 0.169 237.323);
+  --info-foreground: oklch(1 0 0);
   /* sidebar */
   --sidebar: oklch(0.21 0.006 285.885);
   --sidebar-foreground: oklch(0.985 0 0);
