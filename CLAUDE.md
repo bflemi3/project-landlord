@@ -319,7 +319,7 @@ Design the schema for future flexibility, even when the MVP UI exposes only the 
 
 ## Security and Privacy Rules
 
-This product is handling sensitive billing and document data. Treat security and privacy as first-class.
+This product handles sensitive billing, financial, and personal data (CPF, addresses, payment records, uploaded documents). Security and privacy are first-class — and the app must comply with Brazil's **LGPD (Lei Geral de Proteção de Dados)** from day one.
 
 ### Required
 
@@ -328,9 +328,10 @@ This product is handling sensitive billing and document data. Treat security and
 - secure document storage
 - audit trail for sensitive changes
 - explicit revision tracking for statements
-- data minimization
+- data minimization — collect only what the billing workflow requires
 - retention/deletion awareness
 - privacy-conscious handling of uploaded files and extracted data
+- Supabase project hosted in `sa-east-1` (São Paulo) to keep sensitive data in Brazil
 
 ### Never do this
 
@@ -339,6 +340,99 @@ This product is handling sensitive billing and document data. Treat security and
 - allow silent mutation of published financial records
 - treat extracted document data as inherently correct
 - store money as floating point values
+- collect personal data beyond what the billing purpose requires
+- process personal data without a valid legal basis
+- transfer data internationally without documented safeguards
+
+### LGPD Compliance
+
+The app must follow Brazil's LGPD. This section defines the rules that apply to all implementation work.
+
+#### Legal basis for processing
+
+Use the strongest applicable legal basis — do not over-consent:
+
+- **Contract performance** (Art. 7, V) — core billing data: user accounts, properties, charges, statements, payments, uploaded bills, tenant data within the billing relationship
+- **Legitimate interest** (Art. 7, IX) — product analytics (PostHog), usage metrics, anonymized aggregated data. Requires a documented Legitimate Interest Assessment
+- **Explicit consent** (Art. 7, I) — only when going beyond what's necessary for the service (e.g., marketing emails, sharing data with third parties for their purposes)
+
+#### User rights (Art. 18)
+
+The app must support all LGPD data subject rights. Build self-serve where practical, email-based request handling for the rest. All requests must be answered within **15 days**.
+
+- **Confirmation and access** — user can request a copy of all their personal data
+- **Correction** — user can fix incorrect personal data (name, email, CPF, address) via account settings
+- **Deletion** — "Delete my account" flow that cascades properly. Retain only data required by other laws (tax/civil obligations)
+- **Portability** — user can export their data in a structured format (JSON or CSV)
+- **Consent revocation** — withdrawing consent must be as easy as giving it
+- **Information about sharing** — privacy policy must list third-party processors (Supabase, PostHog, Vercel, Resend)
+- **Right to complain to ANPD** — privacy policy must inform users of this right
+
+#### Data retention
+
+Keep data only as long as necessary. Apply these retention guidelines:
+
+| Data type | Retention period | Rationale |
+|---|---|---|
+| Active user account data | Duration of account + 30 days | Service provision |
+| Published statements | 5 years after creation | Civil code statute of limitations |
+| Payment records | 5 years | Tax/civil obligations |
+| Uploaded bills/documents | Duration of tenancy + 1 year, or 5 years (whichever longer) | Dispute resolution, tax |
+| Analytics events | 2 years, then anonymize | Product improvement |
+| Deleted account data | Delete within 30 days of request, except legally required data | LGPD requirement |
+| Audit logs | 5 years | Legal/compliance |
+
+#### Privacy policy requirements
+
+A privacy policy in **Portuguese** (minimum) must be published before launch at `/privacidade`. It must include:
+
+1. Controller identity and contact info
+2. Privacy contact email (e.g., privacidade@mabenn.com.br)
+3. What personal data is collected and how
+4. Purpose and legal basis for each data category
+5. Third-party processors and what they receive
+6. International data transfers and safeguards
+7. Retention periods
+8. User rights and how to exercise them
+9. Cookie/tracking disclosure
+10. Right to file complaints with ANPD
+
+#### Analytics and tracking
+
+- **Public pages:** anonymous tracking under legitimate interest. Disclose in privacy policy
+- **Authenticated app:** identified user tracking under legitimate interest. Disclose in privacy policy and provide opt-out toggle in account settings
+- Do not track identified users before they have a relationship with the app (i.e., after sign-up, not on anonymous visits)
+
+#### Data breach response
+
+If a breach occurs involving personal data:
+
+- Notify **ANPD within 2 business days**
+- Notify **affected users** within the same timeframe
+- Include: description of affected data, risks, measures taken, recommendations for users
+- Have a written incident response plan before launch
+
+#### International data transfers
+
+- **Supabase:** use `sa-east-1` region to keep sensitive data in Brazil
+- **Vercel, PostHog, Resend:** ensure DPAs include Standard Contractual Clauses
+- Disclose transfers in privacy policy with safeguards described
+
+#### DPO (Encarregado)
+
+Small processing agents are exempt from mandatory DPO appointment (ANPD Resolution CD/ANPD No. 2/2022). However:
+
+- Publish a privacy contact email for data subject requests
+- Designate someone internally to handle data requests
+- Appoint a formal DPO when the business grows past small-business thresholds
+
+#### Upload restrictions
+
+Terms of service must specify that only billing-related documents (utility bills, rent receipts, payment confirmations) may be uploaded. Users must not upload documents containing health, biometric, or other sensitive data categories under LGPD Art. 5, II.
+
+#### Classification note
+
+CPF and financial/billing data are **not** classified as sensitive data under LGPD (Art. 5, II — sensitive data is limited to racial/ethnic origin, religious beliefs, political opinions, union membership, health, sex life, genetic, and biometric data). However, a breach involving CPFs and financial records causes real harm — treat this data with high security standards regardless.
 
 ---
 
