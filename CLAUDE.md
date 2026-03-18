@@ -823,7 +823,7 @@ Resolves PRO-123
 
 ### Notes for Linear Setup
 
-- One **Project** named "mabenn" containing all work
+- One **Project** named "mabenn MVP" containing all work
 - Create **Milestones** (M1–M5) inside the project
 - Create **Issues** for each feature, assigned to the corresponding milestone
 - Larger features should be broken into sub-issues during implementation
