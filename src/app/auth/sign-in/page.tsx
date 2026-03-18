@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { GoogleIcon } from '@/components/icons/google'
 
-export default function SignInPage() {
+function SignInForm() {
   const t = useTranslations('auth')
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
@@ -156,5 +156,13 @@ export default function SignInPage() {
         </p>
       </div>
     </>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInForm />
+    </Suspense>
   )
 }
