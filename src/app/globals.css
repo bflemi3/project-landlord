@@ -197,7 +197,20 @@
   }
 }
 
-/* Sonner toast overrides */
+/* Sonner toast overrides — hide close button on mobile (swipe to dismiss) */
+[data-sonner-toast] [data-close-button] {
+  display: none !important;
+}
+
+@media (min-width: 768px) {
+  [data-sonner-toast][data-styled='true'] [data-close-button] {
+    display: flex !important;
+    left: unset !important;
+    right: 0 !important;
+    transform: translate(35%, -35%) !important;
+  }
+}
+
 [data-sonner-toast][data-styled='true'] {
   gap: 0.75rem !important;
 }
