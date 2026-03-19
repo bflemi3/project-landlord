@@ -156,27 +156,6 @@ Needs to:
 
 ---
 
-## UX Philosophy
-
-Use `docs/project/design.md` for the specifics, but the default product behavior should follow these rules:
-
-- one primary job per screen
-- large readable typography
-- spacious layout
-- strong information hierarchy
-- obvious primary actions
-- comfortable mobile tap targets
-- minimal visual clutter
-- intentional use of cards
-- progressive disclosure over dense screens
-- bottom sheets over modal-heavy UX when appropriate
-- polished loading, empty, success, and error states
-- motion only when it improves orientation or confidence
-
-Do not ship spreadsheet-like primary interfaces unless there is no better option.
-
----
-
 ## Design Implementation Rules
 
 ### Wireframes
@@ -207,6 +186,19 @@ If a design detail is not specified there, default to:
 - accessible contrast
 - semantic, explicit statuses
 - subtle and purposeful motion
+
+Every screen should have:
+
+- one primary job
+- obvious primary action
+- comfortable mobile tap targets
+- intentional use of cards
+- progressive disclosure over dense screens
+- bottom sheets over modal-heavy UX when appropriate
+- polished loading, empty, success, and error states
+- motion only when it improves orientation or confidence
+
+Do not ship spreadsheet-like primary interfaces unless there is no better option.
 
 When in doubt, reduce complexity instead of adding more UI.
 
@@ -785,9 +777,10 @@ Default to:
 
 - server components only where they are clearly beneficial
 - client components for interactive authenticated product flows
-- query-based client fetching for app data
+- **TanStack Query (React Query)** for all client-side data fetching — no raw `useEffect` + `fetch` patterns
+- prefer `useSuspenseQuery` over `useQuery` wherever possible, following React's Suspense-for-data guidelines — wrap with `<Suspense>` boundaries and let the query suspend rather than managing loading states manually
 - strong loading / empty / error / success states
-- reusable UI primitives
+- reusable UI primitives — when the same markup appears across 3+ files, extract it into a shared component (e.g., `<Wordmark />` instead of duplicating img tags across every auth page)
 - form validation with explicit and humane error messaging
 - accessible components
 - clear status indicators

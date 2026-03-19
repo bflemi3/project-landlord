@@ -3,7 +3,8 @@
     "appName": "mabenn",
     "loading": "Carregando...",
     "error": "Algo deu errado",
-    "retry": "Tentar novamente"
+    "retry": "Tentar novamente",
+    "back": "Voltar"
   },
   "auth": {
     "tagline": "Cobrança compartilhada em que você confia",
@@ -40,12 +41,22 @@
     "checkEmailAutoVerify": "Assim que verificado, esta página levará você ao app automaticamente.",
     "checkEmailSpam": "Não recebeu? Verifique sua pasta de spam ou tente se cadastrar novamente.",
     "checkEmailReset": "Se existe uma conta para {email}, enviamos um link de recuperação de senha.",
-    "checkEmailGoogle": "Entrou com Google? Basta usar {continueWithGoogle} na página de login.",
+    "checkEmailGoogle": "Entrou com Google? Basta usar <strong>Continuar com Google</strong> na página de login.",
     "emailVerified": "E-mail verificado",
     "emailVerifiedMessage": "Seu e-mail foi confirmado. Você pode fechar esta aba e voltar para onde se cadastrou.",
     "orContinueHere": "Ou continue aqui →",
     "welcome": "Bem-vindo ao mabenn",
     "avatarPreview": "Pré-visualização do avatar"
+  },
+  "pwa": {
+    "whatsNew": "Novidades na v{version}",
+    "viewPastUpdates": "Ver atualizações anteriores",
+    "installTitle": "Instalar mabenn",
+    "installDescription": "Adicione mabenn à sua tela inicial para a melhor experiência.",
+    "install": "Instalar",
+    "installIosSafari": "Toque no botão de compartilhar e depois em \"Adicionar à Tela de Início\".",
+    "installIosChrome": "Toque no botão de compartilhar e depois em \"Adicionar à Tela de Início\". Para melhor experiência, use o Safari.",
+    "installIosOther": "Abra esta página no Safari, toque no botão de compartilhar e depois em \"Adicionar à Tela de Início\"."
   },
   "theme": {
     "light": "Claro",

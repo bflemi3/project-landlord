@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { GoogleIcon } from '@/components/icons/google'
+import { Wordmark } from '@/components/wordmark'
+import { InfoBox, InfoBoxContent } from '@/components/info-box'
 
 function SignInForm() {
   const t = useTranslations('auth')
@@ -58,8 +60,7 @@ function SignInForm() {
     <>
       {/* Header */}
       <div className="pb-10 text-center">
-        <img src="/brand/wordmark-light.svg" alt="mabenn" className="mx-auto h-10 dark:hidden" />
-        <img src="/brand/wordmark-dark.svg" alt="mabenn" className="mx-auto hidden h-10 dark:block" />
+        <Wordmark />
         <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
       </div>
 
@@ -118,11 +119,13 @@ function SignInForm() {
         </div>
 
         {error && (
-          <div className="rounded-2xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-            {error === 'Invalid login credentials'
-              ? t('invalidCredentials')
-              : error}
-          </div>
+          <InfoBox variant="destructive">
+            <InfoBoxContent>
+              {error === 'Invalid login credentials'
+                ? t('invalidCredentials')
+                : error}
+            </InfoBoxContent>
+          </InfoBox>
         )}
 
         <Button

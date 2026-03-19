@@ -4,6 +4,8 @@ import { useEffect } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { CheckCircle } from 'lucide-react'
+import { Wordmark } from '@/components/wordmark'
+import { InfoBox, InfoBoxContent } from '@/components/info-box'
 
 const BROADCAST_CHANNEL = 'mabenn-email-verification'
 
@@ -23,8 +25,7 @@ export default function EmailVerifiedPage() {
   return (
     <div className="text-center">
       <div className="pb-10">
-        <img src="/brand/wordmark-light.svg" alt="mabenn" className="mx-auto h-10 dark:hidden" />
-        <img src="/brand/wordmark-dark.svg" alt="mabenn" className="mx-auto hidden h-10 dark:block" />
+        <Wordmark />
         <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
       </div>
 
@@ -34,9 +35,9 @@ export default function EmailVerifiedPage() {
 
       <h1 className="mb-6 text-2xl font-bold">{t('emailVerified')}</h1>
 
-      <div className="rounded-2xl border border-border bg-secondary/50 px-5 py-5 text-sm text-muted-foreground">
-        <p>{t('emailVerifiedMessage')}</p>
-      </div>
+      <InfoBox>
+        <InfoBoxContent>{t('emailVerifiedMessage')}</InfoBoxContent>
+      </InfoBox>
 
       <Link
         href="/app"
