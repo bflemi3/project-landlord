@@ -196,3 +196,65 @@
     @apply font-sans;
   }
 }
+
+/* Sonner toast overrides */
+[data-sonner-toast][data-styled='true'] {
+  gap: 0.75rem !important;
+}
+
+[data-sonner-toast][data-styled='true'] [data-icon],
+[data-sonner-toast][data-styled='true'] [data-content] {
+  align-self: flex-start !important;
+}
+
+[data-sonner-toast][data-styled='true'] [data-icon] {
+  height: 1.25rem !important;
+  width: 1.25rem !important;
+  margin-top: 0.125rem;
+}
+
+[data-sonner-toast][data-styled='true'] [data-icon] svg {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Mobile: text-base for comfortable reading */
+[data-sonner-toast][data-styled='true'],
+[data-sonner-toast][data-styled='true'] [data-title],
+[data-sonner-toast][data-styled='true'] [data-description] {
+  font-size: 1rem !important;
+  line-height: 1.5rem !important;
+}
+
+[data-sonner-toast][data-styled='true'] [data-button] {
+  height: auto !important;
+  font-size: 1rem !important;
+  align-self: center !important;
+  padding: 0.27rem 1rem !important;
+  border-radius: var(--radius) !important;
+  font-weight: 500 !important;
+}
+
+/* Desktop: use Sonner's default 13px for a compact feel */
+@media (min-width: 768px) {
+  [data-sonner-toast][data-styled='true'],
+  [data-sonner-toast][data-styled='true'] [data-title],
+  [data-sonner-toast][data-styled='true'] [data-description] {
+    font-size: 0.8125rem !important;
+    line-height: 1.25rem !important;
+  }
+
+  [data-sonner-toast][data-styled='true'] [data-button] {
+    font-size: 0.8125rem !important;
+  }
+
+  [data-sonner-toast][data-styled='true'] [data-icon] {
+    height: 1rem !important;
+    width: 1rem !important;
+  }
+
+  [data-sonner-toast][data-styled='true'] [data-icon] svg {
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
