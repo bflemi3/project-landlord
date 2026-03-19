@@ -1034,13 +1034,17 @@ Resolves PRO-123
   - `MINOR` — new features
   - `PATCH` — bug fixes, small improvements
 - Create a **GitHub Release** for each feature PR merged to `main`.
-- Workflow after merging a feature PR:
-  1. If there are new Supabase migrations, push them to production: `npx supabase db push --linked`
+- Changelog and version bump happen **inside the feature PR** — not as a separate commit after merge. This ensures only one Vercel deployment per release.
+- Workflow for a feature PR:
+  1. Update `CHANGELOG.md` with the new version entry
   2. Bump `version` in `package.json`
-  3. Commit the bump to `main`
-  4. Tag: `git tag vX.Y.Z`
-  5. Push tag: `git push origin vX.Y.Z`
-  6. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
+  3. Commit as part of the feature branch (separate commit or included in the main commit)
+  4. Push and create PR
+  5. Merge PR to `main`
+  6. If there are new Supabase migrations, push them to production: `npx supabase db push --linked`
+  7. Tag: `git tag vX.Y.Z`
+  8. Push tag: `git push origin vX.Y.Z`
+  9. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
 
 ---
 

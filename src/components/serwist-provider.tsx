@@ -1,11 +1,7 @@
 'use client'
 
-import { SerwistProvider as Provider } from '@serwist/next/react'
+import { SerwistProvider as Provider } from '@serwist/turbopack/react'
 
 export function SerwistProvider({ children }: { children: React.ReactNode }) {
-  return (
-    <Provider swUrl="/sw.js" disable={process.env.NODE_ENV === 'development'}>
-      {children}
-    </Provider>
-  )
+  return <Provider swUrl="/serwist/sw.js">{children}</Provider>
 }
