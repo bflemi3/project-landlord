@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.4.0
+
+- Install mabenn to your home screen for quick access
+- See what's new after each update with in-app release notes
+- View the full update history anytime from the "What's new" page
+- The app now works offline with a friendly fallback page
+
 ## v0.3.0
 
 - The app automatically detects your language from your browser
