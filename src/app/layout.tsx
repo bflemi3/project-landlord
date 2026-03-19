@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { PostHogProvider } from '@/components/posthog-provider'
 import { Toaster } from '@/components/ui/sonner'
+import { SerwistProvider } from '@/components/serwist-provider'
 import './globals.css'
 
 const inter = Inter({
@@ -42,7 +43,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <TooltipProvider>
               <PostHogProvider>
-                {children}
+                <SerwistProvider>
+                  {children}
+                </SerwistProvider>
                 <Toaster />
               </PostHogProvider>
             </TooltipProvider>

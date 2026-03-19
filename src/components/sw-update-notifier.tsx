@@ -1,13 +1,6 @@
 'use client'
 
-import type { Serwist } from '@serwist/window'
 import { useEffect } from 'react'
-
-declare global {
-  interface Window {
-    serwist?: Serwist
-  }
-}
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import Link from 'next/link'
