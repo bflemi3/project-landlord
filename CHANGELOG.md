@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.1
+
+- Notifications look better on both mobile and desktop
+
 ## v0.4.0
 
 - Install mabenn to your home screen for quick access
