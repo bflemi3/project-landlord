@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Loader2, ChevronLeft, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Wordmark } from '@/components/wordmark'
+import { InfoBox, InfoBoxContent, InfoBoxDivider } from '@/components/info-box'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -49,21 +51,17 @@ export default function ForgotPasswordPage() {
 
         <h1 className="mb-6 text-2xl font-bold">{t('checkEmail')}</h1>
 
-        <div className="rounded-2xl border border-border bg-secondary/50 px-5 py-5 text-sm text-muted-foreground">
-          <p>
-            {t.rich('checkEmailReset', {
-              email,
-              strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
-            })}
-          </p>
-          <div className="my-4 h-px bg-border" />
-          <p>
-            {t.rich('checkEmailGoogle', {
-              continueWithGoogle: t('continueWithGoogle'),
-              strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
-            })}
-          </p>
-        </div>
+        <InfoBox>
+          <InfoBoxContent>
+            <p>{t('checkEmailReset', { email })}</p>
+            <InfoBoxDivider />
+            <p>
+              {t.rich('checkEmailGoogle', {
+                strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+              })}
+            </p>
+          </InfoBoxContent>
+        </InfoBox>
 
         <Link
           href="/auth/sign-in"
@@ -79,8 +77,7 @@ export default function ForgotPasswordPage() {
     <>
       {/* Header */}
       <div className="pb-10 text-center">
-        <img src="/brand/wordmark-light.svg" alt="mabenn" className="mx-auto h-10 dark:hidden" />
-        <img src="/brand/wordmark-dark.svg" alt="mabenn" className="mx-auto hidden h-10 dark:block" />
+        <Wordmark />
         <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
       </div>
 
@@ -91,9 +88,9 @@ export default function ForgotPasswordPage() {
 
       {/* Error */}
       {error && (
-        <div className="mb-6 rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
+        <InfoBox variant="destructive" className="mb-6">
+          <InfoBoxContent>{error}</InfoBoxContent>
+        </InfoBox>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">

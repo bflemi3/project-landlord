@@ -3,7 +3,8 @@
     "appName": "mabenn",
     "loading": "Loading...",
     "error": "Something went wrong",
-    "retry": "Try again"
+    "retry": "Try again",
+    "back": "Back"
   },
   "auth": {
     "tagline": "Shared billing you can trust",
@@ -40,12 +41,22 @@
     "checkEmailAutoVerify": "Once verified, this page will take you to the app automatically.",
     "checkEmailSpam": "Didn't receive it? Check your spam folder or try signing up again.",
     "checkEmailReset": "If an account exists for {email}, we sent a password reset link.",
-    "checkEmailGoogle": "Signed in with Google? Just use {continueWithGoogle} on the sign-in page instead.",
+    "checkEmailGoogle": "Signed in with Google? Just use <strong>Continue with Google</strong> on the sign-in page instead.",
     "emailVerified": "Email verified",
     "emailVerifiedMessage": "Your email has been confirmed. You can close this tab and return to the one where you signed up.",
     "orContinueHere": "Or continue here →",
     "welcome": "Welcome to mabenn",
     "avatarPreview": "Avatar preview"
+  },
+  "pwa": {
+    "whatsNew": "What's new in v{version}",
+    "viewPastUpdates": "View past updates",
+    "installTitle": "Install mabenn",
+    "installDescription": "Add mabenn to your home screen for the best experience.",
+    "install": "Install",
+    "installIosSafari": "Tap the share button, then \"Add to Home Screen\".",
+    "installIosChrome": "Tap the share button, then \"Add to Home Screen\". For the best experience, use Safari.",
+    "installIosOther": "Open this page in Safari, then tap the share button and \"Add to Home Screen\"."
   },
   "theme": {
     "light": "Light",

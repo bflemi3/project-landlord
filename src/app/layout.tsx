@@ -5,6 +5,7 @@ import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { PostHogProvider } from '@/components/posthog-provider'
+import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
 const inter = Inter({
@@ -40,7 +41,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <TooltipProvider>
-              <PostHogProvider>{children}</PostHogProvider>
+              <PostHogProvider>
+                {children}
+                <Toaster />
+              </PostHogProvider>
             </TooltipProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

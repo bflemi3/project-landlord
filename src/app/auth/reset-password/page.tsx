@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Wordmark } from '@/components/wordmark'
+import { InfoBox, InfoBoxContent } from '@/components/info-box'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -42,8 +44,7 @@ export default function ResetPasswordPage() {
     <>
       {/* Header */}
       <div className="pb-10 text-center">
-        <img src="/brand/wordmark-light.svg" alt="mabenn" className="mx-auto h-10 dark:hidden" />
-        <img src="/brand/wordmark-dark.svg" alt="mabenn" className="mx-auto hidden h-10 dark:block" />
+        <Wordmark />
         <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
       </div>
 
@@ -54,9 +55,9 @@ export default function ResetPasswordPage() {
 
       {/* Error */}
       {error && (
-        <div className="mb-6 rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
+        <InfoBox variant="destructive" className="mb-6">
+          <InfoBoxContent>{error}</InfoBoxContent>
+        </InfoBox>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">

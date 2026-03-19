@@ -1,5 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { SwUpdateNotifier } from '@/components/sw-update-notifier'
+import { InstallPrompt } from '@/components/install-prompt'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -9,5 +11,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/auth/sign-in')
   }
 
-  return <>{children}</>
+  return (
+    <>
+      {children}
+      <SwUpdateNotifier />
+      <InstallPrompt />
+    </>
+  )
 }

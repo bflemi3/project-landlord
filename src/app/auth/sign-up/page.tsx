@@ -1,16 +1,17 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Loader2, Camera, Mail, ChevronLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { useEmailVerification } from '@/lib/hooks/use-email-verification'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { GoogleIcon } from '@/components/icons/google'
-
-const BROADCAST_CHANNEL = 'mabenn-email-verification'
+import { Wordmark } from '@/components/wordmark'
+import { InfoBox, InfoBoxContent, InfoBoxDivider } from '@/components/info-box'
 
 export default function SignUpPage() {
   const t = useTranslations('auth')
@@ -25,42 +26,11 @@ export default function SignUpPage() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Listen for email verification from Tab B
   const onVerified = useCallback(() => {
     window.location.href = '/app'
   }, [])
 
-  useEffect(() => {
-    if (!success) return
-
-    // Primary: BroadcastChannel for instant cross-tab detection
-    let channel: BroadcastChannel | null = null
-    try {
-      channel = new BroadcastChannel(BROADCAST_CHANNEL)
-      channel.onmessage = (event) => {
-        if (event.data.type === 'EMAIL_VERIFIED') {
-          onVerified()
-        }
-      }
-    } catch {
-      // BroadcastChannel not supported
-    }
-
-    // Fallback: poll session every 3s (handles different device/browser)
-    const interval = setInterval(async () => {
-      const supabase = createClient()
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        clearInterval(interval)
-        onVerified()
-      }
-    }, 3000)
-
-    return () => {
-      channel?.close()
-      clearInterval(interval)
-    }
-  }, [success, onVerified])
+  useEmailVerification(success, onVerified)
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -145,18 +115,15 @@ export default function SignUpPage() {
 
         <h1 className="mb-6 text-2xl font-bold">{t('checkEmail')}</h1>
 
-        <div className="rounded-2xl border border-border bg-secondary/50 px-5 py-5 text-sm text-muted-foreground">
-          <p>
-            {t.rich('checkEmailSignup', {
-              email,
-              strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
-            })}
-          </p>
-          <div className="my-4 h-px bg-border" />
-          <p>{t('checkEmailAutoVerify')}</p>
-          <div className="my-4 h-px bg-border" />
-          <p>{t('checkEmailSpam')}</p>
-        </div>
+        <InfoBox>
+          <InfoBoxContent>
+            <p>{t('checkEmailSignup', { email })}</p>
+            <InfoBoxDivider />
+            <p>{t('checkEmailAutoVerify')}</p>
+            <InfoBoxDivider />
+            <p>{t('checkEmailSpam')}</p>
+          </InfoBoxContent>
+        </InfoBox>
 
         <Link
           href="/auth/sign-in"
@@ -172,8 +139,7 @@ export default function SignUpPage() {
     <>
       {/* Header */}
       <div className="pb-10 text-center">
-        <img src="/brand/wordmark-light.svg" alt="mabenn" className="mx-auto h-10 dark:hidden" />
-        <img src="/brand/wordmark-dark.svg" alt="mabenn" className="mx-auto hidden h-10 dark:block" />
+        <Wordmark />
         <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
       </div>
 
@@ -181,9 +147,9 @@ export default function SignUpPage() {
 
       {/* Error */}
       {error && (
-        <div className="mb-6 rounded-2xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </div>
+        <InfoBox variant="destructive" className="mb-6">
+          <InfoBoxContent>{error}</InfoBoxContent>
+        </InfoBox>
       )}
 
       {/* Google */}
