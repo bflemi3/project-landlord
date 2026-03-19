@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.2
+
+- Dismiss notifications with the X button on desktop
+
 ## v0.4.1
 
 - Notifications look better on both mobile and desktop
