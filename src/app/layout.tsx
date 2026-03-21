@@ -5,6 +5,7 @@ import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { PostHogProvider } from '@/components/posthog-provider'
+import { QueryProvider } from '@/components/query-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { SerwistProvider } from '@/components/serwist-provider'
 import './globals.css'
@@ -20,8 +21,21 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'mabenn',
-  description: 'Shared billing workspace for landlords and tenants',
+  title: {
+    default: 'mabenn — Shared billing for landlords and tenants',
+    template: '%s | mabenn',
+  },
+  description:
+    'Replace spreadsheets and email threads with a shared billing workspace everyone can trust. Clear statements, transparent charges, less friction.',
+  metadataBase: new URL('https://mabenn.com'),
+  alternates: {
+    canonical: '/',
+    languages: {
+      en: 'https://mabenn.com',
+      'pt-BR': 'https://mabenn.com.br',
+      es: 'https://mabenn.com',
+    },
+  },
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -29,6 +43,30 @@ export const metadata: Metadata = {
       { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
     ],
     apple: '/icons/apple-touch-icon.png',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    alternateLocale: ['pt_BR', 'es_AR'],
+    siteName: 'mabenn',
+    title: 'mabenn — Shared billing for landlords and tenants',
+    description:
+      'Replace spreadsheets and email threads with a shared billing workspace everyone can trust.',
+    url: 'https://mabenn.com',
+    images: [{ url: '/og-image', width: 1200, height: 630, alt: 'mabenn — Shared billing you can trust' }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'mabenn — Shared billing for landlords and tenants',
+    description:
+      'Replace spreadsheets and email threads with a shared billing workspace everyone can trust.',
+    images: ['/og-image'],
+  },
+  applicationName: 'mabenn',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'mabenn',
   },
 }
 
@@ -41,14 +79,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <TooltipProvider>
-              <PostHogProvider>
-                <SerwistProvider>
-                  {children}
-                </SerwistProvider>
-                <Toaster />
-              </PostHogProvider>
-            </TooltipProvider>
+            <QueryProvider>
+              <TooltipProvider>
+                <PostHogProvider>
+                  <SerwistProvider>
+                    {children}
+                  </SerwistProvider>
+                  <Toaster />
+                </PostHogProvider>
+              </TooltipProvider>
+            </QueryProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

@@ -259,6 +259,15 @@ max_frequency = "5s"
 # enabled = true
 # uri = "pg-functions://postgres/auth/before-user-created-hook"
 
+# Send custom auth emails via Resend instead of Supabase defaults
+# Send custom auth emails via Resend — enabled in production via Supabase Dashboard.
+# Disabled locally due to Docker networking limitations with host.docker.internal.
+# Local auth emails go to Mailpit (localhost:54324) instead.
+# [auth.hook.send_email]
+# enabled = true
+# uri = "http://host.docker.internal:54321/functions/v1/send-email"
+# secrets = "env(SEND_EMAIL_HOOK_SECRET)"
+
 # This hook runs before a token is issued and allows you to add additional claims based on the authentication method used.
 # [auth.hook.custom_access_token]
 # enabled = true

@@ -1,8 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 
-export function Wordmark({ className }: { className?: string }) {
+import Link from 'next/link'
+
+export function Wordmark({ className, href = '/' }: { className?: string; href?: string }) {
   return (
-    <>
+    <Link href={href}>
       <img
         src="/brand/wordmark-light.svg"
         alt="mabenn"
@@ -13,6 +15,6 @@ export function Wordmark({ className }: { className?: string }) {
         alt="mabenn"
         className={`hidden dark:block ${className ?? 'mx-auto h-10'}`}
       />
-    </>
+    </Link>
   )
 }
