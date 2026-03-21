@@ -1,6 +1,6 @@
 import React from 'react'
 import { Webhook } from 'standardwebhooks'
-import { renderAsync } from '@react-email/components'
+import { render } from '@react-email/components'
 import { Resend } from 'resend'
 import { ConfirmEmail } from './_templates/confirm-email.tsx'
 import { ResetPassword } from './_templates/reset-password.tsx'
@@ -86,7 +86,7 @@ Deno.serve(async (req) => {
   try {
     if (email_action_type === 'signup' || email_action_type === 'email') {
       subject = t.confirmEmail.subject
-      html = await renderAsync(
+      html = await render(
         React.createElement(ConfirmEmail, {
           confirmUrl: verifyUrl,
           name,
@@ -96,7 +96,7 @@ Deno.serve(async (req) => {
       )
     } else if (email_action_type === 'recovery') {
       subject = t.resetPassword.subject
-      html = await renderAsync(
+      html = await render(
         React.createElement(ResetPassword, {
           resetUrl: verifyUrl,
           locale,
