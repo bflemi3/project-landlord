@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Loader2, ChevronLeft, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Wordmark } from '@/components/wordmark'
-import { InfoBox, InfoBoxContent, InfoBoxDivider } from '@/components/info-box'
+import { InfoBox, InfoBoxContent } from '@/components/info-box'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,8 +40,7 @@ export default function ForgotPasswordPage() {
     return (
       <div className="text-center">
         <div className="pb-10">
-          <img src="/brand/wordmark-light.svg" alt="mabenn" className="mx-auto h-10 dark:hidden" />
-          <img src="/brand/wordmark-dark.svg" alt="mabenn" className="mx-auto hidden h-10 dark:block" />
+          <Wordmark />
           <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
         </div>
 
@@ -54,8 +53,7 @@ export default function ForgotPasswordPage() {
         <InfoBox>
           <InfoBoxContent>
             <p>{t('checkEmailReset', { email })}</p>
-            <InfoBoxDivider />
-            <p>
+            <p className="mt-3">
               {t.rich('checkEmailGoogle', {
                 strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
               })}

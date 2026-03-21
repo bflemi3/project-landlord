@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.5.0
+
+- New landing page — see what mabenn is all about
+- Join the waitlist to get early access
+- Sign up requires an invite code — we'll send you one when your spot is ready
+- Branded email notifications for account confirmation, password reset, and waitlist updates
+- Emails are available in English, Portuguese, and Spanish
+- The landing page is now discoverable by search engines
+
 ## v0.4.2
 
 - Dismiss notifications with the X button on desktop

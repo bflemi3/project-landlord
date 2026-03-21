@@ -35,7 +35,7 @@ function SignInForm() {
       },
     })
     if (error) {
-      setError(error.message)
+      setError(t('signInError'))
       setLoadingGoogle(false)
     }
   }
@@ -47,7 +47,11 @@ function SignInForm() {
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
-      setError(error.message)
+      setError(
+        error.message === 'Invalid login credentials'
+          ? t('invalidCredentials')
+          : t('signInError'),
+      )
       setLoadingEmail(false)
     } else {
       window.location.href = '/app'
@@ -97,6 +101,7 @@ function SignInForm() {
             id="email"
             type="email"
             placeholder={t('emailPlaceholder')}
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -111,6 +116,7 @@ function SignInForm() {
             id="password"
             type="password"
             placeholder={t('passwordPlaceholder')}
+            autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -120,11 +126,7 @@ function SignInForm() {
 
         {error && (
           <InfoBox variant="destructive">
-            <InfoBoxContent>
-              {error === 'Invalid login credentials'
-                ? t('invalidCredentials')
-                : error}
-            </InfoBoxContent>
+            <InfoBoxContent>{error}</InfoBoxContent>
           </InfoBox>
         )}
 

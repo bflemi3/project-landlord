@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 
 export async function GET(request: Request) {
@@ -16,9 +17,9 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
-    if (!error) {
+    if (!error && data.session) {
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
 
@@ -28,12 +29,31 @@ export async function GET(request: Request) {
         return `${origin}${path}`
       }
 
+      // Redeem invite code from cookie (set during Google OAuth sign-up)
+      const cookieStore = await cookies()
+      const pendingInviteCode = cookieStore.get('pending_invite_code')?.value
+      if (pendingInviteCode) {
+        const inviteCode = decodeURIComponent(pendingInviteCode).trim().toUpperCase()
+        await supabase
+          .from('invitations')
+          .update({
+            status: 'accepted',
+            accepted_by: data.session.user.id,
+            accepted_at: new Date().toISOString(),
+          })
+          .eq('code', inviteCode)
+          .eq('status', 'pending')
+
+        // Clear the cookie
+        const response = NextResponse.redirect(buildUrl(next))
+        response.cookies.set('pending_invite_code', '', { path: '/', maxAge: 0 })
+        return response
+      }
+
       if (type === 'recovery') {
         return NextResponse.redirect(buildUrl('/auth/reset-password'))
       }
 
-      // Email confirmation — redirect to verified page (Tab B)
-      // so it can notify Tab A via BroadcastChannel
       if (type === 'signup' || type === 'email') {
         return NextResponse.redirect(buildUrl('/auth/verified'))
       }
@@ -42,7 +62,7 @@ export async function GET(request: Request) {
     }
 
     return NextResponse.redirect(
-      `${origin}/auth/sign-in?error=${encodeURIComponent(error.message)}`,
+      `${origin}/auth/sign-in?error=${encodeURIComponent(error?.message ?? 'Authentication failed')}`,
     )
   }
 

@@ -1,6 +1,22 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
+// Auth paths that authenticated users can still access
+const AUTH_PASSTHROUGH_PATHS = [
+  '/auth/callback',
+  '/auth/reset-password',
+  '/auth/verified',
+  '/auth/enter-code',
+]
+
+function redirectWithCookies(url: URL, supabaseResponse: NextResponse) {
+  const redirect = NextResponse.redirect(url)
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    redirect.cookies.set(cookie.name, cookie.value, cookie)
+  })
+  return redirect
+}
+
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
@@ -35,22 +51,16 @@ export async function updateSession(request: NextRequest) {
   if (!user && pathname.startsWith('/app')) {
     const url = request.nextUrl.clone()
     url.pathname = '/auth/sign-in'
-    const redirect = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirect.cookies.set(cookie.name, cookie.value, cookie)
-    })
-    return redirect
+    return redirectWithCookies(url, supabaseResponse)
   }
 
-  // Authenticated users trying to access /auth (except callback, reset-password, verified) → redirect to /app
-  if (user && pathname.startsWith('/auth') && !pathname.startsWith('/auth/callback') && !pathname.startsWith('/auth/reset-password') && !pathname.startsWith('/auth/verified')) {
+  // Authenticated users trying to access /auth → redirect to /app
+  // (except passthrough paths that need auth context)
+  const isPassthrough = AUTH_PASSTHROUGH_PATHS.some((p) => pathname.startsWith(p))
+  if (user && pathname.startsWith('/auth') && !isPassthrough) {
     const url = request.nextUrl.clone()
     url.pathname = '/app'
-    const redirect = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirect.cookies.set(cookie.name, cookie.value, cookie)
-    })
-    return redirect
+    return redirectWithCookies(url, supabaseResponse)
   }
 
   return supabaseResponse

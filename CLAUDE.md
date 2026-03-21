@@ -796,6 +796,56 @@ Avoid:
 
 ---
 
+## Email Templates & Delivery
+
+### Architecture
+
+Email templates are split across two locations based on runtime:
+
+- **`src/emails/`** — Next.js email templates (Node.js runtime). Used for app-triggered emails: waitlist welcome, invite codes, future notifications. Also contains preview copies of auth templates for visual reference. Run `pnpm email` to preview at `localhost:3333`.
+- **`supabase/functions/send-email/_templates/`** — Supabase Edge Function templates (Deno runtime). Used for auth-triggered emails: email confirmation, password reset. These are the live versions called by the Supabase Auth hook.
+
+When updating auth email designs, update the preview copy in `src/emails/` first, then sync changes to the Supabase templates in `supabase/functions/send-email/_templates/`.
+
+### Technology
+
+- **React Email** (`@react-email/components`) for component-based email templates
+- **`@react-email/tailwind`** for Tailwind CSS in emails (converts to inline styles at render time)
+- **Resend** for email delivery (sending + receiving on `mabenn.com`)
+- **Supabase Auth Hook** (`send_email`) intercepts auth emails and sends via Resend
+
+### Template conventions
+
+- Force light mode only (`color-scheme: light only`) — no dark mode email support
+- Use PNG for images in emails (SVG not supported in Gmail/Outlook)
+- Use `renderAsync` + `html` option when sending from Edge Functions (not Resend's `react` option)
+- Button pattern: `display: block` for full-width, centered text via `<Section>` wrapper
+- All templates support EN, PT-BR, ES via locale prop
+- From address: `mabenn <noreply@mabenn.com>` on all emails
+
+### Reply-to policy
+
+- **Conversational emails** (invite code, waitlist welcome): set `replyTo: hello@mabenn.com` — these invite the user to ask questions
+- **Transactional/system emails** (email confirmation, password reset, future notifications): no reply-to — these are automated and don't expect a response
+
+### i18n
+
+- `src/emails/i18n.ts` — translations for app-triggered emails (waitlist, invite)
+- `supabase/functions/send-email/i18n.ts` — translations for auth-triggered emails (confirm, reset)
+- Footer tagline is duplicated in both files — keep in sync manually
+
+### Supabase Edge Function (Deno)
+
+The `send-email` Edge Function uses a `deno.json` import map to alias bare specifiers (`@react-email/components` → `npm:@react-email/components`). This allows templates to use the same import style as the Next.js templates.
+
+Auth templates use `baseUrl` as a prop (not `process.env`) since the runtime is Deno. The handler queries the user's `preferred_locale` from the profiles table to send locale-appropriate emails.
+
+### Preview
+
+Run `pnpm email` to start the React Email preview server at `localhost:3333`. This previews templates from `src/emails/` only. Auth templates in `supabase/functions/` are tested by triggering the actual auth flow locally (sign up, reset password).
+
+---
+
 ## Preferred Backend Patterns
 
 Default to:
