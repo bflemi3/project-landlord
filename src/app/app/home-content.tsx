@@ -9,6 +9,7 @@ import { Building2, Plus, Users, DoorOpen, LayoutGrid, List, ChevronRight, Spark
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/wordmark'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { FadeUp } from '@/components/fade-up'
 import { useMemberships, type MembershipWithProperty } from '@/lib/hooks/use-memberships'
 import { createClient } from '@/lib/supabase/client'
 
@@ -17,15 +18,6 @@ function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
   if (hour < 12) return 'goodMorning'
   if (hour < 18) return 'goodAfternoon'
   return 'goodEvening'
-}
-
-const fadeUp = {
-  hidden: { opacity: 0, transform: 'translateY(16px)' },
-  visible: (delay: number) => ({
-    opacity: 1,
-    transform: 'translateY(0px)',
-    transition: { duration: 0.5, delay, ease: [0.25, 0.1, 0.25, 1] as const },
-  }),
 }
 
 export function HomeContent({ firstName }: { firstName?: string }) {
@@ -57,30 +49,26 @@ function EmptyState({ firstName }: { firstName?: string }) {
 
       {/* Centered content */}
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
-        <motion.div
-          className="w-full max-w-2xl"
-          initial="hidden"
-          animate="visible"
-        >
+        <FadeUp.Group className="w-full max-w-2xl" stagger={0.1} baseDelay={0}>
           {/* Wordmark */}
-          <motion.div className="mb-8 text-center" variants={fadeUp} custom={0}>
+          <FadeUp className="mb-8 text-center">
             <Wordmark className="mx-auto h-7" />
-          </motion.div>
+          </FadeUp>
 
           {/* Greeting + subtitle */}
-          <motion.div className="mb-10 text-center" variants={fadeUp} custom={0.05}>
+          <FadeUp className="mb-10 text-center">
             <h1 className="text-2xl font-bold text-foreground md:text-3xl">
               {greeting}{firstName ? `, ${firstName}` : ''}.
             </h1>
             <p className="mt-2 text-base text-muted-foreground md:text-lg">
               {t('roleChoiceSubtitle')}
             </p>
-          </motion.div>
+          </FadeUp>
 
           {/* Role cards — stacked on mobile, side by side on desktop */}
-          <div className="grid gap-4 md:grid-cols-2">
-            {/* Landlord card */}
-            <motion.div variants={fadeUp} custom={0.15}>
+          <FadeUp>
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Landlord card */}
               <Link
                 href="/app/p/new"
                 className="group flex h-full flex-col items-center rounded-2xl border border-border bg-card px-6 py-7 text-center shadow-sm transition-all hover:border-primary/30 hover:shadow-md dark:border-border dark:shadow-none dark:hover:border-primary/40 md:p-8"
@@ -99,10 +87,8 @@ function EmptyState({ firstName }: { firstName?: string }) {
                   <ChevronRight className="size-4" />
                 </div>
               </Link>
-            </motion.div>
 
-            {/* Tenant card — disabled feel */}
-            <motion.div variants={fadeUp} custom={0.25}>
+              {/* Tenant card — disabled feel */}
               <button
                 onClick={() => setShowComingSoon(true)}
                 className="group flex h-full w-full flex-col items-center rounded-2xl border border-border bg-card px-6 py-7 text-center opacity-60 shadow-sm transition-all hover:opacity-80 dark:border-border dark:shadow-none md:p-8"
@@ -120,35 +106,31 @@ function EmptyState({ firstName }: { firstName?: string }) {
                   {t('comingSoon')}
                 </span>
               </button>
-            </motion.div>
-          </div>
+            </div>
+          </FadeUp>
 
           {/* Reassurance — bridges the two cards */}
-          <motion.div
-            className="mt-5 flex items-start justify-center gap-2.5 rounded-xl bg-secondary/40 px-5 py-3 text-center dark:bg-transparent dark:px-0"
-            variants={fadeUp}
-            custom={0.3}
-          >
+          <FadeUp className="mt-5 flex items-start justify-center gap-2.5 rounded-xl bg-secondary/40 px-5 py-3 text-center dark:bg-transparent dark:px-0">
             <span className="flex h-5 shrink-0 items-center"><ArrowLeftRight className="size-3.5 text-muted-foreground/50" /></span>
             <p className="text-sm leading-relaxed text-muted-foreground/70 dark:text-muted-foreground">
               {t('roleNote')}
             </p>
-          </motion.div>
+          </FadeUp>
+        </FadeUp.Group>
 
-          {/* Coming soon message */}
-          {showComingSoon && (
-            <motion.div
-              className="mt-4 rounded-2xl border border-border bg-secondary/50 p-5"
-              initial={{ opacity: 0, transform: 'translateY(8px)' }}
-              animate={{ opacity: 1, transform: 'translateY(0px)' }}
-              transition={{ duration: 0.3 }}
-            >
-              <p className="text-center text-sm leading-relaxed text-muted-foreground">
-                {t('comingSoonDescription')}
-              </p>
-            </motion.div>
-          )}
-        </motion.div>
+        {/* Coming soon message */}
+        {showComingSoon && (
+          <motion.div
+            className="mt-4 w-full max-w-2xl rounded-2xl border border-border bg-secondary/50 p-5"
+            initial={{ opacity: 0, transform: 'translateY(8px)' }}
+            animate={{ opacity: 1, transform: 'translateY(0px)' }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-center text-sm leading-relaxed text-muted-foreground">
+              {t('comingSoonDescription')}
+            </p>
+          </motion.div>
+        )}
       </div>
 
       {/* Footer — theme toggle */}
@@ -173,89 +155,61 @@ function PopulatedState({ memberships, firstName }: { memberships: MembershipWit
 
   return (
     <div className="mx-auto min-h-svh max-w-3xl px-6 pb-32 pt-8">
-      {/* Header */}
-      <motion.header
-        className="mb-10 flex items-start justify-between"
-        initial="hidden"
-        animate="visible"
-        variants={fadeUp}
-        custom={0}
-      >
-        <h1 className="text-2xl font-bold text-foreground">
-          {greeting}{firstName ? `, ${firstName}` : ''}
-        </h1>
-        <SignOutLink />
-      </motion.header>
+      <FadeUp.Group stagger={0.08}>
+        {/* Header */}
+        <FadeUp className="mb-10 flex items-start justify-between">
+          <h1 className="text-2xl font-bold text-foreground">
+            {greeting}{firstName ? `, ${firstName}` : ''}
+          </h1>
+          <SignOutLink />
+        </FadeUp>
 
-      {/* Controls row */}
-      <motion.div
-        className="mb-6 flex items-center justify-between"
-        initial="hidden"
-        animate="visible"
-        variants={fadeUp}
-        custom={0.1}
-      >
-        <h2 className="text-lg font-semibold text-foreground">{t('myProperties')}</h2>
-        <div className="flex rounded-lg border border-border bg-secondary/50 p-0.5">
-          <button
-            onClick={() => setView('grouped')}
-            className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              view === 'grouped'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            title={t('viewByProperty')}
-          >
-            <LayoutGrid className="size-3.5" />
-          </button>
-          <button
-            onClick={() => setView('flat')}
-            className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-              view === 'flat'
-                ? 'bg-card text-foreground shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            title={t('viewAllUnits')}
-          >
-            <List className="size-3.5" />
-          </button>
-        </div>
-      </motion.div>
+        {/* Controls row */}
+        <FadeUp className="mb-6 flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-foreground">{t('myProperties')}</h2>
+          <div className="flex rounded-lg border border-border bg-secondary/50 p-0.5">
+            <button
+              onClick={() => setView('grouped')}
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                view === 'grouped'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title={t('viewByProperty')}
+            >
+              <LayoutGrid className="size-3.5" />
+            </button>
+            <button
+              onClick={() => setView('flat')}
+              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                view === 'flat'
+                  ? 'bg-card text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+              title={t('viewAllUnits')}
+            >
+              <List className="size-3.5" />
+            </button>
+          </div>
+        </FadeUp>
+      </FadeUp.Group>
 
       {/* Property cards — grid on desktop */}
-      <div className="grid gap-4 md:grid-cols-2">
-        {landlordMemberships.map((m, i) => (
-          <motion.div
-            key={m.id}
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={0.15 + i * 0.05}
-          >
+      <FadeUp.Group className="grid gap-4 md:grid-cols-2" stagger={0.06} baseDelay={0.16}>
+        {landlordMemberships.map((m) => (
+          <FadeUp key={m.id}>
             <PropertyCard membership={m} />
-          </motion.div>
+          </FadeUp>
         ))}
-        {tenantMemberships.map((m, i) => (
-          <motion.div
-            key={m.id}
-            initial="hidden"
-            animate="visible"
-            variants={fadeUp}
-            custom={0.15 + (landlordMemberships.length + i) * 0.05}
-          >
+        {tenantMemberships.map((m) => (
+          <FadeUp key={m.id}>
             <PropertyCard membership={m} />
-          </motion.div>
+          </FadeUp>
         ))}
-      </div>
+      </FadeUp.Group>
 
       {/* Add property — sticky bottom bar */}
-      <motion.div
-        className="fixed inset-x-0 bottom-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-lg"
-        initial="hidden"
-        animate="visible"
-        variants={fadeUp}
-        custom={0.3}
-      >
+      <FadeUp delay={0.3} className="fixed inset-x-0 bottom-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-lg">
         <div className="mx-auto max-w-3xl">
           <Button asChild className="h-12 w-full rounded-2xl" size="lg">
             <Link href="/app/p/new">
@@ -264,7 +218,7 @@ function PopulatedState({ memberships, firstName }: { memberships: MembershipWit
             </Link>
           </Button>
         </div>
-      </motion.div>
+      </FadeUp>
     </div>
   )
 }
