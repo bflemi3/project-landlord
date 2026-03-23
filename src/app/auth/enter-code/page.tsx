@@ -20,15 +20,25 @@ export default function EnterCodePage() {
   const [loading, setLoading] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
 
-  // Redirect unauthenticated users to sign-in
+  // Redirect unauthenticated users to sign-in, users with access to /app
   useEffect(() => {
     const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) {
         router.replace('/auth/sign-in')
-      } else {
-        setAuthenticated(true)
+        return
       }
+      // Check if user already has a redeemed invite
+      const { data } = await supabase
+        .from('invitations')
+        .select('id')
+        .eq('accepted_by', user.id)
+        .limit(1)
+      if (data && data.length > 0) {
+        router.replace('/app')
+        return
+      }
+      setAuthenticated(true)
     })
   }, [router])
 

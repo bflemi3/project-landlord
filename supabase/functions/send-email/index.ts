@@ -1,13 +1,10 @@
-import React from 'react'
 import { Webhook } from 'standardwebhooks'
-import { render } from '@react-email/components'
 import { Resend } from 'resend'
-import { ConfirmEmail } from './_templates/confirm-email.tsx'
-import { ResetPassword } from './_templates/reset-password.tsx'
 import { type EmailLocale, getAuthEmailTranslations } from './i18n.ts'
+import { buildConfirmEmailHtml, buildResetPasswordHtml } from './templates.ts'
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
-const hookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET') as string
+const hookSecret = (Deno.env.get('SEND_EMAIL_HOOK_SECRET') as string).replace('v1,whsec_', '')
 
 const RESEND_FROM = 'mabenn <noreply@mabenn.com>'
 const BASE_URL = Deno.env.get('SITE_URL') ?? 'https://mabenn.com'
@@ -86,25 +83,20 @@ Deno.serve(async (req) => {
   try {
     if (email_action_type === 'signup' || email_action_type === 'email') {
       subject = t.confirmEmail.subject
-      html = await render(
-        React.createElement(ConfirmEmail, {
-          confirmUrl: verifyUrl,
-          name,
-          locale,
-          baseUrl: BASE_URL,
-        }),
-      )
+      html = buildConfirmEmailHtml({
+        confirmUrl: verifyUrl,
+        name,
+        locale,
+        baseUrl: BASE_URL,
+      })
     } else if (email_action_type === 'recovery') {
       subject = t.resetPassword.subject
-      html = await render(
-        React.createElement(ResetPassword, {
-          resetUrl: verifyUrl,
-          locale,
-          baseUrl: BASE_URL,
-        }),
-      )
+      html = buildResetPasswordHtml({
+        resetUrl: verifyUrl,
+        locale,
+        baseUrl: BASE_URL,
+      })
     } else {
-      // Unknown email type — let Supabase handle it
       return new Response(
         JSON.stringify({}),
         { status: 200, headers: { 'Content-Type': 'application/json' } },
@@ -118,9 +110,13 @@ Deno.serve(async (req) => {
       html,
     })
 
-    if (error) throw error
+    if (error) {
+      console.error('Resend error:', JSON.stringify(error))
+      throw error
+    }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('Error sending email:', message)
     return new Response(
       JSON.stringify({ error: { http_code: 500, message } }),
       { status: 500, headers: { 'Content-Type': 'application/json' } },

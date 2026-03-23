@@ -1,8 +1,5 @@
 {
   "imports": {
-    "react": "npm:react@18.3.1",
-    "@react-email/components": "npm:@react-email/components@1.0.10",
-    "@react-email/tailwind": "npm:@react-email/tailwind@2.0.6",
     "resend": "npm:resend@6.9.4",
     "standardwebhooks": "https://esm.sh/standardwebhooks@1.0.0"
   }
