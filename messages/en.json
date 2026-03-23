@@ -105,7 +105,9 @@
     "footerTerms": "Terms"
   },
   "home": {
-    "roleChoiceTitle": "Welcome to mabenn",
+    "goodMorning": "Good morning",
+    "goodAfternoon": "Good afternoon",
+    "goodEvening": "Good evening",
     "roleChoiceSubtitle": "What brings you here?",
     "iOwnProperty": "I own a property",
     "iOwnPropertyDescription": "Set up your property, invite tenants, and manage billing.",

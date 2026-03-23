@@ -105,7 +105,9 @@
     "footerTerms": "Termos"
   },
   "home": {
-    "roleChoiceTitle": "Bem-vindo ao mabenn",
+    "goodMorning": "Bom dia",
+    "goodAfternoon": "Boa tarde",
+    "goodEvening": "Boa noite",
     "roleChoiceSubtitle": "O que te traz aqui?",
     "iOwnProperty": "Sou proprietário",
     "iOwnPropertyDescription": "Configure seu imóvel, convide inquilinos e gerencie cobranças.",
