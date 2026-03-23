@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
 import { AnimatePresence, motion } from 'motion/react'
 import { Loader2, Camera, Mail, ChevronLeft } from 'lucide-react'
+import posthog from 'posthog-js'
 import { createClient } from '@/lib/supabase/client'
 import { useEmailVerification } from '@/lib/hooks/use-email-verification'
 import { Button } from '@/components/ui/button'
@@ -136,6 +137,13 @@ export default function SignUpPage() {
         await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', data.user.id)
       }
     }
+
+    posthog.capture('signed_up', {
+      method: 'email',
+      email,
+      name: fullName,
+      invite_code: inviteCode,
+    })
 
     setSuccess(true)
     setLoadingEmail(false)
