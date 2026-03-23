@@ -794,6 +794,42 @@ Avoid:
 - speculative abstraction layers
 - premature design-system complexity beyond what the app actually uses
 
+### Form patterns
+
+**Validation strategy:**
+- Server-side validation is the source of truth — always validate in server actions regardless of client-side checks
+- For MVP, rely on server validation only (`useActionState` returns field-level errors)
+- Client-side JS validation can be added later for instant feedback on slow connections — never use native HTML validation messages (they're unstyled, untranslatable, inconsistent across browsers)
+- Never use `required`, `pattern`, or other native HTML validation attributes for user-facing validation — use them only as progressive enhancement hints (e.g., `type="email"` for mobile keyboard)
+
+**React 19 form patterns:**
+- Use `useActionState` for all form submissions that call server actions — it provides `[state, formAction, isPending]` with built-in pending state and sequential action queuing
+- Use `useFormStatus` in child components (e.g., submit buttons) to access the parent form's pending state
+- Pass the `formAction` directly to `<form action={formAction}>` — this enables progressive enhancement
+- Return structured error state from server actions: `{ errors: { fieldName: 'message' }, success: false }` — never throw from a form action
+- Display field-level errors near the input that caused them, not in a banner at the top
+
+**Form UX:**
+- Labels above inputs, not floating or inline
+- Generous mobile tap targets — inputs should be tall enough for comfortable tapping
+- Disable submit button and show loading state while `isPending` is true
+- Clear error messages when the user starts editing the errored field
+- Multi-step forms use client-side step state on a single route — not separate routes per step — to enable smooth transitions and avoid SSR overhead
+- Use `<fieldset disabled={isPending}>` to disable all form fields during submission
+
+**Address forms (Brazil-first):**
+- CEP field at the top — auto-fill street, neighborhood, city, state via address lookup on valid input
+- Address lookup uses a country-adaptive provider pattern (`src/lib/address/`) — ViaCEP for Brazil, fallback to manual entry for other countries
+- User can override auto-filled values
+- State field as a select dropdown
+- Street number and complement are separate fields from the street name
+
+**What not to do:**
+- Don't add zod, react-hook-form, or other form libraries unless a form genuinely needs schema-based validation with complex conditional rules
+- Don't use native HTML validation messages as the user-facing validation UX
+- Don't validate on blur for MVP — validate on submit only
+- Don't block form submission on optional fields
+
 ---
 
 ## Email Templates & Delivery
@@ -803,9 +839,9 @@ Avoid:
 Email templates are split across two locations based on runtime:
 
 - **`src/emails/`** — Next.js email templates (Node.js runtime). Used for app-triggered emails: waitlist welcome, invite codes, future notifications. Also contains preview copies of auth templates for visual reference. Run `pnpm email` to preview at `localhost:3333`.
-- **`supabase/functions/send-email/_templates/`** — Supabase Edge Function templates (Deno runtime). Used for auth-triggered emails: email confirmation, password reset. These are the live versions called by the Supabase Auth hook.
+- **`supabase/functions/send-email/templates.ts`** — Supabase Edge Function email templates as HTML string builders (Deno runtime). Used for auth-triggered emails: email confirmation, password reset. These use pre-built HTML with string interpolation instead of React Email to avoid cold start issues in Edge Functions.
 
-When updating auth email designs, update the preview copy in `src/emails/` first, then sync changes to the Supabase templates in `supabase/functions/send-email/_templates/`.
+When updating auth email designs, update the preview copy in `src/emails/` first for visual reference, then sync the HTML structure to the string builders in `supabase/functions/send-email/templates.ts`.
 
 ### Technology
 
@@ -818,7 +854,7 @@ When updating auth email designs, update the preview copy in `src/emails/` first
 
 - Force light mode only (`color-scheme: light only`) — no dark mode email support
 - Use PNG for images in emails (SVG not supported in Gmail/Outlook)
-- Use `renderAsync` + `html` option when sending from Edge Functions (not Resend's `react` option)
+- Edge Function templates use HTML string builders (no React/JSX at runtime) to keep cold starts under the 5-second auth hook timeout
 - Button pattern: `display: block` for full-width, centered text via `<Section>` wrapper
 - All templates support EN, PT-BR, ES via locale prop
 - From address: `mabenn <noreply@mabenn.com>` on all emails
@@ -836,9 +872,13 @@ When updating auth email designs, update the preview copy in `src/emails/` first
 
 ### Supabase Edge Function (Deno)
 
-The `send-email` Edge Function uses a `deno.json` import map to alias bare specifiers (`@react-email/components` → `npm:@react-email/components`). This allows templates to use the same import style as the Next.js templates.
+The `send-email` Edge Function uses HTML string builders (not React Email) to avoid cold start issues with heavy npm dependencies. The `deno.json` import map aliases `resend` and `standardwebhooks`.
 
-Auth templates use `baseUrl` as a prop (not `process.env`) since the runtime is Deno. The handler queries the user's `preferred_locale` from the profiles table to send locale-appropriate emails.
+Key implementation details:
+- Strip the `v1,whsec_` prefix from `SEND_EMAIL_HOOK_SECRET` before passing to the `Webhook` constructor
+- Deploy with `verify_jwt: false` (auth hook calls without a JWT; security is via webhook signature)
+- The handler queries the user's `preferred_locale` from the profiles table to send locale-appropriate emails
+- Deploy via MCP (`mcp__supabase__deploy_edge_function`) to ensure `verify_jwt: false` persists
 
 ### Preview
 
