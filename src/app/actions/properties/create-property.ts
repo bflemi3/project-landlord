@@ -1,14 +1,21 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { validateProperty, parsePropertyFormData } from './validate-property'
 
 export interface CreatePropertyState {
   success: boolean
   propertyId?: string
+  unitId?: string
   errors?: {
     name?: string
-    city?: string
     postal_code?: string
+    street?: string
+    number?: string
+    complement?: string
+    neighborhood?: string
+    city?: string
+    state?: string
     general?: string
   }
 }
@@ -17,44 +24,38 @@ export async function createProperty(
   _prevState: CreatePropertyState,
   formData: FormData,
 ): Promise<CreatePropertyState> {
-  const name = (formData.get('name') as string)?.trim()
-  const street = (formData.get('street') as string)?.trim() || null
-  const number = (formData.get('number') as string)?.trim() || null
-  const complement = (formData.get('complement') as string)?.trim() || null
-  const neighborhood = (formData.get('neighborhood') as string)?.trim() || null
-  const city = (formData.get('city') as string)?.trim() || null
-  const state = (formData.get('state') as string)?.trim() || null
-  const postalCode = (formData.get('postal_code') as string)?.trim() || null
-  const countryCode = (formData.get('country_code') as string)?.trim() || 'BR'
-  const currency = (formData.get('currency') as string)?.trim() || 'BRL'
+  const fields = await parsePropertyFormData(formData)
+  const validation = await validateProperty(fields)
 
-  // Validate required fields
-  const errors: CreatePropertyState['errors'] = {}
-  if (!name) errors.name = 'required'
-  if (!city) errors.city = 'required'
-
-  if (Object.keys(errors).length > 0) {
-    return { success: false, errors }
+  if (!validation.valid) {
+    return { success: false, errors: validation.errors }
   }
 
   const supabase = await createClient()
 
+  // Auto-generate name from address if blank
+  const name = fields.name || [
+    fields.street,
+    fields.number,
+    fields.complement,
+  ].filter(Boolean).join(' ')
+
   const { data, error } = await supabase.rpc('create_property_with_membership', {
     p_name: name,
-    p_street: street,
-    p_number: number,
-    p_complement: complement,
-    p_neighborhood: neighborhood,
-    p_city: city,
-    p_state: state,
-    p_postal_code: postalCode,
-    p_country_code: countryCode,
-    p_currency: currency,
+    p_street: fields.street || null,
+    p_number: fields.number || null,
+    p_complement: fields.complement || null,
+    p_neighborhood: fields.neighborhood || null,
+    p_city: fields.city || null,
+    p_state: fields.state || null,
+    p_postal_code: fields.postal_code || null,
+    p_country_code: fields.country_code,
   })
 
   if (error) {
     return { success: false, errors: { general: 'createFailed' } }
   }
 
-  return { success: true, propertyId: data as string }
+  const result = data as { property_id: string; unit_id: string }
+  return { success: true, propertyId: result.property_id, unitId: result.unit_id }
 }

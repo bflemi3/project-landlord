@@ -9,6 +9,7 @@ import { Building2, Plus, Users, DoorOpen, LayoutGrid, List, ChevronRight, Spark
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/wordmark'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { LanguageSwitcher } from '@/components/language-switcher'
 import { FadeUp } from '@/components/fade-up'
 import { useMemberships, type MembershipWithProperty } from '@/lib/hooks/use-memberships'
 import { createClient } from '@/lib/supabase/client'
@@ -88,7 +89,7 @@ function EmptyState({ firstName }: { firstName?: string }) {
                 </div>
               </Link>
 
-              {/* Tenant card — disabled feel */}
+              {/* Tenant card — disabled feel, text swaps on tap */}
               <button
                 onClick={() => setShowComingSoon(true)}
                 className="group flex h-full w-full flex-col items-center rounded-2xl border border-border bg-card px-6 py-7 text-center opacity-60 shadow-sm transition-all hover:opacity-80 dark:border-border dark:shadow-none md:p-8"
@@ -99,9 +100,19 @@ function EmptyState({ firstName }: { firstName?: string }) {
                 <h3 className="text-lg font-semibold text-foreground">
                   {t('iRentProperty')}
                 </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                  {t('iRentPropertyDescription')}
-                </p>
+                <div className="mt-1.5 min-h-[3.5rem] text-sm leading-relaxed text-muted-foreground">
+                  {showComingSoon ? (
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {t('comingSoonDescription')}
+                    </motion.p>
+                  ) : (
+                    <p>{t('iRentPropertyDescription')}</p>
+                  )}
+                </div>
                 <span className="mt-4 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground md:mt-5">
                   {t('comingSoon')}
                 </span>
@@ -117,24 +128,11 @@ function EmptyState({ firstName }: { firstName?: string }) {
             </p>
           </FadeUp>
         </FadeUp.Group>
-
-        {/* Coming soon message */}
-        {showComingSoon && (
-          <motion.div
-            className="mt-4 w-full max-w-2xl rounded-2xl border border-border bg-secondary/50 p-5"
-            initial={{ opacity: 0, transform: 'translateY(8px)' }}
-            animate={{ opacity: 1, transform: 'translateY(0px)' }}
-            transition={{ duration: 0.3 }}
-          >
-            <p className="text-center text-sm leading-relaxed text-muted-foreground">
-              {t('comingSoonDescription')}
-            </p>
-          </motion.div>
-        )}
       </div>
 
-      {/* Footer — theme toggle */}
-      <div className="flex justify-center px-6 pb-6">
+      {/* Footer */}
+      <div className="flex items-center justify-center gap-8 px-6 pb-6">
+        <LanguageSwitcher />
         <ThemeToggle />
       </div>
     </div>
@@ -211,12 +209,12 @@ function PopulatedState({ memberships, firstName }: { memberships: MembershipWit
       {/* Add property — sticky bottom bar */}
       <FadeUp delay={0.3} className="fixed inset-x-0 bottom-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-lg">
         <div className="mx-auto max-w-3xl">
-          <Button asChild className="h-12 w-full rounded-2xl" size="lg">
-            <Link href="/app/p/new">
+          <Link href="/app/p/new" className="block">
+            <Button className="h-12 w-full rounded-2xl" size="lg">
               <Plus className="size-5" />
               {t('addProperty')}
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </div>
       </FadeUp>
     </div>

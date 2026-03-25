@@ -53,7 +53,7 @@ function InfoBoxDivider({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="info-box-divider"
-      className={cn('my-4 h-px bg-border', className)}
+      className={cn('my-4 h-px bg-border dark:bg-zinc-700', className)}
       {...props}
     />
   )

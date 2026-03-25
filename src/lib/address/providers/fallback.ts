@@ -1,4 +1,4 @@
-import type { AddressProvider, AddressLookupResult } from '../types'
+import type { AddressProvider, AddressLookupResult, AddressFields, AddressValidationErrors } from '../types'
 
 export const fallbackProvider: AddressProvider = {
   postalCodePattern: /^.+$/,
@@ -12,5 +12,14 @@ export const fallbackProvider: AddressProvider = {
 
   async lookupPostalCode(): Promise<AddressLookupResult | null> {
     return null
+  },
+
+  validateAddress(fields: AddressFields): AddressValidationErrors | null {
+    const errors: AddressValidationErrors = {}
+
+    if (!fields.street) errors.street = 'required'
+    if (!fields.city) errors.city = 'required'
+
+    return Object.keys(errors).length > 0 ? errors : null
   },
 }

@@ -794,6 +794,23 @@ Avoid:
 - speculative abstraction layers
 - premature design-system complexity beyond what the app actually uses
 
+### React component body ordering
+
+Organize hook calls and logic inside components in this order:
+
+1. **Refs** — `useRef`
+2. **Context** — `useContext`, `useTranslations`, `useLocale`
+3. **Router/navigation** — `useRouter`, `usePathname`, `useSearchParams`
+4. **State** — `useState`, `useReducer`, `useActionState`
+5. **Derived/computed values** — `useMemo`, `useDeferredValue`, variables derived from state/props
+6. **Queries** — `useSuspenseQuery`, `useQuery`, `useMutation`
+7. **Effects** — `useEffect`, `useLayoutEffect`
+8. **Callbacks** — `useCallback`, event handlers, form handlers
+9. **Render helpers** — conditional variables, formatted values, or small JSX fragments used in the return
+10. **Return** — JSX
+
+The principle: declarations flow from stable → reactive → side-effectful → behavioral. Refs don't change, context rarely changes, state changes on interaction, effects react to changes, callbacks respond to user actions.
+
 ### Form patterns
 
 **Validation strategy:**

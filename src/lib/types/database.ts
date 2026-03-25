@@ -1072,7 +1072,6 @@ export type Database = {
           p_city?: string
           p_complement?: string
           p_country_code?: string
-          p_currency?: string
           p_name: string
           p_neighborhood?: string
           p_number?: string
@@ -1080,7 +1079,7 @@ export type Database = {
           p_state?: string
           p_street?: string
         }
-        Returns: string
+        Returns: Json
       }
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }

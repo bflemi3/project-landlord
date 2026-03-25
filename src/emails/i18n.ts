@@ -1,5 +1,6 @@
 export type EmailLocale = 'en' | 'pt-BR' | 'es'
 export type InviteSource = 'waitlist' | 'direct'
+export type TenantInviteParams = { tenantName: string | null; landlordName: string; propertyName: string }
 
 export const emailTranslations = {
   en: {
@@ -49,6 +50,14 @@ export const emailTranslations = {
       button: 'Create Your Account',
       hint: 'This code is unique to you and expires in 30 days. If you have any questions, just reply to this email.',
     },
+    tenantInvite: {
+      subject: (propertyName: string) => `You're invited to join ${propertyName} on mabenn`,
+      greeting: (name: string | null) => name ? `Hi ${name},` : 'Hi,',
+      body: (landlordName: string, propertyName: string) =>
+        `${landlordName} has invited you to join <strong>${propertyName}</strong> on mabenn. You'll be able to view your monthly statements, see charge details, and track payments.`,
+      button: 'Join on mabenn',
+      hint: 'If you didn\'t expect this invite, you can safely ignore this email.',
+    },
   },
   'pt-BR': {
     footer: '© 2026 mabenn · Cobrança compartilhada em que você confia',
@@ -97,6 +106,14 @@ export const emailTranslations = {
       button: 'Criar Sua Conta',
       hint: 'Este código é único para você e expira em 30 dias. Se tiver alguma dúvida, basta responder a este e-mail.',
     },
+    tenantInvite: {
+      subject: (propertyName: string) => `Você foi convidado para ${propertyName} no mabenn`,
+      greeting: (name: string | null) => name ? `Olá ${name},` : 'Olá,',
+      body: (landlordName: string, propertyName: string) =>
+        `${landlordName} convidou você para participar de <strong>${propertyName}</strong> no mabenn. Você poderá ver seus extratos mensais, detalhes das cobranças e acompanhar pagamentos.`,
+      button: 'Entrar no mabenn',
+      hint: 'Se você não esperava este convite, pode ignorar este e-mail com segurança.',
+    },
   },
   es: {
     footer: '© 2026 mabenn · Facturación compartida en la que puedes confiar',
@@ -144,6 +161,14 @@ export const emailTranslations = {
       },
       button: 'Crear Tu Cuenta',
       hint: 'Este código es único para ti y expira en 30 días. Si tienes alguna pregunta, solo responde a este correo.',
+    },
+    tenantInvite: {
+      subject: (propertyName: string) => `Te invitaron a unirte a ${propertyName} en mabenn`,
+      greeting: (name: string | null) => name ? `Hola ${name},` : 'Hola,',
+      body: (landlordName: string, propertyName: string) =>
+        `${landlordName} te invitó a unirte a <strong>${propertyName}</strong> en mabenn. Podrás ver tus estados de cuenta mensuales, detalles de cargos y seguimiento de pagos.`,
+      button: 'Unirse a mabenn',
+      hint: 'Si no esperabas esta invitación, puedes ignorar este correo de forma segura.',
     },
   },
 } as const

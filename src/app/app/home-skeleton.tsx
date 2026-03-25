@@ -2,25 +2,36 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export function HomeSkeleton() {
   return (
-    <div className="mx-auto min-h-svh max-w-2xl px-6 pb-32 pt-8">
-      {/* Header skeleton */}
-      <div className="mb-10 flex items-start justify-between">
-        <div>
-          <Skeleton className="h-7 w-52 rounded-lg" />
-          <Skeleton className="mt-2 h-4 w-36 rounded-lg" />
-        </div>
-        <Skeleton className="h-9 w-20 rounded-2xl" />
+    <div className="flex min-h-svh flex-col">
+      {/* Sign out placeholder — top right */}
+      <div className="flex justify-end px-6 pt-5">
+        <Skeleton className="size-7 rounded-full" />
       </div>
 
-      {/* Content skeleton — matches empty state */}
-      <div className="mt-8">
-        <div className="mb-10 text-center">
-          <Skeleton className="mx-auto h-6 w-48 rounded-lg" />
-          <Skeleton className="mx-auto mt-3 h-4 w-56 rounded-lg" />
-        </div>
-        <div className="space-y-4">
-          <Skeleton className="h-24 w-full rounded-2xl" />
-          <Skeleton className="h-24 w-full rounded-2xl" />
+      {/* Centered content — matches empty state */}
+      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
+        <div className="w-full max-w-2xl">
+          {/* Wordmark */}
+          <div className="mb-8 text-center">
+            <Skeleton className="mx-auto h-7 w-28 rounded-lg" />
+          </div>
+
+          {/* Greeting + subtitle */}
+          <div className="mb-10 text-center">
+            <Skeleton className="mx-auto h-8 w-64 rounded-lg md:h-9" />
+            <Skeleton className="mx-auto mt-3 h-5 w-44 rounded-lg" />
+          </div>
+
+          {/* Two cards — stacked on mobile, side by side on desktop */}
+          <div className="grid gap-4 md:grid-cols-2">
+            <Skeleton className="h-48 w-full rounded-2xl md:h-56" />
+            <Skeleton className="h-48 w-full rounded-2xl md:h-56" />
+          </div>
+
+          {/* Reassurance text */}
+          <div className="mt-5 flex justify-center">
+            <Skeleton className="h-10 w-72 rounded-xl" />
+          </div>
         </div>
       </div>
     </div>
