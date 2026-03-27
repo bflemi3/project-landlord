@@ -634,6 +634,8 @@ Structure:
 
 ## Component Guidance
 
+For the concrete component catalog (file paths, props, variants, layout rules), see `docs/project/components.md`. This section covers the design principles that govern all components.
+
 ### Favor these primitives
 
 - cards
@@ -660,6 +662,89 @@ Structure:
 
 Use shadcn/ui as a foundation, not a final design language.
 Customize spacing, radius, typography, and visual rhythm so the product does not look like a default starter kit.
+
+---
+
+## Established Design Patterns
+
+These patterns have been validated in the product and should be followed for consistency. They are the concrete rules derived from the principles above.
+
+### Button hierarchy
+
+- Third-party actions (Google, Apple, etc.): high-contrast neutral — never use our brand color on third-party buttons
+- Our primary actions: teal primary
+- Secondary/alternative actions: secondary variant (muted solid fill)
+- Destructive actions: destructive variant
+- Tertiary/dismissal: ghost or link style
+
+### Inputs and controls
+
+- Inputs should feel generous on mobile — tall enough for comfortable tapping, rounded to match the overall soft aesthetic
+- Always include appropriate `autocomplete` attributes for password manager and autofill support
+- Labels above inputs, not floating or inline
+
+### Cards and containers
+
+- Cards group related content — use them intentionally, not as decoration
+- Elevated in light mode (shadow), bordered in dark mode
+- Info/message containers use a subtle tinted background with borders and dividers between distinct messages
+- Cards that represent the same type of data should use identical shells (same border, padding, shadow, hover) — differentiate through content, not container styling
+
+### Success and error states
+
+- Success states replace the full page content — don't just slap a banner on an existing form
+- Structure: icon → heading → message container → action link
+- Error messages belong near the action that caused them, not at the top of the page
+
+### Navigation
+
+- Back links always include a left chevron
+- Sticky bottom bars for primary actions on mobile
+- Top bars for context (title, status, back button)
+- Tappable cards should show a chevron to indicate navigation
+
+### Amounts and money
+
+- Large, bold, prominent — money is always the primary visual element when present
+- Right-aligned in lists/rows
+- Use tabular figures (Inter with `tnum`)
+- When showing totals with incomplete data, qualify with a count (e.g., "· 2 bills pending") rather than hiding the number
+
+### Theme-aware assets
+
+- Provide light and dark variants, toggle with `dark:hidden` / `dark:block`
+- Never hardcode colors in SVGs that only work in one mode
+
+### Spacing philosophy
+
+- Use spacing to create hierarchy before reaching for borders or backgrounds
+- Generous vertical rhythm — the app should breathe
+- Sections separated by meaningful whitespace, major blocks by more
+- Mobile-first padding on sides and inside cards
+
+### Page-level utility UI
+
+- Footer elements (language selector, legal links) live at the viewport bottom, outside content cards
+- Smaller, more muted than content — utility, not feature
+
+### Status indicators
+
+- Badge with icon + text — never color-only
+- Consistent placement (top-right of card or inline in row)
+- Semantic color mapping: emerald = healthy/paid, amber = attention/pending, rose = overdue/unpaid, sky = info/review
+
+### Never do this
+
+- tiny text to fit more content
+- dashboard clutter
+- multiple competing primary CTAs
+- deeply nested cards/boxes
+- enterprise-heavy admin aesthetics
+- color-only status communication
+- flashy decorative animation
+- desktop layouts that lose the calm mobile-first feel
+- layout shifts from dynamic content — use absolute positioning or reserved space
+- manually size icons inside buttons — the Button component handles icon sizing
 
 ---
 

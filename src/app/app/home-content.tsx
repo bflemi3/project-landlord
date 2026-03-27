@@ -1,24 +1,46 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { motion } from 'motion/react'
-import { Building2, Plus, Users, DoorOpen, LayoutGrid, List, ChevronRight, Sparkles, LogOut, ArrowLeftRight } from 'lucide-react'
+import {
+  Building2, Plus, DoorOpen,
+  ChevronRight, LogOut, ArrowLeftRight,
+  Check, Clock, UserPlus, Receipt, FileText,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/wordmark'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { FadeUp } from '@/components/fade-up'
+import { StickyBottomBar } from '@/components/sticky-bottom-bar'
+import { OperatingPropertyCard, SetupPropertyCard, isPropertyComplete } from '@/components/property-card'
 import { useMemberships, type MembershipWithProperty } from '@/lib/hooks/use-memberships'
+import { usePropertyCounts, type PropertyCounts } from '@/lib/hooks/use-property-counts'
 import { createClient } from '@/lib/supabase/client'
+import type { PropertySetupProgress } from '@/lib/types/property'
 
 function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
   const hour = new Date().getHours()
   if (hour < 12) return 'goodMorning'
   if (hour < 18) return 'goodAfternoon'
   return 'goodEvening'
+}
+
+/**
+ * Derive setup progress from property counts.
+ * Since we don't have statements yet in MVP, firstStatementPublished is always false.
+ */
+export function deriveSetupProgress(counts: PropertyCounts): PropertySetupProgress {
+  return {
+    propertyCreated: true,
+    tenantsInvited: counts.tenantCount > 0 || counts.pendingInviteCount > 0,
+    tenantsAccepted: counts.tenantCount > 0,
+    chargesConfigured: counts.chargeCount > 0,
+    firstStatementPublished: false,
+  }
 }
 
 export function HomeContent({ firstName }: { firstName?: string }) {
@@ -140,132 +162,187 @@ function EmptyState({ firstName }: { firstName?: string }) {
 }
 
 // =============================================================================
-// Populated state — property cards
+// Populated state — property cards with setup/operating distinction
 // =============================================================================
 
 function PopulatedState({ memberships, firstName }: { memberships: MembershipWithProperty[]; firstName?: string }) {
   const t = useTranslations('home')
-  const [view, setView] = useState<'grouped' | 'flat'>('grouped')
+  const router = useRouter()
   const greeting = t(getGreetingKey())
 
-  const landlordMemberships = memberships.filter((m) => m.role === 'landlord')
-  const tenantMemberships = memberships.filter((m) => m.role === 'tenant')
+  const propertyIds = useMemo(() => memberships.map((m) => m.property.id), [memberships])
+  const { data: countsByProperty } = usePropertyCounts(propertyIds)
+
+  // Derive setup progress for each property
+  const progressByProperty = useMemo(() => {
+    const map = new Map<string, PropertySetupProgress>()
+    for (const m of memberships) {
+      const counts = countsByProperty[m.property.id]
+      if (counts) {
+        map.set(m.property.id, deriveSetupProgress(counts))
+      }
+    }
+    return map
+  }, [memberships, countsByProperty])
+
+  // Separate setup from operating
+  const { inSetup, operating } = useMemo(() => {
+    const setup: MembershipWithProperty[] = []
+    const op: MembershipWithProperty[] = []
+    for (const m of memberships) {
+      const progress = progressByProperty.get(m.property.id)
+      if (progress && isPropertyComplete(progress)) {
+        op.push(m)
+      } else {
+        setup.push(m)
+      }
+    }
+    return { inSetup: setup, operating: op }
+  }, [memberships, progressByProperty])
+
+  // Build action items for single-property setup views
+  const actions = useMemo(() => {
+    if (memberships.length !== 1) return []
+
+    const items: { icon: React.ElementType; title: string; description: string; color: string }[] = []
+    const m = memberships[0]
+    const counts = countsByProperty[m.property.id]
+    const progress = progressByProperty.get(m.property.id)
+
+    if (counts && counts.pendingInviteCount > 0) {
+      items.push({
+        icon: Clock,
+        title: counts.pendingInviteCount === 1
+          ? t('pendingInviteSingular')
+          : t('pendingInvitePlural', { count: counts.pendingInviteCount }),
+        description: t('pendingInviteDescription'),
+        color: 'text-amber-500',
+      })
+    }
+
+    if (progress && !progress.tenantsInvited) {
+      items.push({
+        icon: UserPlus,
+        title: t('actionInviteTenants'),
+        description: t('actionInviteTenantsDescription'),
+        color: 'text-primary',
+      })
+    }
+
+    if (progress && !progress.chargesConfigured) {
+      items.push({
+        icon: Receipt,
+        title: t('actionSetUpCharges'),
+        description: t('actionSetUpChargesDescription'),
+        color: 'text-primary',
+      })
+    }
+
+    if (progress && progress.chargesConfigured && progress.tenantsAccepted && !progress.firstStatementPublished) {
+      items.push({
+        icon: FileText,
+        title: t('actionPublishStatement'),
+        description: t('actionPublishStatementDescription'),
+        color: 'text-primary',
+      })
+    }
+
+    return items
+  }, [memberships, countsByProperty, progressByProperty, t])
+
+  const isSingleProperty = memberships.length === 1
 
   return (
-    <div className="mx-auto min-h-svh max-w-3xl px-6 pb-32 pt-8">
-      <FadeUp.Group stagger={0.08}>
-        {/* Header */}
-        <FadeUp className="mb-10 flex items-start justify-between">
-          <h1 className="text-2xl font-bold text-foreground">
-            {greeting}{firstName ? `, ${firstName}` : ''}
-          </h1>
-          <SignOutLink />
-        </FadeUp>
-
-        {/* Controls row */}
-        <FadeUp className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-foreground">{t('myProperties')}</h2>
-          <div className="flex rounded-lg border border-border bg-secondary/50 p-0.5">
-            <button
-              onClick={() => setView('grouped')}
-              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                view === 'grouped'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              title={t('viewByProperty')}
-            >
-              <LayoutGrid className="size-3.5" />
-            </button>
-            <button
-              onClick={() => setView('flat')}
-              className={`rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                view === 'flat'
-                  ? 'bg-card text-foreground shadow-sm'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
-              title={t('viewAllUnits')}
-            >
-              <List className="size-3.5" />
-            </button>
-          </div>
-        </FadeUp>
-      </FadeUp.Group>
-
-      {/* Property cards — grid on desktop */}
-      <FadeUp.Group className="grid gap-4 md:grid-cols-2" stagger={0.06} baseDelay={0.16}>
-        {landlordMemberships.map((m) => (
-          <FadeUp key={m.id}>
-            <PropertyCard membership={m} />
+    <div className="flex h-svh flex-col">
+      <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
+        <FadeUp.Group stagger={0.08}>
+          {/* Header */}
+          <FadeUp className="mb-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">
+                  {greeting}{firstName ? `, ${firstName}` : ''}
+                </h1>
+                {memberships.length > 1 && (
+                  <p className="mt-1.5 text-lg text-muted-foreground">
+                    {memberships.length} {t('propertiesCount')}
+                  </p>
+                )}
+              </div>
+              <SignOutLink />
+            </div>
           </FadeUp>
-        ))}
-        {tenantMemberships.map((m) => (
-          <FadeUp key={m.id}>
-            <PropertyCard membership={m} />
-          </FadeUp>
-        ))}
-      </FadeUp.Group>
 
-      {/* Add property — sticky bottom bar */}
-      <FadeUp delay={0.3} className="fixed inset-x-0 bottom-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-lg">
+          {/* Property cards */}
+          <FadeUp>
+            <div className="grid gap-3 md:grid-cols-2">
+              {inSetup.map((m) => (
+                <Link key={m.id} href={`/app/p/${m.property.id}`} className="block">
+                  <SetupPropertyCard
+                    membership={m}
+                    progress={progressByProperty.get(m.property.id)!}
+                    pendingInvites={[]}
+                  />
+                </Link>
+              ))}
+              {operating.map((m) => (
+                <Link key={m.id} href={`/app/p/${m.property.id}`} className="block">
+                  <OperatingPropertyCard membership={m} />
+                </Link>
+              ))}
+            </div>
+          </FadeUp>
+
+          {/* Action cards for single-property setup */}
+          {isSingleProperty && actions.length > 0 && (
+            <FadeUp className="mt-8">
+              <h3 className="mb-3 text-base font-semibold text-foreground">{t('whatsNext')}</h3>
+              <div className="space-y-2">
+                {actions.map((action, i) => (
+                  <button
+                    key={i}
+                    onClick={() => router.push(`/app/p/${memberships[0].property.id}`)}
+                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
+                  >
+                    <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary ${action.color}`}>
+                      <action.icon className="size-4" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground">{action.title}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{action.description}</p>
+                    </div>
+                    <ChevronRight className="size-4 shrink-0 text-muted-foreground/40" />
+                  </button>
+                ))}
+              </div>
+            </FadeUp>
+          )}
+
+          {/* Calm state — single property, fully set up */}
+          {isSingleProperty && actions.length === 0 && operating.length === 1 && (
+            <FadeUp className="mt-8">
+              <div className="rounded-2xl bg-primary/5 px-5 py-6 text-center dark:bg-primary/10">
+                <Check className="mx-auto mb-2 size-6 text-primary" />
+                <p className="text-sm font-medium text-foreground">{t('allSetUp')}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{t('allSetUpDescription')}</p>
+              </div>
+            </FadeUp>
+          )}
+        </FadeUp.Group>
+      </div>
+
+      {/* Add property — always visible at bottom */}
+      <StickyBottomBar>
         <div className="mx-auto max-w-3xl">
           <Link href="/app/p/new" className="block">
-            <Button className="h-12 w-full rounded-2xl" size="lg">
-              <Plus className="size-5" />
+            <Button variant="ghost" className="h-10 w-full rounded-2xl text-muted-foreground">
+              <Plus className="size-4" />
               {t('addProperty')}
             </Button>
           </Link>
         </div>
-      </FadeUp>
+      </StickyBottomBar>
     </div>
-  )
-}
-
-// =============================================================================
-// Property card
-// =============================================================================
-
-function PropertyCard({ membership }: { membership: MembershipWithProperty }) {
-  const t = useTranslations('home')
-  const router = useRouter()
-  const { property, unitCount, tenantCount, role } = membership
-
-  const address = [property.city, property.state].filter(Boolean).join(', ')
-
-  return (
-    <button
-      onClick={() => router.push(`/app/p/${property.id}`)}
-      className="group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/30 hover:shadow-md dark:border-border dark:shadow-none dark:hover:border-primary/40"
-    >
-      <div className="flex items-start justify-between">
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-foreground">
-            {property.name}
-          </h3>
-          {address && (
-            <p className="mt-0.5 truncate text-sm text-muted-foreground">{address}</p>
-          )}
-        </div>
-        <ChevronRight className="mt-0.5 size-5 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
-      </div>
-
-      <div className="mt-4 flex items-center gap-4 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1.5">
-          <Building2 className="size-3.5" />
-          {t('units', { count: unitCount })}
-        </span>
-        <span className="flex items-center gap-1.5">
-          <Users className="size-3.5" />
-          {tenantCount > 0 ? t('tenants', { count: tenantCount }) : t('noTenants')}
-        </span>
-        {role === 'landlord' && (
-          <span className="ml-auto flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-            <Sparkles className="size-3" />
-            {t('nudgeCharges')}
-          </span>
-        )}
-      </div>
-    </button>
   )
 }
 

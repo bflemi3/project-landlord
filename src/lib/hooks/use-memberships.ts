@@ -14,8 +14,6 @@ export interface MembershipWithProperty {
     city: string | null
     state: string | null
   }
-  unitCount: number
-  tenantCount: number
 }
 
 async function fetchMemberships(): Promise<MembershipWithProperty[]> {
@@ -42,40 +40,12 @@ async function fetchMemberships(): Promise<MembershipWithProperty[]> {
 
   if (error || !memberships) return []
 
-  // Fetch unit and tenant counts per property
-  const propertyIds = memberships.map((m) => (m.property as unknown as { id: string }).id)
-
-  const { data: units } = await supabase
-    .from('units')
-    .select('id, property_id')
-    .in('property_id', propertyIds)
-    .is('deleted_at', null)
-
-  const { data: tenantMemberships } = await supabase
-    .from('memberships')
-    .select('id, property_id')
-    .in('property_id', propertyIds)
-    .eq('role', 'tenant')
-    .is('deleted_at', null)
-
-  const unitCountByProperty = new Map<string, number>()
-  const tenantCountByProperty = new Map<string, number>()
-
-  for (const u of units ?? []) {
-    unitCountByProperty.set(u.property_id, (unitCountByProperty.get(u.property_id) ?? 0) + 1)
-  }
-  for (const t of tenantMemberships ?? []) {
-    tenantCountByProperty.set(t.property_id, (tenantCountByProperty.get(t.property_id) ?? 0) + 1)
-  }
-
   return memberships.map((m) => {
     const property = m.property as unknown as MembershipWithProperty['property']
     return {
       id: m.id,
       role: m.role as 'landlord' | 'tenant',
       property,
-      unitCount: unitCountByProperty.get(property.id) ?? 0,
-      tenantCount: tenantCountByProperty.get(property.id) ?? 0,
     }
   })
 }

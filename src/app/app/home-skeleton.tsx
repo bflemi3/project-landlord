@@ -1,37 +1,36 @@
 import { Skeleton } from '@/components/ui/skeleton'
 
+/**
+ * Home page loading skeleton.
+ * Matches the populated state layout (header + cards + bottom bar)
+ * since returning users are the common case. New users see a brief
+ * flash before the empty state renders — acceptable tradeoff.
+ */
 export function HomeSkeleton() {
   return (
-    <div className="flex min-h-svh flex-col">
-      {/* Sign out placeholder — top right */}
-      <div className="flex justify-end px-6 pt-5">
-        <Skeleton className="size-7 rounded-full" />
+    <div className="flex h-svh flex-col">
+      {/* Scrollable content area */}
+      <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
+        {/* Header — greeting + sign out */}
+        <div className="mb-8 flex items-start justify-between">
+          <div>
+            <Skeleton className="h-8 w-56 rounded-lg" />
+            <Skeleton className="mt-2 h-5 w-32 rounded-lg" />
+          </div>
+          <Skeleton className="size-5 rounded-full" />
+        </div>
+
+        {/* Property cards */}
+        <div className="grid gap-3 md:grid-cols-2">
+          <Skeleton className="h-44 w-full rounded-2xl" />
+          <Skeleton className="h-44 w-full rounded-2xl" />
+        </div>
       </div>
 
-      {/* Centered content — matches empty state */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
-        <div className="w-full max-w-2xl">
-          {/* Wordmark */}
-          <div className="mb-8 text-center">
-            <Skeleton className="mx-auto h-7 w-28 rounded-lg" />
-          </div>
-
-          {/* Greeting + subtitle */}
-          <div className="mb-10 text-center">
-            <Skeleton className="mx-auto h-8 w-64 rounded-lg md:h-9" />
-            <Skeleton className="mx-auto mt-3 h-5 w-44 rounded-lg" />
-          </div>
-
-          {/* Two cards — stacked on mobile, side by side on desktop */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <Skeleton className="h-48 w-full rounded-2xl md:h-56" />
-            <Skeleton className="h-48 w-full rounded-2xl md:h-56" />
-          </div>
-
-          {/* Reassurance text */}
-          <div className="mt-5 flex justify-center">
-            <Skeleton className="h-10 w-72 rounded-xl" />
-          </div>
+      {/* Bottom bar */}
+      <div className="shrink-0 border-t border-border px-6 py-4">
+        <div className="mx-auto max-w-3xl">
+          <Skeleton className="h-10 w-full rounded-2xl" />
         </div>
       </div>
     </div>

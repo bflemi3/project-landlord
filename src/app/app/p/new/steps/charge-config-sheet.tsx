@@ -153,6 +153,7 @@ export function ChargeConfigSheet({
                     }}
                     className="ml-1 w-0 min-w-[3ch] max-w-32 flex-1 bg-transparent text-left text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/20"
                     style={{ width: `${Math.max(3, (amount || '').length + 1)}ch` }}
+                    autoComplete="off"
                     autoFocus
                   />
                   {amount && (

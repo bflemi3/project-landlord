@@ -38,14 +38,15 @@ export async function inviteTenant(
     return { success: false, errors: { general: 'notAuthenticated' } }
   }
 
-  // Read the landlord's preferred locale for the email
+  // Read the landlord's profile for locale and name
   const { data: profile } = await supabase
     .from('profiles')
-    .select('preferred_locale')
+    .select('preferred_locale, full_name')
     .eq('id', user.id)
     .single()
 
   const locale = (profile?.preferred_locale as EmailLocale) ?? 'en'
+  const resolvedLandlordName = landlordName || profile?.full_name || ''
 
   // Check if this tenant is already invited to this unit
   const { data: existing } = await supabase
@@ -87,7 +88,7 @@ export async function inviteTenant(
       to: email,
       replyTo: 'hello@mabenn.com',
       subject: t.tenantInvite.subject(propertyName),
-      html: buildTenantInviteEmail({ tenantName, landlordName, propertyName, locale }),
+      html: buildTenantInviteEmail({ tenantName, landlordName: resolvedLandlordName, propertyName, locale }),
     })
   } catch {
     // Email failed but invitation was created — don't fail the action
