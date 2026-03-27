@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { SwUpdateNotifier } from '@/components/sw-update-notifier'
 import { InstallPrompt } from '@/components/install-prompt'
 import { PostHogIdentify } from '@/components/posthog-identify'
+import { AppBar } from './app-bar'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -28,24 +29,28 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/auth/enter-code')
   }
 
-  // Fetch profile for name (used by PostHog identify)
+  // Fetch profile for name + avatar
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, preferred_locale')
+    .select('full_name, preferred_locale, avatar_url')
     .eq('id', userId)
     .single()
 
   return (
-    <>
+    <div className="h-svh">
       <PostHogIdentify
         userId={userId}
         email={email}
         name={profile?.full_name ?? undefined}
         locale={profile?.preferred_locale ?? undefined}
       />
+      <AppBar
+        userName={profile?.full_name ?? undefined}
+        avatarUrl={profile?.avatar_url ?? undefined}
+      />
       {children}
       <SwUpdateNotifier />
       <InstallPrompt />
-    </>
+    </div>
   )
 }

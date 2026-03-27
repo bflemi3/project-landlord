@@ -7,19 +7,15 @@ import { useTranslations } from 'next-intl'
 import { motion } from 'motion/react'
 import {
   Building2, Plus, DoorOpen,
-  ChevronRight, LogOut, ArrowLeftRight,
+  ChevronRight, ArrowLeftRight,
   Check, Clock, UserPlus, Receipt, FileText,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Wordmark } from '@/components/wordmark'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { LanguageSwitcher } from '@/components/language-switcher'
 import { FadeUp } from '@/components/fade-up'
 import { StickyBottomBar } from '@/components/sticky-bottom-bar'
 import { OperatingPropertyCard, SetupPropertyCard, isPropertyComplete } from '@/components/property-card'
 import { useMemberships, type MembershipWithProperty } from '@/lib/hooks/use-memberships'
 import { usePropertyCounts, type PropertyCounts } from '@/lib/hooks/use-property-counts'
-import { createClient } from '@/lib/supabase/client'
 import type { PropertySetupProgress } from '@/lib/types/property'
 
 function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
@@ -64,20 +60,10 @@ function EmptyState({ firstName }: { firstName?: string }) {
   const greeting = t(getGreetingKey())
 
   return (
-    <div className="flex min-h-svh flex-col">
-      {/* Subtle sign out — top right */}
-      <div className="flex justify-end px-6 pt-5">
-        <SignOutLink />
-      </div>
-
+    <div className="flex h-svh flex-col">
       {/* Centered content */}
-      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
+      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-14">
         <FadeUp.Group className="w-full max-w-2xl" stagger={0.1} baseDelay={0}>
-          {/* Wordmark */}
-          <FadeUp className="mb-8 text-center">
-            <Wordmark className="mx-auto h-7" />
-          </FadeUp>
-
           {/* Greeting + subtitle */}
           <FadeUp className="mb-10 text-center">
             <h1 className="text-2xl font-bold text-foreground md:text-3xl">
@@ -152,11 +138,6 @@ function EmptyState({ firstName }: { firstName?: string }) {
         </FadeUp.Group>
       </div>
 
-      {/* Footer */}
-      <div className="flex items-center justify-center gap-8 px-6 pb-6">
-        <LanguageSwitcher />
-        <ThemeToggle />
-      </div>
     </div>
   )
 }
@@ -254,22 +235,20 @@ function PopulatedState({ memberships, firstName }: { memberships: MembershipWit
 
   return (
     <div className="flex h-svh flex-col">
-      <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
+      <div className="flex-1 overflow-y-auto px-6 pt-14 pb-4">
+        <div className={`mx-auto ${isSingleProperty ? 'max-w-xl' : 'max-w-4xl'}`}>
         <FadeUp.Group stagger={0.08}>
           {/* Header */}
           <FadeUp className="mb-8">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">
-                  {greeting}{firstName ? `, ${firstName}` : ''}
-                </h1>
-                {memberships.length > 1 && (
-                  <p className="mt-1.5 text-lg text-muted-foreground">
-                    {memberships.length} {t('propertiesCount')}
-                  </p>
-                )}
-              </div>
-              <SignOutLink />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                {greeting}{firstName ? `, ${firstName}` : ''}
+              </h1>
+              {memberships.length > 1 && (
+                <p className="mt-1.5 text-lg text-muted-foreground">
+                  {memberships.length} {t('propertiesCount')}
+                </p>
+              )}
             </div>
           </FadeUp>
 
@@ -329,13 +308,14 @@ function PopulatedState({ memberships, firstName }: { memberships: MembershipWit
             </FadeUp>
           )}
         </FadeUp.Group>
+        </div>
       </div>
 
       {/* Add property — always visible at bottom */}
       <StickyBottomBar>
-        <div className="mx-auto max-w-3xl">
-          <Link href="/app/p/new" className="block">
-            <Button variant="ghost" className="h-10 w-full rounded-2xl text-muted-foreground">
+        <div className={`mx-auto flex justify-center ${isSingleProperty ? 'max-w-xl' : 'max-w-4xl'}`}>
+          <Link href="/app/p/new">
+            <Button variant="ghost" className="h-10 rounded-2xl px-6 text-muted-foreground md:w-auto">
               <Plus className="size-4" />
               {t('addProperty')}
             </Button>
@@ -343,29 +323,5 @@ function PopulatedState({ memberships, firstName }: { memberships: MembershipWit
         </div>
       </StickyBottomBar>
     </div>
-  )
-}
-
-// =============================================================================
-// Sign out — subtle link, not a button
-// =============================================================================
-
-function SignOutLink() {
-  const t = useTranslations('auth')
-
-  async function handleSignOut() {
-    const supabase = createClient()
-    await supabase.auth.signOut()
-    window.location.href = '/auth/sign-in'
-  }
-
-  return (
-    <button
-      onClick={handleSignOut}
-      className="flex items-center gap-1.5 text-sm text-muted-foreground/60 transition-colors hover:text-muted-foreground"
-    >
-      <LogOut className="size-3.5" />
-      <span className="hidden sm:inline">{t('signOut')}</span>
-    </button>
   )
 }

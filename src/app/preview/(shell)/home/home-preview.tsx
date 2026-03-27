@@ -29,18 +29,22 @@ function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
 function PageShell({
   children,
   bottomBar,
+  maxWidth = 'max-w-xl',
 }: {
   children: React.ReactNode
   bottomBar?: React.ReactNode
+  maxWidth?: string
 }) {
   return (
     <div className="flex h-svh flex-col">
       <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
-        {children}
+        <div className={`mx-auto ${maxWidth}`}>
+          {children}
+        </div>
       </div>
       {bottomBar && (
         <div className="shrink-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-lg">
-          <div className="mx-auto max-w-3xl">
+          <div className={`mx-auto ${maxWidth}`}>
             {bottomBar}
           </div>
         </div>
@@ -224,10 +228,12 @@ function SinglePropertyState({
   return (
     <PageShell
       bottomBar={
-        <Button variant="ghost" className="h-10 w-full rounded-2xl text-muted-foreground">
-          <Plus className="size-4" />
-          {t('addProperty')}
-        </Button>
+        <div className="flex justify-center">
+          <Button variant="ghost" className="h-10 rounded-2xl px-6 text-muted-foreground">
+            <Plus className="size-4" />
+            {t('addProperty')}
+          </Button>
+        </div>
       }
     >
       <FadeUp.Group stagger={0.08}>
@@ -356,11 +362,14 @@ function MultiPropertyState({
 
   return (
     <PageShell
+      maxWidth="max-w-4xl"
       bottomBar={
-        <Button variant="ghost" className="h-10 w-full rounded-2xl text-muted-foreground">
-          <Plus className="size-4" />
-          {t('addProperty')}
-        </Button>
+        <div className="flex justify-center">
+          <Button variant="ghost" className="h-10 rounded-2xl px-6 text-muted-foreground">
+            <Plus className="size-4" />
+            {t('addProperty')}
+          </Button>
+        </div>
       }
     >
       <FadeUp.Group stagger={0.08}>

@@ -262,6 +262,23 @@
     "partialFailure": "Propiedad creada, pero algunos invitaciones o cargos fallaron. Puedes configurarlos desde la página de la propiedad.",
     "dueDayApplied": "Aplicado a todos los cargos"
   },
+  "settings": {
+    "title": "Configuración",
+    "profile": "Perfil",
+    "payment": "Pago",
+    "appearance": "Apariencia",
+    "account": "Cuenta",
+    "noName": "Nombre no definido",
+    "profileDescription": "Administra tu perfil y preferencias",
+    "language": "Idioma",
+    "paymentDescription": "Configura tus datos de pago para la facturación.",
+    "pixComingSoon": "Configuración de clave Pix próximamente",
+    "fullName": "Nombre completo",
+    "fullNamePlaceholder": "Tu nombre",
+    "save": "Guardar",
+    "theme": "Tema",
+    "signOut": "Cerrar sesión"
+  },
   "theme": {
     "light": "Claro",
     "dark": "Oscuro",

@@ -262,6 +262,23 @@
     "partialFailure": "Property created, but some invites or charges failed. You can set them up from the property page.",
     "dueDayApplied": "Applied to all charges"
   },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "payment": "Payment",
+    "appearance": "Appearance",
+    "account": "Account",
+    "noName": "No name set",
+    "profileDescription": "Manage your profile and preferences",
+    "language": "Language",
+    "paymentDescription": "Configure your payment details for tenant billing.",
+    "pixComingSoon": "Pix key configuration coming soon",
+    "fullName": "Full name",
+    "fullNamePlaceholder": "Your name",
+    "save": "Save",
+    "theme": "Theme",
+    "signOut": "Sign out"
+  },
   "theme": {
     "light": "Light",
     "dark": "Dark",

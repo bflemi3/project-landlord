@@ -262,6 +262,23 @@
     "partialFailure": "Imóvel criado, mas alguns convites ou cobranças falharam. Você pode configurá-los na página do imóvel.",
     "dueDayApplied": "Aplicado a todas as cobranças"
   },
+  "settings": {
+    "title": "Configurações",
+    "profile": "Perfil",
+    "payment": "Pagamento",
+    "appearance": "Aparência",
+    "account": "Conta",
+    "noName": "Nome não definido",
+    "profileDescription": "Gerencie seu perfil e preferências",
+    "language": "Idioma",
+    "paymentDescription": "Configure seus dados de pagamento para cobrança.",
+    "pixComingSoon": "Configuração de chave Pix em breve",
+    "fullName": "Nome completo",
+    "fullNamePlaceholder": "Seu nome",
+    "save": "Salvar",
+    "theme": "Tema",
+    "signOut": "Sair"
+  },
   "theme": {
     "light": "Claro",
     "dark": "Escuro",
