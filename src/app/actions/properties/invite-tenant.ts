@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { resend, RESEND_FROM } from '@/lib/resend/client'
 import { getEmailTranslations, type EmailLocale } from '@/emails/i18n'
 
@@ -10,6 +11,79 @@ export interface InviteTenantState {
     email?: string
     general?: string
   }
+}
+
+export interface InviteTenantInput {
+  propertyId: string
+  unitId: string
+  email: string
+  tenantName: string | null
+  landlordName: string
+}
+
+export interface InviteTenantCoreResult {
+  success: boolean
+  errors?: {
+    email?: string
+    general?: string
+  }
+  locale?: EmailLocale
+  resolvedLandlordName?: string
+}
+
+export async function inviteTenantCore(
+  supabase: TypedSupabaseClient,
+  input: InviteTenantInput,
+): Promise<InviteTenantCoreResult> {
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) {
+    return { success: false, errors: { general: 'notAuthenticated' } }
+  }
+
+  // Read the landlord's profile for locale and name
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('preferred_locale, full_name')
+    .eq('id', user.id)
+    .single()
+
+  const locale = (profile?.preferred_locale as EmailLocale) ?? 'en'
+  const resolvedLandlordName = input.landlordName || profile?.full_name || ''
+
+  // Check if this tenant is already invited to this unit
+  const { data: existing } = await supabase
+    .from('invitations')
+    .select('id')
+    .eq('property_id', input.propertyId)
+    .eq('unit_id', input.unitId)
+    .eq('invited_email', input.email)
+    .eq('status', 'pending')
+    .limit(1)
+    .single()
+
+  if (existing) {
+    return { success: false, errors: { email: 'alreadyInvited' } }
+  }
+
+  // Create the invitation
+  const { error: insertError } = await supabase
+    .from('invitations')
+    .insert({
+      property_id: input.propertyId,
+      unit_id: input.unitId,
+      invited_by: user.id,
+      invited_email: input.email,
+      invited_name: input.tenantName,
+      role: 'tenant' as const,
+      status: 'pending' as const,
+    })
+
+  if (insertError) {
+    return { success: false, errors: { general: 'inviteFailed' } }
+  }
+
+  return { success: true, locale, resolvedLandlordName }
 }
 
 export async function inviteTenant(
@@ -32,56 +106,22 @@ export async function inviteTenant(
   }
 
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const result = await inviteTenantCore(supabase, {
+    propertyId,
+    unitId,
+    email,
+    tenantName,
+    landlordName,
+  })
 
-  if (!user) {
-    return { success: false, errors: { general: 'notAuthenticated' } }
-  }
-
-  // Read the landlord's profile for locale and name
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('preferred_locale, full_name')
-    .eq('id', user.id)
-    .single()
-
-  const locale = (profile?.preferred_locale as EmailLocale) ?? 'en'
-  const resolvedLandlordName = landlordName || profile?.full_name || ''
-
-  // Check if this tenant is already invited to this unit
-  const { data: existing } = await supabase
-    .from('invitations')
-    .select('id')
-    .eq('property_id', propertyId)
-    .eq('unit_id', unitId)
-    .eq('invited_email', email)
-    .eq('status', 'pending')
-    .limit(1)
-    .single()
-
-  if (existing) {
-    return { success: false, errors: { email: 'alreadyInvited' } }
-  }
-
-  // Create the invitation
-  const { error: insertError } = await supabase
-    .from('invitations')
-    .insert({
-      property_id: propertyId,
-      unit_id: unitId,
-      invited_by: user.id,
-      invited_email: email,
-      invited_name: tenantName,
-      role: 'tenant' as const,
-      status: 'pending' as const,
-    })
-
-  if (insertError) {
-    return { success: false, errors: { general: 'inviteFailed' } }
+  if (!result.success) {
+    return { success: false, errors: result.errors }
   }
 
   // Send the invite email
   try {
+    const locale = result.locale ?? 'en'
+    const resolvedLandlordName = result.resolvedLandlordName ?? ''
     const t = getEmailTranslations(locale)
     await resend.emails.send({
       from: RESEND_FROM,

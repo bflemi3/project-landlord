@@ -1,15 +1,14 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { TypedSupabaseClient } from '@/lib/supabase/types'
+import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
-export interface ChargeInput {
+export interface ChargeInput extends SplitInput {
   name: string
   chargeType: 'rent' | 'recurring' | 'variable'
   amountMinor: number | null
   dueDay: number
-  payer: 'tenant' | 'landlord' | 'split'
-  tenantPercent: number
-  landlordPercent: number
 }
 
 export interface CreateChargesResult {
@@ -17,12 +16,9 @@ export interface CreateChargesResult {
   failedCharges: string[]
 }
 
-function validateCharge(charge: ChargeInput): string | null {
+export async function validateCharge(charge: ChargeInput): Promise<string | null> {
   if (charge.dueDay < 1 || charge.dueDay > 28) {
     return `Invalid due day: ${charge.dueDay}`
-  }
-  if (charge.tenantPercent + charge.landlordPercent !== 100) {
-    return `Percentages must sum to 100: ${charge.tenantPercent} + ${charge.landlordPercent}`
   }
   if ((charge.chargeType === 'rent' || charge.chargeType === 'recurring') && charge.amountMinor !== null && charge.amountMinor <= 0) {
     return `Fixed charge amount must be positive: ${charge.amountMinor}`
@@ -30,17 +26,17 @@ function validateCharge(charge: ChargeInput): string | null {
   return null
 }
 
-export async function createCharges(
+export async function createChargesCore(
+  supabase: TypedSupabaseClient,
   unitId: string,
   charges: ChargeInput[],
 ): Promise<CreateChargesResult> {
   if (charges.length === 0) return { success: true, failedCharges: [] }
 
-  const supabase = await createClient()
   const failedCharges: string[] = []
 
   for (const charge of charges) {
-    const validationError = validateCharge(charge)
+    const validationError = await validateCharge(charge)
     if (validationError) {
       console.error(`Validation failed for charge "${charge.name}":`, validationError)
       failedCharges.push(charge.name)
@@ -81,49 +77,19 @@ export async function createCharges(
       continue
     }
 
-    // 3. Create responsibility allocation(s)
-    if (charge.payer === 'tenant') {
-      const { error } = await supabase.from('responsibility_allocations').insert({
-        charge_definition_id: chargeDef.id,
-        role: 'tenant',
-        allocation_type: 'percentage',
-        percentage: 100,
-      })
-      if (error) {
-        console.error('Failed to create responsibility allocation:', error)
-        failedCharges.push(charge.name)
-      }
-    } else if (charge.payer === 'landlord') {
-      const { error } = await supabase.from('responsibility_allocations').insert({
-        charge_definition_id: chargeDef.id,
-        role: 'landlord',
-        allocation_type: 'percentage',
-        percentage: 100,
-      })
-      if (error) {
-        console.error('Failed to create responsibility allocation:', error)
-        failedCharges.push(charge.name)
-      }
-    } else {
-      // Split — create both
-      const { error } = await supabase.from('responsibility_allocations').insert([
-        {
-          charge_definition_id: chargeDef.id,
-          role: 'tenant',
-          allocation_type: 'percentage',
-          percentage: charge.tenantPercent,
-        },
-        {
-          charge_definition_id: chargeDef.id,
-          role: 'landlord',
-          allocation_type: 'percentage',
-          percentage: charge.landlordPercent,
-        },
-      ])
-      if (error) {
-        console.error('Failed to create responsibility allocations:', error)
-        failedCharges.push(charge.name)
-      }
+    // 3. Create responsibility allocations
+    const allocations = buildAllocationRows(charge).map((a) => ({
+      ...a,
+      charge_definition_id: chargeDef.id,
+    }))
+
+    const { error: allocError } = await supabase
+      .from('responsibility_allocations')
+      .insert(allocations)
+
+    if (allocError) {
+      console.error('Failed to create responsibility allocations:', allocError)
+      failedCharges.push(charge.name)
     }
   }
 
@@ -131,4 +97,12 @@ export async function createCharges(
     success: failedCharges.length === 0,
     failedCharges,
   }
+}
+
+export async function createCharges(
+  unitId: string,
+  charges: ChargeInput[],
+): Promise<CreateChargesResult> {
+  const supabase = await createClient()
+  return createChargesCore(supabase, unitId, charges)
 }
