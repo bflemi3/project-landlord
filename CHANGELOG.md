@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.0
+
+- Create a new property with guided onboarding — address, tenants, and charges
+- Manage your property — view and edit charges, tenants, and property info
+- Invite, resend, cancel, and remove tenants
+- Smoother loading and page transitions
+
 ## v0.5.0
 
 - New landing page — see what mabenn is all about
