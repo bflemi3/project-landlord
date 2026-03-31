@@ -1,0 +1,188 @@
+Chave,Contexto,Inglês (referência),Português (BR)
+common.appName,"Nome do aplicativo, exibido em vários lugares",mabenn,mabenn
+common.loading,Texto exibido enquanto o conteúdo está carregando,Loading...,Carregando...
+common.error,Mensagem genérica de erro,Something went wrong,Algo deu errado
+common.retry,Botão para tentar novamente após um erro,Try again,Tentar novamente
+common.back,Botão de voltar na navegação,Back,Voltar
+auth.tagline,Slogan exibido abaixo do logo nas páginas de login,Shared billing you can trust,Cobrança compartilhada em que você confia
+auth.signIn,Título da página de login,Sign in,Entrar
+auth.signUp,Título da página de criar conta,Create account,Criar conta
+auth.signOut,Botão para sair da conta,Sign out,Sair
+auth.email,Rótulo do campo de e-mail no formulário,Email,E-mail
+auth.emailPlaceholder,Texto de exemplo no campo de e-mail,you@example.com,voce@exemplo.com
+auth.password,Rótulo do campo de senha,Password,Senha
+auth.passwordPlaceholder,Texto de exemplo no campo de senha,••••••••,••••••••
+auth.fullName,Rótulo do campo de nome completo no cadastro,Full name,Nome completo
+auth.fullNamePlaceholder,Texto de exemplo no campo de nome,Your full name,Seu nome completo
+auth.continueWithGoogle,Botão para entrar com conta Google,Continue with Google,Continuar com Google
+auth.orSignInWithEmail,Separador entre login Google e login por e-mail,or sign in with email,ou entre com e-mail
+auth.orSignUpWithEmail,Separador entre cadastro Google e cadastro por e-mail,or sign up with email,ou cadastre-se com e-mail
+auth.signInWithEmail,Botão para entrar com e-mail e senha,Sign In with Email,Entrar com E-mail
+auth.signUpButton,Botão para criar conta,Sign Up,Cadastrar
+auth.invalidCredentials,Erro quando e-mail ou senha estão incorretos,Email or password is incorrect. Please try again.,E-mail ou senha incorretos. Tente novamente.
+auth.forgotPassword,Link para redefinir senha na página de login,Forgot password?,Esqueceu a senha?
+auth.dontHaveAccount,Texto antes do link de cadastro na página de login,Don't have an account?,Não tem uma conta?
+auth.alreadyHaveAccount,Texto antes do link de login na página de cadastro,Already have an account?,Já tem uma conta?
+auth.backToSignIn,Link para voltar à página de login,Back to sign in,Voltar para login
+auth.resetPassword,Título da página de redefinir senha,Reset password,Redefinir senha
+auth.resetPasswordDescription,Descrição na página de redefinir senha,Enter your email and we'll send you a link to reset your password.,Insira seu e-mail e enviaremos um link para redefinir sua senha.
+auth.sendResetLink,Botão para enviar link de redefinição de senha,Send Reset Link,Enviar Link de Recuperação
+auth.setNewPassword,Título da página de definir nova senha,Set new password,Definir nova senha
+auth.setNewPasswordDescription,Descrição na página de definir nova senha,Enter your new password below.,Insira sua nova senha abaixo.
+auth.newPassword,Rótulo do campo de nova senha,New password,Nova senha
+auth.confirmPassword,Rótulo do campo de confirmar senha,Confirm password,Confirmar senha
+auth.updatePassword,Botão para atualizar a senha,Update Password,Atualizar Senha
+auth.passwordsDoNotMatch,Erro quando as senhas não coincidem,Passwords do not match.,As senhas não coincidem.
+auth.checkEmail,Título da tela 'verifique seu e-mail',Check your email,Verifique seu e-mail
+auth.checkEmailSignup,Mensagem após cadastro — {email} é substituído pelo e-mail do usuário,We sent a confirmation link to {email}. Click the link to verify your account.,Enviamos um link de confirmação para {email}. Clique no link para verificar sua conta.
+auth.checkEmailAutoVerify,Dica de que a página atualiza automaticamente após verificação,"Once verified, this page will take you to the app automatically.","Assim que verificado, esta página levará você ao app automaticamente."
+auth.checkEmailSpam,Dica para verificar a pasta de spam,Didn't receive it? Check your spam folder or try signing up again.,Não recebeu? Verifique sua pasta de spam ou tente se cadastrar novamente.
+auth.checkEmailReset,Mensagem após solicitar redefinição de senha,"If an account exists for {email}, we sent a password reset link.","Se existe uma conta para {email}, enviamos um link de recuperação de senha."
+auth.checkEmailGoogle,Dica para usuários que usaram Google — contém tag <strong>,Signed in with Google? Just use <strong>Continue with Google</strong> on the sign-in page instead.,Entrou com Google? Basta usar <strong>Continuar com Google</strong> na página de login.
+auth.emailVerified,Título da tela de e-mail verificado,Email verified,E-mail verificado
+auth.emailVerifiedMessage,Mensagem confirmando que o e-mail foi verificado,Your email has been confirmed. You can close this tab and return to the one where you signed up.,Seu e-mail foi confirmado. Você pode fechar esta aba e voltar para onde se cadastrou.
+auth.orContinueHere,Link alternativo na tela de e-mail verificado,Or continue here →,Ou continue aqui →
+auth.welcome,Título de boas-vindas na página principal do app,Welcome to mabenn,Bem-vindo ao mabenn
+auth.avatarPreview,Texto alternativo para a imagem de avatar no cadastro,Avatar preview,Pré-visualização do avatar
+auth.inviteCode,Rótulo do campo de código de convite,Invite code,Código de convite
+auth.inviteCodePlaceholder,Texto de exemplo no campo de código de convite,Enter your invite code,Digite seu código de convite
+auth.inviteCodeTitle,Título da página de código de convite,Enter your invite code,Insira seu código de convite
+auth.inviteCodeDescription,Descrição na página de código de convite,You should have received a code in your email. Enter it below to create your account.,Você deve ter recebido um código por e-mail. Insira-o abaixo para criar sua conta.
+auth.continueWithCode,Botão para continuar com o código de convite,Continue,Continuar
+auth.invalidInviteCode,Erro quando o código de convite é inválido,This code is incorrect or has expired. Double-check and try again.,Este código está incorreto ou expirou. Verifique e tente novamente.
+auth.signInError,Erro genérico de login,Something went wrong. Please try again.,Algo deu errado. Tente novamente.
+auth.signUpError,Erro genérico de cadastro,Something went wrong. Please try again.,Algo deu errado. Tente novamente.
+auth.alreadyRegistered,Erro quando já existe uma conta com o e-mail,An account with this email already exists. Try signing in instead.,Já existe uma conta com este e-mail. Tente entrar.
+pwa.whatsNew,Título do toast de atualização — {version} é substituído pela versão,What's new in v{version},Novidades na v{version}
+pwa.viewPastUpdates,Link para ver atualizações anteriores,View past updates,Ver atualizações anteriores
+pwa.installTitle,Título do prompt de instalação do PWA,Install mabenn,Instalar mabenn
+pwa.installDescription,Descrição do prompt de instalação,Add mabenn to your home screen for the best experience.,Adicione mabenn à sua tela inicial para a melhor experiência.
+pwa.install,Botão para instalar o app,Install,Instalar
+pwa.installIosSafari,Instruções de instalação para Safari no iOS,"Tap the share button, then ""Add to Home Screen"".","Toque no botão de compartilhar e depois em ""Adicionar à Tela de Início""."
+pwa.installIosChrome,Instruções de instalação para Chrome no iOS,"Tap the share button, then ""Add to Home Screen"". For the best experience, use Safari.","Toque no botão de compartilhar e depois em ""Adicionar à Tela de Início"". Para melhor experiência, use o Safari."
+pwa.installIosOther,Instruções de instalação para outros navegadores no iOS,"Open this page in Safari, then tap the share button and ""Add to Home Screen"".","Abra esta página no Safari, toque no botão de compartilhar e depois em ""Adicionar à Tela de Início""."
+landing.signIn,Botão de login no cabeçalho da página pública,Sign In,Entrar
+landing.heroTitle,Título principal da página de entrada,Billing clarity for landlords and tenants.,Cobrança clara para proprietários e inquilinos.
+landing.heroSubtitle,Subtítulo da página de entrada,Replace spreadsheets and email threads with a shared billing workspace everyone can trust.,Substitua planilhas e e-mails por um espaço de cobrança compartilhado em que todos confiam.
+landing.heroCta,Botão principal para entrar na lista de espera,Join the Waitlist,Entrar na Lista de Espera
+landing.heroNote,Nota abaixo do botão de lista de espera,Be the first to know when we launch.,Seja o primeiro a saber quando lançarmos.
+landing.waitlistPlaceholder,Texto de exemplo no campo de e-mail da lista de espera,you@example.com,voce@exemplo.com
+landing.waitlistSuccess,Mensagem de sucesso após entrar na lista de espera,You're on the list! Check your email for confirmation.,Você está na lista! Verifique seu e-mail para confirmação.
+landing.waitlistSubmitting,Texto no botão enquanto envia o formulário,Joining...,Entrando...
+landing.howItWorksTitle,Título da seção 'como funciona',How it works,Como funciona
+landing.step1Title,Passo 1 — título,Set up your property,Configure seu imóvel
+landing.step1Description,Passo 1 — descrição,"Add your units, set up rent and bills, invite your tenants.","Adicione suas unidades, configure aluguel e contas, convide seus inquilinos."
+landing.step2Title,Passo 2 — título,Forward your bills,Encaminhe suas contas
+landing.step2Description,Passo 2 — descrição,Email or upload utility bills. We pull out the numbers for you to review.,Envie ou faça upload das contas. Nós separamos os valores para sua revisão.
+landing.step3Title,Passo 3 — título,Publish monthly statements,Publique extratos mensais
+landing.step3Description,Passo 3 — descrição,"Review, approve, and share a clear breakdown every month.","Revise, aprove e compartilhe um resumo claro todo mês."
+landing.step4Title,Passo 4 — título,Build trust,Construa confiança
+landing.step4Description,Passo 4 — descrição,Every charge has a source. Tenants can see where it came from and ask questions.,Cada cobrança tem uma origem. Inquilinos podem ver de onde veio e fazer perguntas.
+landing.testimonialQuote,Citação de depoimento de um proprietário,"Finally, my tenants stopped texting me asking what they owe.","Finalmente, meus inquilinos pararam de me mandar mensagem perguntando o que devem."
+landing.testimonialAuthor,Autor do depoimento,"Landlord, São Paulo","Proprietário, São Paulo"
+landing.forLandlordsTitle,Título da seção de benefícios para proprietários,For landlords,Para proprietários
+landing.landlordBenefit1,Benefício 1 para proprietários,Manage multiple properties from one place,Gerencie múltiplos imóveis em um só lugar
+landing.landlordBenefit2,Benefício 2 para proprietários,Bills are read automatically — just review and approve,Contas são lidas automaticamente — só revise e aprove
+landing.landlordBenefit3,Benefício 3 para proprietários,Publish clear statements tenants can trust,Publique extratos claros em que os inquilinos confiam
+landing.landlordBenefit4,Benefício 4 para proprietários,Track payments without spreadsheets,Acompanhe pagamentos sem planilhas
+landing.forTenantsTitle,Título da seção de benefícios para inquilinos,For tenants,Para inquilinos
+landing.tenantBenefit1,Benefício 1 para inquilinos,See exactly what you owe and why,Veja exatamente o que você deve e por quê
+landing.tenantBenefit2,Benefício 2 para inquilinos,See the original bill behind each charge,Veja a conta original por trás de cada cobrança
+landing.tenantBenefit3,Benefício 3 para inquilinos,Coordinate splits with roommates,Coordene divisões com colegas de quarto
+landing.tenantBenefit4,Benefício 4 para inquilinos,Flag questions — no more awkward messages,Questione cobranças — sem mensagens constrangedoras
+landing.ctaTitle,Título da seção final de chamada para ação,Ready to simplify billing?,Pronto para simplificar a cobrança?
+landing.ctaSubtitle,Subtítulo da chamada para ação final,Join the waitlist and be first in line.,Entre na lista de espera e seja o primeiro.
+landing.ctaButton,Botão da chamada para ação final,Join the Waitlist,Entrar na Lista de Espera
+landing.footerCopyright,Texto de copyright no rodapé,© 2026 mabenn,© 2026 mabenn
+landing.footerPrivacy,Link de privacidade no rodapé,Privacy,Privacidade
+landing.footerTerms,Link de termos no rodapé,Terms,Termos
+home.goodMorning,Saudação exibida antes do nome do usuário (antes das 12h),Good morning,Bom dia
+home.goodAfternoon,Saudação exibida antes do nome do usuário (12h–18h),Good afternoon,Boa tarde
+home.goodEvening,Saudação exibida antes do nome do usuário (após 18h),Good evening,Boa noite
+home.roleChoiceSubtitle,Subtítulo na tela inicial para novos usuários,What brings you here?,O que te traz aqui?
+home.iOwnProperty,Título do cartão de proprietário na escolha de papel,I own a property,Sou proprietário
+home.iOwnPropertyDescription,Descrição do cartão de proprietário,"Set up your property, invite tenants, and manage billing.","Configure seu imóvel, convide inquilinos e gerencie cobranças."
+home.iRentProperty,Título do cartão de inquilino na escolha de papel,I rent a property,Sou inquilino
+home.iRentPropertyDescription,Descrição do cartão de inquilino,"View statements, track payments, and coordinate with roommates.","Veja extratos, acompanhe pagamentos e coordene com colegas de quarto."
+home.comingSoon,Badge no cartão de inquilino indicando recurso futuro,Coming soon,Em breve
+home.comingSoonDescription,Mensagem exibida ao clicar no cartão de inquilino,"Tenant onboarding is coming soon. For now, ask your landlord to invite you through mabenn.","O onboarding para inquilinos está chegando. Por enquanto, peça ao seu proprietário para convidá-lo pelo mabenn."
+home.roleNote,Texto de reassurance abaixo dos cartões — indica que a escolha não é permanente,You can always add more properties in either role later.,Você pode adicionar mais imóveis em qualquer papel depois.
+home.myProperties,Título da seção de propriedades na tela inicial,My properties,Meus imóveis
+home.addProperty,Botão para adicionar nova propriedade,Add property,Adicionar imóvel
+home.viewByProperty,Tooltip do botão de visualização agrupada,By property,Por imóvel
+home.viewAllUnits,Tooltip do botão de visualização de todas as unidades,All units,Todas as unidades
+home.units,Contagem de unidades no cartão — {count} é o número,"{count, plural, one {# unit} other {# units}}","{count, plural, one {# unidade} other {# unidades}}"
+home.tenants,Contagem de inquilinos no cartão — {count} é o número,"{count, plural, one {# tenant} other {# tenants}}","{count, plural, one {# inquilino} other {# inquilinos}}"
+home.noTenants,Texto quando não há inquilinos em uma propriedade,No tenants yet,Nenhum inquilino ainda
+home.nudgeCharges,Badge de incentivo para configurar cobranças,Set up charges,Configurar cobranças
+home.nudgeStatement,Badge de incentivo para publicar primeiro extrato,Publish your first statement,Publicar seu primeiro extrato
+properties.createProperty,Botão para criar propriedade (tela de convite de inquilinos),Create property,Criar imóvel
+properties.step,Indicador de passo no formulário — {current} e {total} são números,Step {current} of {total},Passo {current} de {total}
+properties.whereIsProperty,Título do passo 1 do cadastro de propriedade,Where is your property?,Onde fica seu imóvel?
+properties.whereIsPropertyDescription,Descrição do passo 1,We'll use this address to organize your billing.,Usaremos este endereço para organizar suas cobranças.
+properties.propertyName,Rótulo do campo nome da propriedade,Property name,Nome do imóvel
+properties.propertyNamePlaceholder,Texto de exemplo para nome da propriedade,e.g. Edifício Aurora,ex: Edifício Aurora
+properties.propertyNameHint,Dica abaixo do campo de nome,A name to help you identify this property.,Um nome para identificar este imóvel.
+properties.street,Rótulo do campo de rua,Street,Rua
+properties.streetPlaceholder,Texto de exemplo para rua,e.g. Rua Augusta,ex: Rua Augusta
+properties.number,Rótulo do campo de número,Number,Número
+properties.numberPlaceholder,Texto de exemplo para número,e.g. 123,ex: 123
+properties.complement,Rótulo do campo de complemento,"Apartment, suite, etc.",Complemento
+properties.complementPlaceholder,Texto de exemplo para complemento,e.g. Bloco B,ex: Bloco B
+properties.neighborhood,Rótulo do campo de bairro,Neighborhood,Bairro
+properties.neighborhoodPlaceholder,Texto de exemplo para bairro,e.g. Consolação,ex: Consolação
+properties.city,Rótulo do campo de cidade,City,Cidade
+properties.cityPlaceholder,Texto de exemplo para cidade,e.g. São Paulo,ex: São Paulo
+properties.state,Rótulo do campo de estado,State,Estado
+properties.statePlaceholder,Texto de exemplo no dropdown de estado,e.g. SP,ex: SP
+properties.postalCode,Rótulo do campo de CEP,CEP,CEP
+properties.postalCodePlaceholder,Texto de exemplo para CEP,e.g. 01310-100,ex: 01310-100
+properties.postalCodeLooking,Mensagem enquanto busca endereço pelo CEP,Looking up address...,Buscando endereço...
+properties.postalCodeFound,Mensagem de sucesso quando o CEP é encontrado,Address found!,Endereço encontrado!
+properties.postalCodeNotFound,Mensagem quando o CEP não é encontrado,CEP not found. Please fill in the address manually.,CEP não encontrado. Preencha o endereço manualmente.
+properties.addressSection,Rótulo da seção de endereço no formulário,Address,Endereço
+properties.addressHint,Dica abaixo do campo CEP para auto-preenchimento,Enter your CEP above to auto-fill these fields.,Insira seu CEP acima para preencher automaticamente.
+properties.continue,Botão para avançar no formulário,Continue,Continuar
+properties.back,Botão para voltar ao passo anterior,Back,Voltar
+properties.nameYourUnits,Título do passo de unidades (pode não ser usado no fluxo atual),Name your units,Nomeie suas unidades
+properties.unitsExplanation,Explicação do conceito de unidade,"A unit is an individual rental space within your property — like an apartment, room, or house.","Uma unidade é um espaço individual de aluguel dentro do seu imóvel — como um apartamento, quarto ou casa."
+properties.or,Separador entre opções,or,ou
+properties.singleUnit,Botão atalho para propriedade com apenas uma unidade,This property has just one unit,Este imóvel tem apenas uma unidade
+properties.unitName,Rótulo do campo de nome da unidade,Unit name,Nome da unidade
+properties.unitNamePlaceholder,Texto de exemplo para nome da unidade,e.g. Apt 201,ex: Apto 201
+properties.addAnotherUnit,Botão para adicionar outra unidade,Add another unit,Adicionar outra unidade
+properties.removeUnit,Botão para remover item da lista,Remove,Remover
+properties.atLeastOneUnit,Erro quando nenhuma unidade foi adicionada,Add at least one unit to continue.,Adicione pelo menos uma unidade para continuar.
+properties.inviteTenants,Título do passo 2 — convidar inquilinos,Invite tenants,Convidar inquilinos
+properties.inviteDescription,Descrição do passo de convite — deve vender o valor do mabenn para o proprietário,"When tenants are on mabenn, they see exactly what they owe and why — no more back-and-forth about bills. You can always invite them later too.","Com o mabenn, seus inquilinos veem exatamente o que devem e por quê — sem mais discussões sobre contas. Você também pode convidá-los depois."
+properties.tenantEmail,Rótulo do campo de e-mail do inquilino,Tenant's email,E-mail do inquilino
+properties.tenantEmailPlaceholder,Texto de exemplo para e-mail do inquilino,tenant@example.com,inquilino@exemplo.com
+properties.tenantName,Rótulo do campo de nome do inquilino (opcional),Name (optional),Nome (opcional)
+properties.tenantNamePlaceholder,Texto de exemplo para nome do inquilino,Tenant's name,Nome do inquilino
+properties.addTenant,Botão para adicionar inquilino à lista,Add tenant,Adicionar inquilino
+properties.invalidEmail,Erro quando o e-mail digitado não é válido,Enter a valid email address.,Insira um endereço de e-mail válido.
+properties.sendInvite,Botão para enviar convite,Send invite,Enviar convite
+properties.inviteSent,Confirmação de que o convite foi enviado,Invite sent!,Convite enviado!
+properties.skipForNow,Botão para pular o passo de convites,Skip for now,Pular por enquanto
+properties.addAnotherTenant,Botão para convidar mais um inquilino,Invite another tenant,Convidar outro inquilino
+properties.alreadyInvited,Erro quando o inquilino já foi convidado,This tenant has already been invited to this unit.,Este inquilino já foi convidado para esta unidade.
+properties.setupComplete,Título da tela de sucesso após criar propriedade,Your property is ready!,Seu imóvel está pronto!
+properties.setupCompleteMessage,Mensagem de sucesso com contagem de unidades — {name} e {unitCount} são substituídos,"{name} is set up with {unitCount, plural, one {# unit} other {# units}}. You can now set up charges or explore your new property.","{name} está configurado com {unitCount, plural, one {# unidade} other {# unidades}}. Agora você pode configurar cobranças ou explorar seu novo imóvel."
+properties.setupCompleteSimple,Mensagem de sucesso simplificada — {name} é o nome da propriedade,{name} is ready. You can now set up charges or invite tenants.,{name} está pronto. Agora você pode configurar cobranças ou convidar inquilinos.
+properties.setupCharges,Botão/link para configurar cobranças,Set up charges,Configurar cobranças
+properties.goHome,Botão para voltar à tela inicial,Go to home,Ir para início
+properties.required,Erro de validação — campo obrigatório,This field is required.,Este campo é obrigatório.
+properties.tooLong,Erro de validação — valor muito longo,This value is too long.,Este valor é muito longo.
+properties.invalidPostalCode,Erro de validação — CEP inválido,Enter a valid 8-digit CEP.,Insira um CEP válido de 8 dígitos.
+properties.invalidCity,Erro de validação — cidade com números,City name can't contain numbers.,O nome da cidade não pode conter números.
+properties.invalidState,Erro de validação — estado inválido,Select a valid state.,Selecione um estado válido.
+properties.duplicateAddress,Aviso quando já existe propriedade no mesmo endereço (exibido como toast),You already have a property at this address.,Você já tem um imóvel neste endereço.
+properties.viewExistingProperty,Botão no toast de duplicata para ver propriedade existente,View existing property,Ver imóvel existente
+properties.createFailed,Erro genérico ao criar propriedade,Something went wrong. Please try again.,Algo deu errado. Tente novamente.
+properties.missingProperty,Erro técnico — contexto de propriedade ausente,Property context is missing.,Contexto do imóvel ausente.
+properties.missingContext,Erro técnico — contexto de propriedade ou unidade ausente,Missing property or unit context.,Contexto do imóvel ou unidade ausente.
+properties.notAuthenticated,Erro quando o usuário não está autenticado,You must be signed in.,Você precisa estar conectado.
+properties.inviteFailed,Erro ao enviar convite para inquilino,Failed to send invite. Please try again.,Falha ao enviar convite. Tente novamente.
+theme.light,Opção de tema claro no seletor de tema,Light,Claro
+theme.dark,Opção de tema escuro no seletor de tema,Dark,Escuro
+theme.system,Opção de tema do sistema no seletor de tema,System,Sistema

@@ -25,14 +25,16 @@ The app should feel calm, modern, mobile-first, and trustworthy. It should feel 
 
 When making implementation decisions, use the following priority order:
 
-1. `docs/project/design.md` — source of truth for visual design, UX polish, component feel, spacing, hierarchy, typography, motion, and interaction style
-2. `CLAUDE.md` — source of truth for engineering execution guidance, architecture boundaries, product guardrails, and working conventions
-3. project planning markdown docs — source of truth for product scope, roadmap, workflows, and business intent
-4. the existing codebase — source of truth for what is already implemented
+1. `docs/project/design.md` — source of truth for visual design, UX polish, spacing, hierarchy, typography, motion, interaction style, and established design patterns
+2. `docs/project/components.md` — source of truth for approved component patterns, variants, layout rules, and composition. Check here before building any UI.
+3. `CLAUDE.md` — source of truth for engineering execution guidance, architecture boundaries, product guardrails, and working conventions
+4. project planning markdown docs — source of truth for product scope, roadmap, workflows, and business intent
+5. the existing codebase — source of truth for what is already implemented
 
 If these conflict:
 
-- prefer `docs/project/design.md` for design/UI decisions
+- prefer `design.md` for visual and UX decisions
+- prefer `components.md` for component selection and layout
 - prefer this file for implementation approach and engineering guardrails
 - prefer the latest project plan for product scope and roadmap intent
 - do not silently invent product behavior that conflicts with the plan
@@ -158,6 +160,10 @@ Needs to:
 
 ## Design Implementation Rules
 
+All visual design patterns, established UI rules, and "never do this" lists live in `docs/project/design.md`. All approved component patterns, layouts, and composition rules live in `docs/project/components.md`. Consult both before building any UI.
+
+This section covers only the rules about how wireframes relate to implementation.
+
 ### Wireframes
 
 Wireframes in `docs/wireframes/` are **low-fidelity structural guides**, not pixel-perfect design specs. They use placeholder grays, generic spacing, and simplified layouts to communicate structure, hierarchy, and flow — not final visual design.
@@ -167,105 +173,11 @@ When implementing a screen:
 - use the wireframe for **layout structure, content hierarchy, and user flow**
 - apply **your own design judgment** for color, spacing, typography, polish, and interaction details
 - follow `docs/project/design.md` and the design tokens in `globals.css` for the actual visual language
+- check `docs/project/components.md` for existing components that match what the wireframe describes
 - never copy wireframe grays, exact pixel values, or placeholder styling into production code
 - if the wireframe conflicts with design.md or good design sense, trust design.md and your judgment
 
 The goal is a calm, premium, mobile-first product — the wireframe tells you *what* goes on the screen, not *how* it should look.
-
-### General rules
-
-Always consult `docs/project/design.md` before making UI decisions.
-
-If a design detail is not specified there, default to:
-
-- mobile-first responsive layouts
-- large text over dense information packing
-- neutral base palette with teal as the primary accent
-- clean whitespace-driven hierarchy
-- calm, premium, financial-app-adjacent feel
-- accessible contrast
-- semantic, explicit statuses
-- subtle and purposeful motion
-
-Every screen should have:
-
-- one primary job
-- obvious primary action
-- comfortable mobile tap targets
-- intentional use of cards
-- progressive disclosure over dense screens
-- bottom sheets over modal-heavy UX when appropriate
-- polished loading, empty, success, and error states
-- motion only when it improves orientation or confidence
-
-Do not ship spreadsheet-like primary interfaces unless there is no better option.
-
-When in doubt, reduce complexity instead of adding more UI.
-
-### Established design patterns
-
-These patterns have been validated in the product and should be followed for consistency.
-
-**Button hierarchy**
-- Third-party actions (Google, Apple, etc.): high-contrast neutral — never use our brand color on third-party buttons
-- Our primary actions: teal primary
-- Secondary/alternative actions: secondary variant (muted solid fill)
-- Destructive actions: destructive variant
-- Tertiary/dismissal: ghost or link style
-
-**Inputs and controls**
-- Inputs should feel generous on mobile — tall enough for comfortable tapping, rounded to match the overall soft aesthetic
-- Always include appropriate `autocomplete` attributes for password manager and autofill support
-- Labels above inputs, not floating or inline
-
-**Cards and containers**
-- Cards group related content — use them intentionally, not as decoration
-- Elevated in light mode (shadow), bordered in dark mode
-- Info/message containers use a subtle tinted background with borders and dividers between distinct messages
-
-**Success and error states**
-- Success states replace the full page content — don't just slap a banner on an existing form
-- Structure: icon → heading → message container → action link
-- Error messages belong near the action that caused them, not at the top of the page
-
-**Navigation**
-- Back links always include a left chevron
-- Sticky bottom bars for primary actions on mobile
-- Top bars for context (title, status, back button)
-
-**Amounts and money**
-- Large, bold, prominent — money is always the primary visual element when present
-- Right-aligned in lists/rows
-- Use tabular figures (Inter with `tnum`)
-
-**Theme-aware assets**
-- Provide light and dark variants, toggle with `dark:hidden` / `dark:block`
-- Never hardcode colors in SVGs that only work in one mode
-
-**Spacing philosophy**
-- Use spacing to create hierarchy before reaching for borders or backgrounds
-- Generous vertical rhythm — the app should breathe
-- Sections separated by meaningful whitespace, major blocks by more
-- Mobile-first padding on sides and inside cards
-
-**Page-level utility UI**
-- Footer elements (language selector, legal links) live at the viewport bottom, outside content cards
-- Smaller, more muted than content — utility, not feature
-
-**Status indicators**
-- Badge with icon + text — never color-only
-- Consistent placement (top-right of card or inline in row)
-
-### Never do this
-
-- tiny text to fit more content
-- dashboard clutter
-- multiple competing primary CTAs
-- deeply nested cards/boxes
-- enterprise-heavy admin aesthetics
-- color-only status communication
-- flashy decorative animation
-- desktop layouts that lose the calm mobile-first feel
 
 ---
 
@@ -762,16 +674,78 @@ Check:
 - does this fit the MVP scope?
 - does this preserve trust and transparency?
 - does this stay mobile-first?
+- does this use existing components from `docs/project/components.md`?
 - does this align with `docs/project/design.md`?
 - is there a simpler version that gets the value sooner?
 
 If the answer is no, simplify.
+
+### After building or modifying UI
+
+When a feature introduces a new reusable component, layout pattern, or variant of an existing component, update `docs/project/components.md` before considering the work done. This keeps the catalog current so future features reuse what exists.
+
+**Add to `components.md` when:**
+- A new component is created in `src/components/` that will be used across multiple screens
+- An existing component gains a new variant or state (e.g., a new status type for property cards)
+- A new page layout pattern is established (e.g., a detail page shell, a list-to-detail flow)
+- A composition pattern is validated (e.g., "header + card grid + bottom bar")
+
+**Do not add:**
+- One-off page-specific markup that won't be reused
+- Implementation details that belong in code comments
+- Design philosophy — that belongs in `design.md`
+- Exhaustive prop documentation — a brief description of purpose and variants is enough
+
+The goal is a concise reference that helps build the next screen faster, not a generated API doc.
 
 ---
 
 ## Preferred Frontend Patterns
 
 Before creating a new UI component manually, always check if it's available via `npx shadcn@latest add <component>`. Prefer shadcn components over hand-written ones.
+
+### React hooks rules — never violate
+
+**Never call hooks after a conditional return.** All `useState`, `useEffect`, `useRef`, `useMemo`, `useCallback`, `useTranslations`, `useRouter`, `useSuspenseQuery`, and any other `use*` calls must come before the first `return` in a component. This is a core React rule — violating it causes runtime errors and unpredictable behavior.
+
+When using `useSuspenseQuery`, the query function should **throw on error** (not return `null`) so that `data` is always non-nullable. This eliminates the need for null-check early returns that would push subsequent hooks below a `return`.
+
+```tsx
+// WRONG — hooks after return
+function MyComponent({ id }: { id: string }) {
+  const { data: parent } = useParentQuery(id)
+  if (!parent) return null  // ← hooks below this line are illegal
+  const { data: children } = useChildQuery(parent.childId)
+  // ...
+}
+
+// RIGHT — all hooks at top, query throws on not-found
+function MyComponent({ id }: { id: string }) {
+  const { data: parent } = useParentQuery(id)  // throws if not found → suspends
+  const { data: children } = useChildQuery(parent.childId)  // safe — parent is always non-null
+  // ...
+}
+```
+
+### Atomic hooks
+
+Hooks must be atomic and single-responsibility. A parent hook returns its own data plus IDs of its children — never the children's data. Child hooks are responsible for fetching their own details. React Query deduplicates identical queries, so multiple components calling the same hook with the same ID only make one network request.
+
+```tsx
+// useProperty returns property info + unitIds — NOT unit details
+const { data: property } = useProperty(propertyId)
+
+// useUnit returns unit info — NOT charges or tenants
+const { data: unit } = useUnit(unitId)
+
+// Each domain has its own atomic hook
+const { data: charges } = useUnitCharges(unitId)
+const { data: tenants } = useUnitTenants(propertyId, unitId)
+```
+
+Components receive only primitive IDs as props and fetch their own data. Parent components never pass data objects down — they pass IDs and let children fetch what they need.
+
+Use Supabase joins to get child IDs in a single query rather than making sequential requests (e.g., `properties` joined with `units!inner ( id )` to get `unitIds` in one call).
 
 Default to:
 
@@ -793,6 +767,23 @@ Avoid:
 - brittle state spaghetti
 - speculative abstraction layers
 - premature design-system complexity beyond what the app actually uses
+
+### React component body ordering
+
+Organize hook calls and logic inside components in this order:
+
+1. **Refs** — `useRef`
+2. **Context** — `useContext`, `useTranslations`, `useLocale`
+3. **Router/navigation** — `useRouter`, `usePathname`, `useSearchParams`
+4. **State** — `useState`, `useReducer`, `useActionState`
+5. **Derived/computed values** — `useMemo`, `useDeferredValue`, variables derived from state/props
+6. **Queries** — `useSuspenseQuery`, `useQuery`, `useMutation`
+7. **Effects** — `useEffect`, `useLayoutEffect`
+8. **Callbacks** — `useCallback`, event handlers, form handlers
+9. **Render helpers** — conditional variables, formatted values, or small JSX fragments used in the return
+10. **Return** — JSX
+
+The principle: declarations flow from stable → reactive → side-effectful → behavioral. Refs don't change, context rarely changes, state changes on interaction, effects react to changes, callbacks respond to user actions.
 
 ### Form patterns
 
@@ -961,6 +952,7 @@ It should also:
 - respect access control
 - handle loading / empty / error states
 - work on mobile sizes first
+- use components from `docs/project/components.md` — not reinvented alternatives
 - feel aligned with `docs/project/design.md`
 - avoid obvious trust-breaking edge cases
 - emit required analytics if it is a key workflow

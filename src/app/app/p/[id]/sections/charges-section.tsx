@@ -1,0 +1,150 @@
+'use client'
+
+import { useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { useQueryClient } from '@tanstack/react-query'
+import { Plus } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { ChargeCard } from '@/components/charge-card'
+import { ChargeConfigSheet, type ChargeConfig } from '@/app/app/p/new/steps/charge-config-sheet'
+import { createCharges } from '@/app/actions/properties/create-charges'
+import { updateCharge } from '@/app/actions/properties/update-charge'
+import { removeCharge } from '@/app/actions/properties/remove-charge'
+import { useUnit } from '@/lib/hooks/use-unit'
+import { useUnitCharges, type ChargeDefinition } from '@/lib/hooks/use-unit-charges'
+
+/** Convert a ChargeDefinition (from DB) to a ChargeConfig (for the form) */
+function toChargeConfig(charge: ChargeDefinition): ChargeConfig {
+  return {
+    name: charge.name,
+    chargeType: charge.chargeType,
+    amountMinor: charge.amountMinor,
+    dueDay: charge.dueDay ?? 10,
+    payer: charge.split.payer,
+    splitMode: charge.split.allocationType === 'fixed_amount' ? 'amount' : 'percent',
+    tenantPercent: charge.split.tenantPercent,
+    landlordPercent: charge.split.landlordPercent,
+    tenantFixedMinor: charge.split.tenantFixedMinor ?? undefined,
+    landlordFixedMinor: charge.split.landlordFixedMinor ?? undefined,
+  }
+}
+
+export function ChargesSection({ unitId }: { unitId: string }) {
+  const t = useTranslations('propertyDetail')
+  const queryClient = useQueryClient()
+  const { data: unit } = useUnit(unitId)
+  const { data: charges } = useUnitCharges(unitId)
+
+  // Sheet state
+  const [sheetOpen, setSheetOpen] = useState(false)
+  const [editingCharge, setEditingCharge] = useState<ChargeDefinition | null>(null)
+
+  function handleAddCharge() {
+    setEditingCharge(null)
+    setSheetOpen(true)
+  }
+
+  function handleEditCharge(charge: ChargeDefinition) {
+    setEditingCharge(charge)
+    setSheetOpen(true)
+  }
+
+  async function handleSave(config: ChargeConfig) {
+    if (editingCharge) {
+      // Update existing
+      await updateCharge({
+        chargeId: editingCharge.id,
+        name: config.name,
+        chargeType: config.chargeType,
+        amountMinor: config.amountMinor,
+        dueDay: config.dueDay,
+        payer: config.payer,
+        splitMode: config.splitMode,
+        tenantPercent: config.tenantPercent,
+        landlordPercent: config.landlordPercent,
+        tenantFixedMinor: config.tenantFixedMinor,
+        landlordFixedMinor: config.landlordFixedMinor,
+      })
+    } else {
+      // Create new
+      await createCharges(unitId, [{
+        name: config.name,
+        chargeType: config.chargeType,
+        amountMinor: config.amountMinor,
+        dueDay: config.dueDay,
+        payer: config.payer,
+        splitMode: config.splitMode,
+        tenantPercent: config.tenantPercent,
+        landlordPercent: config.landlordPercent,
+        tenantFixedMinor: config.tenantFixedMinor,
+        landlordFixedMinor: config.landlordFixedMinor,
+      }])
+    }
+
+    setSheetOpen(false)
+    setEditingCharge(null)
+    queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
+    queryClient.invalidateQueries({ queryKey: ['property-counts'] })
+  }
+
+  async function handleSkip() {
+    if (editingCharge) {
+      // Skip on an existing charge = delete it
+      await removeCharge(editingCharge.id)
+      setSheetOpen(false)
+      setEditingCharge(null)
+      queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
+      queryClient.invalidateQueries({ queryKey: ['property-counts'] })
+    } else {
+      setSheetOpen(false)
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className="text-base font-semibold text-foreground">
+          {t('charges')} ({charges.length})
+        </h2>
+        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={handleAddCharge}>
+          <Plus className="size-3.5" />
+          {t('addCharge')}
+        </Button>
+      </div>
+
+      {charges.length === 0 ? (
+        <button
+          onClick={handleAddCharge}
+          className="w-full rounded-2xl border border-dashed border-border px-5 py-8 text-center transition-colors hover:border-primary/30"
+        >
+          <p className="text-sm text-muted-foreground">{t('noCharges')}</p>
+        </button>
+      ) : (
+        <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+          {charges.map((charge) => (
+            <ChargeCard
+              key={charge.id}
+              charge={charge}
+              unitDueDay={unit.dueDay}
+              onClick={() => handleEditCharge(charge)}
+              className="border-0"
+            />
+          ))}
+        </div>
+      )}
+
+      <ChargeConfigSheet
+        open={sheetOpen}
+        onOpenChange={setSheetOpen}
+        chargeName={editingCharge?.name ?? ''}
+        isCustom={true}
+        defaultType={editingCharge?.chargeType ?? 'recurring'}
+        defaultDueDay={unit.dueDay}
+        currency={unit.currency}
+        existingConfig={editingCharge ? toChargeConfig(editingCharge) : null}
+        onSave={handleSave}
+        onSkip={handleSkip}
+      />
+    </div>
+  )
+}
