@@ -34,15 +34,23 @@ The standard authenticated page structure. All product screens should follow thi
 └──────────────────────────────────┘
 ```
 
-**Structure:** `h-svh flex flex-col` → content in `flex-1 overflow-y-auto` → bottom bar in `shrink-0`.
+**Structure:** App layout (`src/app/app/layout.tsx`) provides `h-svh flex flex-col`. Pages use `h-full flex flex-col` — they inherit height from the layout, not the viewport directly. Content in `flex-1 overflow-y-auto` → bottom bar in `shrink-0`.
+
+**Loading:** All `/app/*` pages share a single `loading.tsx` that renders `<PageLoader />`. No per-page skeletons.
 
 **Spacing:**
-- Content area: `px-6 pt-8 pb-4`
+- Content area: `px-6 pt-4 pb-4 md:pt-6`
 - Between major sections: `mb-8`
 - Between cards in a list: `gap-3`
 - Bottom bar: `px-6 py-4`, `border-t border-border bg-background/80 backdrop-blur-lg`
 
 **Desktop:** Cards use `md:grid-cols-2` when there are multiple items. Single-item views stay single-column.
+
+### App Bar
+
+**File:** `src/app/app/app-bar.tsx`
+
+Desktop-only floating elements — logo (top-left) and avatar (top-right) with `hidden md:block`. Mobile pages render their own inline header (`MobileHeader` in home-content, `PageHeaderBack` on detail pages).
 
 ### Header Pattern
 
@@ -50,13 +58,11 @@ The greeting header used on the home screen. Adapts based on context.
 
 **Structure:**
 - Line 1: Greeting or page title (`text-2xl font-bold`)
-- Line 2 (optional): Revenue summary or contextual subtitle (`text-lg tabular-nums`)
-- Right side: Utility icon (logout, settings)
+- Line 2 (optional): Property count or contextual subtitle (`text-lg`)
 
-**Revenue line format:**
-- `R$ 8.850 expected · 3 properties` — when all bills are in
-- `R$ 8.850 expected · 3 properties · 2 bills pending` — amber text for pending qualifier
-- Always show property count for multi-property landlords
+**Home page layout:**
+- Single property: `max-w-xl` centered
+- Multiple properties: `max-w-4xl` with `md:grid-cols-2` card grid
 
 ---
 
@@ -178,15 +184,19 @@ Composable row component for displaying charges in lists. Uses the compound comp
 
 **File:** `src/components/page-header.tsx`
 
-Composable header for interior pages (not the home screen).
+Composable header for interior pages (not the home screen). Vertical layout: back link above, title below.
 
-**Parts:** `PageHeader`, `PageHeaderBack`, `PageHeaderContent`, `PageHeaderTitle`, `PageHeaderSubtitle`, `PageHeaderActions`
-
-**Back button modes:**
-- `chevron` (default) — left arrow, navigates back
-- `close` — X icon, for sheet/modal dismissal
+**Parts:** `PageHeader` (container, `mb-6`), `PageHeaderBack` (Link with ChevronLeft, `mb-3`), `PageHeaderTitle` (`text-2xl font-bold`), `PageHeaderSubtitle` (`text-sm text-muted-foreground`)
 
 **Usage:** Place at the top of a page inside the scroll area. Not sticky — scrolls with content.
+
+```tsx
+<PageHeader>
+  <PageHeaderBack href="/app">{t('back')}</PageHeaderBack>
+  <PageHeaderTitle>Property Name</PageHeaderTitle>
+  <PageHeaderSubtitle>123 Rua Augusta, São Paulo</PageHeaderSubtitle>
+</PageHeader>
+```
 
 ---
 
@@ -211,6 +221,29 @@ Contextual message container for inline alerts, instructions, or status messages
 ---
 
 ## Animation Components
+
+### FadeIn
+
+**File:** `src/components/fade-in.tsx`
+
+Simple opacity fade (0 → 1) on mount. Default duration: 800ms. Used by every `page.tsx` to animate content in after the PageLoader resolves.
+
+**Usage:** Wrap page content in the server component's return:
+```tsx
+<FadeIn className="h-full">
+  <PageContent />
+</FadeIn>
+```
+
+**Important:** Always pass `className="h-full"` so the flex height chain isn't broken.
+
+### PageLoader
+
+**File:** `src/components/page-loader.tsx`
+
+Universal loading indicator — the mabenn "m" mark with an orbital ring animation. Replaces per-page skeletons. Used by `src/app/app/loading.tsx` which covers all `/app/*` routes via Next.js convention.
+
+**When to use:** Don't use directly — the `loading.tsx` handles it automatically for page-level Suspense boundaries.
 
 ### FadeUp
 
@@ -254,6 +287,61 @@ Persistent bottom action bar for primary CTAs on mobile.
 **When to use:** Any page with a primary action that should always be visible (submit, publish, add property).
 
 **Button inside:** Use `Button` at full width. Primary actions use default variant; secondary actions use `ghost` variant.
+
+---
+
+## Responsive Modal
+
+**File:** `src/components/responsive-modal.tsx`
+
+Dialog on desktop (`md:` and up), bottom Sheet on mobile. The standard pattern for all modals in the app.
+
+**Parts:** `ResponsiveModal` (root), `ResponsiveModal.Content` (scrollable area), `ResponsiveModal.Footer` (sticky bottom with conditional fade mask)
+
+**Key behaviors:**
+- **Optional title** — when omitted, the header is visually hidden (`sr-only`) but remains accessible. A `pt-2` spacer is added on mobile sheets for breathing room.
+- **Conditional fade mask** — `ResponsiveModal.Footer` only shows the `fade-mask-top` gradient when `ResponsiveModal.Content` is actually scrollable. Uses ResizeObserver in `useLayoutEffect`, shared via context. Defaults to no mask (no flash).
+- **Consistent spacing** — `ResponsiveModal.Content` uses `scrollbar-gutter: stable` so content width is the same whether or not a scrollbar is present. No more `-mr-4 pr-4` hacks.
+
+**When to use Content/Footer parts:** For modals with scrollable content and a sticky action button (e.g., edit property, edit charge). For small modals (invite tenant, confirm dialogs), skip the parts and just render content directly inside `ResponsiveModal`.
+
+**Usage:**
+```tsx
+<ResponsiveModal open={open} onOpenChange={setOpen} title="Edit property">
+  <ResponsiveModal.Content className="px-0.5">
+    {/* scrollable form fields */}
+  </ResponsiveModal.Content>
+  <ResponsiveModal.Footer>
+    <Button>Save</Button>
+  </ResponsiveModal.Footer>
+</ResponsiveModal>
+```
+
+---
+
+## Charge Card
+
+**File:** `src/components/charge-card.tsx`
+
+Domain wrapper around `ChargeRow` for displaying charges on the property detail page. Adds type icon, split label, currency formatting, and due day display.
+
+**Props:** `charge: ChargeDefinition`, `unitDueDay: number`, `configured?: boolean`, `onClick?: () => void`, `className?: string`
+
+**On property detail page:** Rendered inside a container with `divide-y divide-border overflow-hidden rounded-2xl border border-border`. Each card gets `className="border-0"` — the container provides the visual boundary, not the individual rows.
+
+---
+
+## Property Form
+
+**File:** `src/app/app/p/new/steps/property-form.tsx`
+
+Composable form for property address entry. Shared between the onboarding flow and the edit property modal.
+
+**Parts:** `PropertyForm` (root `<form>` with context), `PropertyForm.Name` (property name field), `PropertyForm.Content` (address fields — CEP, street, number, etc.), `PropertyForm.Footer` (submit button with loading state)
+
+**Consumer controls layout via className props.** In onboarding, all parts stack vertically. In the edit modal, Name sits above `ResponsiveModal.Content` (not scrollable), Content goes inside it (scrollable), and Footer goes in `ResponsiveModal.Footer`.
+
+**State:** Uses React context to share form state between parts. CEP auto-fill via ViaCEP provider. Server-side validation via `validateProperty` action.
 
 ---
 

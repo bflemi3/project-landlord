@@ -916,6 +916,44 @@ Prioritize tests around:
 Not every component needs exhaustive testing.
 The sensitive workflow logic does.
 
+### Integration tests
+
+Integration tests run against a real local Supabase instance. They test server action core functions with actual database operations, RLS policies, and constraints.
+
+**Setup:** `pnpm test:integration` (requires `supabase start`). Config: `vitest.integration.config.ts` with `node` environment. Helpers in `src/test/supabase.ts`.
+
+**Server action pattern:** Every server action exports a `*Core` function that accepts a `TypedSupabaseClient` as its first parameter. The `'use server'` wrapper is a thin shell that calls `createClient()` then delegates. Tests call the core function with an authenticated test client.
+
+```ts
+// Core — testable
+export async function updatePropertyCore(supabase: TypedSupabaseClient, input) { ... }
+
+// Wrapper — thin shell for Next.js
+export async function updateProperty(input) {
+  const supabase = await createClient()
+  return updatePropertyCore(supabase, input)
+}
+```
+
+**Test helpers:**
+- `createTestUser()` — creates auth user, returns authenticated client + userId
+- `createTestProperty(client)` — creates property + unit via RPC
+- `cleanupTestUser(userId)` — deletes user and all their data
+- `getAdminClient()` — bypasses RLS, used for assertions only
+
+### Audit triggers
+
+A generic `audit_log_trigger()` Postgres function automatically logs INSERT/UPDATE/DELETE operations to the `audit_events` table with `actor_id`, `old_values`, and `new_values` as JSONB.
+
+Currently attached to: `charge_definitions`, `recurring_rules`, `responsibility_allocations`.
+
+**To add audit logging to a new table**, create a migration with one line:
+```sql
+create trigger audit_<table_name>
+  after insert or update or delete on <table_name>
+  for each row execute function audit_log_trigger();
+```
+
 ---
 
 ## Suggested Folder / Domain Mindset

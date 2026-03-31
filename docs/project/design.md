@@ -733,6 +733,35 @@ These patterns have been validated in the product and should be followed for con
 - Consistent placement (top-right of card or inline in row)
 - Semantic color mapping: emerald = healthy/paid, amber = attention/pending, rose = overdue/unpaid, sky = info/review
 
+### Modals and dialogs
+
+- Use `ResponsiveModal` for all modals — Dialog on desktop, bottom Sheet on mobile
+- When the form content provides its own context (e.g., an editable name field at the top), omit the modal title — the field acts as the title
+- Small modals (2-3 fields, confirm dialogs) don't need `ResponsiveModal.Content`/`ResponsiveModal.Footer` — just render content directly
+- Scrollable modals use the composable Content/Footer parts — Footer gets a fade mask only when content overflows
+- On mobile sheets without a visible title, add breathing room at the top so content doesn't sit against the drag handle
+
+### List rows in containers
+
+- For lists of related items (charges, tenants), wrap rows in a single bordered container with `divide-y` dividers between them, rather than giving each row its own border
+- Container: `divide-y divide-border overflow-hidden rounded-2xl border border-border`
+- Individual rows: `border-0` (container provides the boundary)
+- Hover effect on rows: `hover:not-disabled:bg-muted/50` with `transition-colors`
+- Empty state: dashed border placeholder with centered text, tappable to add first item
+
+### Page transitions and loading
+
+- All pages fade in on load via `FadeIn` (800ms ease-out)
+- Loading state is a universal `PageLoader` (orbital ring around "m" mark) — no per-page skeletons
+- One `loading.tsx` at `src/app/app/` covers all authenticated routes
+
+### Multi-step form flows
+
+- Steps on a single route, animated with `SlideIn`
+- Step content centered with `mx-auto max-w-lg px-6`
+- Form state persisted in parent refs via wrapped setters — navigating between steps preserves entered data
+- Action buttons (Continue, Skip) pushed to bottom with `mt-auto`
+
 ### Never do this
 
 - tiny text to fit more content
