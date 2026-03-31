@@ -40,26 +40,16 @@ export async function updateChargeCore(
 
   if (ruleError) return { success: false }
 
-  // Replace allocations — delete all existing, insert new
+  // Replace allocations atomically via RPC (single transaction)
   // Handles all transitions (single→split, split→single, percent→fixed)
   // Audit trigger logs the deletes and inserts automatically
-  const { error: deleteError } = await supabase
-    .from('responsibility_allocations')
-    .delete()
-    .eq('charge_definition_id', input.chargeId)
+  const allocations = buildAllocationRows(input)
+  const { error: allocError } = await supabase.rpc('replace_allocations', {
+    p_charge_definition_id: input.chargeId,
+    p_allocations: allocations as unknown as string,
+  })
 
-  if (deleteError) return { success: false }
-
-  const allocations = buildAllocationRows(input).map((a) => ({
-    ...a,
-    charge_definition_id: input.chargeId,
-  }))
-
-  const { error: insertError } = await supabase
-    .from('responsibility_allocations')
-    .insert(allocations)
-
-  if (insertError) return { success: false }
+  if (allocError) return { success: false }
 
   return { success: true }
 }

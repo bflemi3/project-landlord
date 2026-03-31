@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, type MutableRefObject } from 'react'
+import { useState, useRef, type MutableRefObject } from 'react'
 import { useTranslations } from 'next-intl'
 import { Home, Building2, Zap, Droplets, Flame, Wifi, Plus, X, Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -61,10 +61,7 @@ export function ChargesForm({
 
   // 4. State
   const [dueDay, _setDueDay] = useState(dueDayRef?.current ?? '10')
-  function setDueDay(val: string) {
-    _setDueDay(val)
-    if (dueDayRef) dueDayRef.current = val
-  }
+  const prevDueDayRef = useRef(dueDay)
   const [configuredCharges, _setConfiguredCharges] = useState<Map<string, ChargeConfig>>(() => {
     if (!initialConfigs?.length) return new Map()
     return new Map(initialConfigs.map((c) => [c.name, c]))
@@ -88,24 +85,22 @@ export function ChargesForm({
   const hasConfigured = configuredCharges.size > 0
   const allCharges = [...PRESET_CHARGES, ...customCharges]
 
-  // 7. Effects
-  // #8: When global due day changes, update charges that still match the old default
-  const prevDueDayRef = useRef(dueDay)
-  useEffect(() => {
-    if (configuredCharges.size === 0) {
-      prevDueDayRef.current = dueDay
-      return
-    }
+  // 8. Callbacks
+  function handleDueDayChange(val: string | null) {
+    const newVal = val ?? '10'
     const oldDay = Number(prevDueDayRef.current)
-    const newDay = Number(dueDay)
-    prevDueDayRef.current = dueDay
-    if (oldDay === newDay) return
+    const newDay = Number(newVal)
+    prevDueDayRef.current = newVal
+    _setDueDay(newVal)
+    if (dueDayRef) dueDayRef.current = newVal
 
+    if (oldDay === newDay || configuredCharges.size === 0) return
+
+    // Cascade: update charges that still match the old global default
     setConfiguredCharges((prev) => {
       const next = new Map(prev)
       let changed = false
       for (const [key, config] of next) {
-        // Only update charges that matched the old global default
         if (config.dueDay === oldDay) {
           next.set(key, { ...config, dueDay: newDay })
           changed = true
@@ -114,14 +109,7 @@ export function ChargesForm({
       return changed ? next : prev
     })
     setDueDayApplied(true)
-    const timer = setTimeout(() => setDueDayApplied(false), 2000)
-    return () => clearTimeout(timer)
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- only run when dueDay changes
-  }, [dueDay])
-
-  // 8. Callbacks
-  function handleDueDayChange(val: string | null) {
-    setDueDay(val ?? '10')
+    setTimeout(() => setDueDayApplied(false), 2000)
   }
 
   function handleChargeTap(charge: ChargeEntry) {
