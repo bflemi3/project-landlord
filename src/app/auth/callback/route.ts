@@ -20,6 +20,17 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.session) {
+      // Sync avatar from OAuth provider if profile doesn't have one
+      const meta = data.session.user.user_metadata
+      const oauthAvatar = meta?.avatar_url || meta?.picture
+      if (oauthAvatar) {
+        await supabase
+          .from('profiles')
+          .update({ avatar_url: oauthAvatar })
+          .eq('id', data.session.user.id)
+          .is('avatar_url', null)
+      }
+
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
 
