@@ -31,7 +31,7 @@ export function SwUpdateNotifier() {
             )}
             <Link
               href="/changelog"
-              className="text-base font-medium text-primary hover:underline"
+              className="text-base font-medium text-primary hover:underline md:text-sm"
               onClick={() => toast.dismiss()}
             >
               {t('viewPastUpdates')}
