@@ -10,10 +10,11 @@ import {
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/wordmark'
 import { FadeUp } from '@/components/fade-up'
-import { OperatingPropertyCard, SetupPropertyCard, isPropertyComplete } from '@/components/property-card'
+import { isPropertyComplete } from '@/components/property-card'
+import { PreviewOperatingCard, PreviewSetupCard } from '@/app/preview/preview-property-cards'
 import { UrgentActionList } from '@/components/urgent-action-list'
 import type { HomeScreenData, PropertySetupProgress, PendingInvite, UrgentAction, PropertyOperationalData } from '@/app/preview/mock-data'
-import type { MembershipWithProperty } from '@/lib/hooks/use-memberships'
+import type { PreviewMembership } from '@/app/preview/mock-data'
 
 function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
   const hour = new Date().getHours()
@@ -172,7 +173,7 @@ function SinglePropertyState({
   operationalData,
 }: {
   firstName: string
-  membership: MembershipWithProperty
+  membership: PreviewMembership
   progress: PropertySetupProgress
   pendingInvites: PendingInvite[]
   chargeCount: number
@@ -266,7 +267,7 @@ function SinglePropertyState({
         {/* Single property card — setup view with checklist */}
         {!isFullySetup && (
           <FadeUp className="mb-6">
-            <SetupPropertyCard
+            <PreviewSetupCard
               membership={membership}
               progress={progress}
               pendingInvites={pendingInvites}
@@ -277,7 +278,7 @@ function SinglePropertyState({
         {/* Single property card — operating view */}
         {isFullySetup && (
           <FadeUp className="mb-6">
-            <OperatingPropertyCard membership={membership} opData={operationalData} />
+            <PreviewOperatingCard membership={membership} opData={operationalData} />
           </FadeUp>
         )}
 
@@ -334,7 +335,7 @@ function MultiPropertyState({
   urgentActions = [],
 }: {
   firstName: string
-  memberships: MembershipWithProperty[]
+  memberships: PreviewMembership[]
   setupProgress: Record<string, PropertySetupProgress>
   pendingInvites: Record<string, PendingInvite[]>
   chargeCount: Record<string, number>
@@ -345,8 +346,8 @@ function MultiPropertyState({
   const greeting = t(getGreetingKey())
 
   // Separate operating from setup properties
-  const operating: MembershipWithProperty[] = []
-  const inSetup: MembershipWithProperty[] = []
+  const operating: PreviewMembership[] = []
+  const inSetup: PreviewMembership[] = []
   for (const m of memberships) {
     const progress = setupProgress[m.property.id]
     if (progress && isPropertyComplete(progress)) {
@@ -410,7 +411,7 @@ function MultiPropertyState({
         <FadeUp>
           <div className="grid gap-3 md:grid-cols-2">
             {inSetup.map((m) => (
-              <SetupPropertyCard
+              <PreviewSetupCard
                 key={m.id}
                 membership={m}
                 progress={setupProgress[m.property.id]}
@@ -418,7 +419,7 @@ function MultiPropertyState({
               />
             ))}
             {operating.map((m) => (
-              <OperatingPropertyCard
+              <PreviewOperatingCard
                 key={m.id}
                 membership={m}
                 opData={operationalData[m.property.id]}

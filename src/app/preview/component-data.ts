@@ -1,23 +1,22 @@
-import type { MembershipWithProperty } from '@/lib/hooks/use-memberships'
-import type { PropertySetupProgress, PendingInvite, PropertyOperationalData, UrgentAction } from './mock-data'
+import type { PreviewMembership, PropertySetupProgress, PendingInvite, PropertyOperationalData, UrgentAction } from './mock-data'
 
 // =============================================================================
 // Property card variants
 // =============================================================================
 
-const MEMBERSHIP_SUN_CLUB: MembershipWithProperty = {
+const MEMBERSHIP_SUN_CLUB: PreviewMembership = {
   id: 'mem-1',
   role: 'landlord',
   property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
 }
 
-const MEMBERSHIP_RUA_AUGUSTA: MembershipWithProperty = {
+const MEMBERSHIP_RUA_AUGUSTA: PreviewMembership = {
   id: 'mem-2',
   role: 'landlord',
   property: { id: 'prop-2', name: 'Rua Augusta 123', street: 'Rua Augusta', number: '123', city: 'São Paulo', state: 'SP' },
 }
 
-const MEMBERSHIP_LONG_NAME: MembershipWithProperty = {
+const MEMBERSHIP_LONG_NAME: PreviewMembership = {
   id: 'mem-3',
   role: 'landlord',
   property: { id: 'prop-3', name: 'Residencial Parque das Flores Bloco B', street: 'Rua das Flores', number: '45', city: 'Rio de Janeiro', state: 'RJ' },
@@ -27,7 +26,7 @@ const MEMBERSHIP_LONG_NAME: MembershipWithProperty = {
 
 export interface OperatingVariant {
   label: string
-  membership: MembershipWithProperty
+  membership: PreviewMembership
   opData: PropertyOperationalData
 }
 
@@ -58,7 +57,7 @@ export const OPERATING_VARIANTS: OperatingVariant[] = [
 
 export interface SetupVariant {
   label: string
-  membership: MembershipWithProperty
+  membership: PreviewMembership
   progress: PropertySetupProgress
   pendingInvites: PendingInvite[]
 }

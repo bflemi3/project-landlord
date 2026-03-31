@@ -704,6 +704,49 @@ The goal is a concise reference that helps build the next screen faster, not a g
 
 Before creating a new UI component manually, always check if it's available via `npx shadcn@latest add <component>`. Prefer shadcn components over hand-written ones.
 
+### React hooks rules — never violate
+
+**Never call hooks after a conditional return.** All `useState`, `useEffect`, `useRef`, `useMemo`, `useCallback`, `useTranslations`, `useRouter`, `useSuspenseQuery`, and any other `use*` calls must come before the first `return` in a component. This is a core React rule — violating it causes runtime errors and unpredictable behavior.
+
+When using `useSuspenseQuery`, the query function should **throw on error** (not return `null`) so that `data` is always non-nullable. This eliminates the need for null-check early returns that would push subsequent hooks below a `return`.
+
+```tsx
+// WRONG — hooks after return
+function MyComponent({ id }: { id: string }) {
+  const { data: parent } = useParentQuery(id)
+  if (!parent) return null  // ← hooks below this line are illegal
+  const { data: children } = useChildQuery(parent.childId)
+  // ...
+}
+
+// RIGHT — all hooks at top, query throws on not-found
+function MyComponent({ id }: { id: string }) {
+  const { data: parent } = useParentQuery(id)  // throws if not found → suspends
+  const { data: children } = useChildQuery(parent.childId)  // safe — parent is always non-null
+  // ...
+}
+```
+
+### Atomic hooks
+
+Hooks must be atomic and single-responsibility. A parent hook returns its own data plus IDs of its children — never the children's data. Child hooks are responsible for fetching their own details. React Query deduplicates identical queries, so multiple components calling the same hook with the same ID only make one network request.
+
+```tsx
+// useProperty returns property info + unitIds — NOT unit details
+const { data: property } = useProperty(propertyId)
+
+// useUnit returns unit info — NOT charges or tenants
+const { data: unit } = useUnit(unitId)
+
+// Each domain has its own atomic hook
+const { data: charges } = useUnitCharges(unitId)
+const { data: tenants } = useUnitTenants(propertyId, unitId)
+```
+
+Components receive only primitive IDs as props and fetch their own data. Parent components never pass data objects down — they pass IDs and let children fetch what they need.
+
+Use Supabase joins to get child IDs in a single query rather than making sequential requests (e.g., `properties` joined with `units!inner ( id )` to get `unitIds` in one call).
+
 Default to:
 
 - server components only where they are clearly beneficial

@@ -9,24 +9,18 @@ interface AppBarProps {
 }
 
 /**
- * Floating nav overlay — wordmark top-left, avatar top-right.
- * No bar, no border. Content scrolls behind with a subtle fade.
+ * Desktop-only floating logo + avatar.
+ * On mobile, pages render their own inline header elements.
  */
 export function AppBar({ userName, avatarUrl }: AppBarProps) {
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-0 z-30 flex items-start justify-between px-5 pt-4 md:px-8 md:pt-5">
-      {/* Fade gradient so elements stay readable over scrolling content */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-background via-background/80 to-transparent" />
-
-      {/* Left — wordmark */}
-      <div className="pointer-events-auto relative">
-        <Wordmark className="h-5 md:h-6" href="/app" />
+    <>
+      <div className="fixed top-5 left-8 z-30 hidden md:block">
+        <Wordmark className="h-6" href="/app" />
       </div>
-
-      {/* Right — avatar */}
-      <div className="pointer-events-auto relative">
+      <div id="app-avatar" className="fixed top-4 right-8 z-30 hidden md:block">
         <UserMenuTrigger userName={userName} avatarUrl={avatarUrl} />
       </div>
-    </div>
+    </>
   )
 }

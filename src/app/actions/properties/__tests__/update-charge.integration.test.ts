@@ -12,62 +12,35 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 describe('updateChargeCore', () => {
   let client: SupabaseClient<any>
   let userId: string
-  let propertyId: string
   let unitId: string
-  let tenantChargeId: string
-  let splitChargeId: string
+  let chargeId: string
 
   beforeAll(async () => {
     const user = await createTestUser()
     client = user.client
     userId = user.userId
     const prop = await createTestProperty(client)
-    propertyId = prop.propertyId
     unitId = prop.unitId
 
     // Seed a tenant-pays charge
-    await createChargesCore(client, unitId, [
-      {
-        name: 'Tenant Charge',
-        chargeType: 'rent',
-        amountMinor: 150000,
-        dueDay: 10,
-        payer: 'tenant',
-        tenantPercent: 100,
-        landlordPercent: 0,
-      },
-    ])
-
-    // Seed a split charge (both allocations exist)
-    await createChargesCore(client, unitId, [
-      {
-        name: 'Split Charge',
-        chargeType: 'recurring',
-        amountMinor: 30000,
-        dueDay: 15,
-        payer: 'split',
-        splitMode: 'percent',
-        tenantPercent: 60,
-        landlordPercent: 40,
-      },
-    ])
+    await createChargesCore(client, unitId, [{
+      name: 'Rent',
+      chargeType: 'rent',
+      amountMinor: 200000,
+      dueDay: 10,
+      payer: 'tenant',
+      tenantPercent: 100,
+      landlordPercent: 0,
+    }])
 
     const admin = getAdminClient()
-    const { data: tenantCharge } = await admin
+    const { data } = await admin
       .from('charge_definitions')
       .select('id')
       .eq('unit_id', unitId)
-      .eq('name', 'Tenant Charge')
+      .eq('name', 'Rent')
       .single()
-    tenantChargeId = tenantCharge!.id
-
-    const { data: splitCharge } = await admin
-      .from('charge_definitions')
-      .select('id')
-      .eq('unit_id', unitId)
-      .eq('name', 'Split Charge')
-      .single()
-    splitChargeId = splitCharge!.id
+    chargeId = data!.id
   })
 
   afterAll(async () => {
@@ -76,11 +49,11 @@ describe('updateChargeCore', () => {
 
   it('updates charge name, amount, and due day', async () => {
     const result = await updateChargeCore(client, {
-      chargeId: tenantChargeId,
-      name: 'Updated Charge',
+      chargeId,
+      name: 'Updated Rent',
       chargeType: 'rent',
-      amountMinor: 180000,
-      dueDay: 20,
+      amountMinor: 250000,
+      dueDay: 15,
       payer: 'tenant',
       tenantPercent: 100,
       landlordPercent: 0,
@@ -91,29 +64,57 @@ describe('updateChargeCore', () => {
     const admin = getAdminClient()
     const { data: charge } = await admin
       .from('charge_definitions')
-      .select('*')
-      .eq('id', tenantChargeId)
+      .select('name, amount_minor')
+      .eq('id', chargeId)
       .single()
 
-    expect(charge?.name).toBe('Updated Charge')
-    expect(charge?.amount_minor).toBe(180000)
+    expect(charge?.name).toBe('Updated Rent')
+    expect(charge?.amount_minor).toBe(250000)
 
     const { data: rule } = await admin
       .from('recurring_rules')
-      .select('*')
-      .eq('charge_definition_id', tenantChargeId)
+      .select('day_of_month')
+      .eq('charge_definition_id', chargeId)
       .single()
 
-    expect(rule?.day_of_month).toBe(20)
+    expect(rule?.day_of_month).toBe(15)
   })
 
-  it('switches from split to single payer (updates landlord allocation to 100%)', async () => {
-    // splitChargeId currently has both tenant and landlord allocations
+  it('switches from single payer to split', async () => {
+    // Currently tenant-pays (1 allocation). Switch to 60/40 split.
     const result = await updateChargeCore(client, {
-      chargeId: splitChargeId,
-      name: 'Split Charge',
-      chargeType: 'recurring',
-      amountMinor: 30000,
+      chargeId,
+      name: 'Updated Rent',
+      chargeType: 'rent',
+      amountMinor: 250000,
+      dueDay: 15,
+      payer: 'split',
+      splitMode: 'percent',
+      tenantPercent: 60,
+      landlordPercent: 40,
+    })
+
+    expect(result.success).toBe(true)
+
+    const admin = getAdminClient()
+    const { data: allocs } = await admin
+      .from('responsibility_allocations')
+      .select('role, percentage')
+      .eq('charge_definition_id', chargeId)
+      .order('role')
+
+    expect(allocs).toHaveLength(2)
+    expect(allocs![0]).toMatchObject({ role: 'landlord', percentage: 40 })
+    expect(allocs![1]).toMatchObject({ role: 'tenant', percentage: 60 })
+  })
+
+  it('switches from split back to single payer', async () => {
+    // Currently split (2 allocations). Switch to landlord-pays.
+    const result = await updateChargeCore(client, {
+      chargeId,
+      name: 'Updated Rent',
+      chargeType: 'rent',
+      amountMinor: 250000,
       dueDay: 15,
       payer: 'landlord',
       tenantPercent: 0,
@@ -125,68 +126,25 @@ describe('updateChargeCore', () => {
     const admin = getAdminClient()
     const { data: allocs } = await admin
       .from('responsibility_allocations')
-      .select('*')
-      .eq('charge_definition_id', splitChargeId)
-      .order('role')
+      .select('role, percentage')
+      .eq('charge_definition_id', chargeId)
 
-    // The landlord allocation is updated to 100%
-    const landlordAlloc = allocs!.find((a) => a.role === 'landlord')
-    expect(landlordAlloc).toBeDefined()
-    expect(landlordAlloc?.percentage).toBe(100)
+    expect(allocs).toHaveLength(1)
+    expect(allocs![0]).toMatchObject({ role: 'landlord', percentage: 100 })
   })
 
-  it('updates split percentages when both allocations exist', async () => {
-    // First, re-create a split charge with both allocations for this test
-    await createChargesCore(client, unitId, [
-      {
-        name: 'Pct Charge',
-        chargeType: 'recurring',
-        amountMinor: 20000,
-        dueDay: 12,
-        payer: 'split',
-        splitMode: 'percent',
-        tenantPercent: 50,
-        landlordPercent: 50,
-      },
-    ])
-
+  it('audit trail captures allocation changes', async () => {
     const admin = getAdminClient()
-    const { data: cd } = await admin
-      .from('charge_definitions')
-      .select('id')
-      .eq('unit_id', unitId)
-      .eq('name', 'Pct Charge')
-      .single()
+    const { data: events } = await admin
+      .from('audit_events')
+      .select('action, entity_type')
+      .eq('entity_type', 'responsibility_allocations')
+      .order('created_at', { ascending: false })
+      .limit(5)
 
-    const pctChargeId = cd!.id
-
-    // Update to 70/30
-    const result = await updateChargeCore(client, {
-      chargeId: pctChargeId,
-      name: 'Pct Charge',
-      chargeType: 'recurring',
-      amountMinor: 20000,
-      dueDay: 12,
-      payer: 'split',
-      splitMode: 'percent',
-      tenantPercent: 70,
-      landlordPercent: 30,
-    })
-
-    expect(result.success).toBe(true)
-
-    const { data: allocs } = await admin
-      .from('responsibility_allocations')
-      .select('*')
-      .eq('charge_definition_id', pctChargeId)
-      .order('role')
-
-    expect(allocs).toHaveLength(2)
-
-    const landlordAlloc = allocs!.find((a) => a.role === 'landlord')
-    const tenantAlloc = allocs!.find((a) => a.role === 'tenant')
-
-    expect(landlordAlloc?.percentage).toBe(30)
-    expect(tenantAlloc?.percentage).toBe(70)
+    // Should have delete + create events from the payer switches above
+    const actions = events?.map((e) => e.action) ?? []
+    expect(actions).toContain('delete')
+    expect(actions).toContain('create')
   })
 })

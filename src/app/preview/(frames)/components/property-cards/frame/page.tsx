@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
-import { OperatingPropertyCard, SetupPropertyCard } from '@/components/property-card'
+import { PreviewOperatingCard, PreviewSetupCard } from '@/app/preview/preview-property-cards'
 import { OPERATING_VARIANTS, SETUP_VARIANTS } from '@/app/preview/component-data'
 
 function FrameContent() {
@@ -15,7 +15,7 @@ function FrameContent() {
     if (!variant) return <p className="p-4 text-sm text-muted-foreground">Unknown variant</p>
     return (
       <div className="p-6">
-        <OperatingPropertyCard membership={variant.membership} opData={variant.opData} />
+        <PreviewOperatingCard membership={variant.membership} opData={variant.opData} />
       </div>
     )
   }
@@ -25,7 +25,7 @@ function FrameContent() {
     if (!variant) return <p className="p-4 text-sm text-muted-foreground">Unknown variant</p>
     return (
       <div className="p-6">
-        <SetupPropertyCard
+        <PreviewSetupCard
           membership={variant.membership}
           progress={variant.progress}
           pendingInvites={variant.pendingInvites}

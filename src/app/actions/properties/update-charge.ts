@@ -40,29 +40,26 @@ export async function updateChargeCore(
 
   if (ruleError) return { success: false }
 
-  // Update allocations in place
-  const allocations = buildAllocationRows(input)
-  for (const alloc of allocations) {
-    await supabase
-      .from('responsibility_allocations')
-      .update({
-        allocation_type: alloc.allocation_type,
-        percentage: alloc.percentage,
-        fixed_minor: alloc.fixed_minor,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('charge_definition_id', input.chargeId)
-      .eq('role', alloc.role)
-  }
+  // Replace allocations — delete all existing, insert new
+  // Handles all transitions (single→split, split→single, percent→fixed)
+  // Audit trigger logs the deletes and inserts automatically
+  const { error: deleteError } = await supabase
+    .from('responsibility_allocations')
+    .delete()
+    .eq('charge_definition_id', input.chargeId)
 
-  // If switching from split → single payer, remove the other role's allocation
-  if (input.payer === 'tenant') {
-    await supabase.from('responsibility_allocations').delete()
-      .eq('charge_definition_id', input.chargeId).eq('role', 'landlord')
-  } else if (input.payer === 'landlord') {
-    await supabase.from('responsibility_allocations').delete()
-      .eq('charge_definition_id', input.chargeId).eq('role', 'tenant')
-  }
+  if (deleteError) return { success: false }
+
+  const allocations = buildAllocationRows(input).map((a) => ({
+    ...a,
+    charge_definition_id: input.chargeId,
+  }))
+
+  const { error: insertError } = await supabase
+    .from('responsibility_allocations')
+    .insert(allocations)
+
+  if (insertError) return { success: false }
 
   return { success: true }
 }

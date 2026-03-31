@@ -384,8 +384,22 @@ export type Database = {
             foreignKeyName: "invitations_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
+            referencedRelation: "home_properties"
+            referencedColumns: ["property_id"]
+          },
+          {
+            foreignKeyName: "invitations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_counts"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "invitations_unit_id_fkey"
@@ -403,6 +417,7 @@ export type Database = {
           id: string
           property_id: string
           role: Database["public"]["Enums"]["user_role"]
+          unit_id: string | null
           updated_at: string
           user_id: string
         }
@@ -412,6 +427,7 @@ export type Database = {
           id?: string
           property_id: string
           role: Database["public"]["Enums"]["user_role"]
+          unit_id?: string | null
           updated_at?: string
           user_id: string
         }
@@ -421,6 +437,7 @@ export type Database = {
           id?: string
           property_id?: string
           role?: Database["public"]["Enums"]["user_role"]
+          unit_id?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -429,7 +446,28 @@ export type Database = {
             foreignKeyName: "memberships_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
+            referencedRelation: "home_properties"
+            referencedColumns: ["property_id"]
+          },
+          {
+            foreignKeyName: "memberships_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
             referencedRelation: "properties"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "memberships_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_counts"
+            referencedColumns: ["property_id"]
+          },
+          {
+            foreignKeyName: "memberships_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
           {
@@ -885,8 +923,22 @@ export type Database = {
             foreignKeyName: "source_documents_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
+            referencedRelation: "home_properties"
+            referencedColumns: ["property_id"]
+          },
+          {
+            foreignKeyName: "source_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "source_documents_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_counts"
+            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "source_documents_uploaded_by_fkey"
@@ -1057,14 +1109,76 @@ export type Database = {
             foreignKeyName: "units_property_id_fkey"
             columns: ["property_id"]
             isOneToOne: false
+            referencedRelation: "home_properties"
+            referencedColumns: ["property_id"]
+          },
+          {
+            foreignKeyName: "units_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
             referencedRelation: "properties"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "units_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "property_counts"
+            referencedColumns: ["property_id"]
           },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      home_action_items: {
+        Row: {
+          action_type: string | null
+          detail_date: string | null
+          detail_email: string | null
+          detail_name: string | null
+          property_id: string | null
+          property_name: string | null
+        }
+        Relationships: []
+      }
+      home_properties: {
+        Row: {
+          charge_count: number | null
+          city: string | null
+          name: string | null
+          pending_invite_count: number | null
+          property_id: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+          state: string | null
+          tenant_count: number | null
+          unit_count: number | null
+        }
+        Relationships: []
+      }
+      property_counts: {
+        Row: {
+          charge_count: number | null
+          pending_invite_count: number | null
+          property_id: string | null
+          tenant_count: number | null
+          unit_count: number | null
+        }
+        Insert: {
+          charge_count?: never
+          pending_invite_count?: never
+          property_id?: string | null
+          tenant_count?: never
+          unit_count?: never
+        }
+        Update: {
+          charge_count?: never
+          pending_invite_count?: never
+          property_id?: string | null
+          tenant_count?: never
+          unit_count?: never
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_property_with_membership: {
@@ -1081,8 +1195,23 @@ export type Database = {
         }
         Returns: Json
       }
+      create_property_with_unit: {
+        Args: {
+          p_city?: string
+          p_complement?: string
+          p_country_code?: string
+          p_name: string
+          p_neighborhood?: string
+          p_number?: string
+          p_postal_code?: string
+          p_state?: string
+          p_street?: string
+        }
+        Returns: Json
+      }
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }
+      is_unit_member: { Args: { p_unit_id: string }; Returns: boolean }
       validate_invite_code: { Args: { invite_code: string }; Returns: boolean }
     }
     Enums: {

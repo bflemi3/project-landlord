@@ -1,10 +1,23 @@
-import type { MembershipWithProperty } from '@/lib/hooks/use-memberships'
 export type { PropertySetupProgress, PendingInvite, UrgentAction, PropertyStatus, PropertyOperationalData } from '@/lib/types/property'
 import type { PropertySetupProgress, PendingInvite, UrgentAction, PropertyOperationalData } from '@/lib/types/property'
 
+/** Preview-only type — the real app uses useHomeProperties instead */
+export interface PreviewMembership {
+  id: string
+  role: 'landlord' | 'tenant'
+  property: {
+    id: string
+    name: string
+    street: string | null
+    number: string | null
+    city: string | null
+    state: string | null
+  }
+}
+
 export interface HomeScreenData {
   firstName: string
-  memberships: MembershipWithProperty[]
+  memberships: PreviewMembership[]
   setupProgress: Record<string, PropertySetupProgress> // keyed by property ID
   pendingInvites: Record<string, PendingInvite[]> // keyed by property ID
   chargeCount: Record<string, number> // keyed by property ID

@@ -34,7 +34,7 @@ function ChargeRow({
         disabled ? 'opacity-50' : 'cursor-default',
         configured
           ? 'border-primary/30 bg-primary/5 dark:bg-primary/10'
-          : 'border-border hover:not-disabled:border-primary/20',
+          : 'border-border hover:not-disabled:border-primary/20 hover:not-disabled:bg-muted/50',
         className,
       )}
       {...props}

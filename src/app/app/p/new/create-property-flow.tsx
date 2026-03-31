@@ -16,7 +16,6 @@ import { SetupComplete } from './steps/setup-complete'
 import { createProperty, type CreatePropertyState } from '@/app/actions/properties/create-property'
 import { inviteTenant } from '@/app/actions/properties/invite-tenant'
 import { createCharges } from '@/app/actions/properties/create-charges'
-
 const TOTAL_STEPS = 3
 
 export function CreatePropertyFlow() {
@@ -24,6 +23,7 @@ export function CreatePropertyFlow() {
   const propertyFormData = useRef<PropertyFormValues | null>(null)
   const inviteData = useRef<InviteEntry[]>([])
   const chargeData = useRef<ChargeConfig[]>([])
+  const chargeDueDay = useRef('10')
   const createdPropertyId = useRef<string | undefined>(undefined)
 
   // 2. Context
@@ -119,10 +119,10 @@ export function CreatePropertyFlow() {
 
   // 10. Return
   return (
-    <div className="mx-auto flex min-h-svh max-w-lg flex-col px-6 pb-8 pt-8">
+    <div className="flex h-full flex-col overflow-hidden pt-8">
       {/* Top bar: close + progress */}
       {step <= TOTAL_STEPS && (
-        <div className="mb-2">
+        <div className="mx-auto mb-2 w-full max-w-lg px-6">
           <div className="mb-4 flex items-center justify-between">
             <div className="w-20">
               {step > 1 && (
@@ -153,40 +153,53 @@ export function CreatePropertyFlow() {
         </div>
       )}
 
-      {/* Step content */}
-      <div className="relative -mx-1 flex flex-1 flex-col overflow-x-clip px-1">
+      {/* Step content — full-width scroll, content centered inside */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
         {step === 1 ? (
-          <div className="flex flex-1 flex-col">
+          <div className="mx-auto max-w-lg px-6">
+            <div className="pt-8">
+              <h1 className="mb-2 text-2xl font-bold text-foreground">{t('whereIsProperty')}</h1>
+              <p className="mb-6 text-base text-muted-foreground">{t('whereIsPropertyDescription')}</p>
+            </div>
             <PropertyForm
               onValidated={handlePropertyValidated}
               initialValues={propertyFormData.current ?? undefined}
               initialErrors={serverErrors}
-            />
+            >
+              <PropertyForm.Name />
+              <PropertyForm.Content className="mt-5" />
+              <PropertyForm.Footer className="pt-10 pb-8" />
+            </PropertyForm>
           </div>
         ) : (
           <SlideIn activeKey={step} className="flex flex-1 flex-col">
-            {step === 2 && (
-              <InviteTenantsForm
-                propertyName={propertyName}
-                onSubmit={handleInvitesComplete}
-                isSubmitting={false}
-              />
-            )}
-            {step === 3 && (
-              <ChargesForm
-                onSubmit={handleChargesComplete}
-                isSubmitting={isPending}
-                initialConfigs={chargeData.current.length > 0 ? chargeData.current : undefined}
-              />
-            )}
-            {step === 4 && (
-              <SetupComplete
-                propertyName={propertyName}
-                propertyId={createdPropertyId.current}
-                tenantCount={inviteData.current.filter((i) => i.email.trim()).length}
-                chargeCount={chargeData.current.length}
-              />
-            )}
+            <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-6 pb-8">
+              {step === 2 && (
+                <InviteTenantsForm
+                  propertyName={propertyName}
+                  onSubmit={handleInvitesComplete}
+                  isSubmitting={false}
+                  stateRef={inviteData}
+                />
+              )}
+              {step === 3 && (
+                <ChargesForm
+                  onSubmit={handleChargesComplete}
+                  isSubmitting={isPending}
+                  initialConfigs={chargeData.current.length > 0 ? chargeData.current : undefined}
+                  stateRef={chargeData}
+                  dueDayRef={chargeDueDay}
+                />
+              )}
+              {step === 4 && (
+                <SetupComplete
+                  propertyName={propertyName}
+                  propertyId={createdPropertyId.current}
+                  tenantCount={inviteData.current.filter((i) => i.email.trim()).length}
+                  chargeCount={chargeData.current.length}
+                />
+              )}
+            </div>
           </SlideIn>
         )}
       </div>

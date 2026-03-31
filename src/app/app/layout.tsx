@@ -37,7 +37,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .single()
 
   return (
-    <div className="h-svh">
+    <div className="flex h-svh flex-col">
       <PostHogIdentify
         userId={userId}
         email={email}
@@ -48,7 +48,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         userName={profile?.full_name ?? undefined}
         avatarUrl={profile?.avatar_url ?? undefined}
       />
-      {children}
+      <div className="min-h-0 flex-1">
+        {children}
+      </div>
       <SwUpdateNotifier />
       <InstallPrompt />
     </div>

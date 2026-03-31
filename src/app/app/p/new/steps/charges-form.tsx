@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type MutableRefObject } from 'react'
 import { useTranslations } from 'next-intl'
 import { Home, Building2, Zap, Droplets, Flame, Wifi, Plus, X, Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,6 @@ import {
   ChargeRowRemove,
   ChargeRowChevron,
 } from '@/components/charge-row'
-import { percentToAmount } from '@/lib/split-utils'
 import { formatCurrency, formatAmount } from '@/lib/format-currency'
 import { DUE_DAYS } from '@/lib/constants'
 import { ChargeConfigSheet, type ChargeConfig } from './charge-config-sheet'
@@ -48,20 +47,36 @@ export function ChargesForm({
   onSubmit,
   isSubmitting,
   initialConfigs,
+  stateRef,
+  dueDayRef,
 }: {
   onSubmit: (data: ChargeData) => void
   isSubmitting: boolean
   initialConfigs?: ChargeConfig[]
+  stateRef?: MutableRefObject<ChargeConfig[]>
+  dueDayRef?: MutableRefObject<string>
 }) {
   // 2. Context
   const t = useTranslations('properties')
 
   // 4. State
-  const [dueDay, setDueDay] = useState('10')
-  const [configuredCharges, setConfiguredCharges] = useState<Map<string, ChargeConfig>>(() => {
+  const [dueDay, _setDueDay] = useState(dueDayRef?.current ?? '10')
+  function setDueDay(val: string) {
+    _setDueDay(val)
+    if (dueDayRef) dueDayRef.current = val
+  }
+  const [configuredCharges, _setConfiguredCharges] = useState<Map<string, ChargeConfig>>(() => {
     if (!initialConfigs?.length) return new Map()
     return new Map(initialConfigs.map((c) => [c.name, c]))
   })
+  // Wrap setter to keep parent ref in sync
+  function setConfiguredCharges(update: Map<string, ChargeConfig> | ((prev: Map<string, ChargeConfig>) => Map<string, ChargeConfig>)) {
+    _setConfiguredCharges((prev) => {
+      const next = typeof update === 'function' ? update(prev) : update
+      if (stateRef) stateRef.current = Array.from(next.values())
+      return next
+    })
+  }
   const [activeCharge, setActiveCharge] = useState<{ name: string; defaultType: 'rent' | 'recurring' | 'variable'; isCustom: boolean } | null>(null)
   const [sheetOpen, setSheetOpen] = useState(false)
   const [customCharges, setCustomCharges] = useState<ChargeEntry[]>([])
@@ -233,13 +248,8 @@ export function ChargesForm({
                       ? t('chargePaysTenant')
                       : config.payer === 'landlord'
                         ? t('chargePaysLandlord')
-                        : config.splitMode === 'amount' && config.amountMinor
-                          ? (() => {
-                              const total = config.amountMinor / 100
-                              const tenantAmt = percentToAmount(config.tenantPercent, total, 5)
-                              const landlordAmt = total - tenantAmt
-                              return `${formatCurrency(Math.round(tenantAmt * 100))} / ${formatCurrency(Math.round(landlordAmt * 100))}`
-                            })()
+                        : config.splitMode === 'amount' && config.tenantFixedMinor != null && config.landlordFixedMinor != null
+                          ? `${formatCurrency(config.tenantFixedMinor)} / ${formatCurrency(config.landlordFixedMinor)}`
                           : `${config.tenantPercent}/${config.landlordPercent}`}
                   </ChargeRowDescription>
                 )}

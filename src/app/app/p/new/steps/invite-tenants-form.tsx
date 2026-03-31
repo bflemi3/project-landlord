@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type MutableRefObject } from 'react'
 import { useTranslations } from 'next-intl'
 import { X, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { isValidEmail } from '@/lib/validation'
 
 export interface InviteEntry {
   email: string
@@ -17,30 +18,39 @@ export function InviteTenantsForm({
   propertyName,
   onSubmit,
   isSubmitting,
+  stateRef,
 }: {
   propertyName: string
   onSubmit: (invites: InviteEntry[]) => void
   isSubmitting: boolean
+  stateRef: MutableRefObject<InviteEntry[]>
 }) {
   // 2. Context
   const t = useTranslations('properties')
 
   // 4. State
-  const [tenants, setTenants] = useState<InviteEntry[]>([])
+  const [tenants, _setTenants] = useState<InviteEntry[]>(stateRef.current)
+  function setTenants(update: InviteEntry[] | ((prev: InviteEntry[]) => InviteEntry[])) {
+    _setTenants((prev) => {
+      const next = typeof update === 'function' ? update(prev) : update
+      stateRef.current = next
+      return next
+    })
+  }
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [error, setError] = useState('')
 
   // 5. Derived
   const hasTenants = tenants.length > 0
-  const canAdd = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+  const canAdd = isValidEmail(email)
 
   // 8. Callbacks
   function handleAdd() {
     const trimmedEmail = email.trim().toLowerCase()
     if (!trimmedEmail) return
 
-    if (!trimmedEmail.includes('@')) {
+    if (!isValidEmail(trimmedEmail)) {
       setError(t('invalidEmail'))
       return
     }

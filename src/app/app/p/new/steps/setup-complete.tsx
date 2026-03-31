@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Check, MapPin, Users, Receipt, ChevronLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
 import { FadeUp } from '@/components/fade-up'
 import { InfoBox, InfoBoxContent, InfoBoxDivider } from '@/components/info-box'
 
@@ -61,17 +61,13 @@ export function SetupComplete({ propertyName, propertyId, tenantCount = 0, charg
 
         <FadeUp className="w-full space-y-3">
           {propertyId && (
-            <Link href={`/app/p/${propertyId}`} className="block">
-              <Button className="h-12 w-full rounded-2xl" size="lg">
-                {t('viewProperty')}
-              </Button>
+            <Link href={`/app/p/${propertyId}`} className={buttonVariants({ size: 'lg', className: 'h-12 w-full rounded-2xl' })}>
+              {t('viewProperty')}
             </Link>
           )}
-          <Link href="/app" className="block">
-            <Button variant="ghost" className="h-12 w-full rounded-2xl" size="lg">
-              <ChevronLeft />
-              {t('goHome')}
-            </Button>
+          <Link href="/app" className={buttonVariants({ variant: 'ghost', size: 'lg', className: 'h-12 w-full rounded-2xl' })}>
+            <ChevronLeft />
+            {t('goHome')}
           </Link>
         </FadeUp>
       </FadeUp.Group>

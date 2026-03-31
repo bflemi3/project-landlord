@@ -9,7 +9,7 @@ export const buttonVariants = cva(
         outline:
           'border-border bg-background hover:not-disabled:bg-muted hover:not-disabled:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:not-disabled:bg-input/50',
         secondary:
-          'bg-secondary text-secondary-foreground hover:not-disabled:bg-secondary/80 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
+          'bg-secondary text-secondary-foreground hover:not-disabled:brightness-95 dark:hover:not-disabled:brightness-125 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
         ghost:
           'text-muted-foreground hover:not-disabled:bg-muted hover:not-disabled:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:not-disabled:bg-muted/50',
         destructive:
