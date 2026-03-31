@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
+import type { Json } from '@/lib/types/database'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
 export interface UpdateChargeInput extends SplitInput {
@@ -46,7 +47,7 @@ export async function updateChargeCore(
   const allocations = buildAllocationRows(input)
   const { error: allocError } = await supabase.rpc('replace_allocations', {
     p_charge_definition_id: input.chargeId,
-    p_allocations: allocations as unknown as string,
+    p_allocations: allocations as unknown as Json,
   })
 
   if (allocError) return { success: false }

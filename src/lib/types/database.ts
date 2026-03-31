@@ -1212,6 +1212,10 @@ export type Database = {
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }
       is_unit_member: { Args: { p_unit_id: string }; Returns: boolean }
+      replace_allocations: {
+        Args: { p_allocations: Json; p_charge_definition_id: string }
+        Returns: undefined
+      }
       validate_invite_code: { Args: { invite_code: string }; Returns: boolean }
     }
     Enums: {
