@@ -5,6 +5,8 @@ export async function setup() {
     const status = JSON.parse(output)
     process.env.SUPABASE_SERVICE_ROLE_KEY = status.SERVICE_ROLE_KEY
     process.env.SUPABASE_ANON_KEY = status.ANON_KEY
+    // Provide a dummy Resend key so modules that import the Resend client don't throw at import time
+    process.env.RESEND_API_KEY ??= 're_test_dummy_key_for_integration_tests'
   } catch {
     throw new Error('Local Supabase is not running. Start it with: supabase start')
   }
