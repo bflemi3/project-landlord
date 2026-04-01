@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.7.0
+
+- Set up charges for your property — rent, utilities, condo fees, and custom charges
+- Pause or resume charges without deleting them
+- Remove charges you no longer need
+- Charges automatically generate billing line items each month
+
 ## v0.6.0
 
 - Create a new property with guided onboarding — address, tenants, and charges

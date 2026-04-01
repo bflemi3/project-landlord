@@ -16,6 +16,7 @@ import { SetupComplete } from './steps/setup-complete'
 import { createProperty, type CreatePropertyState } from '@/app/actions/properties/create-property'
 import { inviteTenant } from '@/app/actions/properties/invite-tenant'
 import { createCharges } from '@/app/actions/properties/create-charges'
+import posthog from 'posthog-js'
 const TOTAL_STEPS = 3
 
 export function CreatePropertyFlow() {
@@ -101,6 +102,15 @@ export function CreatePropertyFlow() {
         const chargeResult = await createCharges(result.unitId!, chargeData.current)
         if (!chargeResult.success) {
           failures.push(...chargeResult.failedCharges)
+        }
+
+        for (const config of chargeData.current) {
+          if (!chargeResult.failedCharges.includes(config.name)) {
+            posthog.capture('charge_definition_created', {
+              property_id: result.propertyId,
+              charge_type: config.chargeType,
+            })
+          }
         }
       }
 

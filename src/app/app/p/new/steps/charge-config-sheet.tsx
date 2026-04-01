@@ -40,6 +40,12 @@ interface ChargeConfigSheetProps {
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
   onSkip: () => void
+  /** When editing, optional toggle for pause/resume */
+  onToggleActive?: () => void
+  /** When editing, optional remove action */
+  onRemove?: () => void
+  /** Current active state of the charge being edited */
+  isActive?: boolean
 }
 
 export function ChargeConfigSheet({
@@ -53,6 +59,9 @@ export function ChargeConfigSheet({
   existingConfig,
   onSave,
   onSkip,
+  onToggleActive,
+  onRemove,
+  isActive,
 }: ChargeConfigSheetProps) {
   // Key forces remount of the form when the modal opens or the config changes,
   // resetting all state to initial values without useEffect
@@ -80,6 +89,9 @@ export function ChargeConfigSheet({
         existingConfig={existingConfig}
         onSave={onSave}
         onSkip={onSkip}
+        onToggleActive={onToggleActive}
+        onRemove={onRemove}
+        isActive={isActive}
       />
     </ResponsiveModal>
   )
@@ -94,6 +106,9 @@ function ChargeConfigForm({
   existingConfig,
   onSave,
   onSkip,
+  onToggleActive,
+  onRemove,
+  isActive,
 }: {
   chargeName: string
   isCustom: boolean
@@ -103,6 +118,9 @@ function ChargeConfigForm({
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
   onSkip: () => void
+  onToggleActive?: () => void
+  onRemove?: () => void
+  isActive?: boolean
 }) {
   const t = useTranslations('properties')
 
@@ -170,6 +188,7 @@ function ChargeConfigForm({
             onChange={(e) => setEditableName(e.target.value)}
             placeholder={t('customChargeNamePlaceholder')}
             className="w-full border-b border-border bg-transparent pb-1 text-xl font-bold text-foreground outline-none transition-colors placeholder:text-muted-foreground/30 focus:border-primary"
+            autoFocus={!existingConfig}
           />
         </div>
       )}
@@ -186,6 +205,7 @@ function ChargeConfigForm({
             switchLabel={t('switchToVariable')}
             switchContext={t('switchToVariableContext')}
             currencySymbol={CURRENCY_SYMBOLS[currency] ?? currency}
+            autoFocus={!isCustom || !!existingConfig}
           />
         ) : (
           <VariablePlaceholder
@@ -236,6 +256,26 @@ function ChargeConfigForm({
         >
           {t('chargeSave')}
         </Button>
+        {onToggleActive && (
+          <Button
+            variant="ghost"
+            onClick={onToggleActive}
+            className="h-12 w-full rounded-2xl text-muted-foreground"
+            size="lg"
+          >
+            {isActive ? t('pauseCharge') : t('resumeCharge')}
+          </Button>
+        )}
+        {onRemove && (
+          <Button
+            variant="ghost"
+            onClick={onRemove}
+            className="h-12 w-full rounded-2xl text-destructive"
+            size="lg"
+          >
+            {t('removeCharge')}
+          </Button>
+        )}
         <Button
           variant="ghost"
           onClick={onSkip}
@@ -262,6 +302,7 @@ function AmountInput({
   switchLabel,
   switchContext,
   currencySymbol,
+  autoFocus = true,
 }: {
   amount: string
   onAmountChange: (value: string) => void
@@ -271,6 +312,7 @@ function AmountInput({
   switchLabel: string
   switchContext: string
   currencySymbol: string
+  autoFocus?: boolean
 }) {
   return (
     <div className="py-4">
@@ -288,7 +330,7 @@ function AmountInput({
             className="ml-1 w-0 min-w-[3ch] max-w-32 flex-1 bg-transparent text-left text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/20"
             style={{ width: `${Math.max(3, (amount || '').length + 1)}ch` }}
             autoComplete="off"
-            autoFocus
+            autoFocus={autoFocus}
           />
           {amount && (
             <button

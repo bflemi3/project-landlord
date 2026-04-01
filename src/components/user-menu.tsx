@@ -97,7 +97,7 @@ function UserSettingsModal({
     >
       {/* Nav — segmented on mobile, sidebar on desktop */}
       <div className="mt-2 md:mt-4 md:flex md:gap-6">
-        <div className="flex flex-col md:w-44 md:shrink-0">
+        <div className="flex flex-col md:w-44 md:shrink-0 md:rounded-xl md:bg-zinc-50 md:p-2 md:dark:bg-zinc-800/60">
           {/* Mobile: pill segmented control */}
           <div className="mb-6 flex gap-1 rounded-xl bg-secondary/60 p-1 md:mb-0 md:flex-col md:rounded-none md:bg-transparent md:p-0">
             {sections.map((section) => {

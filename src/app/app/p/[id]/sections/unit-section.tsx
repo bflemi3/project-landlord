@@ -14,7 +14,7 @@ export function UnitSection({ unitId, propertyId }: { unitId: string; propertyId
       {showUnitHeader && (
         <h2 className="mb-4 text-lg font-semibold text-foreground">{unit.name}</h2>
       )}
-      <ChargesSection unitId={unitId} />
+      <ChargesSection unitId={unitId} propertyId={propertyId} />
     </div>
   )
 }

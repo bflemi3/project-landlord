@@ -237,6 +237,9 @@
     "chargeSave": "Salvar cobrança",
     "chargeConfigureLater": "Configurar depois",
     "cancel": "Cancelar",
+    "pauseCharge": "Pausar cobrança",
+    "resumeCharge": "Retomar cobrança",
+    "removeCharge": "Remover cobrança",
     "chargeConfigured": "configurado",
     "chargeVariable": "Variável",
     "customChargeName": "Nome da cobrança",
@@ -306,7 +309,10 @@
     "pendingInviteTitle": "Convite pendente",
     "invitedOn": "Convidado em {date} · {relative}",
     "editProperty": "Editar imóvel",
-    "saveChanges": "Salvar alterações"
+    "saveChanges": "Salvar alterações",
+    "pauseCharge": "Pausar cobrança",
+    "resumeCharge": "Retomar cobrança",
+    "chargeInactive": "Pausada"
   },
   "settings": {
     "title": "Configurações",
