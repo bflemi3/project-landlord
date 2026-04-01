@@ -123,7 +123,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
           {t('charges')} ({charges.length})
         </h2>
         <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={handleAddCharge}>
-          <Plus className="size-3.5" />
+          <Plus />
           {t('addCharge')}
         </Button>
       </div>
