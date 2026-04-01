@@ -27,6 +27,7 @@ Changelog and version bump happen **inside the feature PR** — not as a separat
 
 - `CHANGELOG.md` at project root is the single source of truth for release notes
 - Write entries for **lay users** (e.g., "Install mabenn to your home screen" not "PWA support with Serwist")
+- Only include changes that are user-facing in this release — not internal plumbing, not features shipped in prior versions, not backend work that isn't triggered yet
 - Each version: `## vX.Y.Z` heading + bullet points
 - Update `CHANGELOG.md` **before** bumping `package.json` version
 
