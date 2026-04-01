@@ -188,6 +188,7 @@ function ChargeConfigForm({
             onChange={(e) => setEditableName(e.target.value)}
             placeholder={t('customChargeNamePlaceholder')}
             className="w-full border-b border-border bg-transparent pb-1 text-xl font-bold text-foreground outline-none transition-colors placeholder:text-muted-foreground/30 focus:border-primary"
+            autoFocus
           />
         </div>
       )}
@@ -204,6 +205,7 @@ function ChargeConfigForm({
             switchLabel={t('switchToVariable')}
             switchContext={t('switchToVariableContext')}
             currencySymbol={CURRENCY_SYMBOLS[currency] ?? currency}
+            autoFocus={!isCustom}
           />
         ) : (
           <VariablePlaceholder
@@ -300,6 +302,7 @@ function AmountInput({
   switchLabel,
   switchContext,
   currencySymbol,
+  autoFocus = true,
 }: {
   amount: string
   onAmountChange: (value: string) => void
@@ -309,6 +312,7 @@ function AmountInput({
   switchLabel: string
   switchContext: string
   currencySymbol: string
+  autoFocus?: boolean
 }) {
   return (
     <div className="py-4">
@@ -326,7 +330,7 @@ function AmountInput({
             className="ml-1 w-0 min-w-[3ch] max-w-32 flex-1 bg-transparent text-left text-4xl font-bold text-foreground outline-none placeholder:text-muted-foreground/20"
             style={{ width: `${Math.max(3, (amount || '').length + 1)}ch` }}
             autoComplete="off"
-            autoFocus
+            autoFocus={autoFocus}
           />
           {amount && (
             <button
