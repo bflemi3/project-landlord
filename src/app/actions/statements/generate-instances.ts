@@ -75,11 +75,12 @@ export async function generateAndPersistInstancesCore(
   const definitions = await fetchDefinitionsWithRules(supabase, unitId)
   const instances = generateChargeInstances(definitions, periodYear, periodMonth)
 
-  // Delete any existing instances for this statement (idempotent regeneration)
+  // Only delete definition-generated instances (preserves manual/imported charges)
   const { error: deleteError } = await supabase
     .from('charge_instances')
     .delete()
     .eq('statement_id', statementId)
+    .not('charge_definition_id', 'is', null)
 
   if (deleteError) {
     throw new Error(`Failed to clear existing charge instances: ${deleteError.message}`)
