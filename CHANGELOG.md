@@ -2,10 +2,9 @@
 
 ## v0.7.0
 
-- Set up charges for your property — rent, utilities, condo fees, and custom charges
 - Pause or resume charges without deleting them
-- Remove charges you no longer need
-- Charges automatically generate billing line items each month
+- Remove charges from the charge editor
+- Tap a What's Next action to jump directly to the relevant item
 
 ## v0.6.0
 
