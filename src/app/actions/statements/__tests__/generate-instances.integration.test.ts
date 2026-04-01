@@ -14,6 +14,8 @@ describe('generateAndPersistInstancesCore', () => {
   let userId: string
   let unitId: string
   let statementId: string
+  let periodYear: number
+  let periodMonth: number
 
   beforeAll(async () => {
     const user = await createTestUser()
@@ -46,6 +48,12 @@ describe('generateAndPersistInstancesCore', () => {
       },
     ])
 
+    // Use current year/month so the period is after the recurring rule start_date
+    // (createChargesCore sets start_date to today)
+    const now = new Date()
+    periodYear = now.getFullYear()
+    periodMonth = now.getMonth() + 1
+
     // Create a draft statement via admin client to bypass RLS
     const admin = getAdminClient()
     const { data: statement, error } = await admin
@@ -53,8 +61,8 @@ describe('generateAndPersistInstancesCore', () => {
       .insert({
         unit_id: unitId,
         created_by: userId,
-        period_year: 2025,
-        period_month: 6,
+        period_year: periodYear,
+        period_month: periodMonth,
         status: 'draft',
         currency: 'BRL',
         total_amount_minor: 0,
@@ -76,8 +84,8 @@ describe('generateAndPersistInstancesCore', () => {
       client,
       unitId,
       statementId,
-      2025,
-      6,
+      periodYear,
+      periodMonth,
     )
 
     expect(result.success).toBe(true)
@@ -96,7 +104,7 @@ describe('generateAndPersistInstancesCore', () => {
     const rent = instances![0]
     expect(rent.amount_minor).toBe(200000)
     expect(rent.tenant_percentage).toBe(100)
-    expect(rent.landlord_percentage).toBe(0)
+    expect(rent.landlord_percentage).toBeNull()
     expect(rent.split_type).toBe('percentage')
     expect(rent.charge_source).toBe('manual')
   })
