@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useQueryClient } from '@tanstack/react-query'
 import { Plus } from 'lucide-react'
+import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { ChargeCard } from '@/components/charge-card'
 import { ChargeConfigSheet, type ChargeConfig } from '@/app/app/p/new/steps/charge-config-sheet'
@@ -29,7 +30,7 @@ function toChargeConfig(charge: ChargeDefinition): ChargeConfig {
   }
 }
 
-export function ChargesSection({ unitId }: { unitId: string }) {
+export function ChargesSection({ unitId, propertyId }: { unitId: string; propertyId: string }) {
   const t = useTranslations('propertyDetail')
   const queryClient = useQueryClient()
   const { data: unit } = useUnit(unitId)
@@ -79,6 +80,11 @@ export function ChargesSection({ unitId }: { unitId: string }) {
         tenantFixedMinor: config.tenantFixedMinor,
         landlordFixedMinor: config.landlordFixedMinor,
       }])
+
+      posthog.capture('charge_definition_created', {
+        property_id: propertyId,
+        charge_type: config.chargeType,
+      })
     }
 
     setSheetOpen(false)
