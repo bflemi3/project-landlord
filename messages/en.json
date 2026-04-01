@@ -239,6 +239,7 @@
     "cancel": "Cancel",
     "pauseCharge": "Pause charge",
     "resumeCharge": "Resume charge",
+    "removeCharge": "Remove charge",
     "chargeConfigured": "configured",
     "chargeVariable": "Variable",
     "customChargeName": "Charge name",

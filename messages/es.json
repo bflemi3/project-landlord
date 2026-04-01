@@ -239,6 +239,7 @@
     "cancel": "Cancelar",
     "pauseCharge": "Pausar cargo",
     "resumeCharge": "Reanudar cargo",
+    "removeCharge": "Eliminar cargo",
     "chargeConfigured": "configurado",
     "chargeVariable": "Variable",
     "customChargeName": "Nombre del cargo",

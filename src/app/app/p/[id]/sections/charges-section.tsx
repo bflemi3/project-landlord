@@ -10,6 +10,7 @@ import { ChargeCard } from '@/components/charge-card'
 import { ChargeConfigSheet, type ChargeConfig } from '@/app/app/p/new/steps/charge-config-sheet'
 import { createCharges } from '@/app/actions/properties/create-charges'
 import { updateCharge } from '@/app/actions/properties/update-charge'
+import { removeCharge } from '@/app/actions/properties/remove-charge'
 import { toggleChargeActive } from '@/app/actions/properties/toggle-charge-active'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useUnitCharges, type ChargeDefinition } from '@/lib/hooks/use-unit-charges'
@@ -101,6 +102,15 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
     queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
   }
 
+  async function handleRemove() {
+    if (!editingCharge) return
+    await removeCharge(editingCharge.id)
+    setSheetOpen(false)
+    setEditingCharge(null)
+    queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
+    queryClient.invalidateQueries({ queryKey: ['property-counts'] })
+  }
+
   async function handleSkip() {
     setSheetOpen(false)
     setEditingCharge(null)
@@ -151,6 +161,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         onSave={handleSave}
         onSkip={handleSkip}
         onToggleActive={editingCharge ? handleToggleActive : undefined}
+        onRemove={editingCharge ? handleRemove : undefined}
         isActive={editingCharge?.isActive}
       />
     </div>

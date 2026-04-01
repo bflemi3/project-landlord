@@ -105,10 +105,12 @@ export function CreatePropertyFlow() {
         }
 
         for (const config of chargeData.current) {
-          posthog.capture('charge_definition_created', {
-            property_id: result.propertyId,
-            charge_type: config.chargeType,
-          })
+          if (!chargeResult.failedCharges.includes(config.name)) {
+            posthog.capture('charge_definition_created', {
+              property_id: result.propertyId,
+              charge_type: config.chargeType,
+            })
+          }
         }
       }
 
