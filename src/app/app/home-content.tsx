@@ -208,6 +208,19 @@ function WhatsNextSection() {
   )
 }
 
+function getActionHash(action: HomeAction): string {
+  switch (action.actionType) {
+    case 'pending_invite':
+      return action.detailId ? `invite-${action.detailId}` : 'tenants'
+    case 'invite_tenants':
+      return 'invite-btn'
+    case 'configure_charges':
+      return 'add-charge'
+    default:
+      return ''
+  }
+}
+
 function ActionRow({ action }: { action: HomeAction }) {
   const t = useTranslations('home')
   const Icon = ACTION_ICONS[action.actionType] ?? ChevronRight
@@ -236,9 +249,11 @@ function ActionRow({ action }: { action: HomeAction }) {
       description = ''
   }
 
+  const highlight = getActionHash(action)
+
   return (
     <Link
-      href={`/app/p/${action.propertyId}`}
+      href={`/app/p/${action.propertyId}${highlight ? `?highlight=${highlight}` : ''}`}
       className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
     >
       <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary ${color}`}>

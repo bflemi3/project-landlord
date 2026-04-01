@@ -7,6 +7,7 @@ export interface HomeAction {
   actionType: 'invite_tenants' | 'configure_charges' | 'pending_invite'
   propertyId: string
   propertyName: string
+  detailId: string | null
   detailName: string | null
   detailEmail: string | null
   detailDate: string | null
@@ -17,7 +18,7 @@ async function fetchHomeActions(): Promise<HomeAction[]> {
 
   const { data, error } = await supabase
     .from('home_action_items')
-    .select('action_type, property_id, property_name, detail_name, detail_email, detail_date')
+    .select('action_type, property_id, property_name, detail_id, detail_name, detail_email, detail_date')
 
   if (error || !data) return []
 
@@ -25,6 +26,7 @@ async function fetchHomeActions(): Promise<HomeAction[]> {
     actionType: row.action_type as HomeAction['actionType'],
     propertyId: row.property_id ?? '',
     propertyName: row.property_name ?? '',
+    detailId: (row as Record<string, unknown>).detail_id as string | null,
     detailName: row.detail_name,
     detailEmail: row.detail_email,
     detailDate: row.detail_date,

@@ -20,6 +20,7 @@ import { removeTenant } from '@/app/actions/properties/remove-tenant'
 import { unitTenantsQueryKey } from '@/lib/queries/unit-tenants'
 import { isValidEmail } from '@/lib/validation'
 import { unitInvitesQueryKey } from '@/lib/queries/unit-invites'
+import { useHighlightTarget } from '@/lib/hooks/use-highlight-target'
 
 function getInitials(name?: string | null, email?: string | null): string {
   if (name) {
@@ -35,6 +36,7 @@ export function TenantsSection({ propertyId, unitId }: { propertyId: string; uni
   const t = useTranslations('propertyDetail')
   const { data: members } = useUnitTenants(unitId)
   const { data: invites } = useUnitInvites(unitId)
+  const { ref: inviteBtnRef, highlighted: inviteBtnGlow } = useHighlightTarget('invite-btn')
 
   const [inviteModalOpen, setInviteModalOpen] = useState(false)
   const [selectedMember, setSelectedMember] = useState<UnitTenant | null>(null)
@@ -48,8 +50,14 @@ export function TenantsSection({ propertyId, unitId }: { propertyId: string; uni
         <h2 className="text-base font-semibold text-foreground">
           {t('tenants')} ({totalCount})
         </h2>
-        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setInviteModalOpen(true)}>
-          <Plus className="size-3.5" />
+        <Button
+          ref={inviteBtnRef}
+          variant="ghost"
+          size="sm"
+          className={inviteBtnGlow ? 'section-highlight text-muted-foreground' : 'text-muted-foreground'}
+          onClick={() => setInviteModalOpen(true)}
+        >
+          <Plus />
           {t('invite')}
         </Button>
       </div>
@@ -86,25 +94,7 @@ export function TenantsSection({ propertyId, unitId }: { propertyId: string; uni
           ))}
 
           {invites.map((inv) => (
-            <button
-              key={inv.id}
-              onClick={() => setSelectedInvite(inv)}
-              className="flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
-            >
-              <Avatar size="sm">
-                <AvatarFallback className="text-xs">{getInitials(inv.name, inv.email)}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground">{inv.name ?? inv.email}</p>
-                {inv.name && (
-                  <p className="mt-0.5 text-xs text-muted-foreground">{inv.email}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-                <Clock className="size-3.5" />
-                {t('pending')}
-              </div>
-            </button>
+            <InviteRow key={inv.id} invite={inv} onSelect={() => setSelectedInvite(inv)} />
           ))}
         </div>
       )}
@@ -128,6 +118,33 @@ export function TenantsSection({ propertyId, unitId }: { propertyId: string; uni
         unitId={unitId}
       />
     </div>
+  )
+}
+
+function InviteRow({ invite, onSelect }: { invite: UnitInvite; onSelect: () => void }) {
+  const t = useTranslations('propertyDetail')
+  const { ref, highlighted } = useHighlightTarget(`invite-${invite.id}`)
+
+  return (
+    <button
+      ref={ref}
+      onClick={onSelect}
+      className={`flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50 ${highlighted ? 'section-highlight' : ''}`}
+    >
+      <Avatar size="sm">
+        <AvatarFallback className="text-xs">{getInitials(invite.name, invite.email)}</AvatarFallback>
+      </Avatar>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{invite.name ?? invite.email}</p>
+        {invite.name && (
+          <p className="mt-0.5 text-xs text-muted-foreground">{invite.email}</p>
+        )}
+      </div>
+      <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+        <Clock className="size-3.5" />
+        {t('pending')}
+      </div>
+    </button>
   )
 }
 

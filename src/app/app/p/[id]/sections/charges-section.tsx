@@ -14,6 +14,7 @@ import { removeCharge } from '@/app/actions/properties/remove-charge'
 import { toggleChargeActive } from '@/app/actions/properties/toggle-charge-active'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useUnitCharges, type ChargeDefinition } from '@/lib/hooks/use-unit-charges'
+import { useHighlightTarget } from '@/lib/hooks/use-highlight-target'
 
 /** Convert a ChargeDefinition (from DB) to a ChargeConfig (for the form) */
 function toChargeConfig(charge: ChargeDefinition): ChargeConfig {
@@ -36,6 +37,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
   const queryClient = useQueryClient()
   const { data: unit } = useUnit(unitId)
   const { data: charges } = useUnitCharges(unitId)
+  const { ref: addBtnRef, highlighted: addBtnGlow } = useHighlightTarget('add-charge')
 
   // Sheet state
   const [sheetOpen, setSheetOpen] = useState(false)
@@ -122,7 +124,13 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         <h2 className="text-base font-semibold text-foreground">
           {t('charges')} ({charges.length})
         </h2>
-        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={handleAddCharge}>
+        <Button
+          ref={addBtnRef}
+          variant="ghost"
+          size="sm"
+          className={addBtnGlow ? 'section-highlight text-muted-foreground' : 'text-muted-foreground'}
+          onClick={handleAddCharge}
+        >
           <Plus />
           {t('addCharge')}
         </Button>
