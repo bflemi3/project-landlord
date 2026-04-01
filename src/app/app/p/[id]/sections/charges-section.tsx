@@ -11,6 +11,7 @@ import { ChargeConfigSheet, type ChargeConfig } from '@/app/app/p/new/steps/char
 import { createCharges } from '@/app/actions/properties/create-charges'
 import { updateCharge } from '@/app/actions/properties/update-charge'
 import { removeCharge } from '@/app/actions/properties/remove-charge'
+import { toggleChargeActive } from '@/app/actions/properties/toggle-charge-active'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useUnitCharges, type ChargeDefinition } from '@/lib/hooks/use-unit-charges'
 
@@ -93,17 +94,17 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
     queryClient.invalidateQueries({ queryKey: ['property-counts'] })
   }
 
+  async function handleToggleActive() {
+    if (!editingCharge) return
+    await toggleChargeActive(editingCharge.id, !editingCharge.isActive)
+    setSheetOpen(false)
+    setEditingCharge(null)
+    queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
+  }
+
   async function handleSkip() {
-    if (editingCharge) {
-      // Skip on an existing charge = delete it
-      await removeCharge(editingCharge.id)
-      setSheetOpen(false)
-      setEditingCharge(null)
-      queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
-      queryClient.invalidateQueries({ queryKey: ['property-counts'] })
-    } else {
-      setSheetOpen(false)
-    }
+    setSheetOpen(false)
+    setEditingCharge(null)
   }
 
   return (
@@ -150,6 +151,8 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         existingConfig={editingCharge ? toChargeConfig(editingCharge) : null}
         onSave={handleSave}
         onSkip={handleSkip}
+        onToggleActive={editingCharge ? handleToggleActive : undefined}
+        isActive={editingCharge?.isActive}
       />
     </div>
   )

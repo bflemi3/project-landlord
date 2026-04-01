@@ -40,6 +40,10 @@ interface ChargeConfigSheetProps {
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
   onSkip: () => void
+  /** When editing, optional toggle for pause/resume */
+  onToggleActive?: () => void
+  /** Current active state of the charge being edited */
+  isActive?: boolean
 }
 
 export function ChargeConfigSheet({
@@ -53,6 +57,8 @@ export function ChargeConfigSheet({
   existingConfig,
   onSave,
   onSkip,
+  onToggleActive,
+  isActive,
 }: ChargeConfigSheetProps) {
   // Key forces remount of the form when the modal opens or the config changes,
   // resetting all state to initial values without useEffect
@@ -80,6 +86,8 @@ export function ChargeConfigSheet({
         existingConfig={existingConfig}
         onSave={onSave}
         onSkip={onSkip}
+        onToggleActive={onToggleActive}
+        isActive={isActive}
       />
     </ResponsiveModal>
   )
@@ -94,6 +102,8 @@ function ChargeConfigForm({
   existingConfig,
   onSave,
   onSkip,
+  onToggleActive,
+  isActive,
 }: {
   chargeName: string
   isCustom: boolean
@@ -103,6 +113,8 @@ function ChargeConfigForm({
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
   onSkip: () => void
+  onToggleActive?: () => void
+  isActive?: boolean
 }) {
   const t = useTranslations('properties')
 
@@ -236,6 +248,16 @@ function ChargeConfigForm({
         >
           {t('chargeSave')}
         </Button>
+        {onToggleActive && (
+          <Button
+            variant="ghost"
+            onClick={onToggleActive}
+            className="h-12 w-full rounded-2xl text-muted-foreground"
+            size="lg"
+          >
+            {isActive ? t('pauseCharge') : t('resumeCharge')}
+          </Button>
+        )}
         <Button
           variant="ghost"
           onClick={onSkip}

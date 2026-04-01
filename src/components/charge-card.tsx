@@ -10,6 +10,8 @@ import {
   ChargeRowDescription,
   ChargeRowAmount,
 } from '@/components/charge-row'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format-currency'
 import type { ChargeDefinition } from '@/lib/hooks/use-unit-charges'
 
@@ -37,7 +39,7 @@ export function ChargeCard({
   const subtitle = buildSubtitle(charge, unitDueDay, t)
 
   return (
-    <ChargeRow configured={configured} onClick={onClick} className={className}>
+    <ChargeRow configured={configured} onClick={onClick} className={cn(!charge.isActive && 'opacity-50', className)}>
       <ChargeRowIcon>
         <Icon className="size-4" />
       </ChargeRowIcon>
@@ -47,7 +49,9 @@ export function ChargeCard({
         {subtitle && <ChargeRowDescription>{subtitle}</ChargeRowDescription>}
       </ChargeRowContent>
 
-      {charge.amountMinor ? (
+      {!charge.isActive ? (
+        <Badge variant="secondary" className="text-xs">{t('chargeInactive')}</Badge>
+      ) : charge.amountMinor ? (
         <ChargeRowAmount className="text-sm">
           {formatCurrency(charge.amountMinor, charge.currency)}
         </ChargeRowAmount>

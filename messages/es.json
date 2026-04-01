@@ -237,6 +237,8 @@
     "chargeSave": "Guardar cargo",
     "chargeConfigureLater": "Configurar después",
     "cancel": "Cancelar",
+    "pauseCharge": "Pausar cargo",
+    "resumeCharge": "Reanudar cargo",
     "chargeConfigured": "configurado",
     "chargeVariable": "Variable",
     "customChargeName": "Nombre del cargo",
@@ -306,7 +308,10 @@
     "pendingInviteTitle": "Invitación pendiente",
     "invitedOn": "Invitado el {date} · {relative}",
     "editProperty": "Editar propiedad",
-    "saveChanges": "Guardar cambios"
+    "saveChanges": "Guardar cambios",
+    "pauseCharge": "Pausar cargo",
+    "resumeCharge": "Reanudar cargo",
+    "chargeInactive": "Pausado"
   },
   "settings": {
     "title": "Configuración",

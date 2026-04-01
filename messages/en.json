@@ -237,6 +237,8 @@
     "chargeSave": "Save charge",
     "chargeConfigureLater": "Configure later",
     "cancel": "Cancel",
+    "pauseCharge": "Pause charge",
+    "resumeCharge": "Resume charge",
     "chargeConfigured": "configured",
     "chargeVariable": "Variable",
     "customChargeName": "Charge name",
@@ -306,7 +308,10 @@
     "pendingInviteTitle": "Pending invite",
     "invitedOn": "Invited {date} · {relative}",
     "editProperty": "Edit property",
-    "saveChanges": "Save changes"
+    "saveChanges": "Save changes",
+    "pauseCharge": "Pause charge",
+    "resumeCharge": "Resume charge",
+    "chargeInactive": "Paused"
   },
   "settings": {
     "title": "Settings",
