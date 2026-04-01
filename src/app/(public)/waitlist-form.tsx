@@ -38,15 +38,17 @@ export function WaitlistForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex gap-3">
-      <Input
-        type="email"
-        placeholder={t('waitlistPlaceholder')}
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        disabled={loading}
-        className="flex-1 border-zinc-200 bg-white shadow-sm placeholder:text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:shadow-md dark:shadow-black/20 dark:placeholder:text-zinc-500"
-      />
+      <div className="min-w-0 flex-1">
+        <Input
+          type="email"
+          placeholder={t('waitlistPlaceholder')}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={loading}
+          className="border-zinc-200 bg-white shadow-sm placeholder:text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:shadow-md dark:shadow-black/20 dark:placeholder:text-zinc-500"
+        />
+      </div>
       <Button type="submit" disabled={loading} className="h-12 shrink-0 rounded-2xl px-6">
         {loading ? <Loader2 className="size-5 animate-spin" /> : t('heroCta')}
       </Button>
