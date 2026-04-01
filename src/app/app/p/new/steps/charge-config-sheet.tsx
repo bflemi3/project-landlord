@@ -188,7 +188,7 @@ function ChargeConfigForm({
             onChange={(e) => setEditableName(e.target.value)}
             placeholder={t('customChargeNamePlaceholder')}
             className="w-full border-b border-border bg-transparent pb-1 text-xl font-bold text-foreground outline-none transition-colors placeholder:text-muted-foreground/30 focus:border-primary"
-            autoFocus
+            autoFocus={!existingConfig}
           />
         </div>
       )}
@@ -205,7 +205,7 @@ function ChargeConfigForm({
             switchLabel={t('switchToVariable')}
             switchContext={t('switchToVariableContext')}
             currencySymbol={CURRENCY_SYMBOLS[currency] ?? currency}
-            autoFocus={!isCustom}
+            autoFocus={!isCustom || !!existingConfig}
           />
         ) : (
           <VariablePlaceholder
