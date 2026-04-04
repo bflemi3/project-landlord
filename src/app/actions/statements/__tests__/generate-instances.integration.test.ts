@@ -79,7 +79,7 @@ describe('generateAndPersistInstancesCore', () => {
     await cleanupTestUser(userId)
   })
 
-  it('returns success with instanceCount 2 for two active charges', async () => {
+  it('returns success with instanceCount 1 (skips variable charges with null amount)', async () => {
     const result = await generateAndPersistInstancesCore(
       client,
       unitId,
@@ -89,7 +89,7 @@ describe('generateAndPersistInstancesCore', () => {
     )
 
     expect(result.success).toBe(true)
-    expect(result.instanceCount).toBe(2)
+    expect(result.instanceCount).toBe(1)
   })
 
   it('persists the rent instance with correct amount and allocation', async () => {
@@ -109,7 +109,7 @@ describe('generateAndPersistInstancesCore', () => {
     expect(rent.charge_source).toBe('manual')
   })
 
-  it('persists the water instance with split allocation and zero amount', async () => {
+  it('does not persist variable charges with null amount', async () => {
     const admin = getAdminClient()
     const { data: instances } = await admin
       .from('charge_instances')
@@ -117,12 +117,6 @@ describe('generateAndPersistInstancesCore', () => {
       .eq('statement_id', statementId)
       .eq('name', 'Water')
 
-    expect(instances).toHaveLength(1)
-    const water = instances![0]
-    expect(water.amount_minor).toBe(0)
-    expect(water.tenant_percentage).toBe(70)
-    expect(water.landlord_percentage).toBe(30)
-    expect(water.split_type).toBe('percentage')
-    expect(water.charge_source).toBe('manual')
+    expect(instances).toHaveLength(0)
   })
 })

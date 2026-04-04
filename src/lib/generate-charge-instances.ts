@@ -146,11 +146,12 @@ export function generateChargeInstances(
 ): GeneratedInstance[] {
   return charges
     .filter((charge) => charge.isActive)
+    .filter((charge) => charge.amountMinor !== null)
     .filter((charge) => isInPeriod(charge.recurringRule, periodYear, periodMonth))
     .map((charge) => ({
       chargeDefinitionId: charge.id,
       name: charge.name,
-      amountMinor: charge.amountMinor ?? 0,
+      amountMinor: charge.amountMinor!,
       currency: charge.currency,
       chargeSource: 'manual' as const,
       ...buildSplitFields(charge.allocations),

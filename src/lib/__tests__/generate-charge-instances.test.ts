@@ -116,8 +116,8 @@ describe('generateChargeInstances', () => {
     expect(result).toHaveLength(1)
   })
 
-  // 7. Variable charge with null amount → amountMinor: 0
-  it('sets amountMinor to 0 for variable charges with null amountMinor', () => {
+  // 7. Variable charge with null amount → skipped (shows as completeness warning instead)
+  it('skips variable charges with null amountMinor', () => {
     const charges = [
       makeCharge({
         chargeType: 'variable',
@@ -126,8 +126,7 @@ describe('generateChargeInstances', () => {
       }),
     ]
     const result = generateChargeInstances(charges, 2025, 6)
-    expect(result).toHaveLength(1)
-    expect(result[0].amountMinor).toBe(0)
+    expect(result).toHaveLength(0)
   })
 
   // 8. Split percentage allocations (70/30) → correct tenant/landlord percentages
