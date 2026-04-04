@@ -146,7 +146,6 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
             <ChargeCard
               key={charge.id}
               charge={charge}
-              unitDueDay={unit.dueDay}
               onClick={() => handleEditCharge(charge)}
               className="border-0"
             />

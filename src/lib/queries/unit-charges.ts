@@ -10,7 +10,6 @@ export interface ChargeDefinition {
   amountMinor: number | null
   currency: string
   isActive: boolean
-  dueDay: number | null
   split: ChargeSplit
 }
 
@@ -19,8 +18,7 @@ export async function fetchUnitCharges(supabase: TypedSupabaseClient, unitId: st
     .from('charge_definitions')
     .select(`
       id, name, charge_type, amount_minor, currency, is_active,
-      responsibility_allocations ( role, allocation_type, percentage, fixed_minor ),
-      recurring_rules ( day_of_month )
+      responsibility_allocations ( role, allocation_type, percentage, fixed_minor )
     `)
     .eq('unit_id', unitId)
     .is('deleted_at', null)
@@ -30,7 +28,6 @@ export async function fetchUnitCharges(supabase: TypedSupabaseClient, unitId: st
 
   return data.map((c) => {
     const allocations = (c.responsibility_allocations ?? []) as unknown as AllocationRow[]
-    const rules = (c.recurring_rules ?? []) as unknown as { day_of_month: number }[]
     return {
       id: c.id,
       name: c.name,
@@ -38,7 +35,6 @@ export async function fetchUnitCharges(supabase: TypedSupabaseClient, unitId: st
       amountMinor: c.amount_minor,
       currency: c.currency,
       isActive: c.is_active,
-      dueDay: rules[0]?.day_of_month ?? null,
       split: allocations.length > 0 ? parseSplit(allocations) : DEFAULT_SPLIT,
     }
   })
