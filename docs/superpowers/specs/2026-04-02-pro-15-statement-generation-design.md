@@ -17,15 +17,18 @@ Landlords can generate monthly draft statements from charge definitions, review 
 - Reusable `DetailPageLayout` component (refactor property detail to use it)
 - Analytics: `statement_draft_created`, `statement_viewed`
 - Schema change: `source_documents` table `property_id` → `unit_id`
+- Due date model change: move due day from per-charge to unit-level, update add-property flow + RPC
+- Statement lifecycle section on property detail page (urgency states)
+- Regenerate Supabase types after migration changes
 
 ### Out of scope (deferred)
 
 - Scheduled auto-generation (deferred until bill ingestion is in place)
-- Draft-ready notifications (not needed with manual trigger)
 - Publishing flow (PRO-16)
 - Bill extraction (PRO-19)
 - Tenant statement view (PRO-23)
 - `statement_published` analytics event (PRO-16)
+- Email notification for late statement generation (depends on PRO-28 notification infrastructure)
 
 ## Design Decisions
 
@@ -57,22 +60,72 @@ The `source_documents` table changes from `property_id` to `unit_id`. Bills are 
 
 The statement draft lives at `/app/p/[id]/s/[statementId]` — a full-page view, not a modal or inline section. The wireframe shows a full-screen treatment with its own top bar, summary, charge list, and bottom action bar. This also sets up cleanly for PRO-16 (publishing) and PRO-23 (tenant view).
 
+### Due date lives on the unit, not on charges
+
+The statement due date is derived from `units.due_day_of_month` + the statement period (e.g., day 10 + April 2026 = April 10, 2026). Individual charges do not have their own due dates — the tenant pays the statement, not individual line items.
+
+**Current state (broken):** The charge config sheet has a per-charge `dueDay` that writes to `recurring_rules.day_of_month`. The `create_property_with_membership` RPC never sets `units.due_day_of_month` — it always gets the schema default of 10. The per-charge `day_of_month` value is never used by the generation logic.
+
+**Fix:** Remove `dueDay` from `ChargeConfig` and the charge config sheet. Keep the global "Due Day" selector on the charges form in the add-property flow — save it as `units.due_day_of_month` via an updated RPC. `recurring_rules.day_of_month` defaults to 1 and is no longer exposed in the UI.
+
+Changes required:
+1. Update `create_property_with_membership` RPC to accept `p_due_day integer default 10`, pass to unit insert
+2. Update `createProperty` action to pass due day from the form to the RPC
+3. Remove `dueDay` from `ChargeConfig` interface and `ChargeConfigSheet` component
+4. Remove `DueDaySelect` from the charge config sheet
+5. Update `createCharges` action — stop writing form dueDay to `recurring_rules.day_of_month`, default to 1
+6. Update `updateCharge` action — same
+7. Update `ChargeCard` display — remove per-charge due day
+8. Keep the global due day selector on `ChargesForm` — value flows to the unit via RPC
+9. Regenerate Supabase types
+
 ### Reusable detail page layout
 
 A new `DetailPageLayout` compound component extracts the layout pattern shared by the property detail page and the statement page: full-width header, two-column (main + sidebar) on desktop, single column on mobile. The property detail page is refactored to use it.
 
-## Entry Point
+## Statement Lifecycle on Property Detail Page
 
-The property detail page gets a new **Statements section** per unit (within the `UnitSection`).
+The statement section is the **primary content** of each unit on the property detail page — above the charges section. It adapts based on the current billing cycle state. This is the heartbeat of the property.
 
-**No draft exists for eligible months:**
-- CTA card: "Generate [Month Year] Statement" button
-- Month picker (current + previous months without existing statements)
-- Tapping generates the statement and navigates to the draft view
+### Lifecycle states
+
+| State | What the landlord sees | Primary action | Issue |
+|---|---|---|---|
+| **No statement**, plenty of time | Period selector, generate CTA | "Generate [Month] Statement" | PRO-15 |
+| **No statement**, approaching due date (≤7 days) | Urgency nudge: "[Month] statement isn't started — due in N days" | "Generate Statement" (urgent styling) | PRO-15 |
+| **No statement**, past due date | Critical: "[Month] statement is overdue — tenants are waiting" | "Generate Statement" (critical styling) | PRO-15 |
+| **Draft**, in progress | Draft summary: total, charges, missing count | "Complete Statement" → navigate to draft | PRO-15 |
+| **Draft**, approaching due date | Draft summary + urgency: "Due in N days, not yet published" | "Review & Publish" (urgent) | PRO-15 + PRO-16 |
+| **Published**, awaiting payment | Published summary, due date, "Awaiting payment" | "View Statement" | PRO-16 + PRO-27 |
+| **Published**, payment marked | "Payment marked — needs your review" | "Review Payment" | PRO-27 |
+| **Published**, payment confirmed | "Confirmed" with completion styling | "View Statement" | PRO-27 |
+| **Published**, overdue, no payment | "Overdue — no payment received" | "View Statement" | PRO-27 |
+
+PRO-15 builds the first five states (no statement × 3 urgency levels + draft × 2). The card structure is designed so PRO-16 and PRO-27 extend it with published/payment states.
+
+### Urgency thresholds
+
+- **Normal**: more than 7 days before the unit's `due_day_of_month`
+- **Approaching**: ≤7 days before due date
+- **Overdue**: past the due date
+
+Due date for the current month = `unit.due_day_of_month` applied to the current billing period (e.g., day 10 + April 2026 = April 10, 2026).
+
+### Late generation notification
+
+When a landlord hasn't generated a statement and the due date is approaching, they should receive a nudge (email + in-app). The in-app urgency display is built in PRO-15. Email notification delivery depends on PRO-28's notification infrastructure — a `generate_statement_reminder` action type should be added to the `home_action_items` view so it surfaces in-app immediately.
+
+### Entry point details
+
+**No statement exists for current period:**
+- CTA card with month/period selector (current + previous months without existing statements)
+- "Generate [Month Year] Statement" button
+- Urgency styling applied based on proximity to due date
 
 **Draft already exists:**
-- Summary card showing: period, total amount, charge count, "Draft" status badge
+- Summary card: period, total amount, charge count, "Draft" badge, missing charge count if any
 - Tapping navigates to the draft view at `/app/p/[id]/s/[statementId]`
+- Urgency messaging if approaching due date and not yet published
 
 ## Draft Statement View
 
@@ -113,8 +166,8 @@ Route: `/app/p/[id]/s/[statementId]`
 ### Desktop layout (two-column via DetailPageLayout)
 
 - **Header (full-width):** PageHeader with back link, title, subtitle, status badge
-- **Main column:** Completeness warning, charges list with add/edit actions, audit note
-- **Sidebar:** Summary card (total, due date, status), "Review & Publish" button
+- **Main column:** Completeness warning, charges list with add/edit actions
+- **Sidebar:** Summary card (total, due date, status), "Review & Publish" button, audit note
 
 ### Charge rows
 
@@ -146,7 +199,7 @@ Opens as a `ResponsiveModal` (bottom sheet on mobile, dialog on desktop).
 
 - **Charge name** — pre-filled from definition if adding a missing expected charge, free text for ad-hoc
 - **Amount** — manual entry, always required. `R$` prefix, BRL formatting
-- **Attach bill** (optional, nudged for variable charges) — file upload for PDF/image. For variable charges, show a callout: "Attaching the bill helps your tenant verify this charge." For rent/recurring, the upload is available but not prominently nudged.
+- **Attach bill** (optional, nudged for variable charges) — file upload for PDF/image. For variable charges, show a callout: "Attaching the bill helps your tenant verify this charge." For rent/recurring, the upload is available but not prominently nudged. Upload shows a determinate progress bar during transfer.
 
 ### On save
 
@@ -162,7 +215,7 @@ Opens as a `ResponsiveModal` (bottom sheet on mobile, dialog on desktop).
 
 ### Edit existing charge
 
-Same sheet, pre-filled with current values. Can update amount and attach/replace bill. Cannot change the name of a definition-linked charge.
+Same sheet, pre-filled with current values. Can update amount and attach/replace/remove bill. Cannot change the name of a definition-linked charge. Bill removal uses a clear button on the attached file preview.
 
 ### Remove charge
 
@@ -288,8 +341,8 @@ When charge instances are added, removed, or updated, the mutation action recalc
 - Any definition that should have generated an instance but didn't (edge case guard)
 
 **Warning display:**
-- Summary alert at top of charges list: "N expected charge(s) missing" with context
-- Missing charges as dimmed rows in the charges list with "missing" badge and "Add" action
+- Summary alert at top of charges list: "N expected charge(s) missing" with a "Review" CTA that scrolls to the missing items in the charges list
+- Each missing charge as a dimmed row in the charges list with "missing" badge and its own **"Add" CTA** that opens the add-charge sheet pre-filled with the charge name and definition context
 - Info note: "Missing charges won't block publishing. You can revise the statement later."
 
 **Not a warning:** Ad-hoc charges that have no charge definition. You can't warn about what was never defined.
