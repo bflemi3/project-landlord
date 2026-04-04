@@ -875,7 +875,7 @@ export type Database = {
           period_month: number | null
           period_year: number | null
           profile_id: string | null
-          property_id: string
+          unit_id: string
           updated_at: string
           uploaded_by: string
         }
@@ -891,7 +891,7 @@ export type Database = {
           period_month?: number | null
           period_year?: number | null
           profile_id?: string | null
-          property_id: string
+          unit_id: string
           updated_at?: string
           uploaded_by: string
         }
@@ -907,7 +907,7 @@ export type Database = {
           period_month?: number | null
           period_year?: number | null
           profile_id?: string | null
-          property_id?: string
+          unit_id?: string
           updated_at?: string
           uploaded_by?: string
         }
@@ -920,25 +920,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "source_documents_property_id_fkey"
-            columns: ["property_id"]
+            foreignKeyName: "source_documents_unit_id_fkey"
+            columns: ["unit_id"]
             isOneToOne: false
-            referencedRelation: "home_properties"
-            referencedColumns: ["property_id"]
-          },
-          {
-            foreignKeyName: "source_documents_property_id_fkey"
-            columns: ["property_id"]
-            isOneToOne: false
-            referencedRelation: "properties"
+            referencedRelation: "units"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "source_documents_property_id_fkey"
-            columns: ["property_id"]
-            isOneToOne: false
-            referencedRelation: "property_counts"
-            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "source_documents_uploaded_by_fkey"
@@ -1135,6 +1121,7 @@ export type Database = {
           action_type: string | null
           detail_date: string | null
           detail_email: string | null
+          detail_id: string | null
           detail_name: string | null
           property_id: string | null
           property_name: string | null
@@ -1186,6 +1173,7 @@ export type Database = {
           p_city?: string
           p_complement?: string
           p_country_code?: string
+          p_due_day?: number
           p_name: string
           p_neighborhood?: string
           p_number?: string
