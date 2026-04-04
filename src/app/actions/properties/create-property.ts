@@ -40,6 +40,8 @@ export async function createProperty(
     fields.complement,
   ].filter(Boolean).join(' ')
 
+  const dueDay = Number(formData.get('due_day')) || 10
+
   const { data, error } = await supabase.rpc('create_property_with_membership', {
     p_name: name,
     p_street: fields.street || null,
@@ -50,6 +52,7 @@ export async function createProperty(
     p_state: fields.state || null,
     p_postal_code: fields.postal_code || null,
     p_country_code: fields.country_code,
+    p_due_day: dueDay,
   })
 
   if (error) {

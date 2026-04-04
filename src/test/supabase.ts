@@ -42,6 +42,7 @@ export async function createTestProperty(
   const { data, error } = await client.rpc('create_property_with_membership', {
     p_name: name, p_street: 'Rua Teste', p_number: '123',
     p_city: 'Sao Paulo', p_state: 'SP', p_postal_code: '01310100',
+    p_due_day: 10,
   })
   if (error || !data) throw new Error(`Failed to create test property: ${error?.message}`)
   const result = data as unknown as { property_id: string; unit_id: string }

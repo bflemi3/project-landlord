@@ -67,6 +67,7 @@ export function CreatePropertyFlow() {
       formData.set('city', formValues.city)
       formData.set('state', formValues.state)
       formData.set('country_code', formValues.country_code)
+      formData.set('due_day', chargeDueDay.current)
 
       const result = await createProperty({ success: false }, formData)
 
