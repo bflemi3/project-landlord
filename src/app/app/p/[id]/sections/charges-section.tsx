@@ -22,7 +22,6 @@ function toChargeConfig(charge: ChargeDefinition): ChargeConfig {
     name: charge.name,
     chargeType: charge.chargeType,
     amountMinor: charge.amountMinor,
-    dueDay: charge.dueDay ?? 10,
     payer: charge.split.payer,
     splitMode: charge.split.allocationType === 'fixed_amount' ? 'amount' : 'percent',
     tenantPercent: charge.split.tenantPercent,
@@ -61,7 +60,6 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         name: config.name,
         chargeType: config.chargeType,
         amountMinor: config.amountMinor,
-        dueDay: config.dueDay,
         payer: config.payer,
         splitMode: config.splitMode,
         tenantPercent: config.tenantPercent,
@@ -75,7 +73,6 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         name: config.name,
         chargeType: config.chargeType,
         amountMinor: config.amountMinor,
-        dueDay: config.dueDay,
         payer: config.payer,
         splitMode: config.splitMode,
         tenantPercent: config.tenantPercent,
@@ -163,7 +160,6 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         chargeName={editingCharge?.name ?? ''}
         isCustom={true}
         defaultType={editingCharge?.chargeType ?? 'recurring'}
-        defaultDueDay={unit.dueDay}
         currency={unit.currency}
         existingConfig={editingCharge ? toChargeConfig(editingCharge) : null}
         onSave={handleSave}

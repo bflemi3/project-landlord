@@ -26,7 +26,6 @@ describe('toggleChargeActiveCore', () => {
       name: 'Rent',
       chargeType: 'rent',
       amountMinor: 200000,
-      dueDay: 10,
       payer: 'tenant',
       tenantPercent: 100,
       landlordPercent: 0,

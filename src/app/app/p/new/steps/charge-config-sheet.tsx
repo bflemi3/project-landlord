@@ -5,10 +5,8 @@ import { useTranslations } from 'next-intl'
 import { motion, AnimatePresence } from 'motion/react'
 import { Upload, ArrowLeftRight, X } from 'lucide-react'
 import { formatAmount } from '@/lib/format-currency'
-import { DUE_DAYS } from '@/lib/constants'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { cn } from '@/lib/utils'
 
@@ -18,7 +16,6 @@ export interface ChargeConfig {
   name: string
   chargeType: 'rent' | 'recurring' | 'variable'
   amountMinor: number | null
-  dueDay: number
   payer: 'tenant' | 'landlord' | 'split'
   splitMode?: 'percent' | 'amount'
   tenantPercent: number
@@ -35,7 +32,6 @@ interface ChargeConfigSheetProps {
   chargeName: string
   isCustom?: boolean
   defaultType: 'rent' | 'recurring' | 'variable'
-  defaultDueDay: number
   currency?: string
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
@@ -54,7 +50,6 @@ export function ChargeConfigSheet({
   chargeName,
   isCustom = false,
   defaultType,
-  defaultDueDay,
   currency = 'BRL',
   existingConfig,
   onSave,
@@ -84,7 +79,6 @@ export function ChargeConfigSheet({
         chargeName={chargeName}
         isCustom={isCustom}
         defaultType={defaultType}
-        defaultDueDay={defaultDueDay}
         currency={currency}
         existingConfig={existingConfig}
         onSave={onSave}
@@ -101,7 +95,6 @@ function ChargeConfigForm({
   chargeName,
   isCustom,
   defaultType,
-  defaultDueDay,
   currency,
   existingConfig,
   onSave,
@@ -113,7 +106,6 @@ function ChargeConfigForm({
   chargeName: string
   isCustom: boolean
   defaultType: 'rent' | 'recurring' | 'variable'
-  defaultDueDay: number
   currency: string
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
@@ -131,7 +123,6 @@ function ChargeConfigForm({
   const [amount, setAmount] = useState(
     existingConfig?.amountMinor ? String(existingConfig.amountMinor / 100) : '',
   )
-  const [dueDay, setDueDay] = useState(String(existingConfig?.dueDay ?? defaultDueDay))
   const [payer, setPayer] = useState<'tenant' | 'landlord' | 'split'>(
     existingConfig?.payer ?? 'tenant',
   )
@@ -163,7 +154,6 @@ function ChargeConfigForm({
       name: isCustom ? editableName.trim() : chargeName,
       chargeType,
       amountMinor: totalMinor,
-      dueDay: Number(dueDay),
       payer,
       splitMode: payer === 'split' ? splitMode : undefined,
       tenantPercent: tp,
@@ -215,11 +205,8 @@ function ChargeConfigForm({
           />
         )}
 
-        {/* Due day + Who pays */}
-        <div className="grid grid-cols-[auto_1fr] gap-3">
-          <DueDaySelect value={dueDay} onChange={setDueDay} />
-          <PayerToggle value={payer} onChange={setPayer} />
-        </div>
+        {/* Who pays */}
+        <PayerToggle value={payer} onChange={setPayer} />
 
         {/* Split slider */}
         <AnimatePresence>
@@ -399,30 +386,6 @@ function ChargeTypeSwitch({
         {label} <ArrowLeftRight className="inline size-3" />
       </button>
     </p>
-  )
-}
-
-// =============================================================================
-// Due day select
-// =============================================================================
-
-function DueDaySelect({ value, onChange }: { value: string; onChange: (val: string) => void }) {
-  const t = useTranslations('properties')
-
-  return (
-    <div>
-      <Label className="mb-2">{t('chargeDueDay')}</Label>
-      <Select value={value} onValueChange={(val) => onChange(val ?? '10')}>
-        <SelectTrigger size="sm" className="w-18">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {DUE_DAYS.map((d) => (
-            <SelectItem key={d} value={String(d)}>{d}</SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
   )
 }
 

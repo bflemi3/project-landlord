@@ -30,7 +30,6 @@ describe('removeChargeCore', () => {
         name: 'Deletable Charge',
         chargeType: 'recurring',
         amountMinor: 5000,
-        dueDay: 20,
         payer: 'tenant',
         tenantPercent: 100,
         landlordPercent: 0,

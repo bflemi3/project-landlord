@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, type MutableRefObject } from 'react'
+import { useState, type MutableRefObject } from 'react'
 import { useTranslations } from 'next-intl'
 import { Home, Building2, Zap, Droplets, Flame, Wifi, Plus, X, Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -61,7 +61,6 @@ export function ChargesForm({
 
   // 4. State
   const [dueDay, _setDueDay] = useState(dueDayRef?.current ?? '10')
-  const prevDueDayRef = useRef(dueDay)
   const [configuredCharges, _setConfiguredCharges] = useState<Map<string, ChargeConfig>>(() => {
     if (!initialConfigs?.length) return new Map()
     return new Map(initialConfigs.map((c) => [c.name, c]))
@@ -79,7 +78,6 @@ export function ChargesForm({
   const [customCharges, setCustomCharges] = useState<ChargeEntry[]>([])
   const [showCustomInput, setShowCustomInput] = useState(false)
   const [customName, setCustomName] = useState('')
-  const [dueDayApplied, setDueDayApplied] = useState(false)
 
   // 5. Derived
   const hasConfigured = configuredCharges.size > 0
@@ -88,28 +86,8 @@ export function ChargesForm({
   // 8. Callbacks
   function handleDueDayChange(val: string | null) {
     const newVal = val ?? '10'
-    const oldDay = Number(prevDueDayRef.current)
-    const newDay = Number(newVal)
-    prevDueDayRef.current = newVal
     _setDueDay(newVal)
     if (dueDayRef) dueDayRef.current = newVal
-
-    if (oldDay === newDay || configuredCharges.size === 0) return
-
-    // Cascade: update charges that still match the old global default
-    setConfiguredCharges((prev) => {
-      const next = new Map(prev)
-      let changed = false
-      for (const [key, config] of next) {
-        if (config.dueDay === oldDay) {
-          next.set(key, { ...config, dueDay: newDay })
-          changed = true
-        }
-      }
-      return changed ? next : prev
-    })
-    setDueDayApplied(true)
-    setTimeout(() => setDueDayApplied(false), 2000)
   }
 
   function handleChargeTap(charge: ChargeEntry) {
@@ -190,14 +168,7 @@ export function ChargesForm({
 
       {/* Default due day */}
       <div className="mb-6">
-        <div className="relative mb-2">
-          <Label>{t('dueDay')}</Label>
-          {dueDayApplied && hasConfigured && (
-            <span className="absolute right-0 top-0 text-xs text-primary animate-in fade-in duration-200">
-              {t('dueDayApplied')}
-            </span>
-          )}
-        </div>
+        <Label className="mb-2">{t('dueDay')}</Label>
         <Select value={dueDay} onValueChange={handleDueDayChange}>
           <SelectTrigger>
             <SelectValue />
@@ -232,7 +203,7 @@ export function ChargesForm({
                 <ChargeRowTitle>{name}</ChargeRowTitle>
                 {isConfigured && (
                   <ChargeRowDescription>
-                    {t('chargeDueDay')} {config.dueDay} · {config.payer === 'tenant'
+                    {config.payer === 'tenant'
                       ? t('chargePaysTenant')
                       : config.payer === 'landlord'
                         ? t('chargePaysLandlord')
@@ -306,7 +277,6 @@ export function ChargesForm({
           chargeName={activeCharge.name}
           isCustom={activeCharge.isCustom}
           defaultType={activeCharge.defaultType}
-          defaultDueDay={Number(dueDay)}
           existingConfig={configuredCharges.get(activeCharge.name) ?? null}
           onSave={handleSaveCharge}
           onSkip={handleSkipCharge}
