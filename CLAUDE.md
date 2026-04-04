@@ -581,37 +581,7 @@ Push can come later if it is easy and clearly valuable.
 
 ## Analytics Requirements
 
-Instrument the product from day one.
-
-### Track at minimum
-
-- property_created
-- charge_definition_created
-- bill_received
-- extraction_failed
-- correction_submitted
-- statement_published
-- statement_viewed
-- tenant_invited
-- tenant_split_created
-- charge_disputed
-- payment_marked
-- payment_rejected
-- payment_confirmed
-- pulse_survey_answered
-
-### Analytics philosophy
-
-Track events that answer:
-
-- are landlords activating?
-- are tenants viewing?
-- is the workflow replacing the spreadsheet?
-- is extraction trustworthy?
-- are collaborative growth loops working?
-- are users feeling clarity and confidence?
-
-Do not instrument random noise. Track moments tied to product value.
+See `.claude/skills/analytics/SKILL.md` for the required events list and analytics philosophy.
 
 ---
 

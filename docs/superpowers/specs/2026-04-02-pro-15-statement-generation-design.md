@@ -56,9 +56,18 @@ The `charge_source` remains `'manual'` because the amount came from human entry,
 
 The `source_documents` table changes from `property_id` to `unit_id`. Bills are unit-level artifacts — each unit gets its own electric/water/gas bill. For M2's email ingestion, the landlord assigns the bill to a unit during review before it reaches a statement.
 
-### Dedicated route for statement view
+### Focused flow, not embedded in the app shell
 
-The statement draft lives at `/app/p/[id]/s/[statementId]` — a full-page view, not a modal or inline section. The wireframe shows a full-screen treatment with its own top bar, summary, charge list, and bottom action bar. This also sets up cleanly for PRO-16 (publishing) and PRO-23 (tenant view).
+The statement draft is a focused, distraction-free experience — no app bar, no navigation chrome. Just the statement content, a close/back button, and the primary action. This follows the same pattern as the property onboarding flow (Wise-style focused flows for important tasks).
+
+The route lives at `/app/p/[id]/s/[statementId]` inside a `(focused)` route group that strips the app bar. The property onboarding flow (`/app/p/new`) moves into the same route group for consistency.
+
+**Route group restructure:**
+- `src/app/app/layout.tsx` — auth checks + PostHog only (no AppBar)
+- `src/app/app/(main)/layout.tsx` — adds AppBar, SwUpdateNotifier, InstallPrompt. Contains home, property detail, and other standard pages.
+- `src/app/app/(focused)/layout.tsx` — bare wrapper, no chrome. Contains property onboarding and statement draft.
+
+Desktop uses the two-column layout (main + sidebar via `DetailPageLayout`) but still within the focused shell — no app bar visible. Mobile is single column, full-screen focused.
 
 ### Due date lives on the unit, not on charges
 
