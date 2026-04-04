@@ -1000,54 +1000,7 @@ It should also:
 
 ## Linear + GitHub Integration Rules
 
-This project uses Linear for issue tracking with GitHub integration for automatic status updates. Follow these conventions so that issues move through the workflow automatically.
-
-### Branch naming
-
-Include the Linear issue identifier in the branch name:
-
-```
-username/PRO-123-short-description
-```
-
-Examples:
-- `brandon/PRO-42-add-tenant-invite-flow`
-- `feature/PRO-123-fix-statement-publishing`
-
-The identifier (`TEAM-NUMBER`) is case-insensitive. It must appear somewhere in the branch name.
-
-### PR titles
-
-Include the issue identifier in the PR title:
-
-```
-PRO-123: Description of changes
-```
-
-### PR descriptions and commit messages
-
-Use magic words to link issues when needed:
-
-```
-Closes PRO-123
-Fixes PRO-123
-Resolves PRO-123
-```
-
-### Automatic status transitions
-
-| Git/PR Event | Linear Issue Status |
-|---|---|
-| Branch created with issue ID | **In Progress** |
-| PR opened | **In Review** |
-| PR merged | **Done** |
-
-### Rules
-
-- Every feature branch must reference a Linear issue ID
-- Do not create branches or PRs without a corresponding Linear issue
-- Use the team prefix `PRO` (e.g., `PRO-123`)
-- When a PR addresses multiple issues, list each with a magic word in the PR description
+See `.claude/rules/linear-github.md` for branch naming, PR conventions, status transitions, and the feature start workflow.
 
 ### Milestones
 
