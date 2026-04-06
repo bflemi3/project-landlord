@@ -104,6 +104,7 @@ function AddChargeForm({
   const isFillingMissing = !!missingCharge
   const isAdHoc = !isEditing && !isFillingMissing
   const isVariable = missingCharge?.chargeType === 'variable'
+  const [confirmingRemove, setConfirmingRemove] = useState(false)
 
   // Form state
   const [name, setName] = useState(existingInstance?.name ?? missingCharge?.name ?? '')
@@ -267,16 +268,39 @@ function AddChargeForm({
         >
           {isEditing ? 'Save changes' : 'Add to statement'}
         </Button>
-        {isEditing && !existingInstance.chargeDefinitionId && (
+        {isEditing && !existingInstance.chargeDefinitionId && !confirmingRemove && (
           <Button
             variant="ghost"
-            onClick={handleRemove}
+            onClick={() => setConfirmingRemove(true)}
             className="h-12 w-full rounded-2xl text-destructive"
             size="lg"
             disabled={isPending}
           >
             Remove charge
           </Button>
+        )}
+        {confirmingRemove && (
+          <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-4">
+            <p className="mb-3 text-sm text-destructive">Remove this charge from the statement?</p>
+            <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                onClick={handleRemove}
+                className="h-10 flex-1 rounded-xl"
+                loading={isPending}
+              >
+                Yes, remove
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setConfirmingRemove(false)}
+                className="h-10 flex-1 rounded-xl"
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+            </div>
+          </div>
         )}
         <Button
           variant="ghost"

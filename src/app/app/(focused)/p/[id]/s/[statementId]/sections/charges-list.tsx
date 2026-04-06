@@ -81,7 +81,7 @@ export function ChargesList({
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold text-foreground">
-          {t('charges')} ({charges.length})
+          {t('charges')} ({missingCharges.length > 0 ? `${charges.length} of ${charges.length + missingCharges.length}` : charges.length})
         </h2>
         {onAddCharge && (
           <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onAddCharge}>
