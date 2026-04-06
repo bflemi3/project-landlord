@@ -6,7 +6,7 @@ import { useUnit } from '@/lib/hooks/use-unit'
 import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
 import { formatCurrency } from '@/lib/format-currency'
 import { Separator } from '@/components/ui/separator'
-import { getStatementUrgency, getDaysUntilDue } from '@/lib/statement-urgency'
+import { getStatementUrgency, getDaysUntilPublishBy, getPublishByDay } from '@/lib/statement-urgency'
 
 export function SummaryCard({ statementId }: { statementId: string }) {
   const locale = useLocale()
@@ -24,7 +24,10 @@ export function SummaryCard({ statementId }: { statementId: string }) {
   const isEstimated = missingCharges.length > 0
   const hasSplit = statement.landlordTotalMinor > 0
   const urgency = getStatementUrgency(unit.dueDay, statement.periodYear, statement.periodMonth)
-  const daysUntil = getDaysUntilDue(unit.dueDay, statement.periodYear, statement.periodMonth)
+  const daysUntilPublish = getDaysUntilPublishBy(unit.dueDay, statement.periodYear, statement.periodMonth)
+  const publishByDay = getPublishByDay(unit.dueDay)
+  const publishByDate = new Date(statement.periodYear, statement.periodMonth - 1, publishByDay)
+  const publishByLabel = publishByDate.toLocaleDateString(locale, { month: 'long', day: 'numeric' })
 
   return (
     <div className="rounded-2xl border border-border bg-card p-5 dark:bg-zinc-800/80">
@@ -33,14 +36,15 @@ export function SummaryCard({ statementId }: { statementId: string }) {
       </p>
       <p className="mt-1 text-3xl font-bold tabular-nums text-foreground">{tenantTotal}</p>
       {urgency === 'overdue' ? (
-        <p className="mt-2 text-sm font-medium text-destructive">Overdue — due {dueDateLabel}</p>
+        <p className="mt-2 text-sm font-medium text-destructive">Publish overdue — was due {publishByLabel}</p>
       ) : urgency === 'approaching' ? (
         <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
-          Due in {daysUntil} {daysUntil === 1 ? 'day' : 'days'} — {dueDateLabel}
+          Publish by {publishByLabel} ({daysUntilPublish}d left)
         </p>
       ) : (
-        <p className="mt-2 text-sm text-muted-foreground">Due {dueDateLabel}</p>
+        <p className="mt-2 text-sm text-muted-foreground">Publish by {publishByLabel}</p>
       )}
+      <p className="mt-1 text-xs text-muted-foreground">Payment due {dueDateLabel}</p>
 
       {hasSplit && (
         <>

@@ -18,7 +18,7 @@ import {
 import { useStatement } from '@/lib/hooks/use-statement'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useProperty } from '@/lib/hooks/use-property'
-import { formatPeriod, getStatementUrgency, getDaysUntilDue } from '@/lib/statement-urgency'
+import { formatPeriod, getStatementUrgency, getDaysUntilPublishBy } from '@/lib/statement-urgency'
 import { SummaryCard } from './sections/summary-card'
 import { CompletenessWarning } from './sections/completeness-warning'
 import { ChargesList, scrollToMissingCharges } from './sections/charges-list'
@@ -39,7 +39,7 @@ export function StatementDraft({ statementId, propertyId }: { statementId: strin
   const periodLabel = formatPeriod(statement.periodYear, statement.periodMonth, locale)
   const createdLabel = new Date(statement.createdAt).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })
   const urgency = getStatementUrgency(unit.dueDay, statement.periodYear, statement.periodMonth)
-  const daysUntil = getDaysUntilDue(unit.dueDay, statement.periodYear, statement.periodMonth)
+  const daysUntil = getDaysUntilPublishBy(unit.dueDay, statement.periodYear, statement.periodMonth)
 
   // Sheet state
   const [sheetOpen, setSheetOpen] = useState(false)

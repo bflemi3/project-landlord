@@ -22,7 +22,7 @@ import {
   getCurrentPeriod,
   formatPeriod,
   getStatementUrgency,
-  getDaysUntilDue,
+  getDaysUntilPublishBy,
   type UrgencyLevel,
 } from '@/lib/statement-urgency'
 
@@ -44,7 +44,7 @@ export function StatementSection({ unitId, propertyId }: { unitId: string; prope
   )
 
   const urgency = getStatementUrgency(unit.dueDay, currentYear, currentMonth)
-  const daysUntil = getDaysUntilDue(unit.dueDay, currentYear, currentMonth)
+  const daysUntil = getDaysUntilPublishBy(unit.dueDay, currentYear, currentMonth)
   const periodLabel = formatPeriod(currentYear, currentMonth, locale)
 
   function handleGenerate() {
@@ -203,58 +203,43 @@ function DraftCard({
   missingCount: number
   t: ReturnType<typeof useTranslations<'propertyDetail'>>
 }) {
-  const total = formatCurrency(statement.totalAmountMinor, currency)
+  const tenantTotal = formatCurrency(statement.tenantTotalMinor, currency)
 
   return (
     <div className="mb-8">
-      {urgency !== 'normal' && statement.status === 'draft' && (
-        <InfoBox variant={urgency === 'overdue' ? 'destructive' : 'warning'} className="mb-3">
-          <InfoBoxIcon>
-            <Clock className="size-4" />
-          </InfoBoxIcon>
-          <InfoBoxContent>
-            {urgency === 'overdue'
-              ? `${t('statementOverdue', { period: periodLabel })} — ${t('draftNotPublished')}`
-              : `${t('dueInDays', { days: daysUntil })} — ${t('draftNotPublished')}`}
-          </InfoBoxContent>
-        </InfoBox>
-      )}
-
       <a
         href={`/app/p/${propertyId}/s/${statement.id}`}
-        className="group block rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-5 transition-colors hover:border-primary/50 dark:bg-primary/10"
+        className={`group block rounded-2xl border border-dashed p-5 transition-colors ${
+          urgency === 'overdue'
+            ? 'border-destructive/40 bg-destructive/5 hover:border-destructive/60 dark:bg-destructive/10'
+            : urgency === 'approaching'
+              ? 'border-amber-500/40 bg-amber-500/5 hover:border-amber-500/60 dark:bg-amber-500/10'
+              : 'border-primary/30 bg-primary/5 hover:border-primary/50 dark:bg-primary/10'
+        }`}
       >
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <div className="hidden size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:flex">
-                <FileText className="size-4 text-primary" />
-              </div>
-              <p className="truncate text-sm font-semibold text-foreground">
-                {t('statementDraft', { period: periodLabel })}
-              </p>
-              <Badge variant="outline" className="shrink-0 border-dashed border-primary/30 text-xs text-primary">
-                {t('draft')}
-              </Badge>
-            </div>
+            <p className="truncate text-sm font-semibold text-foreground">
+              {t('statementDraft', { period: periodLabel })}
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              {t('draft')}{missingCount > 0 ? ' · incomplete' : ''}
+            </p>
           </div>
-          <p className="shrink-0 text-xl font-bold tabular-nums text-foreground">{total}</p>
+          <div className="shrink-0 text-right">
+            <p className="text-xl font-bold tabular-nums text-foreground">{tenantTotal}</p>
+            <p className="text-xs text-muted-foreground">tenant owes</p>
+          </div>
         </div>
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
+        <div className="mt-3">
+          <div className={`flex items-center gap-1.5 text-sm font-medium ${
+            urgency === 'overdue' ? 'text-destructive' : urgency === 'approaching' ? 'text-amber-600 dark:text-amber-400' : 'text-primary'
+          }`}>
             {t('completeStatement')}
+            {urgency === 'overdue' && ' — overdue'}
+            {urgency === 'approaching' && ` — ${daysUntil}d left`}
             <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </div>
-          {missingCount > 0 && (
-            <>
-              <span className="text-sm text-amber-600 sm:hidden dark:text-amber-400">
-                {missingCount} missing
-              </span>
-              <span className="hidden text-xs text-amber-600 sm:inline dark:text-amber-400">
-                {t('missingCharges', { count: missingCount })}
-              </span>
-            </>
-          )}
         </div>
       </a>
     </div>

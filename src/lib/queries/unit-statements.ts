@@ -6,6 +6,7 @@ export interface UnitStatement {
   periodMonth: number
   status: 'draft' | 'published'
   totalAmountMinor: number
+  tenantTotalMinor: number
   currency: string
   createdAt: string
 }
@@ -16,7 +17,7 @@ export async function fetchUnitStatements(
 ): Promise<UnitStatement[]> {
   const { data, error } = await supabase
     .from('statements')
-    .select('id, period_year, period_month, status, total_amount_minor, currency, created_at')
+    .select('id, period_year, period_month, status, total_amount_minor, tenant_total_minor, currency, created_at')
     .eq('unit_id', unitId)
     .is('deleted_at', null)
     .order('period_year', { ascending: false })
@@ -30,6 +31,7 @@ export async function fetchUnitStatements(
     periodMonth: row.period_month,
     status: row.status as UnitStatement['status'],
     totalAmountMinor: row.total_amount_minor,
+    tenantTotalMinor: row.tenant_total_minor,
     currency: row.currency,
     createdAt: row.created_at,
   }))

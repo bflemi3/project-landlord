@@ -1,39 +1,70 @@
 export type UrgencyLevel = 'normal' | 'approaching' | 'overdue'
 
+/** Statement should be published this many days before the payment due date */
+const PUBLISH_BUFFER_DAYS = 3
+
+/** Urgency kicks in this many days before the publish-by date */
+const APPROACHING_THRESHOLD_DAYS = 3
+
 /**
- * Computes the urgency level for a statement based on proximity to the due date.
+ * Returns the statement publish-by day for a given payment due day.
+ * E.g., payment due 10th → publish by 7th.
+ */
+export function getPublishByDay(paymentDueDay: number): number {
+  return Math.max(1, paymentDueDay - PUBLISH_BUFFER_DAYS)
+}
+
+/**
+ * Computes the urgency level for a statement based on proximity to the publish-by date.
+ * The publish-by date is PUBLISH_BUFFER_DAYS before the payment due date,
+ * giving tenants time to review before payment is expected.
  *
- * @param dueDay - The unit's due_day_of_month (1-28)
+ * @param paymentDueDay - The unit's due_day_of_month (1-28)
  * @param periodYear - The billing period year
  * @param periodMonth - The billing period month (1-12)
  * @param now - Current date (injectable for testing)
  */
 export function getStatementUrgency(
-  dueDay: number,
+  paymentDueDay: number,
   periodYear: number,
   periodMonth: number,
   now: Date = new Date(),
 ): UrgencyLevel {
-  const dueDate = new Date(periodYear, periodMonth - 1, dueDay)
+  const publishByDay = getPublishByDay(paymentDueDay)
+  const publishByDate = new Date(periodYear, periodMonth - 1, publishByDay)
 
-  const diffMs = dueDate.getTime() - now.getTime()
+  const diffMs = publishByDate.getTime() - now.getTime()
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
 
   if (diffDays < 0) return 'overdue'
-  if (diffDays <= 7) return 'approaching'
+  if (diffDays <= APPROACHING_THRESHOLD_DAYS) return 'approaching'
   return 'normal'
 }
 
 /**
- * Returns the number of days until the due date. Negative means overdue.
+ * Returns the number of days until the publish-by date. Negative means overdue.
  */
-export function getDaysUntilDue(
-  dueDay: number,
+export function getDaysUntilPublishBy(
+  paymentDueDay: number,
   periodYear: number,
   periodMonth: number,
   now: Date = new Date(),
 ): number {
-  const dueDate = new Date(periodYear, periodMonth - 1, dueDay)
+  const publishByDay = getPublishByDay(paymentDueDay)
+  const publishByDate = new Date(periodYear, periodMonth - 1, publishByDay)
+  return Math.ceil((publishByDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+}
+
+/**
+ * Returns the number of days until the payment due date. Negative means overdue.
+ */
+export function getDaysUntilDue(
+  paymentDueDay: number,
+  periodYear: number,
+  periodMonth: number,
+  now: Date = new Date(),
+): number {
+  const dueDate = new Date(periodYear, periodMonth - 1, paymentDueDay)
   return Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 }
 
