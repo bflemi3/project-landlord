@@ -1,0 +1,150 @@
+'use client'
+
+import { useTransition } from 'react'
+import { useRouter } from 'next/navigation'
+import { useTranslations, useLocale } from 'next-intl'
+import { useQueryClient } from '@tanstack/react-query'
+import { ChevronRight, FileText } from 'lucide-react'
+import posthog from 'posthog-js'
+import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { useUnit } from '@/lib/hooks/use-unit'
+import { useUnitCharges } from '@/lib/hooks/use-unit-charges'
+import { useUnitStatements } from '@/lib/hooks/use-unit-statements'
+import { useProperty } from '@/lib/hooks/use-property'
+import { formatCurrency } from '@/lib/format-currency'
+import {
+  getCurrentPeriod,
+  formatPeriod,
+  getStatementUrgency,
+  getDaysUntilPublishBy,
+  getPublishByDay,
+} from '@/lib/statement-urgency'
+import { computeFinancialSummary } from '@/lib/statements/financial-summary'
+import { createStatement } from '@/app/actions/statements/create-statement'
+import { unitStatementsQueryKey } from '@/lib/queries/unit-statements'
+import { homeActionsQueryKey } from '@/lib/queries/home-actions'
+import { homePropertiesQueryKey } from '@/lib/queries/home-properties'
+
+export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; propertyId: string }) {
+  const t = useTranslations('propertyDetail')
+  const locale = useLocale()
+  const router = useRouter()
+  const queryClient = useQueryClient()
+  const { data: unit } = useUnit(unitId)
+  const { data: charges } = useUnitCharges(unitId)
+  const { data: statements } = useUnitStatements(unitId)
+  const [isPending, startTransition] = useTransition()
+
+  const { year, month } = getCurrentPeriod()
+  const periodLabel = formatPeriod(year, month, locale)
+  const { tenantTotal, landlordTotal, total, source } = computeFinancialSummary(
+    statements, charges, year, month,
+  )
+
+  const currentStatement = statements.find(
+    (s) => s.periodYear === year && s.periodMonth === month,
+  )
+
+  const urgency = getStatementUrgency(unit.dueDay, year, month)
+  const daysUntil = getDaysUntilPublishBy(unit.dueDay, year, month)
+  const isEstimate = source !== 'statement'
+
+  function handleGenerate() {
+    startTransition(async () => {
+      const result = await createStatement(unitId, year, month)
+      if (result.success && result.statementId) {
+        queryClient.invalidateQueries({ queryKey: unitStatementsQueryKey(unitId) })
+        queryClient.invalidateQueries({ queryKey: homeActionsQueryKey() })
+        queryClient.invalidateQueries({ queryKey: homePropertiesQueryKey() })
+
+        posthog.capture('statement_draft_created', {
+          property_id: propertyId,
+          unit_id: unitId,
+          period_year: year,
+          period_month: month,
+        })
+
+        router.push(`/app/p/${propertyId}/s/${result.statementId}`)
+      }
+    })
+  }
+
+  // Don't show the card if there are no charges configured
+  if (total === 0 && !currentStatement) return null
+
+  const actionBg = urgency === 'overdue'
+    ? 'bg-destructive/10 dark:bg-destructive/15'
+    : urgency === 'approaching'
+      ? 'bg-amber-500/10 dark:bg-amber-500/15'
+      : 'bg-secondary/50 dark:bg-zinc-700/50'
+
+  const actionText = urgency === 'overdue'
+    ? 'text-destructive'
+    : urgency === 'approaching'
+      ? 'text-amber-600 dark:text-amber-400'
+      : 'text-primary'
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80 dark:shadow-none">
+      {/* Hero: collection amount + due day */}
+      <div className="flex items-baseline gap-2">
+        <span className="text-2xl font-bold tabular-nums text-foreground">
+          {formatCurrency(tenantTotal, unit.currency)}
+        </span>
+        <span className="text-sm text-muted-foreground">
+          {isEstimate ? t('estimated') + ' ' : ''}tenant owes
+        </span>
+      </div>
+      <p className="mt-0.5 text-sm text-muted-foreground">
+        Payment due the {unit.dueDay}{getOrdinalSuffix(unit.dueDay)} of each month
+      </p>
+
+      {/* Action area: statement status */}
+      {currentStatement ? (
+        <a
+          href={`/app/p/${propertyId}/s/${currentStatement.id}`}
+          className={`group mt-4 flex items-center justify-between gap-3 rounded-xl p-3.5 transition-colors ${actionBg}`}
+        >
+          <div className="min-w-0">
+            <span className={`flex items-center gap-1.5 text-sm font-medium ${actionText}`}>
+              {t('completeStatement')}
+              {urgency === 'overdue' && ' — overdue'}
+              {urgency === 'approaching' && ` — ${daysUntil}d left`}
+            </span>
+            <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs">
+              {t('statementDraft', { period: periodLabel })} · Draft
+              {currentStatement.tenantTotalMinor !== tenantTotal ? ' · incomplete' : ''}
+            </p>
+          </div>
+          <ChevronRight className={`size-5 shrink-0 transition-transform group-hover:translate-x-0.5 ${actionText}`} />
+        </a>
+      ) : (
+        <div className={`mt-4 rounded-xl p-3.5 ${actionBg}`}>
+          {urgency !== 'normal' && (
+            <p className={`mb-2 text-sm font-medium ${actionText}`}>
+              {urgency === 'overdue'
+                ? `${periodLabel} statement is overdue`
+                : `Due in ${daysUntil}d`}
+            </p>
+          )}
+          <Button
+            onClick={handleGenerate}
+            loading={isPending}
+            className="h-10 w-full rounded-xl"
+          >
+            <FileText />
+            {t('generateStatement', { period: periodLabel })}
+          </Button>
+        </div>
+      )}
+
+    </div>
+  )
+}
+
+function getOrdinalSuffix(n: number): string {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return s[(v - 20) % 10] || s[v] || s[0]
+}

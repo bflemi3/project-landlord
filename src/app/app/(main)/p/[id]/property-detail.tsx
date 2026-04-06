@@ -14,6 +14,7 @@ import {
   DetailPageLayoutSidebar,
 } from '@/components/detail-page-layout'
 import { PropertyHeader } from './sections/property-header'
+import { BillingSummaryCard } from './sections/billing-summary-card'
 import { SetupProgressSection } from './sections/setup-progress-section'
 import { UnitSection } from './sections/unit-section'
 import { PropertyInfoSection } from './sections/property-info-section'
@@ -43,18 +44,29 @@ export function PropertyDetail({ propertyId }: { propertyId: string }) {
             <PageHeaderBack href="/app">{t('back')}</PageHeaderBack>
             <PropertyHeader propertyId={propertyId} />
           </PageHeader>
-
-          <SetupProgressSection propertyId={propertyId} />
         </DetailPageLayoutHeader>
 
         <DetailPageLayoutBody>
           <DetailPageLayoutMain>
+            {property.unitIds.map((unitId) => (
+              <BillingSummaryCard key={`billing-${unitId}`} unitId={unitId} propertyId={propertyId} />
+            ))}
+
+            {/* Mobile only: onboarding progress between summary and charges */}
+            <div className="md:hidden">
+              <SetupProgressSection propertyId={propertyId} />
+            </div>
+
             {property.unitIds.map((unitId) => (
               <UnitSection key={unitId} unitId={unitId} propertyId={propertyId} />
             ))}
           </DetailPageLayoutMain>
 
           <DetailPageLayoutSidebar>
+            {/* Desktop only: onboarding progress in sidebar */}
+            <div className="hidden md:block">
+              <SetupProgressSection propertyId={propertyId} />
+            </div>
             <PropertyInfoSection propertyId={propertyId} />
 
             {property.unitIds.map((unitId) => (

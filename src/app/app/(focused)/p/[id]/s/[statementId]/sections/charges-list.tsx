@@ -92,6 +92,39 @@ export function ChargesList({
       </div>
 
       <div className="space-y-1 rounded-2xl border border-border p-1.5">
+        {/* Missing charges — shown first (actionable items) */}
+        {missingCharges.length > 0 && (
+          <div ref={missingRef} id="missing-charges">
+            {missingCharges.map((missing) => {
+              const Icon = CHARGE_TYPE_ICONS[missing.chargeType] ?? Zap
+              return (
+                <ChargeRow key={missing.definitionId} disabled className="border-transparent opacity-50">
+                  <ChargeRowIcon>
+                    <Icon className="size-4" />
+                  </ChargeRowIcon>
+                  <ChargeRowContent>
+                    <ChargeRowTitle>{missing.name}</ChargeRowTitle>
+                    <Badge variant="secondary" className="mt-0.5 text-xs">missing</Badge>
+                  </ChargeRowContent>
+                  {onAddMissingCharge && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-primary"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onAddMissingCharge(missing)
+                      }}
+                    >
+                      Add
+                    </Button>
+                  )}
+                </ChargeRow>
+              )
+            })}
+          </div>
+        )}
+
         {/* Existing charges */}
         {charges.map((charge) => {
           const Icon = getChargeIcon(charge)
@@ -125,39 +158,6 @@ export function ChargesList({
             </ChargeRow>
           )
         })}
-
-        {/* Missing charges */}
-        {missingCharges.length > 0 && (
-          <div ref={missingRef} id="missing-charges">
-            {missingCharges.map((missing) => {
-              const Icon = CHARGE_TYPE_ICONS[missing.chargeType] ?? Zap
-              return (
-                <ChargeRow key={missing.definitionId} disabled className="border-transparent opacity-50">
-                  <ChargeRowIcon>
-                    <Icon className="size-4" />
-                  </ChargeRowIcon>
-                  <ChargeRowContent>
-                    <ChargeRowTitle>{missing.name}</ChargeRowTitle>
-                    <Badge variant="secondary" className="mt-0.5 text-xs">missing</Badge>
-                  </ChargeRowContent>
-                  {onAddMissingCharge && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onAddMissingCharge(missing)
-                      }}
-                    >
-                      Add
-                    </Button>
-                  )}
-                </ChargeRow>
-              )
-            })}
-          </div>
-        )}
 
         {/* Total */}
         <div className="flex items-center justify-between border-t border-border px-4 py-3.5">
