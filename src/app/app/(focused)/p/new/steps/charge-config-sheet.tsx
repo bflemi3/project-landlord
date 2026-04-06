@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/button'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import {
+  ChargeNameInput,
   AmountInput,
   VariablePlaceholder,
   PayerToggle,
@@ -166,16 +167,12 @@ function ChargeConfigForm({
     <>
       {/* Editable name for custom charges */}
       {isCustom && (
-        <div className="mb-5">
-          <input
-            type="text"
-            value={editableName}
-            onChange={(e) => setEditableName(e.target.value)}
-            placeholder={t('customChargeNamePlaceholder')}
-            className="w-full border-b border-border bg-transparent pb-1 text-xl font-bold text-foreground outline-none transition-colors placeholder:text-muted-foreground/30 focus:border-primary"
-            autoFocus={!existingConfig}
-          />
-        </div>
+        <ChargeNameInput
+          value={editableName}
+          onChange={setEditableName}
+          placeholder={t('customChargeNamePlaceholder')}
+          autoFocus={!existingConfig}
+        />
       )}
 
       <div className="space-y-4">

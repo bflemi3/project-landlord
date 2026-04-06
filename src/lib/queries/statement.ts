@@ -7,6 +7,8 @@ export interface Statement {
   periodMonth: number
   status: 'draft' | 'published'
   totalAmountMinor: number
+  tenantTotalMinor: number
+  landlordTotalMinor: number
   currency: string
   publishedAt: string | null
   revision: number
@@ -17,7 +19,7 @@ export interface Statement {
 export async function fetchStatement(supabase: TypedSupabaseClient, statementId: string): Promise<Statement> {
   const { data, error } = await supabase
     .from('statements')
-    .select('id, unit_id, period_year, period_month, status, total_amount_minor, currency, published_at, revision, created_at, updated_at')
+    .select('id, unit_id, period_year, period_month, status, total_amount_minor, tenant_total_minor, landlord_total_minor, currency, published_at, revision, created_at, updated_at')
     .eq('id', statementId)
     .is('deleted_at', null)
     .single()
@@ -31,6 +33,8 @@ export async function fetchStatement(supabase: TypedSupabaseClient, statementId:
     periodMonth: data.period_month,
     status: data.status as Statement['status'],
     totalAmountMinor: data.total_amount_minor,
+    tenantTotalMinor: data.tenant_total_minor,
+    landlordTotalMinor: data.landlord_total_minor,
     currency: data.currency,
     publishedAt: data.published_at,
     revision: data.revision,

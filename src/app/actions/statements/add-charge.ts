@@ -11,6 +11,12 @@ export interface AddChargeInput {
   amountMinor: number
   chargeDefinitionId?: string
   sourceDocumentId?: string
+  /** Split fields for ad-hoc charges. Omit to use definition's allocations or default to 100% tenant. */
+  splitType?: 'percentage' | 'fixed_amount'
+  tenantPercentage?: number | null
+  landlordPercentage?: number | null
+  tenantFixedMinor?: number | null
+  landlordFixedMinor?: number | null
 }
 
 export interface AddChargeResult {
@@ -23,14 +29,15 @@ export async function addChargeToStatementCore(
   supabase: TypedSupabaseClient,
   input: AddChargeInput,
 ): Promise<AddChargeResult> {
-  // Resolve split fields from definition or default to 100% tenant
-  let splitType: 'percentage' | 'fixed_amount' = 'percentage'
-  let tenantPercentage: number | null = 100
-  let landlordPercentage: number | null = 0
-  let tenantFixedMinor: number | null = null
-  let landlordFixedMinor: number | null = null
+  // Resolve split fields: explicit > from definition > default 100% tenant
+  let splitType: 'percentage' | 'fixed_amount' = input.splitType ?? 'percentage'
+  let tenantPercentage: number | null = input.tenantPercentage ?? 100
+  let landlordPercentage: number | null = input.landlordPercentage ?? 0
+  let tenantFixedMinor: number | null = input.tenantFixedMinor ?? null
+  let landlordFixedMinor: number | null = input.landlordFixedMinor ?? null
 
-  if (input.chargeDefinitionId) {
+  // If linked to a definition and no explicit split, copy from definition
+  if (input.chargeDefinitionId && input.splitType === undefined) {
     const { data: allocations } = await supabase
       .from('responsibility_allocations')
       .select('role, allocation_type, percentage, fixed_minor')

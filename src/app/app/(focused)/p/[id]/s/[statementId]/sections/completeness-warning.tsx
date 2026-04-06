@@ -1,24 +1,30 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { useStatement } from '@/lib/hooks/use-statement'
+import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
 
 export function CompletenessWarning({
-  missingCount,
+  statementId,
   onReview,
 }: {
-  missingCount: number
+  statementId: string
   onReview?: () => void
 }) {
   const t = useTranslations('propertyDetail')
+  const { data: statement } = useStatement(statementId)
+  const { data: missingCharges } = useMissingCharges(
+    statement.unitId, statementId, statement.periodYear, statement.periodMonth,
+  )
 
-  if (missingCount === 0) return null
+  if (missingCharges.length === 0) return null
 
   return (
     <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-            {t('missingCharges', { count: missingCount })}
+            {t('missingCharges', { count: missingCharges.length })}
           </p>
           <p className="mt-1 text-xs text-amber-600/80 dark:text-amber-400/60">
             Missing charges won&apos;t block publishing. You can revise the statement later.

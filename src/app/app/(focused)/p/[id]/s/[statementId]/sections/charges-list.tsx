@@ -13,6 +13,9 @@ import {
   ChargeRowDescription,
   ChargeRowAmount,
 } from '@/components/charge-row'
+import { useStatement } from '@/lib/hooks/use-statement'
+import { useStatementCharges } from '@/lib/hooks/use-statement-charges'
+import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
 import { formatCurrency } from '@/lib/format-currency'
 import type { ChargeInstance } from '@/lib/queries/statement-charges'
 import type { MissingCharge } from '@/lib/queries/missing-charges'
@@ -24,7 +27,6 @@ const CHARGE_TYPE_ICONS: Record<string, React.ElementType> = {
 }
 
 function getChargeIcon(charge: ChargeInstance): React.ElementType {
-  // If linked to a definition, try to match by common name patterns
   if (charge.chargeDefinitionId) {
     const name = charge.name.toLowerCase()
     if (name.includes('rent') || name.includes('aluguel')) return Home
@@ -41,19 +43,25 @@ function getSourceLabel(charge: ChargeInstance, t: ReturnType<typeof useTranslat
   return 'Manual'
 }
 
+function getSplitLabel(charge: ChargeInstance): string {
+  if (charge.splitType === 'percentage') {
+    if (charge.tenantPercentage === 100 || charge.tenantPercentage === null) return ''
+    if (charge.landlordPercentage === 100) return ' · Landlord pays'
+    return ` · ${charge.tenantPercentage}/${charge.landlordPercentage}`
+  }
+  if (charge.splitType === 'fixed_amount' && charge.tenantFixedMinor != null && charge.landlordFixedMinor != null) {
+    return ` · ${formatCurrency(charge.tenantFixedMinor, charge.currency)} / ${formatCurrency(charge.landlordFixedMinor, charge.currency)}`
+  }
+  return ''
+}
+
 export function ChargesList({
-  charges,
-  missingCharges,
-  currency,
-  totalAmountMinor,
+  statementId,
   onAddCharge,
   onAddMissingCharge,
   onEditCharge,
 }: {
-  charges: ChargeInstance[]
-  missingCharges: MissingCharge[]
-  currency: string
-  totalAmountMinor: number
+  statementId: string
   onAddCharge?: () => void
   onAddMissingCharge?: (missing: MissingCharge) => void
   onEditCharge?: (charge: ChargeInstance) => void
@@ -61,7 +69,13 @@ export function ChargesList({
   const t = useTranslations('propertyDetail')
   const missingRef = useRef<HTMLDivElement>(null)
 
-  const total = formatCurrency(totalAmountMinor, currency)
+  const { data: statement } = useStatement(statementId)
+  const { data: charges } = useStatementCharges(statementId)
+  const { data: missingCharges } = useMissingCharges(
+    statement.unitId, statementId, statement.periodYear, statement.periodMonth,
+  )
+
+  const total = formatCurrency(statement.totalAmountMinor, statement.currency)
 
   return (
     <div>
@@ -97,6 +111,7 @@ export function ChargesList({
                 <ChargeRowTitle>{charge.name}</ChargeRowTitle>
                 <ChargeRowDescription>
                   {sourceLabel}
+                  {getSplitLabel(charge)}
                   {hasBill && (
                     <span className="inline-flex items-center gap-1">
                       {' · '}<Paperclip className="inline size-3" /> Bill attached

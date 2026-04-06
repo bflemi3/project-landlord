@@ -942,6 +942,7 @@ export type Database = {
           currency: string
           deleted_at: string | null
           id: string
+          landlord_total_minor: number
           period_month: number
           period_year: number
           previous_version_id: string | null
@@ -949,6 +950,7 @@ export type Database = {
           revision: number
           revision_note: string | null
           status: Database["public"]["Enums"]["statement_status"]
+          tenant_total_minor: number
           total_amount_minor: number
           unit_id: string
           updated_at: string
@@ -959,6 +961,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          landlord_total_minor?: number
           period_month: number
           period_year: number
           previous_version_id?: string | null
@@ -966,6 +969,7 @@ export type Database = {
           revision?: number
           revision_note?: string | null
           status?: Database["public"]["Enums"]["statement_status"]
+          tenant_total_minor?: number
           total_amount_minor?: number
           unit_id: string
           updated_at?: string
@@ -976,6 +980,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          landlord_total_minor?: number
           period_month?: number
           period_year?: number
           previous_version_id?: string | null
@@ -983,6 +988,7 @@ export type Database = {
           revision?: number
           revision_note?: string | null
           status?: Database["public"]["Enums"]["statement_status"]
+          tenant_total_minor?: number
           total_amount_minor?: number
           unit_id?: string
           updated_at?: string

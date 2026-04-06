@@ -7,6 +7,35 @@ import { formatAmount } from '@/lib/format-currency'
 import { cn } from '@/lib/utils'
 
 // =============================================================================
+// Charge name input — hero-style bold underline input
+// =============================================================================
+
+export function ChargeNameInput({
+  value,
+  onChange,
+  placeholder,
+  autoFocus = false,
+}: {
+  value: string
+  onChange: (value: string) => void
+  placeholder?: string
+  autoFocus?: boolean
+}) {
+  return (
+    <div className="mb-5">
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full border-b border-border bg-transparent pb-1 text-xl font-bold text-foreground outline-none transition-colors placeholder:text-muted-foreground/30 focus:border-primary"
+        autoFocus={autoFocus}
+      />
+    </div>
+  )
+}
+
+// =============================================================================
 // Amount input — hero currency input for fixed charges
 // =============================================================================
 
