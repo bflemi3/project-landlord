@@ -7,6 +7,7 @@ import { fetchUnitCharges, unitChargesQueryKey } from '@/lib/queries/unit-charge
 import { fetchUnitTenants, unitTenantsQueryKey } from '@/lib/queries/unit-tenants'
 import { fetchUnitInvites, unitInvitesQueryKey } from '@/lib/queries/unit-invites'
 import { fetchUnitStatements, unitStatementsQueryKey } from '@/lib/queries/unit-statements'
+import { fetchMissingCharges, missingChargesQueryKey } from '@/lib/queries/missing-charges'
 import { PropertyDetail } from './property-detail'
 
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
@@ -45,6 +46,28 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           queryFn: () => fetchUnitStatements(supabase, unitId),
         }),
       ]),
+    )
+
+    // Prefetch missing charges for each unit's current-period draft statement
+    const now = new Date()
+    const currentYear = now.getFullYear()
+    const currentMonth = now.getMonth() + 1
+
+    await Promise.all(
+      property.unitIds.map(async (unitId) => {
+        const statements = queryClient.getQueryData<{ id: string; periodYear: number; periodMonth: number }[]>(
+          unitStatementsQueryKey(unitId),
+        )
+        const current = statements?.find(
+          (s) => s.periodYear === currentYear && s.periodMonth === currentMonth,
+        )
+        if (current) {
+          await queryClient.prefetchQuery({
+            queryKey: missingChargesQueryKey(unitId, current.id),
+            queryFn: () => fetchMissingCharges(supabase, unitId, current.id, currentYear, currentMonth),
+          })
+        }
+      }),
     )
   }
 
