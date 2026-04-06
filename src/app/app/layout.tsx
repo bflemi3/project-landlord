@@ -14,25 +14,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const userId = data.claims.sub as string
   const email = data.claims.email as string | undefined
 
-  // Check if user has a redeemed invite code
-  const { data: invite } = await supabase
-    .from('invitations')
-    .select('id')
-    .eq('accepted_by', userId)
-    .eq('status', 'accepted')
-    .limit(1)
-    .single()
-
-  if (!invite) {
-    redirect('/auth/enter-code')
-  }
-
-  // Fetch profile for PostHog identify + prefetch for AppBar's useProfile()
+  // Fetch profile — single query covers auth gate + PostHog + AppBar
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, preferred_locale, avatar_url')
+    .select('full_name, preferred_locale, avatar_url, has_redeemed_invite, acquisition_channel')
     .eq('id', userId)
     .single()
+
+  if (!profile?.has_redeemed_invite) {
+    redirect('/auth/enter-code')
+  }
 
   // Prefetch profile query so AppBar's useProfile() hydrates instantly
   const queryClient = new QueryClient()
@@ -56,6 +47,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         email={email}
         name={profile?.full_name ?? undefined}
         locale={profile?.preferred_locale ?? undefined}
+        acquisitionChannel={profile?.acquisition_channel ?? undefined}
       />
       <HydrationBoundary state={dehydrate(queryClient)}>
         {children}

@@ -28,13 +28,13 @@ export default function EnterCodePage() {
         router.replace('/auth/sign-in')
         return
       }
-      // Check if user already has a redeemed invite
-      const { data } = await supabase
-        .from('invitations')
-        .select('id')
-        .eq('accepted_by', user.id)
-        .limit(1)
-      if (data && data.length > 0) {
+      // Check if user already has a redeemed invite via profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('has_redeemed_invite')
+        .eq('id', user.id)
+        .single()
+      if (profile?.has_redeemed_invite) {
         router.replace('/app')
         return
       }

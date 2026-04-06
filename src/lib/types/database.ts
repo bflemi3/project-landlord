@@ -325,6 +325,7 @@ export type Database = {
           property_address_hint: string | null
           property_id: string | null
           role: Database["public"]["Enums"]["user_role"]
+          source: string | null
           status: Database["public"]["Enums"]["invitation_status"]
           unit_id: string | null
           updated_at: string
@@ -343,6 +344,7 @@ export type Database = {
           property_address_hint?: string | null
           property_id?: string | null
           role: Database["public"]["Enums"]["user_role"]
+          source?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
           unit_id?: string | null
           updated_at?: string
@@ -361,6 +363,7 @@ export type Database = {
           property_address_hint?: string | null
           property_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          source?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
           unit_id?: string | null
           updated_at?: string
@@ -598,6 +601,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          acquisition_channel: string | null
           analytics_opt_out: boolean
           avatar_url: string | null
           cpf: string | null
@@ -605,12 +609,14 @@ export type Database = {
           deleted_at: string | null
           email: string
           full_name: string
+          has_redeemed_invite: boolean
           id: string
           phone: string | null
           preferred_locale: string
           updated_at: string
         }
         Insert: {
+          acquisition_channel?: string | null
           analytics_opt_out?: boolean
           avatar_url?: string | null
           cpf?: string | null
@@ -618,12 +624,14 @@ export type Database = {
           deleted_at?: string | null
           email: string
           full_name: string
+          has_redeemed_invite?: boolean
           id: string
           phone?: string | null
           preferred_locale?: string
           updated_at?: string
         }
         Update: {
+          acquisition_channel?: string | null
           analytics_opt_out?: boolean
           avatar_url?: string | null
           cpf?: string | null
@@ -631,6 +639,7 @@ export type Database = {
           deleted_at?: string | null
           email?: string
           full_name?: string
+          has_redeemed_invite?: boolean
           id?: string
           phone?: string | null
           preferred_locale?: string

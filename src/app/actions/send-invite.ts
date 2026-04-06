@@ -38,6 +38,7 @@ export async function sendInvite({
     invited_by: invitedBy,
     role: 'landlord',
     status: 'pending',
+    source,
     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
   })
 
