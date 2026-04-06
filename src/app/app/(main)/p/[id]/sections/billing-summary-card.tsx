@@ -77,7 +77,7 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
     ? 'bg-destructive/10 dark:bg-destructive/15'
     : urgency === 'approaching'
       ? 'bg-amber-500/10 dark:bg-amber-500/15'
-      : 'bg-secondary/50 dark:bg-zinc-700/50'
+      : 'bg-primary/10 dark:bg-primary/15'
 
   const actionText = urgency === 'overdue'
     ? 'text-destructive'
