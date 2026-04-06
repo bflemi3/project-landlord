@@ -65,11 +65,13 @@ interface PropertyFormProps {
   onValidated: (values: PropertyFormValues) => void
   initialValues?: PropertyFormValues
   initialErrors?: ValidatePropertyState['errors']
+  /** When editing, pass the property ID to exclude it from duplicate address checks */
+  excludePropertyId?: string
   className?: string
   children: React.ReactNode
 }
 
-export function PropertyForm({ onValidated, initialValues, initialErrors, className, children }: PropertyFormProps) {
+export function PropertyForm({ onValidated, initialValues, initialErrors, excludePropertyId, className, children }: PropertyFormProps) {
   const checkTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const addressStateRef = useRef(initialValues?.state ?? '')
 
@@ -136,7 +138,7 @@ export function PropertyForm({ onValidated, initialValues, initialErrors, classN
     }
 
     startChecking(async () => {
-      const result = await validateProperty(values)
+      const result = await validateProperty(values, excludePropertyId)
 
       if (!result.valid) {
         if (result.existingPropertyId) {
@@ -190,7 +192,7 @@ function PropertyFormName({ className, ...props }: React.ComponentProps<'div'>) 
         name="name"
         type="text"
         placeholder={t('propertyNamePlaceholder')}
-        defaultValue={initialValues?.name}
+        defaultValue={initialValues?.name ?? ''}
         autoFocus
       />
       <p className="mt-1.5 text-xs text-muted-foreground">{t('propertyNameHint')}</p>

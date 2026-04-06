@@ -1,5 +1,8 @@
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
 import { FadeIn } from '@/components/fade-in'
+import { fetchHomeProperties, homePropertiesQueryKey } from '@/lib/queries/home-properties'
+import { fetchHomeActions, homeActionsQueryKey } from '@/lib/queries/home-actions'
 import { HomeContent } from './home-content'
 
 export default async function AppHomePage() {
@@ -15,13 +18,28 @@ export default async function AppHomePage() {
 
   const firstName = profile?.full_name?.split(' ')[0] ?? undefined
 
+  // Prefetch data so client hydration matches server render
+  const queryClient = new QueryClient()
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: homePropertiesQueryKey(),
+      queryFn: () => fetchHomeProperties(supabase),
+    }),
+    queryClient.prefetchQuery({
+      queryKey: homeActionsQueryKey(),
+      queryFn: () => fetchHomeActions(supabase),
+    }),
+  ])
+
   return (
-    <FadeIn className="h-full">
-      <HomeContent
-        firstName={firstName}
-        userName={profile?.full_name ?? undefined}
-        avatarUrl={profile?.avatar_url ?? undefined}
-      />
-    </FadeIn>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <FadeIn className="h-full">
+        <HomeContent
+          firstName={firstName}
+          userName={profile?.full_name ?? undefined}
+          avatarUrl={profile?.avatar_url ?? undefined}
+        />
+      </FadeIn>
+    </HydrationBoundary>
   )
 }

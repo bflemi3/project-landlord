@@ -59,8 +59,7 @@ function Input({
         ref={inputRef}
         type={type}
         data-slot="input"
-        value={isControlled ? value : undefined}
-        defaultValue={!isControlled ? defaultValue : undefined}
+        value={isControlled ? value : internalValue}
         onChange={handleChange}
         disabled={disabled}
         className={cn(

@@ -289,7 +289,7 @@ function MobileHeader({ userName, avatarUrl }: { userName?: string; avatarUrl?: 
 // Home property card
 // =============================================================================
 
-const CARD_CLASS = 'group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30'
+const CARD_CLASS = 'group block w-full overflow-hidden rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30'
 
 function HomePropertyCard({ property: p }: { property: HomeProperty }) {
   const tP = useTranslations('properties')
@@ -302,7 +302,7 @@ function HomePropertyCard({ property: p }: { property: HomeProperty }) {
   if (fullySetup) {
     return (
       <Link href={`/app/p/${p.propertyId}`} className={CARD_CLASS}>
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-semibold text-foreground">{p.name}</h3>
             {address && <p className="mt-0.5 text-sm text-muted-foreground">{address}</p>}
@@ -323,7 +323,7 @@ function HomePropertyCard({ property: p }: { property: HomeProperty }) {
 
   return (
     <Link href={`/app/p/${p.propertyId}`} className={CARD_CLASS}>
-      <div className="flex items-start justify-between">
+      <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold text-foreground">{p.name}</h3>
           {address && <p className="mt-0.5 text-sm text-muted-foreground">{address}</p>}

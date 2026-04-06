@@ -141,13 +141,13 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
           <p className="text-sm text-muted-foreground">{t('noCharges')}</p>
         </button>
       ) : (
-        <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+        <div className="space-y-1 rounded-2xl border border-border p-1.5">
           {charges.map((charge) => (
             <ChargeCard
               key={charge.id}
               charge={charge}
               onClick={() => handleEditCharge(charge)}
-              className="border-0"
+              className="border-transparent"
             />
           ))}
         </div>

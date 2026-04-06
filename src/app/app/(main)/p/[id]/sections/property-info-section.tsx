@@ -74,6 +74,7 @@ export function PropertyInfoSection({ propertyId }: { propertyId: string }) {
         <PropertyForm
           key={editOpen ? 'open' : 'closed'}
           onValidated={handleSave}
+          excludePropertyId={propertyId}
           initialValues={{
             name: property.name,
             postal_code: property.postalCode ?? '',
