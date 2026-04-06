@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { InfoBox, InfoBoxIcon, InfoBoxContent } from '@/components/info-box'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useUnitStatements, type UnitStatement } from '@/lib/hooks/use-unit-statements'
+import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
 import { useProperty } from '@/lib/hooks/use-property'
 import { createStatement } from '@/app/actions/statements/create-statement'
 import { unitStatementsQueryKey } from '@/lib/queries/unit-statements'
@@ -68,14 +69,14 @@ export function StatementSection({ unitId, propertyId }: { unitId: string; prope
 
   if (currentStatement) {
     return (
-      <DraftCard
+      <DraftCardWithData
         statement={currentStatement}
+        unitId={unitId}
         propertyId={propertyId}
         periodLabel={periodLabel}
         urgency={urgency}
         daysUntil={daysUntil}
         currency={unit.currency}
-        t={t}
       />
     )
   }
@@ -140,6 +141,46 @@ function GenerateCard({
 }
 
 // =============================================================================
+// Draft card wrapper — fetches missing charges (can't call hooks conditionally)
+// =============================================================================
+
+function DraftCardWithData({
+  statement,
+  unitId,
+  propertyId,
+  periodLabel,
+  urgency,
+  daysUntil,
+  currency,
+}: {
+  statement: UnitStatement
+  unitId: string
+  propertyId: string
+  periodLabel: string
+  urgency: UrgencyLevel
+  daysUntil: number
+  currency: string
+}) {
+  const t = useTranslations('propertyDetail')
+  const { data: missingCharges } = useMissingCharges(
+    unitId, statement.id, statement.periodYear, statement.periodMonth,
+  )
+
+  return (
+    <DraftCard
+      statement={statement}
+      propertyId={propertyId}
+      periodLabel={periodLabel}
+      urgency={urgency}
+      daysUntil={daysUntil}
+      currency={currency}
+      missingCount={missingCharges.length}
+      t={t}
+    />
+  )
+}
+
+// =============================================================================
 // Draft card — statement exists, show summary
 // =============================================================================
 
@@ -150,6 +191,7 @@ function DraftCard({
   urgency,
   daysUntil,
   currency,
+  missingCount,
   t,
 }: {
   statement: UnitStatement
@@ -158,6 +200,7 @@ function DraftCard({
   urgency: UrgencyLevel
   daysUntil: number
   currency: string
+  missingCount: number
   t: ReturnType<typeof useTranslations<'propertyDetail'>>
 }) {
   const total = formatCurrency(statement.totalAmountMinor, currency)
@@ -179,23 +222,35 @@ function DraftCard({
 
       <a
         href={`/app/p/${propertyId}/s/${statement.id}`}
-        className="group flex items-center gap-3 rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary/20 dark:bg-zinc-800/80 dark:hover:border-primary/30"
+        className="group block rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-5 transition-colors hover:border-primary/50 dark:bg-primary/10"
       >
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-          <FileText className="size-5 text-primary" />
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-foreground">
-              {t('statementDraft', { period: periodLabel })}
-            </p>
-            <Badge variant="secondary" className="text-xs">
-              {t('draft')}
-            </Badge>
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <FileText className="size-4 text-primary" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">
+                {t('statementDraft', { period: periodLabel })}
+              </p>
+              <Badge variant="outline" className="border-dashed border-primary/30 text-xs text-primary">
+                {t('draft')}
+              </Badge>
+            </div>
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">{total}</p>
+          <p className="shrink-0 text-xl font-bold tabular-nums text-foreground">{total}</p>
         </div>
-        <ChevronRight className="size-5 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-sm font-medium text-primary">
+            {t('completeStatement')}
+            <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+          </div>
+          {missingCount > 0 && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              {t('missingCharges', { count: missingCount })}
+            </p>
+          )}
+        </div>
       </a>
     </div>
   )
