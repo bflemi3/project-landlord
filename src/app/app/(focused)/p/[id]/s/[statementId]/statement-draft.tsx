@@ -22,6 +22,9 @@ import { useUnit } from '@/lib/hooks/use-unit'
 import { useProperty } from '@/lib/hooks/use-property'
 import { formatCurrency } from '@/lib/format-currency'
 import { formatPeriod } from '@/lib/statement-urgency'
+import { SummaryCard } from './sections/summary-card'
+import { CompletenessWarning } from './sections/completeness-warning'
+import { ChargesList, scrollToMissingCharges } from './sections/charges-list'
 
 export function StatementDraft({ statementId, propertyId }: { statementId: string; propertyId: string }) {
   const t = useTranslations('propertyDetail')
@@ -40,6 +43,8 @@ export function StatementDraft({ statementId, propertyId }: { statementId: strin
   const total = formatCurrency(statement.totalAmountMinor, statement.currency)
   const dueDate = new Date(statement.periodYear, statement.periodMonth - 1, unit.dueDay)
   const dueDateLabel = dueDate.toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' })
+  const isEstimated = missingCharges.length > 0
+  const createdLabel = new Date(statement.createdAt).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })
 
   // Fire statement_viewed on mount
   useEffect(() => {
@@ -80,98 +85,43 @@ export function StatementDraft({ statementId, propertyId }: { statementId: strin
         </div>
 
         {/* Mobile-only: summary card in header */}
-        <div className="mb-6 rounded-2xl border border-border bg-card p-5 md:hidden dark:bg-zinc-800/80">
-          <p className="text-sm text-muted-foreground">
-            {missingCharges.length > 0 ? 'Estimated total' : 'Total due'}
-          </p>
-          <p className="mt-1 text-3xl font-bold tabular-nums text-foreground">{total}</p>
-          <p className="mt-2 text-sm text-muted-foreground">Due {dueDateLabel}</p>
+        <div className="mb-6 md:hidden">
+          <SummaryCard total={total} dueDateLabel={dueDateLabel} isEstimated={isEstimated} />
         </div>
       </DetailPageLayoutHeader>
 
       <DetailPageLayoutBody>
         <DetailPageLayoutMain>
-          {/* Completeness warning */}
-          {missingCharges.length > 0 && (
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 px-5 py-4">
-              <p className="text-sm font-medium text-amber-700 dark:text-amber-400">
-                {t('missingCharges', { count: missingCharges.length })}
-              </p>
-              <p className="mt-1 text-xs text-amber-600/80 dark:text-amber-400/60">
-                Missing charges won&apos;t block publishing. You can revise the statement later.
-              </p>
-            </div>
-          )}
+          <CompletenessWarning
+            missingCount={missingCharges.length}
+            onReview={scrollToMissingCharges}
+          />
 
-          {/* Charges list */}
-          <div>
-            <h2 className="mb-3 text-base font-semibold text-foreground">
-              {t('charges')} ({charges.length})
-            </h2>
-            <div className="space-y-1 rounded-2xl border border-border p-1.5">
-              {charges.map((charge) => (
-                <div
-                  key={charge.id}
-                  className="flex items-center justify-between rounded-xl px-4 py-3.5 transition-colors hover:bg-muted/50"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">{charge.name}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">
-                      {charge.chargeDefinitionId ? t('recurring') : 'Manual'}
-                      {charge.sourceDocumentId && ' · Bill attached'}
-                    </p>
-                  </div>
-                  <p className="shrink-0 text-sm font-bold tabular-nums text-foreground">
-                    {formatCurrency(charge.amountMinor, charge.currency)}
-                  </p>
-                </div>
-              ))}
-
-              {/* Missing charges */}
-              {missingCharges.map((missing) => (
-                <div
-                  key={missing.definitionId}
-                  className="flex items-center justify-between rounded-xl px-4 py-3.5 opacity-50"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">{missing.name}</p>
-                    <Badge variant="secondary" className="mt-0.5 text-xs">missing</Badge>
-                  </div>
-                  <Button variant="ghost" size="sm" className="text-primary">
-                    Add
-                  </Button>
-                </div>
-              ))}
-
-              {/* Total */}
-              <div className="flex items-center justify-between border-t border-border px-4 py-3.5">
-                <p className="text-sm font-semibold text-foreground">Total</p>
-                <p className="text-base font-bold tabular-nums text-foreground">{total}</p>
-              </div>
-            </div>
-          </div>
+          <ChargesList
+            charges={charges}
+            missingCharges={missingCharges}
+            currency={statement.currency}
+            totalAmountMinor={statement.totalAmountMinor}
+            onAddCharge={() => {/* TODO: Task 19b — open add charge sheet */}}
+            onAddMissingCharge={() => {/* TODO: Task 19b — open add charge sheet pre-filled */}}
+            onEditCharge={() => {/* TODO: Task 19b — open edit charge sheet */}}
+          />
         </DetailPageLayoutMain>
 
         <DetailPageLayoutSidebar>
-          {/* Summary card — desktop only (mobile shows total in header) */}
-          <div className="hidden rounded-2xl border border-border bg-card p-5 md:block dark:bg-zinc-800/80">
-            <p className="text-sm text-muted-foreground">
-              {missingCharges.length > 0 ? 'Estimated total' : 'Total due'}
-            </p>
-            <p className="mt-1 text-3xl font-bold tabular-nums text-foreground">{total}</p>
-            <p className="mt-2 text-sm text-muted-foreground">Due {dueDateLabel}</p>
+          {/* Desktop-only summary card */}
+          <div className="hidden md:block">
+            <SummaryCard total={total} dueDateLabel={dueDateLabel} isEstimated={isEstimated} />
           </div>
 
-          {/* Review & Publish + audit note grouped together */}
+          {/* Review & Publish + audit note */}
           <div className="hidden md:block">
             <Button className="h-12 w-full rounded-2xl" size="lg" disabled>
               Review & Publish
             </Button>
             <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
               <Clock className="size-3" />
-              <span>
-                Draft created {new Date(statement.createdAt).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
+              <span>Draft created {createdLabel}</span>
             </div>
           </div>
         </DetailPageLayoutSidebar>
@@ -181,9 +131,7 @@ export function StatementDraft({ statementId, propertyId }: { statementId: strin
       <StickyBottomBar className="md:hidden">
         <div className="mb-2 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
           <Clock className="size-3" />
-          <span>
-            Draft created {new Date(statement.createdAt).toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' })}
-          </span>
+          <span>Draft created {createdLabel}</span>
         </div>
         <Button className="h-12 w-full rounded-2xl" size="lg" disabled>
           Review & Publish
