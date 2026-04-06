@@ -6,6 +6,13 @@ import { useTranslations } from 'next-intl'
 import { useProperty } from '@/lib/hooks/use-property'
 import { HighlightProvider } from '@/lib/hooks/use-highlight-target'
 import { PageHeader, PageHeaderBack } from '@/components/page-header'
+import {
+  DetailPageLayout,
+  DetailPageLayoutHeader,
+  DetailPageLayoutBody,
+  DetailPageLayoutMain,
+  DetailPageLayoutSidebar,
+} from '@/components/detail-page-layout'
 import { PropertyHeader } from './sections/property-header'
 import { SetupProgressSection } from './sections/setup-progress-section'
 import { UnitSection } from './sections/unit-section'
@@ -30,34 +37,32 @@ export function PropertyDetail({ propertyId }: { propertyId: string }) {
 
   return (
     <HighlightProvider value={highlightTarget}>
-    <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 md:pt-6">
-        <div className="mx-auto max-w-4xl">
+      <DetailPageLayout>
+        <DetailPageLayoutHeader>
           <PageHeader>
             <PageHeaderBack href="/app">{t('back')}</PageHeaderBack>
             <PropertyHeader propertyId={propertyId} />
           </PageHeader>
 
           <SetupProgressSection propertyId={propertyId} />
+        </DetailPageLayoutHeader>
 
-          <div className="mt-8 md:flex md:gap-8">
-            <div className="flex-1 space-y-8">
-              {property.unitIds.map((unitId) => (
-                <UnitSection key={unitId} unitId={unitId} propertyId={propertyId} />
-              ))}
-            </div>
+        <DetailPageLayoutBody>
+          <DetailPageLayoutMain>
+            {property.unitIds.map((unitId) => (
+              <UnitSection key={unitId} unitId={unitId} propertyId={propertyId} />
+            ))}
+          </DetailPageLayoutMain>
 
-            <div className="mt-8 space-y-8 md:mt-0 md:w-96 md:shrink-0">
-              <PropertyInfoSection propertyId={propertyId} />
+          <DetailPageLayoutSidebar>
+            <PropertyInfoSection propertyId={propertyId} />
 
-              {property.unitIds.map((unitId) => (
-                <TenantsSection key={unitId} propertyId={propertyId} unitId={unitId} />
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+            {property.unitIds.map((unitId) => (
+              <TenantsSection key={unitId} propertyId={propertyId} unitId={unitId} />
+            ))}
+          </DetailPageLayoutSidebar>
+        </DetailPageLayoutBody>
+      </DetailPageLayout>
     </HighlightProvider>
   )
 }
