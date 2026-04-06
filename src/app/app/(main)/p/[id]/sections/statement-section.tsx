@@ -224,16 +224,16 @@ function DraftCard({
         href={`/app/p/${propertyId}/s/${statement.id}`}
         className="group block rounded-2xl border border-dashed border-primary/30 bg-primary/5 p-5 transition-colors hover:border-primary/50 dark:bg-primary/10"
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <div className="hidden size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:flex">
                 <FileText className="size-4 text-primary" />
               </div>
-              <p className="text-sm font-semibold text-foreground">
+              <p className="truncate text-sm font-semibold text-foreground">
                 {t('statementDraft', { period: periodLabel })}
               </p>
-              <Badge variant="outline" className="border-dashed border-primary/30 text-xs text-primary">
+              <Badge variant="outline" className="shrink-0 border-dashed border-primary/30 text-xs text-primary">
                 {t('draft')}
               </Badge>
             </div>
@@ -246,9 +246,14 @@ function DraftCard({
             <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </div>
           {missingCount > 0 && (
-            <p className="text-xs text-amber-600 dark:text-amber-400">
-              {t('missingCharges', { count: missingCount })}
-            </p>
+            <>
+              <span className="text-sm text-amber-600 sm:hidden dark:text-amber-400">
+                {missingCount} missing
+              </span>
+              <span className="hidden text-xs text-amber-600 sm:inline dark:text-amber-400">
+                {t('missingCharges', { count: missingCount })}
+              </span>
+            </>
           )}
         </div>
       </a>

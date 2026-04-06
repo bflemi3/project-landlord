@@ -88,6 +88,7 @@ export function ChargesList({
             <ChargeRow
               key={charge.id}
               onClick={onEditCharge ? () => onEditCharge(charge) : undefined}
+              className="border-transparent"
             >
               <ChargeRowIcon>
                 <Icon className="size-4" />
@@ -116,7 +117,7 @@ export function ChargesList({
             {missingCharges.map((missing) => {
               const Icon = CHARGE_TYPE_ICONS[missing.chargeType] ?? Zap
               return (
-                <ChargeRow key={missing.definitionId} disabled className="opacity-50">
+                <ChargeRow key={missing.definitionId} disabled className="border-transparent opacity-50">
                   <ChargeRowIcon>
                     <Icon className="size-4" />
                   </ChargeRowIcon>
