@@ -1,9 +1,12 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
+import { Switch } from '@/components/ui/switch'
+import { cn } from '@/lib/utils'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { InfoBox, InfoBoxContent } from '@/components/info-box'
 import { ChargeNameInput, AmountInput, PayerToggle, SplitSlider } from '@/components/charge-form-fields'
@@ -12,6 +15,8 @@ import { addChargeToStatement } from '@/app/actions/statements/add-charge'
 import { updateChargeInstance } from '@/app/actions/statements/update-charge-instance'
 import { removeChargeInstance } from '@/app/actions/statements/remove-charge-instance'
 import { uploadBillDocument } from '@/app/actions/statements/upload-bill'
+import { saveChargeAsDefinition } from '@/app/actions/statements/save-charge-definition'
+import { unitChargesQueryKey } from '@/lib/queries/unit-charges'
 import { statementQueryKey } from '@/lib/queries/statement'
 import { statementChargesQueryKey } from '@/lib/queries/statement-charges'
 import { missingChargesQueryKey } from '@/lib/queries/missing-charges'
@@ -105,6 +110,8 @@ function AddChargeForm({
   const isAdHoc = !isEditing && !isFillingMissing
   const isVariable = missingCharge?.chargeType === 'variable'
   const [confirmingRemove, setConfirmingRemove] = useState(false)
+  const [saveForLater, setSaveForLater] = useState(false)
+  const [savedChargeType, setSavedChargeType] = useState<'recurring' | 'variable'>('recurring')
 
   // Form state
   const [name, setName] = useState(existingInstance?.name ?? missingCharge?.name ?? '')
@@ -172,15 +179,28 @@ function AddChargeForm({
         })
       }
 
+      // Save as charge definition if toggled on
+      if (isAdHoc && saveForLater) {
+        const tp = payer === 'tenant' ? 100 : payer === 'landlord' ? 0 : tenantPercent
+        await saveChargeAsDefinition({
+          unitId,
+          name: name.trim(),
+          chargeType: savedChargeType,
+          amountMinor: savedChargeType === 'variable' ? null : amountMinor,
+          payer,
+          splitMode: payer === 'split' ? splitMode : undefined,
+          tenantPercent: tp,
+          landlordPercent: 100 - tp,
+          tenantFixedMinor: payer === 'split' && splitMode === 'amount' ? Math.round(tenantFixedAmount * 100) : undefined,
+          landlordFixedMinor: payer === 'split' && splitMode === 'amount' ? amountMinor - Math.round(tenantFixedAmount * 100) : undefined,
+        })
+        queryClient.invalidateQueries({ queryKey: unitChargesQueryKey(unitId) })
+      }
+
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: statementChargesQueryKey(statementId) })
       queryClient.invalidateQueries({ queryKey: statementQueryKey(statementId) })
       queryClient.invalidateQueries({ queryKey: missingChargesQueryKey(unitId, statementId) })
-
-      // Notify parent for "save for next time" flow
-      if (!isEditing) {
-        onSaved?.({ name: name.trim(), amountMinor, isAdHoc })
-      }
 
       onClose()
     })
@@ -259,6 +279,62 @@ function AddChargeForm({
 
       {/* Actions */}
       <div className="mt-6 space-y-3">
+        {/* Save for future statements — ad-hoc charges only */}
+        {isAdHoc && (
+          <div className="rounded-2xl border border-border p-4">
+            <div className="flex items-center justify-between">
+              <label htmlFor="save-for-later" className="text-sm font-medium text-foreground">
+                Save for future statements
+              </label>
+              <Switch
+                id="save-for-later"
+                checked={saveForLater}
+                onCheckedChange={setSaveForLater}
+              />
+            </div>
+            <AnimatePresence>
+              {saveForLater && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2, ease: 'easeInOut' }}
+                  className="overflow-hidden"
+                >
+                  <div className="mt-3">
+                    <p className="mb-2 text-sm text-muted-foreground">Charge type</p>
+                    <div className="flex h-10 rounded-lg border border-border bg-secondary/50 p-0.5">
+                      <button
+                        type="button"
+                        onClick={() => setSavedChargeType('recurring')}
+                        className={cn(
+                          'flex-1 rounded-md text-sm font-medium transition-colors',
+                          savedChargeType === 'recurring'
+                            ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                            : 'text-muted-foreground',
+                        )}
+                      >
+                        Fixed
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSavedChargeType('variable')}
+                        className={cn(
+                          'flex-1 rounded-md text-sm font-medium transition-colors',
+                          savedChargeType === 'variable'
+                            ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                            : 'text-muted-foreground',
+                        )}
+                      >
+                        Variable
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        )}
         <Button
           onClick={handleSave}
           className="h-12 w-full rounded-2xl"

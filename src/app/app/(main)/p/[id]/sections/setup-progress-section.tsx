@@ -36,7 +36,7 @@ export function SetupProgressSection({ propertyId }: { propertyId: string }) {
   const total = steps.length
 
   return (
-    <div className="mt-6">
+    <div>
       <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80">
         <div className="mb-3">
           <div className="mb-1.5 flex items-center justify-between">

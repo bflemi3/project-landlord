@@ -75,6 +75,15 @@ export function ChargesList({
     statement.unitId, statementId, statement.periodYear, statement.periodMonth,
   )
 
+  // Manual charges first (by created date), then definition-generated
+  const sortedCharges = [...charges].sort((a, b) => {
+    const aManual = !a.chargeDefinitionId
+    const bManual = !b.chargeDefinitionId
+    if (aManual && !bManual) return -1
+    if (!aManual && bManual) return 1
+    return 0 // preserve original order within each group
+  })
+
   const total = formatCurrency(statement.totalAmountMinor, statement.currency)
 
   return (
@@ -125,8 +134,8 @@ export function ChargesList({
           </div>
         )}
 
-        {/* Existing charges */}
-        {charges.map((charge) => {
+        {/* Existing charges — manual first, then definition-generated */}
+        {sortedCharges.map((charge) => {
           const Icon = getChargeIcon(charge)
           const sourceLabel = getSourceLabel(charge, t)
           const hasBill = !!charge.sourceDocumentId
