@@ -319,18 +319,6 @@ Dialog on desktop (`md:` and up), bottom Sheet on mobile. The standard pattern f
 
 ---
 
-## Charge Card
-
-**File:** `src/components/charge-card.tsx`
-
-Domain wrapper around `ChargeRow` for displaying charges on the property detail page. Adds type icon, split label, currency formatting, and due day display.
-
-**Props:** `charge: ChargeDefinition`, `unitDueDay: number`, `configured?: boolean`, `onClick?: () => void`, `className?: string`
-
-**On property detail page:** Rendered inside a container with `divide-y divide-border overflow-hidden rounded-2xl border border-border`. Each card gets `className="border-0"` — the container provides the visual boundary, not the individual rows.
-
----
-
 ## Property Form
 
 **File:** `src/app/app/p/new/steps/property-form.tsx`
@@ -342,6 +330,109 @@ Composable form for property address entry. Shared between the onboarding flow a
 **Consumer controls layout via className props.** In onboarding, all parts stack vertically. In the edit modal, Name sits above `ResponsiveModal.Content` (not scrollable), Content goes inside it (scrollable), and Footer goes in `ResponsiveModal.Footer`.
 
 **State:** Uses React context to share form state between parts. CEP auto-fill via ViaCEP provider. Server-side validation via `validateProperty` action.
+
+---
+
+## Detail Page Layout
+
+**File:** `src/components/detail-page-layout.tsx`
+
+Compound layout component for two-column detail pages (property detail, statement draft).
+
+**Parts:** `DetailPageLayout` (root, scroll container), `DetailPageLayoutHeader` (above both columns), `DetailPageLayoutBody` (`md:flex md:gap-8`), `DetailPageLayoutMain` (`flex-1 space-y-8`), `DetailPageLayoutSidebar` (`md:w-96 md:shrink-0`)
+
+**Behavior:** Single column on mobile (sidebar stacks below main). Two-column on desktop. Header spans full width above both columns.
+
+---
+
+## Billing Summary Card
+
+**File:** `src/app/app/(main)/p/[id]/sections/billing-summary-card.tsx`
+
+Unified financial snapshot + statement CTA for the property detail page. Fetches its own data (atomic).
+
+**Props:** `unitId: string`, `propertyId: string`
+
+**Layout:**
+```
+┌──────────────────────────────────────┐
+│  R$ 4.085  tenant owes               │
+│  Payment due the 5th of each month   │
+│                                      │
+│  ┌──────────────────────────────────┐│
+│  │  Complete statement — overdue  > ││  ← tinted action area
+│  │  April 2026 statement · Draft    ││
+│  └──────────────────────────────────┘│
+└──────────────────────────────────────┘
+```
+
+**Action area urgency tints:**
+| State | Background | Text |
+|---|---|---|
+| Normal | `bg-primary/10` | `text-primary` |
+| Approaching | `bg-amber-500/10` | `text-amber-600` |
+| Overdue | `bg-destructive/10` | `text-destructive` |
+
+**When no statement:** Shows a "Generate [month] statement" button instead of the draft link.
+
+**Financial data source:** Uses `computeFinancialSummary` — current statement > 3-statement rolling average > charge definition estimate.
+
+---
+
+## Charge Form Fields (shared primitives)
+
+**File:** `src/components/charge-form-fields.tsx`
+
+Shared form primitives used by both the onboarding charge config sheet and the statement add-charge sheet.
+
+**Exports:** `ChargeNameInput` (hero-style bold underline input), `AmountInput` (currency input with clear button), `PayerToggle` (tenant/landlord/split segmented control), `SplitSlider` (percentage or amount mode with range input), `VariablePlaceholder` (upload hint for variable charges), `ChargeTypeSwitch` (switch-to-fixed/variable link)
+
+---
+
+## File Upload
+
+**File:** `src/components/file-upload.tsx`
+
+File picker with thumbnail preview, progress bar, and size validation.
+
+**Props:** `onFileSelect`, `file?`, `uploadedUrl?`, `progress?`, `onClear?`, `maxSizeMB?` (default 10), `accept?` (default PDF + images)
+
+**States:** Empty (drop zone), selected (thumbnail + file info + clear), uploading (progress bar).
+
+---
+
+## Statement Draft Sections
+
+**Files:** `src/app/app/(focused)/p/[id]/s/[statementId]/sections/`
+
+Components for the statement draft page. Each fetches its own data (atomic pattern).
+
+### ChargesList
+Shows charge instances + missing charges. Missing charges shown first (actionable). Manual charges sorted before definition-generated. Total row at bottom.
+
+**Props:** `statementId`, `onAddCharge?`, `onAddMissingCharge?`, `onEditCharge?`
+
+### CompletenessWarning
+Amber alert showing missing charge count with "Review" CTA that scrolls to missing charges.
+
+**Props:** `statementId`, `onReview?`
+
+### SummaryCard
+Financial summary with publish-by date urgency. Shows "Estimated total" when charges are missing.
+
+**Props:** `statementId`
+
+---
+
+## Charge Card
+
+**File:** `src/components/charge-card.tsx`
+
+Domain wrapper around `ChargeRow` for displaying charges on the property detail page. Adds type icon, split label, and currency formatting.
+
+**Props:** `charge: ChargeDefinition`, `configured?: boolean`, `onClick?: () => void`, `className?: string`
+
+**On property detail page:** Rendered inside a container with `space-y-1 rounded-2xl border border-border p-1.5`. Each card gets `className="border-transparent"`.
 
 ---
 
