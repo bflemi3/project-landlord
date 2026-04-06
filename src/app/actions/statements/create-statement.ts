@@ -35,6 +35,15 @@ export async function createStatementCore(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Not authenticated' }
 
+  // Get unit currency
+  const { data: unit } = await supabase
+    .from('units')
+    .select('currency')
+    .eq('id', unitId)
+    .single()
+
+  const currency = unit?.currency ?? 'BRL'
+
   // Create the statement
   const { data: statement, error: createError } = await supabase
     .from('statements')
@@ -44,7 +53,7 @@ export async function createStatementCore(
       period_month: periodMonth,
       status: 'draft',
       total_amount_minor: 0,
-      currency: 'BRL',
+      currency,
       created_by: user.id,
       revision: 1,
     })

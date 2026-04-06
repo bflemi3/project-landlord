@@ -29,6 +29,7 @@ export async function redeemInviteByCodeCore(
     })
     .eq('code', code)
     .eq('status', 'pending')
+    .or('expires_at.is.null,expires_at.gt.now()')
     .select('source')
     .single()
 

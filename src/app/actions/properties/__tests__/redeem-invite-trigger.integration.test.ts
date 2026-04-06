@@ -317,4 +317,44 @@ describe('redeemInviteByCodeCore (callback-style redemption)', () => {
 
     await admin.auth.admin.deleteUser(userId)
   })
+
+  it('returns failure for expired invite code via core function', async () => {
+    const inviteCode = `EXPIRED-CORE-${Date.now()}`
+    await admin.from('invitations').insert({
+      code: inviteCode,
+      invited_email: 'expired-core@test.local',
+      invited_by: systemUserId,
+      role: 'landlord',
+      status: 'pending',
+      source: 'direct',
+      expires_at: new Date(Date.now() - 86400000).toISOString(),
+    })
+
+    const email = `expired-core-${Date.now()}@test.local`
+    const { data: userData } = await admin.auth.admin.createUser({
+      email,
+      password: 'test-password-123!',
+      email_confirm: true,
+      user_metadata: { full_name: 'Expired Core User' },
+    })
+    const userId = userData.user!.id
+
+    const { createClient } = await import('@supabase/supabase-js')
+    const client = createClient('http://127.0.0.1:54321', process.env.SUPABASE_ANON_KEY!)
+    await client.auth.signInWithPassword({ email, password: 'test-password-123!' })
+
+    const result = await redeemInviteByCodeCore(client as any, userId, inviteCode)
+    expect(result.success).toBe(false)
+
+    const { data: profile } = await admin
+      .from('profiles')
+      .select('has_redeemed_invite, acquisition_channel')
+      .eq('id', userId)
+      .single()
+
+    expect(profile?.has_redeemed_invite).toBe(false)
+    expect(profile?.acquisition_channel).toBeNull()
+
+    await admin.auth.admin.deleteUser(userId)
+  })
 })

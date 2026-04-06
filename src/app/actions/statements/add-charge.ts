@@ -53,6 +53,15 @@ export async function addChargeToStatementCore(
     }
   }
 
+  // Get statement currency
+  const { data: stmt } = await supabase
+    .from('statements')
+    .select('currency')
+    .eq('id', input.statementId)
+    .single()
+
+  const currency = stmt?.currency ?? 'BRL'
+
   const { data: instance, error } = await supabase
     .from('charge_instances')
     .insert({
@@ -61,7 +70,7 @@ export async function addChargeToStatementCore(
       source_document_id: input.sourceDocumentId ?? null,
       name: input.name,
       amount_minor: input.amountMinor,
-      currency: 'BRL',
+      currency,
       charge_source: 'manual',
       split_type: splitType,
       tenant_percentage: tenantPercentage,
