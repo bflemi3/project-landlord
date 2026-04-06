@@ -6,6 +6,7 @@ import { fetchUnit, unitQueryKey } from '@/lib/queries/unit'
 import { fetchUnitCharges, unitChargesQueryKey } from '@/lib/queries/unit-charges'
 import { fetchUnitTenants, unitTenantsQueryKey } from '@/lib/queries/unit-tenants'
 import { fetchUnitInvites, unitInvitesQueryKey } from '@/lib/queries/unit-invites'
+import { fetchUnitStatements, unitStatementsQueryKey } from '@/lib/queries/unit-statements'
 import { PropertyDetail } from './property-detail'
 
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
@@ -38,6 +39,10 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         queryClient.prefetchQuery({
           queryKey: unitInvitesQueryKey(unitId),
           queryFn: () => fetchUnitInvites(supabase, unitId),
+        }),
+        queryClient.prefetchQuery({
+          queryKey: unitStatementsQueryKey(unitId),
+          queryFn: () => fetchUnitStatements(supabase, unitId),
         }),
       ]),
     )

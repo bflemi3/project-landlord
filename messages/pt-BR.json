@@ -312,7 +312,20 @@
     "saveChanges": "Salvar alterações",
     "pauseCharge": "Pausar cobrança",
     "resumeCharge": "Retomar cobrança",
-    "chargeInactive": "Pausada"
+    "chargeInactive": "Pausada",
+    "statement": "Fatura",
+    "generateStatement": "Gerar fatura de {period}",
+    "completeStatement": "Completar fatura",
+    "draft": "Rascunho",
+    "statementDraft": "Fatura de {period}",
+    "statementDraftSummary": "{count, plural, one {# cobrança} other {# cobranças}} · {total}",
+    "missingCharges": "{count, plural, one {# cobrança esperada faltando} other {# cobranças esperadas faltando}}",
+    "statementNotStarted": "Fatura de {period} não foi iniciada",
+    "dueInDays": "Vence em {days, plural, one {# dia} other {# dias}}",
+    "statementOverdue": "Fatura de {period} está atrasada",
+    "tenantsWaiting": "Inquilinos estão esperando",
+    "draftNotPublished": "Ainda não publicada",
+    "selectPeriod": "Selecionar período"
   },
   "settings": {
     "title": "Configurações",

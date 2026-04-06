@@ -312,7 +312,20 @@
     "saveChanges": "Save changes",
     "pauseCharge": "Pause charge",
     "resumeCharge": "Resume charge",
-    "chargeInactive": "Paused"
+    "chargeInactive": "Paused",
+    "statement": "Statement",
+    "generateStatement": "Generate {period} statement",
+    "completeStatement": "Complete statement",
+    "draft": "Draft",
+    "statementDraft": "{period} statement",
+    "statementDraftSummary": "{count, plural, one {# charge} other {# charges}} · {total}",
+    "missingCharges": "{count, plural, one {# expected charge missing} other {# expected charges missing}}",
+    "statementNotStarted": "{period} statement isn't started",
+    "dueInDays": "Due in {days, plural, one {# day} other {# days}}",
+    "statementOverdue": "{period} statement is overdue",
+    "tenantsWaiting": "Tenants are waiting",
+    "draftNotPublished": "Not yet published",
+    "selectPeriod": "Select period"
   },
   "settings": {
     "title": "Settings",

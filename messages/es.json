@@ -312,7 +312,20 @@
     "saveChanges": "Guardar cambios",
     "pauseCharge": "Pausar cargo",
     "resumeCharge": "Reanudar cargo",
-    "chargeInactive": "Pausado"
+    "chargeInactive": "Pausado",
+    "statement": "Estado de cuenta",
+    "generateStatement": "Generar estado de cuenta de {period}",
+    "completeStatement": "Completar estado de cuenta",
+    "draft": "Borrador",
+    "statementDraft": "Estado de cuenta de {period}",
+    "statementDraftSummary": "{count, plural, one {# cargo} other {# cargos}} · {total}",
+    "missingCharges": "{count, plural, one {# cargo esperado faltante} other {# cargos esperados faltantes}}",
+    "statementNotStarted": "Estado de cuenta de {period} no iniciado",
+    "dueInDays": "Vence en {days, plural, one {# día} other {# días}}",
+    "statementOverdue": "Estado de cuenta de {period} está atrasado",
+    "tenantsWaiting": "Los inquilinos están esperando",
+    "draftNotPublished": "Aún no publicado",
+    "selectPeriod": "Seleccionar período"
   },
   "settings": {
     "title": "Configuración",
