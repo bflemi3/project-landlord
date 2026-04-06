@@ -7,7 +7,7 @@ import { motion } from 'motion/react'
 import {
   Building2, Plus, DoorOpen,
   ChevronRight, ArrowLeftRight,
-  Check, Clock, UserPlus, Receipt,
+  Check, Clock, UserPlus, Receipt, FileText,
 } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { StickyBottomBar } from '@/components/sticky-bottom-bar'
@@ -182,12 +182,14 @@ const ACTION_ICONS: Record<string, React.ElementType> = {
   invite_tenants: UserPlus,
   configure_charges: Receipt,
   pending_invite: Clock,
+  generate_statement: FileText,
 }
 
 const ACTION_COLORS: Record<string, string> = {
   invite_tenants: 'text-primary',
   configure_charges: 'text-primary',
   pending_invite: 'text-amber-500',
+  generate_statement: 'text-primary',
 }
 
 function WhatsNextSection() {
@@ -216,6 +218,8 @@ function getActionHash(action: HomeAction): string {
       return 'invite-btn'
     case 'configure_charges':
       return 'add-charge'
+    case 'generate_statement':
+      return 'generate-statement'
     default:
       return ''
   }
@@ -242,6 +246,10 @@ function ActionRow({ action }: { action: HomeAction }) {
       break
     case 'configure_charges':
       title = t('actionSetUpCharges')
+      description = action.propertyName
+      break
+    case 'generate_statement':
+      title = t('actionGenerateStatement')
       description = action.propertyName
       break
     default:

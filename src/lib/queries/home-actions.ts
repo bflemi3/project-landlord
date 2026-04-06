@@ -1,7 +1,7 @@
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 export interface HomeAction {
-  actionType: 'invite_tenants' | 'configure_charges' | 'pending_invite'
+  actionType: 'invite_tenants' | 'configure_charges' | 'pending_invite' | 'generate_statement'
   propertyId: string
   propertyName: string
   detailId: string | null

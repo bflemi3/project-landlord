@@ -2,6 +2,15 @@
 alter table profiles add column has_redeemed_invite boolean not null default false;
 alter table profiles add column acquisition_channel text;
 
+-- Backfill existing users who already redeemed an invite
+update profiles
+set
+  has_redeemed_invite = true,
+  acquisition_channel = i.source
+from invitations i
+where i.accepted_by = profiles.id
+  and i.status = 'accepted';
+
 -- Update redeem_invite_code trigger to set profile fields
 create or replace function public.redeem_invite_code()
 returns trigger

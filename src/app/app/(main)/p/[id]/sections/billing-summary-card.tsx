@@ -8,6 +8,7 @@ import { ChevronRight, FileText } from 'lucide-react'
 import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useHighlightTarget } from '@/lib/hooks/use-highlight-target'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useUnitCharges } from '@/lib/hooks/use-unit-charges'
 import { useUnitStatements } from '@/lib/hooks/use-unit-statements'
@@ -35,6 +36,7 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
   const { data: charges } = useUnitCharges(unitId)
   const { data: statements } = useUnitStatements(unitId)
   const [isPending, startTransition] = useTransition()
+  const { ref: generateRef, highlighted: generateHighlighted } = useHighlightTarget('generate-statement')
 
   const { year, month } = getCurrentPeriod()
   const periodLabel = formatPeriod(year, month, locale)
@@ -129,9 +131,10 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
             </p>
           )}
           <Button
+            ref={generateRef}
             onClick={handleGenerate}
             loading={isPending}
-            className="h-10 w-full rounded-xl"
+            className={`h-10 w-full rounded-xl ${generateHighlighted ? 'section-highlight' : ''}`}
           >
             <FileText />
             {t('generateStatement', { period: periodLabel })}

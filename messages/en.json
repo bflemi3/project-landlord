@@ -137,6 +137,7 @@
     "actionInviteTenantsDescription": "They'll see exactly what they owe and why.",
     "actionSetUpCharges": "Set up charges",
     "actionSetUpChargesDescription": "Define rent, utilities, and recurring fees.",
+    "actionGenerateStatement": "Generate this month's statement",
     "actionPublishStatement": "Publish your first statement",
     "actionPublishStatementDescription": "Review and share this month's charges.",
     "noBillingData": "No billing data yet",

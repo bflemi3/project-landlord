@@ -137,6 +137,7 @@
     "actionInviteTenantsDescription": "Verán exactamente lo que deben y por qué.",
     "actionSetUpCharges": "Configura los cargos",
     "actionSetUpChargesDescription": "Define alquiler, servicios y cargos recurrentes.",
+    "actionGenerateStatement": "Genera el estado de cuenta de este mes",
     "actionPublishStatement": "Publica tu primer estado de cuenta",
     "actionPublishStatementDescription": "Revisa y comparte los cargos de este mes.",
     "noBillingData": "Sin datos de facturación aún",

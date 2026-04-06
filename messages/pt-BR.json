@@ -137,6 +137,7 @@
     "actionInviteTenantsDescription": "Eles verão exatamente o que devem e por quê.",
     "actionSetUpCharges": "Configure as cobranças",
     "actionSetUpChargesDescription": "Defina aluguel, utilidades e taxas recorrentes.",
+    "actionGenerateStatement": "Gere a fatura deste mês",
     "actionPublishStatement": "Publique seu primeiro extrato",
     "actionPublishStatementDescription": "Revise e compartilhe as cobranças deste mês.",
     "noBillingData": "Sem dados de cobrança ainda",
