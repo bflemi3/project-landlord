@@ -14,6 +14,8 @@ export const buttonVariants = cva(
           'text-muted-foreground hover:not-disabled:bg-muted hover:not-disabled:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:not-disabled:bg-muted/50',
         destructive:
           'bg-destructive/10 text-destructive hover:not-disabled:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:not-disabled:bg-destructive/30 dark:focus-visible:ring-destructive/40',
+        warning:
+          'border-amber-500/30 bg-amber-500/5 text-amber-600 hover:not-disabled:bg-amber-500/15 focus-visible:border-amber-500/40 focus-visible:ring-amber-500/20 dark:border-amber-500/25 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:not-disabled:bg-amber-500/20 dark:focus-visible:ring-amber-500/40',
         link: 'text-primary underline-offset-4 hover:not-disabled:underline',
       },
       size: {

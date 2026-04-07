@@ -111,8 +111,8 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
           <div className="min-w-0">
             <span className={`flex items-center gap-1.5 text-sm font-medium ${actionText}`}>
               {t('completeStatement')}
-              {urgency === 'overdue' && ` — ${t('draftNotPublished').toLowerCase()}`}
-              {urgency === 'approaching' && ` — ${daysUntil}d`}
+              {urgency === 'overdue' && ` — ${t('daysOverdue', { days: formatDays(daysUntil) })}`}
+              {urgency === 'approaching' && ` — ${t('daysLeft', { days: formatDays(daysUntil) })}`}
             </span>
             <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs">
               {t('statementDraft', { period: periodLabel })} · {t('draft')}
@@ -122,13 +122,16 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
           <ChevronRight className={`size-5 shrink-0 transition-transform group-hover:translate-x-0.5 ${actionText}`} />
         </a>
       ) : (
-        <div className={`mt-4 rounded-xl p-3.5 ${actionBg}`}>
+        <div className="mt-4">
           {urgency !== 'normal' && (
-            <p className={`mb-2 text-sm font-medium ${actionText}`}>
-              {urgency === 'overdue'
-                ? t('statementOverdueShort', { period: periodLabel })
-                : t('statementDueIn', { period: periodLabel, days: daysUntil })}
-            </p>
+            <>
+              <Separator className="mb-4 dark:bg-zinc-600" />
+              <p className={`mb-2 text-sm font-medium ${actionText}`}>
+                {urgency === 'overdue'
+                  ? t('statementOverdueShort', { period: periodLabel, days: formatDays(daysUntil) })
+                  : t('statementDueIn', { period: periodLabel, days: formatDays(daysUntil) })}
+              </p>
+            </>
           )}
           <Button
             ref={generateRef}
@@ -150,4 +153,8 @@ function getOrdinalSuffix(n: number): string {
   const s = ['th', 'st', 'nd', 'rd']
   const v = n % 100
   return s[(v - 20) % 10] || s[v] || s[0]
+}
+
+function formatDays(n: number): string {
+  return n === 1 ? '1 day' : `${n} days`
 }
