@@ -350,6 +350,8 @@
     "youCover": "Você cobre",
     "statementOverdueShort": "Fatura de {period} está {days} atrasada",
     "statementDueIn": "Fatura de {period} vence em {days}",
+    "statementDueToday": "Fatura de {period} vence hoje",
+    "dueToday": "vence hoje",
     "saveChanges": "Salvar alterações",
     "addToStatement": "Adicionar à fatura",
     "removeCharge": "Remover cobrança",

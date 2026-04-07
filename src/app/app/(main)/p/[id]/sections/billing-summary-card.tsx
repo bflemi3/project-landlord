@@ -112,7 +112,7 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
             <span className={`flex items-center gap-1.5 text-sm font-medium ${actionText}`}>
               {t('completeStatement')}
               {urgency === 'overdue' && ` — ${t('daysOverdue', { days: formatDays(daysUntil) })}`}
-              {urgency === 'approaching' && ` — ${t('daysLeft', { days: formatDays(daysUntil) })}`}
+              {urgency === 'approaching' && ` — ${daysUntil === 0 ? t('dueToday') : t('daysLeft', { days: formatDays(daysUntil) })}`}
             </span>
             <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs">
               {t('statementDraft', { period: periodLabel })} · {t('draft')}
@@ -129,7 +129,9 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
               <p className={`mb-2 text-sm font-medium ${actionText}`}>
                 {urgency === 'overdue'
                   ? t('statementOverdueShort', { period: periodLabel, days: formatDays(daysUntil) })
-                  : t('statementDueIn', { period: periodLabel, days: formatDays(daysUntil) })}
+                  : daysUntil === 0
+                    ? t('statementDueToday', { period: periodLabel })
+                    : t('statementDueIn', { period: periodLabel, days: formatDays(daysUntil) })}
               </p>
             </>
           )}
@@ -156,5 +158,6 @@ function getOrdinalSuffix(n: number): string {
 }
 
 function formatDays(n: number): string {
+  if (n === 0) return 'today'
   return n === 1 ? '1 day' : `${n} days`
 }

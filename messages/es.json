@@ -350,6 +350,8 @@
     "youCover": "Tú cubres",
     "statementOverdueShort": "Estado de cuenta de {period} está {days} atrasado",
     "statementDueIn": "Estado de cuenta de {period} vence en {days}",
+    "statementDueToday": "Estado de cuenta de {period} vence hoy",
+    "dueToday": "vence hoy",
     "saveChanges": "Guardar cambios",
     "addToStatement": "Agregar al estado de cuenta",
     "removeCharge": "Eliminar cargo",

@@ -350,6 +350,8 @@
     "youCover": "You cover",
     "statementOverdueShort": "{period} statement is {days} overdue",
     "statementDueIn": "{period} statement due in {days}",
+    "statementDueToday": "{period} statement is due today",
+    "dueToday": "due today",
     "saveChanges": "Save changes",
     "addToStatement": "Add to statement",
     "removeCharge": "Remove charge",
