@@ -14,6 +14,7 @@ import { ChargesForm, type ChargeData } from './steps/charges-form'
 import type { ChargeConfig } from './steps/charge-config-sheet'
 import { SetupComplete } from './steps/setup-complete'
 import { createProperty, type CreatePropertyState } from '@/app/actions/properties/create-property'
+import { formatPropertyName } from '@/lib/address/format-property-name'
 import { inviteTenant } from '@/app/actions/properties/invite-tenant'
 import { createCharges } from '@/app/actions/properties/create-charges'
 import posthog from 'posthog-js'
@@ -40,7 +41,13 @@ export function CreatePropertyFlow() {
   // 8. Callbacks
   const handlePropertyValidated = useCallback((values: PropertyFormValues) => {
     propertyFormData.current = values
-    setPropertyName(values.name || [values.street, values.number, values.complement].filter(Boolean).join(' '))
+    setPropertyName(formatPropertyName({
+      name: values.name,
+      street: values.street,
+      number: values.number,
+      complement: values.complement,
+      countryCode: values.country_code,
+    }))
     setServerErrors(undefined)
     setStep(2)
   }, [])

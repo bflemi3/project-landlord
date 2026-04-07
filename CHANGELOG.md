@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.8.1
+
+- Property names now display correctly when auto-generated from your address
+
 ## v0.8.0
 
 - Generate monthly billing statements from your charge definitions

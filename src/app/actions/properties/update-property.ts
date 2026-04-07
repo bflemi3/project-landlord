@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
+import { formatPropertyName } from '@/lib/address/format-property-name'
 
 export interface UpdatePropertyInput {
   propertyId: string
@@ -13,16 +14,25 @@ export interface UpdatePropertyInput {
   city: string
   state: string
   postalCode: string
+  countryCode: string
 }
 
 export async function updatePropertyCore(
   supabase: TypedSupabaseClient,
   input: UpdatePropertyInput,
 ): Promise<{ success: boolean }> {
+  const name = formatPropertyName({
+    name: input.name,
+    street: input.street,
+    number: input.number,
+    complement: input.complement,
+    countryCode: input.countryCode,
+  })
+
   const { error } = await supabase
     .from('properties')
     .update({
-      name: input.name,
+      name,
       street: input.street,
       number: input.number,
       complement: input.complement,

@@ -38,6 +38,7 @@ describe('updatePropertyCore', () => {
       city: 'Rio de Janeiro',
       state: 'RJ',
       postalCode: '20040020',
+      countryCode: 'BR',
     })
 
     expect(result.success).toBe(true)
@@ -71,6 +72,7 @@ describe('updatePropertyCore', () => {
       city: '',
       state: '',
       postalCode: '',
+      countryCode: 'BR',
     })
 
     // RLS silently filters — Supabase returns no error even if 0 rows matched

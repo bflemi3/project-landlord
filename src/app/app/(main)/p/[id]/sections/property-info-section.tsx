@@ -39,6 +39,7 @@ export function PropertyInfoSection({ propertyId }: { propertyId: string }) {
       city: values.city,
       state: values.state,
       postalCode: values.postal_code,
+      countryCode: values.country_code,
     })
     queryClient.invalidateQueries({ queryKey: propertyQueryKey(propertyId) })
     setSaving(false)

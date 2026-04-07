@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { validateProperty, parsePropertyFormData } from './validate-property'
+import { formatPropertyName } from '@/lib/address/format-property-name'
 
 export interface CreatePropertyState {
   success: boolean
@@ -33,12 +34,13 @@ export async function createProperty(
 
   const supabase = await createClient()
 
-  // Auto-generate name from address if blank
-  const name = fields.name || [
-    fields.street,
-    fields.number,
-    fields.complement,
-  ].filter(Boolean).join(' ')
+  const name = formatPropertyName({
+    name: fields.name,
+    street: fields.street,
+    number: fields.number,
+    complement: fields.complement,
+    countryCode: fields.country_code,
+  })
 
   const dueDay = Number(formData.get('due_day')) || 10
 
