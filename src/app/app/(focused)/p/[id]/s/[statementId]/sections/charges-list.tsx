@@ -157,8 +157,8 @@ export function ChargesList({
                   {hasBill && (
                     <>
                       {' · '}
-                      <span className="inline-flex items-center gap-1">
-                        <Paperclip className="inline size-3" />{t('billAttached')}
+                      <span className="inline-flex items-center gap-1 align-middle">
+                        <Paperclip className="size-3 shrink-0" />{t('billAttached')}
                       </span>
                     </>
                   )}
