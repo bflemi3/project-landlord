@@ -345,6 +345,7 @@
     "paymentDueMonthly": "Payment due the {day} of each month",
     "publishOverdue": "Publish overdue — was due {date}",
     "publishBy": "Publish by {date}",
+    "publishToday": "Publish today",
     "publishByCountdown": "Publish by {date} ({days}d left)",
     "totalCharges": "Total charges",
     "youCover": "You cover",

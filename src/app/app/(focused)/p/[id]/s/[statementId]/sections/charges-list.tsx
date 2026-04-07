@@ -155,9 +155,12 @@ export function ChargesList({
                   {sourceLabel}
                   {getSplitLabel(charge)}
                   {hasBill && (
-                    <span className="inline-flex items-center gap-1">
-                      {' · '}<Paperclip className="inline size-3" /> {t('billAttached')}
-                    </span>
+                    <>
+                      {' · '}
+                      <span className="inline-flex items-center gap-1">
+                        <Paperclip className="inline size-3" />{t('billAttached')}
+                      </span>
+                    </>
                   )}
                 </ChargeRowDescription>
               </ChargeRowContent>

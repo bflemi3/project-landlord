@@ -345,6 +345,7 @@
     "paymentDueMonthly": "Pago el día {day} de cada mes",
     "publishOverdue": "Publicación atrasada — era para {date}",
     "publishBy": "Publicar antes de {date}",
+    "publishToday": "Publicar hoy",
     "publishByCountdown": "Publicar antes de {date} ({days}d restantes)",
     "totalCharges": "Total de cargos",
     "youCover": "Tú cubres",

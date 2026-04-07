@@ -38,6 +38,10 @@ export function SummaryCard({ statementId }: { statementId: string }) {
       <p className="mt-1 text-3xl font-bold tabular-nums text-foreground">{tenantTotal}</p>
       {urgency === 'overdue' ? (
         <p className="mt-2 text-sm font-medium text-destructive">{t('publishOverdue', { date: publishByLabel })}</p>
+      ) : urgency === 'approaching' && daysUntilPublish === 0 ? (
+        <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
+          {t('publishToday')}
+        </p>
       ) : urgency === 'approaching' ? (
         <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
           {t('publishByCountdown', { date: publishByLabel, days: daysUntilPublish })}
