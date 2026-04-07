@@ -181,6 +181,43 @@ describe('generateChargeInstances', () => {
     expect(result[0].landlordFixedMinor).toBeNull()
   })
 
+  // 14. Landlord-only allocation → tenant should be the complement (0%), not null
+  it('derives tenant percentage as complement when only landlord allocation exists', () => {
+    const landlordOnly: AllocationRow[] = [
+      { role: 'landlord', allocation_type: 'percentage', percentage: 100, fixed_minor: null },
+    ]
+    const charges = [makeCharge({ allocations: landlordOnly })]
+    const result = generateChargeInstances(charges, 2025, 6)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].splitType).toBe('percentage')
+    expect(result[0].landlordPercentage).toBe(100)
+    expect(result[0].tenantPercentage).toBe(0) // NOT null
+  })
+
+  // 15. Tenant-only allocation → landlord should be the complement (0%), not null
+  it('derives landlord percentage as complement when only tenant allocation exists', () => {
+    const charges = [makeCharge({ allocations: tenantOnly })]
+    const result = generateChargeInstances(charges, 2025, 6)
+
+    expect(result).toHaveLength(1)
+    expect(result[0].splitType).toBe('percentage')
+    expect(result[0].tenantPercentage).toBe(100)
+    expect(result[0].landlordPercentage).toBe(0) // NOT null
+  })
+
+  // 16. Single-party partial allocation → complement is derived
+  it('derives complement for partial landlord-only allocation (landlord 60% → tenant 40%)', () => {
+    const partialLandlord: AllocationRow[] = [
+      { role: 'landlord', allocation_type: 'percentage', percentage: 60, fixed_minor: null },
+    ]
+    const charges = [makeCharge({ allocations: partialLandlord })]
+    const result = generateChargeInstances(charges, 2025, 6)
+
+    expect(result[0].landlordPercentage).toBe(60)
+    expect(result[0].tenantPercentage).toBe(40)
+  })
+
   // 12. Charge with null recurringRule → always included (one-time / no rule)
   it('includes charges with null recurringRule regardless of period', () => {
     const charges = [makeCharge({ recurringRule: null, allocations: tenantOnly })]

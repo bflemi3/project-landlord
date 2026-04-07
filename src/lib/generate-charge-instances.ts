@@ -118,10 +118,13 @@ function buildSplitFields(
     }
   }
 
+  const tenantPct = tenantRow?.percentage ?? null
+  const landlordPct = landlordRow?.percentage ?? null
+
   return {
     splitType: 'percentage',
-    tenantPercentage: tenantRow?.percentage ?? null,
-    landlordPercentage: landlordRow?.percentage ?? null,
+    tenantPercentage: tenantPct ?? (landlordPct !== null ? 100 - landlordPct : null),
+    landlordPercentage: landlordPct ?? (tenantPct !== null ? 100 - tenantPct : null),
     tenantFixedMinor: null,
     landlordFixedMinor: null,
   }

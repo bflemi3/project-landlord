@@ -102,7 +102,7 @@ describe('generateAndPersistInstancesCore', () => {
     const rent = instances![0]
     expect(rent.amount_minor).toBe(200000)
     expect(rent.tenant_percentage).toBe(100)
-    expect(rent.landlord_percentage).toBeNull()
+    expect(rent.landlord_percentage).toBe(0)
     expect(rent.split_type).toBe('percentage')
     expect(rent.charge_source).toBe('manual')
   })

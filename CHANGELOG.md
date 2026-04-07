@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.2
+
+- Fixed incorrect "Tenant owes" amount when the landlord covers a charge fully
+- Charges paid by the landlord now show a "Landlord pays" label on the statement
+
 ## v0.8.1
 
 - Property names now display correctly when auto-generated from your address

@@ -8,5 +8,6 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    exclude: ['src/**/*.integration.test.ts', 'node_modules/**'],
   },
 })

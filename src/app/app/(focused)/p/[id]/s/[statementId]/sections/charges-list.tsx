@@ -45,8 +45,8 @@ function getSourceLabel(charge: ChargeInstance, t: ReturnType<typeof useTranslat
 
 function getSplitLabel(charge: ChargeInstance): string {
   if (charge.splitType === 'percentage') {
-    if (charge.tenantPercentage === 100 || charge.tenantPercentage === null) return ''
     if (charge.landlordPercentage === 100) return ' · Landlord pays'
+    if (charge.tenantPercentage === 100 || charge.tenantPercentage === null) return ''
     return ` · ${charge.tenantPercentage}/${charge.landlordPercentage}`
   }
   if (charge.splitType === 'fixed_amount' && charge.tenantFixedMinor != null && charge.landlordFixedMinor != null) {
