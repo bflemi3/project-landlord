@@ -225,7 +225,7 @@ function AddChargeForm({
           <ChargeNameInput
             value={name}
             onChange={setName}
-            placeholder="e.g. Repair fee, Late fee"
+            placeholder={t('chargePlaceholder')}
             autoFocus
           />
         )}
@@ -263,7 +263,7 @@ function AddChargeForm({
         {isVariable && !file && (
           <InfoBox variant="default" className="text-sm">
             <InfoBoxContent>
-              Attaching the bill helps your tenant verify this charge.
+              {t('billNudge')}
             </InfoBoxContent>
           </InfoBox>
         )}
@@ -284,7 +284,7 @@ function AddChargeForm({
           <div className="rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between">
               <label htmlFor="save-for-later" className="text-sm font-medium text-foreground">
-                Save for future statements
+                {t('saveForFuture')}
               </label>
               <Switch
                 id="save-for-later"
@@ -302,7 +302,7 @@ function AddChargeForm({
                   className="overflow-hidden"
                 >
                   <div className="mt-3">
-                    <p className="mb-2 text-sm text-muted-foreground">Charge type</p>
+                    <p className="mb-2 text-sm text-muted-foreground">{t('chargeType')}</p>
                     <div className="flex h-10 rounded-lg border border-border bg-secondary/50 p-0.5">
                       <button
                         type="button"
@@ -314,7 +314,7 @@ function AddChargeForm({
                             : 'text-muted-foreground',
                         )}
                       >
-                        Fixed
+                        {t('chargeTypeFixed')}
                       </button>
                       <button
                         type="button"
@@ -326,7 +326,7 @@ function AddChargeForm({
                             : 'text-muted-foreground',
                         )}
                       >
-                        Variable
+                        {t('chargeTypeVariable')}
                       </button>
                     </div>
                   </div>
@@ -342,7 +342,7 @@ function AddChargeForm({
           disabled={!canSave}
           loading={isPending}
         >
-          {isEditing ? 'Save changes' : 'Add to statement'}
+          {isEditing ? t('saveChanges') : t('addToStatement')}
         </Button>
         {isEditing && !existingInstance.chargeDefinitionId && !confirmingRemove && (
           <Button
@@ -352,12 +352,12 @@ function AddChargeForm({
             size="lg"
             disabled={isPending}
           >
-            Remove charge
+            {t('removeCharge')}
           </Button>
         )}
         {confirmingRemove && (
           <div className="rounded-2xl border border-destructive/20 bg-destructive/10 p-4">
-            <p className="mb-3 text-sm text-destructive">Remove this charge from the statement?</p>
+            <p className="mb-3 text-sm text-destructive">{t('removeChargeConfirm')}</p>
             <div className="flex gap-2">
               <Button
                 variant="destructive"
@@ -365,7 +365,7 @@ function AddChargeForm({
                 className="h-10 flex-1 rounded-xl"
                 loading={isPending}
               >
-                Yes, remove
+                {t('yesRemove')}
               </Button>
               <Button
                 variant="ghost"

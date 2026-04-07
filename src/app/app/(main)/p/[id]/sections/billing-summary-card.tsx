@@ -95,11 +95,11 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
           {formatCurrency(tenantTotal, unit.currency)}
         </span>
         <span className="text-sm text-muted-foreground">
-          {isEstimate ? t('estimated') + ' ' : ''}tenant owes
+          {isEstimate ? t('estimatedTenantOwes') : t('tenantOwes')}
         </span>
       </div>
       <p className="mt-0.5 text-sm text-muted-foreground">
-        Payment due the {unit.dueDay}{getOrdinalSuffix(unit.dueDay)} of each month
+        {t('paymentDueMonthly', { day: `${unit.dueDay}${getOrdinalSuffix(unit.dueDay)}` })}
       </p>
 
       {/* Action area: statement status */}
@@ -111,12 +111,12 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
           <div className="min-w-0">
             <span className={`flex items-center gap-1.5 text-sm font-medium ${actionText}`}>
               {t('completeStatement')}
-              {urgency === 'overdue' && ' — overdue'}
-              {urgency === 'approaching' && ` — ${daysUntil}d left`}
+              {urgency === 'overdue' && ` — ${t('draftNotPublished').toLowerCase()}`}
+              {urgency === 'approaching' && ` — ${daysUntil}d`}
             </span>
             <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs">
-              {t('statementDraft', { period: periodLabel })} · Draft
-              {currentStatement.tenantTotalMinor !== tenantTotal ? ' · incomplete' : ''}
+              {t('statementDraft', { period: periodLabel })} · {t('draft')}
+              {currentStatement.tenantTotalMinor !== tenantTotal ? ` · ${t('incomplete')}` : ''}
             </p>
           </div>
           <ChevronRight className={`size-5 shrink-0 transition-transform group-hover:translate-x-0.5 ${actionText}`} />
@@ -126,8 +126,8 @@ export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; pro
           {urgency !== 'normal' && (
             <p className={`mb-2 text-sm font-medium ${actionText}`}>
               {urgency === 'overdue'
-                ? `${periodLabel} statement is overdue`
-                : `Due in ${daysUntil}d`}
+                ? t('statementOverdueShort', { period: periodLabel })
+                : t('statementDueIn', { period: periodLabel, days: daysUntil })}
             </p>
           )}
           <Button

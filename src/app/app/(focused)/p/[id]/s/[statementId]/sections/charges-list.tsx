@@ -40,7 +40,7 @@ function getChargeIcon(charge: ChargeInstance): React.ElementType {
 
 function getSourceLabel(charge: ChargeInstance, t: ReturnType<typeof useTranslations<'propertyDetail'>>): string {
   if (charge.chargeDefinitionId) return t('recurring')
-  return 'Manual'
+  return t('manual')
 }
 
 function getSplitLabel(charge: ChargeInstance): string {
@@ -113,7 +113,7 @@ export function ChargesList({
                   </ChargeRowIcon>
                   <ChargeRowContent>
                     <ChargeRowTitle>{missing.name}</ChargeRowTitle>
-                    <Badge variant="secondary" className="mt-0.5 text-xs">missing</Badge>
+                    <Badge variant="secondary" className="mt-0.5 text-xs">{t('missingBadge')}</Badge>
                   </ChargeRowContent>
                   {onAddMissingCharge && (
                     <Button
@@ -125,7 +125,7 @@ export function ChargesList({
                         onAddMissingCharge(missing)
                       }}
                     >
-                      Add
+                      {t('add')}
                     </Button>
                   )}
                 </ChargeRow>
@@ -156,7 +156,7 @@ export function ChargesList({
                   {getSplitLabel(charge)}
                   {hasBill && (
                     <span className="inline-flex items-center gap-1">
-                      {' · '}<Paperclip className="inline size-3" /> Bill attached
+                      {' · '}<Paperclip className="inline size-3" /> {t('billAttached')}
                     </span>
                   )}
                 </ChargeRowDescription>
@@ -170,7 +170,7 @@ export function ChargesList({
 
         {/* Total */}
         <div className="flex items-center justify-between border-t border-border px-4 py-3.5">
-          <p className="text-sm font-semibold text-foreground">Total</p>
+          <p className="text-sm font-semibold text-foreground">{t('total')}</p>
           <p className="text-base font-bold tabular-nums text-foreground">{total}</p>
         </div>
       </div>

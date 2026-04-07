@@ -223,7 +223,7 @@ function DraftCard({
               {t('statementDraft', { period: periodLabel })}
             </p>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {t('draft')}{missingCount > 0 ? ' · incomplete' : ''}
+              {t('draft')}{missingCount > 0 ? ` · ${t('incomplete')}` : ''}
             </p>
           </div>
           <div className="shrink-0 text-right">
@@ -236,7 +236,7 @@ function DraftCard({
             urgency === 'overdue' ? 'text-destructive' : urgency === 'approaching' ? 'text-amber-600 dark:text-amber-400' : 'text-primary'
           }`}>
             {t('completeStatement')}
-            {urgency === 'overdue' && ' — overdue'}
+            {urgency === 'overdue' && ` — ${t('draftNotPublished').toLowerCase()}`}
             {urgency === 'approaching' && ` — ${daysUntil}d left`}
             <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </div>

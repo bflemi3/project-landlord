@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Upload, FileText, X, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -26,6 +27,7 @@ export function FileUpload({
   accept?: string
   className?: string
 }) {
+  const t = useTranslations('propertyDetail')
   const inputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -39,7 +41,7 @@ export function FileUpload({
     if (!selected) return
 
     if (selected.size > maxBytes) {
-      setError(`File is too large. Maximum size is ${maxSizeMB}MB.`)
+      setError(t('fileTooLarge', { max: maxSizeMB }))
       e.target.value = ''
       return
     }
@@ -89,7 +91,7 @@ export function FileUpload({
               </div>
             ) : (
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {file ? `${(file.size / 1024).toFixed(0)} KB` : 'Uploaded'}
+                {file ? `${(file.size / 1024).toFixed(0)} KB` : t('uploaded')}
               </p>
             )}
           </div>
@@ -131,7 +133,7 @@ export function FileUpload({
       >
         <Upload className="size-5 text-muted-foreground" />
         <p className="text-center text-sm text-muted-foreground">
-          Tap to attach a bill
+          {t('tapToAttachBill')}
         </p>
       </button>
       <input

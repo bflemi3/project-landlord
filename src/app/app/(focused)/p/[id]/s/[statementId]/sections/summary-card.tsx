@@ -1,6 +1,6 @@
 'use client'
 
-import { useLocale } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useStatement } from '@/lib/hooks/use-statement'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { getStatementUrgency, getDaysUntilPublishBy, getPublishByDay } from '@/lib/statement-urgency'
 
 export function SummaryCard({ statementId }: { statementId: string }) {
+  const t = useTranslations('propertyDetail')
   const locale = useLocale()
   const { data: statement } = useStatement(statementId)
   const { data: unit } = useUnit(statement.unitId)
@@ -32,30 +33,30 @@ export function SummaryCard({ statementId }: { statementId: string }) {
   return (
     <div className="rounded-2xl border border-border bg-card p-5 dark:bg-zinc-800/80">
       <p className="text-sm text-muted-foreground">
-        {isEstimated ? 'Estimated ' : ''}Tenant owes
+        {isEstimated ? t('estimatedTenantOwes') : t('tenantOwes')}
       </p>
       <p className="mt-1 text-3xl font-bold tabular-nums text-foreground">{tenantTotal}</p>
       {urgency === 'overdue' ? (
-        <p className="mt-2 text-sm font-medium text-destructive">Publish overdue — was due {publishByLabel}</p>
+        <p className="mt-2 text-sm font-medium text-destructive">{t('publishOverdue', { date: publishByLabel })}</p>
       ) : urgency === 'approaching' ? (
         <p className="mt-2 text-sm font-medium text-amber-600 dark:text-amber-400">
-          Publish by {publishByLabel} ({daysUntilPublish}d left)
+          {t('publishByCountdown', { date: publishByLabel, days: daysUntilPublish })}
         </p>
       ) : (
-        <p className="mt-2 text-sm text-muted-foreground">Publish by {publishByLabel}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{t('publishBy', { date: publishByLabel })}</p>
       )}
-      <p className="mt-1 text-xs text-muted-foreground">Payment due {dueDateLabel}</p>
+      <p className="mt-1 text-sm text-muted-foreground">{t('paymentDue', { date: dueDateLabel })}</p>
 
       {hasSplit && (
         <>
           <Separator className="my-4 dark:bg-zinc-600" />
           <div className="text-sm tabular-nums">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">You cover</span>
+              <span className="text-muted-foreground">{t('youCover')}</span>
               <span className="font-semibold text-foreground">{landlordTotal}</span>
             </div>
             <div className="mt-1.5 flex items-center justify-between">
-              <span className="text-muted-foreground">Total charges</span>
+              <span className="text-muted-foreground">{t('totalCharges')}</span>
               <span className="font-semibold text-foreground">{total}</span>
             </div>
           </div>

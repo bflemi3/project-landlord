@@ -130,11 +130,11 @@ export function StatementDraft({ statementId, propertyId }: { statementId: strin
           {/* Review & Publish + audit note */}
           <div className="hidden md:block">
             <Button className="h-12 w-full rounded-2xl" size="lg" disabled>
-              Review & Publish
+              {t('reviewAndPublish')}
             </Button>
             <div className="mt-3 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
               <Clock className="size-3" />
-              <span>Draft created {createdLabel}</span>
+              <span>{t('draftCreated', { date: createdLabel })}</span>
             </div>
           </div>
         </DetailPageLayoutSidebar>
