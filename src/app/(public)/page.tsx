@@ -1,5 +1,3 @@
-import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
 import { Landing } from './landing'
 
 const jsonLd = {
@@ -17,14 +15,7 @@ const jsonLd = {
   },
 }
 
-export default async function LandingPage() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getClaims()
-
-  if (data?.claims) {
-    redirect('/app')
-  }
-
+export default function LandingPage() {
   return (
     <>
       <script
