@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.session) {
-      // Sync avatar from OAuth provider if profile doesn't have one
+      // Sync avatar from OAuth provider on every sign-in
       const meta = data.session.user.user_metadata
       const oauthAvatar = meta?.avatar_url || meta?.picture
       if (oauthAvatar) {
@@ -29,7 +29,6 @@ export async function GET(request: Request) {
           .from('profiles')
           .update({ avatar_url: oauthAvatar })
           .eq('id', data.session.user.id)
-          .is('avatar_url', null)
       }
 
       const forwardedHost = request.headers.get('x-forwarded-host')
