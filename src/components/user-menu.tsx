@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
+import posthog from 'posthog-js'
 import { LogOut, User, CreditCard, Palette, Camera, Sun, Moon, Monitor, Check } from 'lucide-react'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
@@ -83,6 +84,7 @@ function UserSettingsModal({
   ]
 
   async function handleSignOut() {
+    posthog.reset()
     const supabase = createClient()
     await supabase.auth.signOut()
     window.location.href = '/auth/sign-in'

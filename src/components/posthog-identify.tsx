@@ -13,7 +13,7 @@ interface PostHogIdentifyProps {
 
 export function PostHogIdentify({ userId, email, name, locale, acquisitionChannel }: PostHogIdentifyProps) {
   useEffect(() => {
-    if (userId && posthog.__loaded) {
+    if (userId) {
       posthog.identify(userId, {
         ...(email && { email }),
         ...(name && { name }),

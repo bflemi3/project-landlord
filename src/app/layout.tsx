@@ -4,7 +4,6 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { PostHogProvider } from '@/components/posthog-provider'
 import { QueryProvider } from '@/components/query-provider'
 import { Toaster } from '@/components/ui/sonner'
 import { SerwistProvider } from '@/components/serwist-provider'
@@ -81,12 +80,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <QueryProvider>
               <TooltipProvider>
-                <PostHogProvider>
-                  <SerwistProvider>
-                    {children}
-                  </SerwistProvider>
-                  <Toaster />
-                </PostHogProvider>
+                <SerwistProvider>
+                  {children}
+                </SerwistProvider>
+                <Toaster />
               </TooltipProvider>
             </QueryProvider>
           </ThemeProvider>
