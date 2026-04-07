@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { getAddressProvider } from '@/lib/address/provider'
 
 function stripHtml(str: string): string {
@@ -50,7 +51,11 @@ export async function parsePropertyFormData(formData: FormData): Promise<Propert
   }
 }
 
-export async function validateProperty(fields: PropertyFields): Promise<ValidatePropertyState> {
+export async function validatePropertyCore(
+  supabase: TypedSupabaseClient,
+  fields: PropertyFields,
+  excludePropertyId?: string,
+): Promise<ValidatePropertyState> {
   const errors: ValidatePropertyState['errors'] = {}
 
   // Name validation (optional — auto-generated from address if blank)
@@ -79,17 +84,28 @@ export async function validateProperty(fields: PropertyFields): Promise<Validate
   }
 
   // Duplicate address check
-  const supabase = await createClient()
   if (fields.postal_code && fields.number) {
-    const { data: existing } = await supabase
+    let query = supabase
       .from('properties')
       .select('id')
       .eq('postal_code', fields.postal_code)
       .eq('number', fields.number)
-      .eq('complement', fields.complement || '')
       .is('deleted_at', null)
-      .limit(1)
-      .single()
+
+    // Match complement: use .is(null) for empty, .eq() for a value
+    if (fields.complement) {
+      query = query.eq('complement', fields.complement)
+    } else {
+      query = query.or('complement.is.null,complement.eq.')
+    }
+
+    query = query.limit(1)
+
+    if (excludePropertyId) {
+      query = query.neq('id', excludePropertyId)
+    }
+
+    const { data: existing } = await query.single()
 
     if (existing) {
       return { valid: false, existingPropertyId: existing.id, errors: { general: 'duplicateAddress' } }
@@ -97,4 +113,9 @@ export async function validateProperty(fields: PropertyFields): Promise<Validate
   }
 
   return { valid: true, fields }
+}
+
+export async function validateProperty(fields: PropertyFields, excludePropertyId?: string): Promise<ValidatePropertyState> {
+  const supabase = await createClient()
+  return validatePropertyCore(supabase, fields, excludePropertyId)
 }

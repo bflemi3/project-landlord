@@ -8,7 +8,6 @@ export interface ChargeInput extends SplitInput {
   name: string
   chargeType: 'rent' | 'recurring' | 'variable'
   amountMinor: number | null
-  dueDay: number
 }
 
 export interface CreateChargesResult {
@@ -17,9 +16,6 @@ export interface CreateChargesResult {
 }
 
 export async function validateCharge(charge: ChargeInput): Promise<string | null> {
-  if (charge.dueDay < 1 || charge.dueDay > 28) {
-    return `Invalid due day: ${charge.dueDay}`
-  }
   if ((charge.chargeType === 'rent' || charge.chargeType === 'recurring') && charge.amountMinor !== null && charge.amountMinor <= 0) {
     return `Fixed charge amount must be positive: ${charge.amountMinor}`
   }
@@ -68,7 +64,7 @@ export async function createChargesCore(
       .insert({
         charge_definition_id: chargeDef.id,
         start_date: new Date().toISOString().split('T')[0],
-        day_of_month: charge.dueDay,
+        day_of_month: 1,
       })
 
     if (ruleError) {

@@ -10,38 +10,11 @@ import type { ChargeInput } from '../create-charges'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 describe('validateCharge', () => {
-  it('rejects due day below 1', async () => {
-    const result = await validateCharge({
-      name: 'Rent',
-      chargeType: 'rent',
-      amountMinor: 100000,
-      dueDay: 0,
-      payer: 'tenant',
-      tenantPercent: 100,
-      landlordPercent: 0,
-    })
-    expect(result).toContain('Invalid due day')
-  })
-
-  it('rejects due day above 28', async () => {
-    const result = await validateCharge({
-      name: 'Rent',
-      chargeType: 'rent',
-      amountMinor: 100000,
-      dueDay: 29,
-      payer: 'tenant',
-      tenantPercent: 100,
-      landlordPercent: 0,
-    })
-    expect(result).toContain('Invalid due day')
-  })
-
   it('rejects non-positive fixed amount', async () => {
     const result = await validateCharge({
       name: 'Rent',
       chargeType: 'rent',
       amountMinor: -500,
-      dueDay: 10,
       payer: 'tenant',
       tenantPercent: 100,
       landlordPercent: 0,
@@ -54,7 +27,6 @@ describe('validateCharge', () => {
       name: 'Water',
       chargeType: 'variable',
       amountMinor: null,
-      dueDay: 15,
       payer: 'tenant',
       tenantPercent: 100,
       landlordPercent: 0,
@@ -67,7 +39,6 @@ describe('validateCharge', () => {
       name: 'Rent',
       chargeType: 'rent',
       amountMinor: 200000,
-      dueDay: 5,
       payer: 'tenant',
       tenantPercent: 100,
       landlordPercent: 0,
@@ -101,7 +72,6 @@ describe('createChargesCore', () => {
         name: 'Rent',
         chargeType: 'rent',
         amountMinor: 200000,
-        dueDay: 5,
         payer: 'tenant',
         tenantPercent: 100,
         landlordPercent: 0,
@@ -132,7 +102,7 @@ describe('createChargesCore', () => {
       .eq('charge_definition_id', chargeDefs![0].id)
 
     expect(rules).toHaveLength(1)
-    expect(rules![0].day_of_month).toBe(5)
+    expect(rules![0].day_of_month).toBe(1)
 
     // Verify allocation
     const { data: allocs } = await admin
@@ -152,7 +122,6 @@ describe('createChargesCore', () => {
         name: 'Electric',
         chargeType: 'recurring',
         amountMinor: 30000,
-        dueDay: 10,
         payer: 'split',
         splitMode: 'percent',
         tenantPercent: 70,
@@ -198,8 +167,7 @@ describe('createChargesCore', () => {
       {
         name: 'Bad Charge',
         chargeType: 'rent',
-        amountMinor: 100000,
-        dueDay: 0, // invalid
+        amountMinor: -100, // invalid: negative amount
         payer: 'tenant',
         tenantPercent: 100,
         landlordPercent: 0,
@@ -208,7 +176,6 @@ describe('createChargesCore', () => {
         name: 'Good Charge',
         chargeType: 'recurring',
         amountMinor: 5000,
-        dueDay: 15,
         payer: 'tenant',
         tenantPercent: 100,
         landlordPercent: 0,

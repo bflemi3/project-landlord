@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.8.0
+
+- Generate monthly billing statements from your charge definitions
+- See what your tenant owes, what you cover, and the total at a glance
+- Add charges to a statement — attach a bill for transparency
+- Missing charges are flagged so you know what's incomplete
+- Save ad-hoc charges for future statements with one toggle
+- Billing summary on every property page with urgency when deadlines approach
+
 ## v0.7.0
 
 - Pause or resume charges without deleting them

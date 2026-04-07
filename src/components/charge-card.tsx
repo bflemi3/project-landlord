@@ -23,20 +23,18 @@ const CHARGE_TYPE_ICONS: Record<string, React.ElementType> = {
 
 export function ChargeCard({
   charge,
-  unitDueDay,
   configured = false,
   onClick,
   className,
 }: {
   charge: ChargeDefinition
-  unitDueDay: number
   configured?: boolean
   onClick?: () => void
   className?: string
 }) {
   const t = useTranslations('propertyDetail')
   const Icon = CHARGE_TYPE_ICONS[charge.chargeType] ?? Repeat
-  const subtitle = buildSubtitle(charge, unitDueDay, t)
+  const subtitle = buildSubtitle(charge, t)
 
   return (
     <ChargeRow configured={configured} onClick={onClick} className={cn(!charge.isActive && 'opacity-50', className)}>
@@ -64,7 +62,6 @@ export function ChargeCard({
 
 function buildSubtitle(
   charge: ChargeDefinition,
-  unitDueDay: number,
   t: ReturnType<typeof useTranslations<'propertyDetail'>>,
 ): string | null {
   const { split } = charge
@@ -88,11 +85,6 @@ function buildSubtitle(
       tenant: Math.round(split.tenantPercent),
       landlord: Math.round(split.landlordPercent),
     }))
-  }
-
-  // Due day (only when different from unit default)
-  if (charge.dueDay != null && charge.dueDay !== unitDueDay) {
-    parts.push(t('dueOn', { day: charge.dueDay }))
   }
 
   return parts.length > 0 ? parts.join(' · ') : null

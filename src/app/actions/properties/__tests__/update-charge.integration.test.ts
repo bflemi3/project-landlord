@@ -27,7 +27,6 @@ describe('updateChargeCore', () => {
       name: 'Rent',
       chargeType: 'rent',
       amountMinor: 200000,
-      dueDay: 10,
       payer: 'tenant',
       tenantPercent: 100,
       landlordPercent: 0,
@@ -47,13 +46,12 @@ describe('updateChargeCore', () => {
     await cleanupTestUser(userId)
   })
 
-  it('updates charge name, amount, and due day', async () => {
+  it('updates charge name and amount', async () => {
     const result = await updateChargeCore(client, {
       chargeId,
       name: 'Updated Rent',
       chargeType: 'rent',
       amountMinor: 250000,
-      dueDay: 15,
       payer: 'tenant',
       tenantPercent: 100,
       landlordPercent: 0,
@@ -70,14 +68,6 @@ describe('updateChargeCore', () => {
 
     expect(charge?.name).toBe('Updated Rent')
     expect(charge?.amount_minor).toBe(250000)
-
-    const { data: rule } = await admin
-      .from('recurring_rules')
-      .select('day_of_month')
-      .eq('charge_definition_id', chargeId)
-      .single()
-
-    expect(rule?.day_of_month).toBe(15)
   })
 
   it('switches from single payer to split', async () => {
@@ -87,7 +77,6 @@ describe('updateChargeCore', () => {
       name: 'Updated Rent',
       chargeType: 'rent',
       amountMinor: 250000,
-      dueDay: 15,
       payer: 'split',
       splitMode: 'percent',
       tenantPercent: 60,
@@ -115,7 +104,6 @@ describe('updateChargeCore', () => {
       name: 'Updated Rent',
       chargeType: 'rent',
       amountMinor: 250000,
-      dueDay: 15,
       payer: 'landlord',
       tenantPercent: 0,
       landlordPercent: 100,

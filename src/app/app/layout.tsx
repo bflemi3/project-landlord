@@ -1,9 +1,7 @@
 import { redirect } from 'next/navigation'
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
-import { SwUpdateNotifier } from '@/components/sw-update-notifier'
-import { InstallPrompt } from '@/components/install-prompt'
 import { PostHogIdentify } from '@/components/posthog-identify'
-import { AppBar } from './app-bar'
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -16,25 +14,31 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const userId = data.claims.sub as string
   const email = data.claims.email as string | undefined
 
-  // Check if user has a redeemed invite code
-  const { data: invite } = await supabase
-    .from('invitations')
-    .select('id')
-    .eq('accepted_by', userId)
-    .eq('status', 'accepted')
-    .limit(1)
+  // Fetch profile — single query covers auth gate + PostHog + AppBar
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name, preferred_locale, avatar_url, has_redeemed_invite, acquisition_channel')
+    .eq('id', userId)
     .single()
 
-  if (!invite) {
+  if (!profile?.has_redeemed_invite) {
     redirect('/auth/enter-code')
   }
 
-  // Fetch profile for name + avatar
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, preferred_locale, avatar_url')
-    .eq('id', userId)
-    .single()
+  // Prefetch profile query so AppBar's useProfile() hydrates instantly
+  const queryClient = new QueryClient()
+  await queryClient.prefetchQuery({
+    queryKey: ['profile'],
+    queryFn: async () => ({
+      id: userId,
+      fullName: profile?.full_name ?? null,
+      email: email ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
+      preferredLocale: profile?.preferred_locale ?? null,
+      pixKey: null,
+      pixKeyType: null,
+    }),
+  })
 
   return (
     <div className="flex h-svh flex-col">
@@ -43,16 +47,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         email={email}
         name={profile?.full_name ?? undefined}
         locale={profile?.preferred_locale ?? undefined}
+        acquisitionChannel={profile?.acquisition_channel ?? undefined}
       />
-      <AppBar
-        userName={profile?.full_name ?? undefined}
-        avatarUrl={profile?.avatar_url ?? undefined}
-      />
-      <div className="min-h-0 flex-1">
+      <HydrationBoundary state={dehydrate(queryClient)}>
         {children}
-      </div>
-      <SwUpdateNotifier />
-      <InstallPrompt />
+      </HydrationBoundary>
     </div>
   )
 }

@@ -325,6 +325,7 @@ export type Database = {
           property_address_hint: string | null
           property_id: string | null
           role: Database["public"]["Enums"]["user_role"]
+          source: string | null
           status: Database["public"]["Enums"]["invitation_status"]
           unit_id: string | null
           updated_at: string
@@ -343,6 +344,7 @@ export type Database = {
           property_address_hint?: string | null
           property_id?: string | null
           role: Database["public"]["Enums"]["user_role"]
+          source?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
           unit_id?: string | null
           updated_at?: string
@@ -361,6 +363,7 @@ export type Database = {
           property_address_hint?: string | null
           property_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
+          source?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
           unit_id?: string | null
           updated_at?: string
@@ -598,6 +601,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          acquisition_channel: string | null
           analytics_opt_out: boolean
           avatar_url: string | null
           cpf: string | null
@@ -605,12 +609,14 @@ export type Database = {
           deleted_at: string | null
           email: string
           full_name: string
+          has_redeemed_invite: boolean
           id: string
           phone: string | null
           preferred_locale: string
           updated_at: string
         }
         Insert: {
+          acquisition_channel?: string | null
           analytics_opt_out?: boolean
           avatar_url?: string | null
           cpf?: string | null
@@ -618,12 +624,14 @@ export type Database = {
           deleted_at?: string | null
           email: string
           full_name: string
+          has_redeemed_invite?: boolean
           id: string
           phone?: string | null
           preferred_locale?: string
           updated_at?: string
         }
         Update: {
+          acquisition_channel?: string | null
           analytics_opt_out?: boolean
           avatar_url?: string | null
           cpf?: string | null
@@ -631,6 +639,7 @@ export type Database = {
           deleted_at?: string | null
           email?: string
           full_name?: string
+          has_redeemed_invite?: boolean
           id?: string
           phone?: string | null
           preferred_locale?: string
@@ -875,7 +884,7 @@ export type Database = {
           period_month: number | null
           period_year: number | null
           profile_id: string | null
-          property_id: string
+          unit_id: string
           updated_at: string
           uploaded_by: string
         }
@@ -891,7 +900,7 @@ export type Database = {
           period_month?: number | null
           period_year?: number | null
           profile_id?: string | null
-          property_id: string
+          unit_id: string
           updated_at?: string
           uploaded_by: string
         }
@@ -907,7 +916,7 @@ export type Database = {
           period_month?: number | null
           period_year?: number | null
           profile_id?: string | null
-          property_id?: string
+          unit_id?: string
           updated_at?: string
           uploaded_by?: string
         }
@@ -920,25 +929,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "source_documents_property_id_fkey"
-            columns: ["property_id"]
+            foreignKeyName: "source_documents_unit_id_fkey"
+            columns: ["unit_id"]
             isOneToOne: false
-            referencedRelation: "home_properties"
-            referencedColumns: ["property_id"]
-          },
-          {
-            foreignKeyName: "source_documents_property_id_fkey"
-            columns: ["property_id"]
-            isOneToOne: false
-            referencedRelation: "properties"
+            referencedRelation: "units"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "source_documents_property_id_fkey"
-            columns: ["property_id"]
-            isOneToOne: false
-            referencedRelation: "property_counts"
-            referencedColumns: ["property_id"]
           },
           {
             foreignKeyName: "source_documents_uploaded_by_fkey"
@@ -956,6 +951,7 @@ export type Database = {
           currency: string
           deleted_at: string | null
           id: string
+          landlord_total_minor: number
           period_month: number
           period_year: number
           previous_version_id: string | null
@@ -963,6 +959,7 @@ export type Database = {
           revision: number
           revision_note: string | null
           status: Database["public"]["Enums"]["statement_status"]
+          tenant_total_minor: number
           total_amount_minor: number
           unit_id: string
           updated_at: string
@@ -973,6 +970,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          landlord_total_minor?: number
           period_month: number
           period_year: number
           previous_version_id?: string | null
@@ -980,6 +978,7 @@ export type Database = {
           revision?: number
           revision_note?: string | null
           status?: Database["public"]["Enums"]["statement_status"]
+          tenant_total_minor?: number
           total_amount_minor?: number
           unit_id: string
           updated_at?: string
@@ -990,6 +989,7 @@ export type Database = {
           currency?: string
           deleted_at?: string | null
           id?: string
+          landlord_total_minor?: number
           period_month?: number
           period_year?: number
           previous_version_id?: string | null
@@ -997,6 +997,7 @@ export type Database = {
           revision?: number
           revision_note?: string | null
           status?: Database["public"]["Enums"]["statement_status"]
+          tenant_total_minor?: number
           total_amount_minor?: number
           unit_id?: string
           updated_at?: string
@@ -1135,6 +1136,7 @@ export type Database = {
           action_type: string | null
           detail_date: string | null
           detail_email: string | null
+          detail_id: string | null
           detail_name: string | null
           property_id: string | null
           property_name: string | null
@@ -1186,6 +1188,7 @@ export type Database = {
           p_city?: string
           p_complement?: string
           p_country_code?: string
+          p_due_day?: number
           p_name: string
           p_neighborhood?: string
           p_number?: string

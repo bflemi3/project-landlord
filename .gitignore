@@ -52,3 +52,4 @@ Thumbs.db
 # pwa
 sw.js
 workbox-*.js
+.claude/worktrees/

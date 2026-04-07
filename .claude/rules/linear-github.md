@@ -32,9 +32,19 @@ Resolves PRO-123
 
 | Git/PR Event | Linear Status |
 |---|---|
-| Branch created with issue ID | **In Progress** |
-| PR opened | **In Review** |
+| Draft PR opened | **In Progress** |
+| PR moved out of draft (ready for review) | **In Review** |
 | PR merged | **Done** |
+
+## Starting a Feature
+
+When beginning work on a Linear issue:
+
+1. Create the feature branch (e.g., `brandon/PRO-123-short-description`)
+2. Push the branch to remote (`git push -u origin <branch>`)
+3. Create a **draft PR** immediately (`gh pr create --draft`)
+
+This moves the Linear issue to **In Progress**. The draft PR serves as the living workspace for the feature — commits are pushed to it throughout development. When the feature is ready for review, move the PR out of draft status to trigger the **In Review** transition in Linear.
 
 ## Rules
 

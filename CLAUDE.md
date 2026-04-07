@@ -2,1199 +2,146 @@
 
 ## Project Overview
 
-This project is a Brazil-first rental billing and utility coordination app for landlords and tenants.
+Brazil-first rental billing and utility coordination app for landlords and tenants. Replaces spreadsheet/email billing with a shared billing workspace. **Not a payment app** — a trust-first billing system focused on charge setup, bill ingestion, deterministic extraction, statement publishing, tenant visibility, disputes, and manual payment coordination.
 
-The product replaces spreadsheet- and email-driven billing workflows with a shared billing workspace that helps landlords manage rent and recurring property charges across multiple properties while giving tenants clear visibility into what they owe and why.
-
-The MVP is intentionally **not** a payment app. It is a **trust-first billing system** focused on:
-
-- landlord property + charge setup
-- bill ingestion
-- deterministic extraction + review
-- monthly statement drafting + publishing
-- tenant visibility
-- dispute / review workflows
-- manual payment marking + confirmation
-- analytics around trust, clarity, activation, and adoption
-
-The app should feel calm, modern, mobile-first, and trustworthy. It should feel closer to Wise / Venmo / Rocket Money than to traditional property-management or accounting software.
+Should feel calm, modern, mobile-first, trustworthy — closer to Wise / Venmo / Rocket Money than property-management software.
 
 ---
 
-## Source of Truth Documents
+## Source of Truth
 
-When making implementation decisions, use the following priority order:
+1. `.claude/skills/design-system/` — visual design, UX, spacing, hierarchy, motion, interaction patterns
+2. `.claude/skills/component-library/` — approved components, variants, layout rules, composition
+3. `CLAUDE.md` — engineering execution, architecture boundaries, product guardrails
+4. Project planning docs — product scope, roadmap, business intent
+5. Existing codebase — what is already implemented
 
-1. `docs/project/design.md` — source of truth for visual design, UX polish, spacing, hierarchy, typography, motion, interaction style, and established design patterns
-2. `docs/project/components.md` — source of truth for approved component patterns, variants, layout rules, and composition. Check here before building any UI.
-3. `CLAUDE.md` — source of truth for engineering execution guidance, architecture boundaries, product guardrails, and working conventions
-4. project planning markdown docs — source of truth for product scope, roadmap, workflows, and business intent
-5. the existing codebase — source of truth for what is already implemented
-
-If these conflict:
-
-- prefer `design.md` for visual and UX decisions
-- prefer `components.md` for component selection and layout
-- prefer this file for implementation approach and engineering guardrails
-- prefer the latest project plan for product scope and roadmap intent
-- do not silently invent product behavior that conflicts with the plan
-
-If something is ambiguous, choose the option that:
-
-- keeps the MVP simple
-- preserves trust and transparency
-- avoids overbuilding
-- keeps future expansion possible without making the MVP heavier
+When ambiguous, choose the option that keeps the MVP simple, preserves trust, avoids overbuilding, and keeps future expansion possible.
 
 ---
 
 ## Core Product Principles
 
-These principles should shape implementation decisions:
-
 - **Trust first** — every charge should be understandable, traceable, and reviewable
-- **Transparency by default** — landlords and tenants should be able to understand the same statement logic
-- **Low friction** — the app should feel easier than spreadsheets, not more powerful-but-heavier
+- **Transparency by default** — landlords and tenants see the same statement logic
+- **Low friction** — easier than spreadsheets, not more powerful-but-heavier
 - **Review before publish** — draft, validate, then publish
-- **Mobile first** — core workflows should be comfortable on a phone
-- **Summary first, detail second** — show the answer first, then let users drill in
-- **Collaboration without clutter** — multiple parties can participate, but the UI should stay focused
-- **Brazil-first, future-ready** — optimize UX and workflows for Brazil now, but keep the model extensible
+- **Mobile first** — core workflows comfortable on a phone
+- **Summary first, detail second** — show the answer, then let users drill in
+- **Collaboration without clutter** — multiple parties, focused UI
+- **Brazil-first, future-ready** — optimize for Brazil now, keep the model extensible
 
 ---
 
 ## MVP Scope Guardrails
 
-Stay focused on the MVP.
-
 ### Build now
 
-- auth
-- property + unit setup
-- multi-property landlord support
-- charge definitions
-- monthly recurring charges
-- landlord / tenant responsibility allocation
-- statement drafting
-- completeness warnings
-- bill upload + landlord-level ingestion email workflow
-- provider invoice profiles
-- deterministic extraction + correction workflow
-- statement publishing
-- statement revisions
-- tenant statement viewing
-- charge transparency indicators
-- source document preview/access
-- multi-tenant visibility
-- tenant-side split coordination
-- tenant invites
-- dispute / review flow
-- tenant marks paid
-- landlord confirms / rejects payment
-- notifications
-- audit trail
-- analytics instrumentation
-- public landing page
-- self-serve landlord sign-up
-- tenant-invites-landlord flow
+Auth, property/unit setup, multi-property support, charge definitions, monthly recurring charges, responsibility allocation, statement drafting/publishing/revisions, completeness warnings, bill upload + ingestion email, provider invoice profiles, deterministic extraction + correction, tenant statement viewing, charge transparency, source document preview, multi-tenant visibility, tenant-side splits, tenant invites, dispute/review flow, payment marking + confirmation, notifications, audit trail, analytics, public landing page, self-serve sign-up, tenant-invites-landlord flow.
 
-### Do not overbuild yet
+### Do not overbuild
 
-- in-app payments
-- full banking / Open Finance / DDA dependency
-- native mobile apps
-- complex offline mode
-- heavy admin tooling
-- AI-first extraction
-- enterprise-grade property management features
-- advanced SSR-heavy product architecture
-- over-flexible billing engines
-- co-landlord collaboration unless explicitly added later
-- overcomplicated role systems
-
-### Treat as later / bounded spikes
-
-- Pluggy / DDA integrations
-- Pix / card payments
-- AI-assisted validation
-- per-unit ingestion aliases
-- anomaly detection
-- landlord analytics beyond what is needed for MVP validation
-
----
-
-## Target Users
-
-### Landlord
-
-Needs to:
-
-- create properties and units
-- define expected charges
-- ingest bills
-- validate extracted bill data
-- publish monthly statements
-- manage revisions
-- confirm or reject payment claims
-
-### Tenant
-
-Needs to:
-
-- view published statements
-- understand what is owed and why
-- see whether charges came from a bill, manual entry, or bill correction
-- preview supporting documents when available
-- dispute questionable charges
-- mark payment activity
-
-### Shared household / additional tenant
-
-Needs to:
-
-- be invited into the property
-- see statement visibility
-- coordinate split responsibilities on the tenant side without changing landlord-defined obligations
-
----
-
-## Design Implementation Rules
-
-All visual design patterns, established UI rules, and "never do this" lists live in `docs/project/design.md`. All approved component patterns, layouts, and composition rules live in `docs/project/components.md`. Consult both before building any UI.
-
-This section covers only the rules about how wireframes relate to implementation.
-
-### Wireframes
-
-Wireframes in `docs/wireframes/` are **low-fidelity structural guides**, not pixel-perfect design specs. They use placeholder grays, generic spacing, and simplified layouts to communicate structure, hierarchy, and flow — not final visual design.
-
-When implementing a screen:
-
-- use the wireframe for **layout structure, content hierarchy, and user flow**
-- apply **your own design judgment** for color, spacing, typography, polish, and interaction details
-- follow `docs/project/design.md` and the design tokens in `globals.css` for the actual visual language
-- check `docs/project/components.md` for existing components that match what the wireframe describes
-- never copy wireframe grays, exact pixel values, or placeholder styling into production code
-- if the wireframe conflicts with design.md or good design sense, trust design.md and your judgment
-
-The goal is a calm, premium, mobile-first product — the wireframe tells you *what* goes on the screen, not *how* it should look.
+In-app payments, banking/DDA, native apps, complex offline, heavy admin tooling, AI-first extraction, enterprise property management, over-flexible billing engines, co-landlord collaboration, overcomplicated roles.
 
 ---
 
 ## Technical Direction
 
-### Framework
-
-Use **Next.js App Router**.
-
-Reasoning:
-
-- public SEO landing pages matter
-- authenticated product can still be mostly client-driven
-- shared codebase for marketing + product is simpler for MVP
-
-### Rendering strategy
-
-- public marketing pages: static by default
-- authenticated product: mostly client-rendered
-- use server-side logic only when it materially improves security or reduces complexity
-- do not make routine product UX depend on dynamic SSR
-
-### Backend
-
-Use **Supabase** as the core platform:
-
-- Postgres
-- Auth
-- Storage
-- Row Level Security
-- optional Realtime where useful
-
-### Analytics
-
-Use **PostHog** from day one for product analytics and funnel instrumentation.
-
-### Hosting
-
-Assume **paid hosting** if needed for a production MVP.
-Do not optimize architecture around free-tier constraints.
-
-### PWA
-
-Ship as a **Progressive Web App** first.
-Do not build native apps for MVP.
+- **Framework:** Next.js App Router — static public pages, client-rendered authenticated product
+- **Backend:** Supabase (Postgres, Auth, Storage, RLS, optional Realtime) hosted in `sa-east-1`
+- **Analytics:** PostHog from day one — see `.claude/skills/analytics/SKILL.md` for events and philosophy
+- **Hosting:** Paid hosting, no free-tier architecture constraints
+- **Delivery:** PWA first, no native apps for MVP
+- **Localization:** EN, PT-BR, ES — do not hardcode user-facing copy
 
 ---
 
 ## Engineering Priorities
 
-Optimize for:
+Optimize for: speed to first usable product, trust/clarity in billing, low operational complexity, future-proof data modeling, smooth mobile UX, secure access control.
 
-1. speed to first usable product
-2. trust and clarity in the billing workflow
-3. low operational complexity
-4. future-proof data modeling
-5. smooth mobile UX
-6. secure, privacy-conscious access control
-
-Do not optimize prematurely for:
-
-- hypothetical scale
-- extreme customization
-- complex infrastructure
-- advanced internal tooling
-- speculative future products
+Do not optimize prematurely for: hypothetical scale, extreme customization, complex infrastructure, advanced tooling, speculative future products.
 
 ---
 
-## Data Modeling Principles
-
-Design the schema for future flexibility, even when the MVP UI exposes only the narrow version. The data model should support later phases without major rework.
-
-### Money model
-
-All money stored in minor units plus currency. Example:
-- `amount_minor = 12345` (integer, never float)
-- `currency = 'BRL'` (text)
-
-This avoids floating-point issues and creates a foundation for future international support.
-
-### Important modeling ideas
-
-- country-aware model (country_code column) even if operations are Brazil-only
-- monthly billing first, but avoid baking in assumptions that make future cadence expansion impossible
-- provider invoice profiles stored as data, not hardcoded logic
-- clear distinction between:
-  - charge definitions (what is expected)
-  - charge instances (what actually happened this month)
-  - statements (the published monthly record)
-  - source documents (raw uploaded bills)
-  - payment events (mark paid, confirm, reject)
-  - audit history (who changed what and when)
-- support multiple tenants per property
-- support tenant-side splits without changing landlord-defined obligations
-- preserve published statement history and revisions
-- make extracted data reviewable and correctable
-- draft → review → publish workflow for statements (never auto-publish)
-
-### Provider invoice profiles
-
-Provider profiles should include:
-- provider reference
-- parser strategy
-- extraction configuration JSON
-- validation configuration JSON
-- example document reference
-- versioning metadata
-- notes
-
-This allows the product to evolve from manual internal profile management to future internal/admin tooling without requiring a rewrite.
-
-### Extraction feedback loop
-
-Every extraction failure should produce useful product data:
-- raw document reference
-- failure category
-- provider/profile used
-- corrected values
-- final validated output
-
-This creates a feedback loop for improving provider profiles over time.
-
-### Core entities
-
-- users
-- properties
-- units
-- memberships / roles
-- providers / issuers
-- provider invoice profiles
-- example documents
-- charge definitions
-- recurring rules
-- charge instances
-- responsibility allocations
-- tenant splits
-- statements
-- source documents
-- payment events
-- notifications
-- audit events
-- invitations (landlord and tenant invites with status tracking)
-- disputes (charge questions with status and resolution)
-- portfolio summaries / analytics views (read-only, derived)
-
----
-
-## Security and Privacy Rules
-
-This product handles sensitive billing, financial, and personal data (CPF, addresses, payment records, uploaded documents). Security and privacy are first-class — and the app must comply with Brazil's **LGPD (Lei Geral de Proteção de Dados)** from day one.
-
-### Required
-
-- Row Level Security on all property-scoped and user-scoped data
-- role-aware access control
-- secure document storage
-- audit trail for sensitive changes
-- explicit revision tracking for statements
-- data minimization — collect only what the billing workflow requires
-- retention/deletion awareness
-- privacy-conscious handling of uploaded files and extracted data
-- Supabase project hosted in `sa-east-1` (São Paulo) to keep sensitive data in Brazil
-
-### Never do this
-
-- expose cross-property data accidentally
-- trust client-only authorization
-- allow silent mutation of published financial records
-- treat extracted document data as inherently correct
-- store money as floating point values
-- collect personal data beyond what the billing purpose requires
-- process personal data without a valid legal basis
-- transfer data internationally without documented safeguards
-
-### LGPD Compliance
-
-The app must follow Brazil's LGPD. This section defines the rules that apply to all implementation work.
-
-#### Legal basis for processing
-
-Use the strongest applicable legal basis — do not over-consent:
-
-- **Contract performance** (Art. 7, V) — core billing data: user accounts, properties, charges, statements, payments, uploaded bills, tenant data within the billing relationship
-- **Legitimate interest** (Art. 7, IX) — product analytics (PostHog), usage metrics, anonymized aggregated data. Requires a documented Legitimate Interest Assessment
-- **Explicit consent** (Art. 7, I) — only when going beyond what's necessary for the service (e.g., marketing emails, sharing data with third parties for their purposes)
-
-#### User rights (Art. 18)
-
-The app must support all LGPD data subject rights. Build self-serve where practical, email-based request handling for the rest. All requests must be answered within **15 days**.
-
-- **Confirmation and access** — user can request a copy of all their personal data
-- **Correction** — user can fix incorrect personal data (name, email, CPF, address) via account settings
-- **Deletion** — "Delete my account" flow that cascades properly. Retain only data required by other laws (tax/civil obligations)
-- **Portability** — user can export their data in a structured format (JSON or CSV)
-- **Consent revocation** — withdrawing consent must be as easy as giving it
-- **Information about sharing** — privacy policy must list third-party processors (Supabase, PostHog, Vercel, Resend)
-- **Right to complain to ANPD** — privacy policy must inform users of this right
-
-#### Data retention
-
-Keep data only as long as necessary. Apply these retention guidelines:
-
-| Data type | Retention period | Rationale |
-|---|---|---|
-| Active user account data | Duration of account + 30 days | Service provision |
-| Published statements | 5 years after creation | Civil code statute of limitations |
-| Payment records | 5 years | Tax/civil obligations |
-| Uploaded bills/documents | Duration of tenancy + 1 year, or 5 years (whichever longer) | Dispute resolution, tax |
-| Analytics events | 2 years, then anonymize | Product improvement |
-| Deleted account data | Delete within 30 days of request, except legally required data | LGPD requirement |
-| Audit logs | 5 years | Legal/compliance |
-
-#### Privacy policy requirements
-
-A privacy policy in **Portuguese** (minimum) must be published before launch at `/privacidade`. It must include:
-
-1. Controller identity and contact info
-2. Privacy contact email (e.g., privacidade@mabenn.com.br)
-3. What personal data is collected and how
-4. Purpose and legal basis for each data category
-5. Third-party processors and what they receive
-6. International data transfers and safeguards
-7. Retention periods
-8. User rights and how to exercise them
-9. Cookie/tracking disclosure
-10. Right to file complaints with ANPD
-
-#### Analytics and tracking
-
-- **Public pages:** anonymous tracking under legitimate interest. Disclose in privacy policy
-- **Authenticated app:** identified user tracking under legitimate interest. Disclose in privacy policy and provide opt-out toggle in account settings
-- Do not track identified users before they have a relationship with the app (i.e., after sign-up, not on anonymous visits)
-
-#### Data breach response
-
-If a breach occurs involving personal data:
-
-- Notify **ANPD within 2 business days**
-- Notify **affected users** within the same timeframe
-- Include: description of affected data, risks, measures taken, recommendations for users
-- Have a written incident response plan before launch
-
-#### International data transfers
-
-- **Supabase:** use `sa-east-1` region to keep sensitive data in Brazil
-- **Vercel, PostHog, Resend:** ensure DPAs include Standard Contractual Clauses
-- Disclose transfers in privacy policy with safeguards described
-
-#### DPO (Encarregado)
-
-Small processing agents are exempt from mandatory DPO appointment (ANPD Resolution CD/ANPD No. 2/2022). However:
-
-- Publish a privacy contact email for data subject requests
-- Designate someone internally to handle data requests
-- Appoint a formal DPO when the business grows past small-business thresholds
-
-#### Upload restrictions
-
-Terms of service must specify that only billing-related documents (utility bills, rent receipts, payment confirmations) may be uploaded. Users must not upload documents containing health, biometric, or other sensitive data categories under LGPD Art. 5, II.
-
-#### Classification note
-
-CPF and financial/billing data are **not** classified as sensitive data under LGPD (Art. 5, II — sensitive data is limited to racial/ethnic origin, religious beliefs, political opinions, union membership, health, sex life, genetic, and biometric data). However, a breach involving CPFs and financial records causes real harm — treat this data with high security standards regardless.
-
----
-
-## Bill Ingestion and Extraction Rules
-
-MVP extraction is **deterministic, not AI-first**.
-
-### Supported inputs
-
-- manual PDF/image upload
-- landlord-level bill-ingestion email flow
-- manual email forwarding
-
-### Workflow expectations
-
-1. document received
-2. raw source stored
-3. provider invoice profile applied
-4. extraction attempted
-5. required fields validated
-6. ambiguous or missing fields flagged
-7. landlord reviews and corrects if needed
-8. only approved data can reach a published statement
-
-### Important rule
-
-Never treat extraction output as the source of truth without human review in MVP flows that affect published charges.
-
-### Every extraction failure should create useful product data
-
-- source document reference
-- provider/profile used
-- failure category
-- corrected values
-- final approved output
-
-This feedback loop matters.
-
----
-
-## Statement Workflow Rules
-
-The statement flow is central. Protect it.
-
-### Draft phase
-
-- recurring monthly charges can be generated into a draft statement
-- variable charges come from ingestion or manual entry
-- show completeness warnings for expected missing charges
-- warnings should help, not block
-
-### Publish phase
-
-- published statements are the shared monthly system of record
-- publishing should feel explicit and deliberate
-- publishing should snapshot the statement state
-
-### Revision phase
-
-- published statements may later change
-- revisions must be explicit
-- preserve history
-- show what changed
-- notify affected users
-- never silently overwrite published financial records
-
----
-
-## Payment Workflow Rules
-
-The MVP payment model is manual coordination, not payment processing.
-
-### Supported flow
-
-- tenant marks statement paid
-- landlord reviews
-- landlord confirms or rejects
-- rejection should require a reason
-- issue can return to review/resolution
-
-### Do not build
-
-- actual payment rails
-- wallet logic
-- payout systems
-- transaction ledger pretending to be a payment processor
-
-Keep this workflow clear and lightweight.
-
----
-
-## Tenant Trust Requirements
-
-Tenant-facing UX must reinforce trust.
-
-For relevant charges, aim to surface:
-
-- manual entry
-- imported from bill
-- imported from bill and corrected before publish
-
-Where possible, let the tenant:
-
-- preview the source document
-- understand the amount
-- understand the reason
-- dispute structured issues cleanly
-
-Avoid forcing trust through opacity.
-
----
-
-## Notifications
-
-Notifications should support important workflow moments without creating noise.
-
-### MVP notifications
-
-- statement ready
-- statement updated
-- due reminders
-- extraction needs review
-- dispute opened
-- payment marked
-- payment confirmed
-- payment rejected
-- new invoice profile ready
-
-Support:
-
-- email
-- in-app notifications
-
-Push can come later if it is easy and clearly valuable.
-
----
-
-## Analytics Requirements
-
-Instrument the product from day one.
-
-### Track at minimum
-
-- property_created
-- charge_definition_created
-- bill_received
-- extraction_failed
-- correction_submitted
-- statement_published
-- statement_viewed
-- tenant_invited
-- tenant_split_created
-- charge_disputed
-- payment_marked
-- payment_rejected
-- payment_confirmed
-- pulse_survey_answered
-
-### Analytics philosophy
-
-Track events that answer:
-
-- are landlords activating?
-- are tenants viewing?
-- is the workflow replacing the spreadsheet?
-- is extraction trustworthy?
-- are collaborative growth loops working?
-- are users feeling clarity and confidence?
-
-Do not instrument random noise. Track moments tied to product value.
-
----
-
-## Localization
-
-The MVP should support:
-
-- English
-- Brazilian Portuguese
-- Spanish
-
-Implementation expectations:
-
-- do not hardcode user-facing copy if avoidable
-- design layouts to tolerate longer translated strings
-- prioritize Brazilian Portuguese quality where tradeoffs exist
-- do not assume U.S.-centric billing language
-
----
-
-## Performance Philosophy
-
-Prioritize perceived speed and simplicity.
-
-### Do
-
-- keep public pages lightweight
-- keep product screens responsive
-- use intentional skeleton states
-- minimize unnecessary round trips
-- use query caching thoughtfully
-- keep bundles under control
-- polish transitions and action feedback
-
-### Do not
-
-- overuse SSR for authenticated screens
-- add infrastructure complexity to solve problems that do not exist yet
-- sacrifice clarity for premature optimization
-
----
-
-## Working Style for Claude
-
-When helping in this repo:
-
-- prefer editing existing patterns over inventing new ones
-- keep solutions simple and composable
-- explain tradeoffs when making non-obvious architectural choices
-- preserve future flexibility without overbuilding now
-- avoid introducing libraries unless they clearly earn their keep
-- maintain strong TypeScript safety
-- favor readable code over clever abstractions
-- leave the codebase cleaner than you found it
-
-### Before implementing meaningful changes
-
-Check:
-
-- does this fit the MVP scope?
-- does this preserve trust and transparency?
-- does this stay mobile-first?
-- does this use existing components from `docs/project/components.md`?
-- does this align with `docs/project/design.md`?
-- is there a simpler version that gets the value sooner?
-
-If the answer is no, simplify.
+## Working Style
+
+- Prefer editing existing patterns over inventing new ones
+- Keep solutions simple and composable
+- Maintain strong TypeScript safety
+- Favor readable code over clever abstractions
+- Leave the codebase cleaner than you found it
+- Avoid introducing libraries unless they clearly earn their keep
+
+### Before implementing changes
+
+- Does this fit the MVP scope?
+- Does this preserve trust and transparency?
+- Does this stay mobile-first?
+- Does this use existing components? (check component-library skill)
+- Does this align with the design system? (check design-system skill)
+- Is there a simpler version that gets the value sooner?
 
 ### After building or modifying UI
 
-When a feature introduces a new reusable component, layout pattern, or variant of an existing component, update `docs/project/components.md` before considering the work done. This keeps the catalog current so future features reuse what exists.
-
-**Add to `components.md` when:**
-- A new component is created in `src/components/` that will be used across multiple screens
-- An existing component gains a new variant or state (e.g., a new status type for property cards)
-- A new page layout pattern is established (e.g., a detail page shell, a list-to-detail flow)
-- A composition pattern is validated (e.g., "header + card grid + bottom bar")
-
-**Do not add:**
-- One-off page-specific markup that won't be reused
-- Implementation details that belong in code comments
-- Design philosophy — that belongs in `design.md`
-- Exhaustive prop documentation — a brief description of purpose and variants is enough
-
-The goal is a concise reference that helps build the next screen faster, not a generated API doc.
+When a feature introduces a new reusable component, layout pattern, or variant, update `docs/project/components.md` before considering the work done.
 
 ---
 
-## Preferred Frontend Patterns
+## Backend Patterns
 
-Before creating a new UI component manually, always check if it's available via `npx shadcn@latest add <component>`. Prefer shadcn components over hand-written ones.
-
-### React hooks rules — never violate
-
-**Never call hooks after a conditional return.** All `useState`, `useEffect`, `useRef`, `useMemo`, `useCallback`, `useTranslations`, `useRouter`, `useSuspenseQuery`, and any other `use*` calls must come before the first `return` in a component. This is a core React rule — violating it causes runtime errors and unpredictable behavior.
-
-When using `useSuspenseQuery`, the query function should **throw on error** (not return `null`) so that `data` is always non-nullable. This eliminates the need for null-check early returns that would push subsequent hooks below a `return`.
-
-```tsx
-// WRONG — hooks after return
-function MyComponent({ id }: { id: string }) {
-  const { data: parent } = useParentQuery(id)
-  if (!parent) return null  // ← hooks below this line are illegal
-  const { data: children } = useChildQuery(parent.childId)
-  // ...
-}
-
-// RIGHT — all hooks at top, query throws on not-found
-function MyComponent({ id }: { id: string }) {
-  const { data: parent } = useParentQuery(id)  // throws if not found → suspends
-  const { data: children } = useChildQuery(parent.childId)  // safe — parent is always non-null
-  // ...
-}
-```
-
-### Atomic hooks
-
-Hooks must be atomic and single-responsibility. A parent hook returns its own data plus IDs of its children — never the children's data. Child hooks are responsible for fetching their own details. React Query deduplicates identical queries, so multiple components calling the same hook with the same ID only make one network request.
-
-```tsx
-// useProperty returns property info + unitIds — NOT unit details
-const { data: property } = useProperty(propertyId)
-
-// useUnit returns unit info — NOT charges or tenants
-const { data: unit } = useUnit(unitId)
-
-// Each domain has its own atomic hook
-const { data: charges } = useUnitCharges(unitId)
-const { data: tenants } = useUnitTenants(propertyId, unitId)
-```
-
-Components receive only primitive IDs as props and fetch their own data. Parent components never pass data objects down — they pass IDs and let children fetch what they need.
-
-Use Supabase joins to get child IDs in a single query rather than making sequential requests (e.g., `properties` joined with `units!inner ( id )` to get `unitIds` in one call).
-
-Default to:
-
-- server components only where they are clearly beneficial
-- client components for interactive authenticated product flows
-- **TanStack Query (React Query)** for all client-side data fetching — no raw `useEffect` + `fetch` patterns
-- prefer `useSuspenseQuery` over `useQuery` wherever possible, following React's Suspense-for-data guidelines — wrap with `<Suspense>` boundaries and let the query suspend rather than managing loading states manually
-- strong loading / empty / error / success states
-- reusable UI primitives — when the same markup appears across 3+ files, extract it into a shared component (e.g., `<Wordmark />` instead of duplicating img tags across every auth page)
-- form validation with explicit and humane error messaging
-- accessible components
-- clear status indicators
-- deliberate state transitions
-
-Avoid:
-
-- giant all-in-one page components
-- hidden business logic inside presentational components
-- brittle state spaghetti
-- speculative abstraction layers
-- premature design-system complexity beyond what the app actually uses
-
-### React component body ordering
-
-Organize hook calls and logic inside components in this order:
-
-1. **Refs** — `useRef`
-2. **Context** — `useContext`, `useTranslations`, `useLocale`
-3. **Router/navigation** — `useRouter`, `usePathname`, `useSearchParams`
-4. **State** — `useState`, `useReducer`, `useActionState`
-5. **Derived/computed values** — `useMemo`, `useDeferredValue`, variables derived from state/props
-6. **Queries** — `useSuspenseQuery`, `useQuery`, `useMutation`
-7. **Effects** — `useEffect`, `useLayoutEffect`
-8. **Callbacks** — `useCallback`, event handlers, form handlers
-9. **Render helpers** — conditional variables, formatted values, or small JSX fragments used in the return
-10. **Return** — JSX
-
-The principle: declarations flow from stable → reactive → side-effectful → behavioral. Refs don't change, context rarely changes, state changes on interaction, effects react to changes, callbacks respond to user actions.
-
-### Form patterns
-
-**Validation strategy:**
-- Server-side validation is the source of truth — always validate in server actions regardless of client-side checks
-- For MVP, rely on server validation only (`useActionState` returns field-level errors)
-- Client-side JS validation can be added later for instant feedback on slow connections — never use native HTML validation messages (they're unstyled, untranslatable, inconsistent across browsers)
-- Never use `required`, `pattern`, or other native HTML validation attributes for user-facing validation — use them only as progressive enhancement hints (e.g., `type="email"` for mobile keyboard)
-
-**React 19 form patterns:**
-- Use `useActionState` for all form submissions that call server actions — it provides `[state, formAction, isPending]` with built-in pending state and sequential action queuing
-- Use `useFormStatus` in child components (e.g., submit buttons) to access the parent form's pending state
-- Pass the `formAction` directly to `<form action={formAction}>` — this enables progressive enhancement
-- Return structured error state from server actions: `{ errors: { fieldName: 'message' }, success: false }` — never throw from a form action
-- Display field-level errors near the input that caused them, not in a banner at the top
-
-**Form UX:**
-- Labels above inputs, not floating or inline
-- Generous mobile tap targets — inputs should be tall enough for comfortable tapping
-- Disable submit button and show loading state while `isPending` is true
-- Clear error messages when the user starts editing the errored field
-- Multi-step forms use client-side step state on a single route — not separate routes per step — to enable smooth transitions and avoid SSR overhead
-- Use `<fieldset disabled={isPending}>` to disable all form fields during submission
-
-**Address forms (Brazil-first):**
-- CEP field at the top — auto-fill street, neighborhood, city, state via address lookup on valid input
-- Address lookup uses a country-adaptive provider pattern (`src/lib/address/`) — ViaCEP for Brazil, fallback to manual entry for other countries
-- User can override auto-filled values
-- State field as a select dropdown
-- Street number and complement are separate fields from the street name
-
-**What not to do:**
-- Don't add zod, react-hook-form, or other form libraries unless a form genuinely needs schema-based validation with complex conditional rules
-- Don't use native HTML validation messages as the user-facing validation UX
-- Don't validate on blur for MVP — validate on submit only
-- Don't block form submission on optional fields
+- Explicit domain modeling, narrow understandable APIs/actions
+- Idempotent ingestion workflows where possible
+- Audit-friendly mutations, clear ownership and access checks
+- Deterministic parsing/configuration patterns
+- No magical pipelines, AI-dependent core workflows, complex event choreography, or hidden side effects around billing state
 
 ---
 
-## Email Templates & Delivery
+## Domain Organization
 
-### Architecture
-
-Email templates are split across two locations based on runtime:
-
-- **`src/emails/`** — Next.js email templates (Node.js runtime). Used for app-triggered emails: waitlist welcome, invite codes, future notifications. Also contains preview copies of auth templates for visual reference. Run `pnpm email` to preview at `localhost:3333`.
-- **`supabase/functions/send-email/templates.ts`** — Supabase Edge Function email templates as HTML string builders (Deno runtime). Used for auth-triggered emails: email confirmation, password reset. These use pre-built HTML with string interpolation instead of React Email to avoid cold start issues in Edge Functions.
-
-When updating auth email designs, update the preview copy in `src/emails/` first for visual reference, then sync the HTML structure to the string builders in `supabase/functions/send-email/templates.ts`.
-
-### Technology
-
-- **React Email** (`@react-email/components`) for component-based email templates
-- **`@react-email/tailwind`** for Tailwind CSS in emails (converts to inline styles at render time)
-- **Resend** for email delivery (sending + receiving on `mabenn.com`)
-- **Supabase Auth Hook** (`send_email`) intercepts auth emails and sends via Resend
-
-### Template conventions
-
-- Force light mode only (`color-scheme: light only`) — no dark mode email support
-- Use PNG for images in emails (SVG not supported in Gmail/Outlook)
-- Edge Function templates use HTML string builders (no React/JSX at runtime) to keep cold starts under the 5-second auth hook timeout
-- Button pattern: `display: block` for full-width, centered text via `<Section>` wrapper
-- All templates support EN, PT-BR, ES via locale prop
-- From address: `mabenn <noreply@mabenn.com>` on all emails
-
-### Reply-to policy
-
-- **Conversational emails** (invite code, waitlist welcome): set `replyTo: hello@mabenn.com` — these invite the user to ask questions
-- **Transactional/system emails** (email confirmation, password reset, future notifications): no reply-to — these are automated and don't expect a response
-
-### i18n
-
-- `src/emails/i18n.ts` — translations for app-triggered emails (waitlist, invite)
-- `supabase/functions/send-email/i18n.ts` — translations for auth-triggered emails (confirm, reset)
-- Footer tagline is duplicated in both files — keep in sync manually
-
-### Supabase Edge Function (Deno)
-
-The `send-email` Edge Function uses HTML string builders (not React Email) to avoid cold start issues with heavy npm dependencies. The `deno.json` import map aliases `resend` and `standardwebhooks`.
-
-Key implementation details:
-- Strip the `v1,whsec_` prefix from `SEND_EMAIL_HOOK_SECRET` before passing to the `Webhook` constructor
-- Deploy with `verify_jwt: false` (auth hook calls without a JWT; security is via webhook signature)
-- The handler queries the user's `preferred_locale` from the profiles table to send locale-appropriate emails
-- Deploy via MCP (`mcp__supabase__deploy_edge_function`) to ensure `verify_jwt: false` persists
-
-### Preview
-
-Run `pnpm email` to start the React Email preview server at `localhost:3333`. This previews templates from `src/emails/` only. Auth templates in `supabase/functions/` are tested by triggering the actual auth flow locally (sign up, reset password).
+Organize around product domains: auth, properties, memberships, charges, statements, ingestion, provider-profiles, documents, disputes, payments, notifications, analytics. Keep domain logic close to where it is used.
 
 ---
 
-## Preferred Backend Patterns
+## Performance
 
-Default to:
-
-- explicit domain modeling
-- narrow, understandable APIs / actions
-- idempotent ingestion workflows where possible
-- audit-friendly mutations
-- clear ownership and access checks
-- deterministic parsing/configuration patterns
-- background processing only when truly useful
-
-Avoid:
-
-- magical pipelines that are hard to debug
-- AI-dependent core workflows
-- complex event choreography too early
-- hidden side effects around billing state
-
----
-
-## Testing Priorities
-
-Prioritize tests around:
-
-- permissions and access control
-- money calculations
-- responsibility allocation
-- statement generation
-- statement revision behavior
-- extraction validation logic
-- dispute flow
-- payment mark / confirm / reject flow
-- localization-sensitive UI states
-- critical mobile UX regressions where practical
-
-Not every component needs exhaustive testing.
-The sensitive workflow logic does.
-
-### Integration tests
-
-Integration tests run against a real local Supabase instance. They test server action core functions with actual database operations, RLS policies, and constraints.
-
-**Setup:** `pnpm test:integration` (requires `supabase start`). Config: `vitest.integration.config.ts` with `node` environment. Helpers in `src/test/supabase.ts`.
-
-**Server action pattern:** Every server action exports a `*Core` function that accepts a `TypedSupabaseClient` as its first parameter. The `'use server'` wrapper is a thin shell that calls `createClient()` then delegates. Tests call the core function with an authenticated test client.
-
-```ts
-// Core — testable
-export async function updatePropertyCore(supabase: TypedSupabaseClient, input) { ... }
-
-// Wrapper — thin shell for Next.js
-export async function updateProperty(input) {
-  const supabase = await createClient()
-  return updatePropertyCore(supabase, input)
-}
-```
-
-**Test helpers:**
-- `createTestUser()` — creates auth user, returns authenticated client + userId
-- `createTestProperty(client)` — creates property + unit via RPC
-- `cleanupTestUser(userId)` — deletes user and all their data
-- `getAdminClient()` — bypasses RLS, used for assertions only
-
-### Audit triggers
-
-A generic `audit_log_trigger()` Postgres function automatically logs INSERT/UPDATE/DELETE operations to the `audit_events` table with `actor_id`, `old_values`, and `new_values` as JSONB.
-
-Currently attached to: `charge_definitions`, `recurring_rules`, `responsibility_allocations`.
-
-**To add audit logging to a new table**, create a migration with one line:
-```sql
-create trigger audit_<table_name>
-  after insert or update or delete on <table_name>
-  for each row execute function audit_log_trigger();
-```
-
----
-
-## Suggested Folder / Domain Mindset
-
-Organize around product domains, not just technical layers.
-
-Example domains:
-
-- auth
-- properties
-- memberships
-- charges
-- statements
-- ingestion
-- provider-profiles
-- documents
-- disputes
-- payments
-- notifications
-- analytics
-
-Keep domain logic close to where it is used.
-Avoid a repo structure that makes core workflows hard to trace.
+- Keep public pages lightweight, product screens responsive
+- Use intentional loading states (universal `PageLoader`, not per-page skeletons)
+- Minimize unnecessary round trips, use query caching thoughtfully
+- Do not overuse SSR for authenticated screens
 
 ---
 
 ## Definition of Done
 
-A feature is not done just because it "works."
-
-It should also:
-
-- match the intended product behavior
-- respect access control
-- handle loading / empty / error states
-- work on mobile sizes first
-- use components from `docs/project/components.md` — not reinvented alternatives
-- feel aligned with `docs/project/design.md`
-- avoid obvious trust-breaking edge cases
-- emit required analytics if it is a key workflow
-- preserve statement / billing integrity where relevant
+A feature must: match intended product behavior, respect access control, handle loading/empty/error states, work on mobile first, use existing components, align with the design system, avoid trust-breaking edge cases, emit required analytics for key workflows, and preserve statement/billing integrity.
 
 ---
 
-## Linear + GitHub Integration Rules
+## Wireframe Rules
 
-This project uses Linear for issue tracking with GitHub integration for automatic status updates. Follow these conventions so that issues move through the workflow automatically.
-
-### Branch naming
-
-Include the Linear issue identifier in the branch name:
-
-```
-username/PRO-123-short-description
-```
-
-Examples:
-- `brandon/PRO-42-add-tenant-invite-flow`
-- `feature/PRO-123-fix-statement-publishing`
-
-The identifier (`TEAM-NUMBER`) is case-insensitive. It must appear somewhere in the branch name.
-
-### PR titles
-
-Include the issue identifier in the PR title:
-
-```
-PRO-123: Description of changes
-```
-
-### PR descriptions and commit messages
-
-Use magic words to link issues when needed:
-
-```
-Closes PRO-123
-Fixes PRO-123
-Resolves PRO-123
-```
-
-### Automatic status transitions
-
-| Git/PR Event | Linear Issue Status |
-|---|---|
-| Branch created with issue ID | **In Progress** |
-| PR opened | **In Review** |
-| PR merged | **Done** |
-
-### Rules
-
-- Every feature branch must reference a Linear issue ID
-- Do not create branches or PRs without a corresponding Linear issue
-- Use the team prefix `PRO` (e.g., `PRO-123`)
-- When a PR addresses multiple issues, list each with a magic word in the PR description
-
-### Milestones
-
-| # | Milestone | Goal | Timeline |
-|---|---|---|---|
-| M1 | Foundation & Public Entry | Auth, property/unit setup, PWA shell, landing page | Weeks 3–4 |
-| M2 | Landlord Billing Workflow | Charges, statements, completeness, publishing, revisions | Weeks 5–6 |
-| M3 | Bill Ingestion & Extraction | Upload, email ingestion, bill formats, extraction, correction | Weeks 7–8 |
-| M4 | Tenant Trust & Collaboration | Tenant views, splits, disputes, payment marking, notifications | Weeks 9–10 |
-| M5 | Launch Readiness | Growth loops, analytics, pulse surveys, QA, deploy | Weeks 11–12 |
-
-### Features by Milestone
-
-#### M1: Foundation & Public Entry
-
-| Feature | Description |
-|---|---|
-| Auth: Email + Google sign-in | Low-friction onboarding for landlords and tenants |
-| Localization: EN + PT-BR + ES | i18n foundation with three languages |
-| PWA foundation | Installable experience, service worker, manifest |
-| Theme support scaffolding | Light / dark / system theme |
-| Property and unit setup | Core object model — create properties, add units |
-| Multi-property landlord support | Landlord can manage multiple properties |
-| Memberships and roles | Role-based access: landlord, tenant |
-| Country-aware data model | Brazil-first but extensible |
-| Currency-aware money model | BRL in minor units, extensible to other currencies |
-| Public landing page | Marketing page with value proposition |
-| Landlord self-serve sign-up | Sign-up flow from landing page |
-
-#### M2: Landlord Billing Workflow
-
-| Feature | Description |
-|---|---|
-| Charge definitions | Define rent and expected recurring/variable charges per unit |
-| Monthly recurring charge support | Auto-generate recurring charges each month |
-| Landlord/tenant responsibility allocation | Define who pays what portion of each charge |
-| Draft charge instances | Create charge instances in draft for review |
-| Statement generation | Generate monthly draft statements from charge definitions |
-| Statement completeness warnings | Flag missing expected charges before publish |
-| Monthly statement publishing | Publish statements as shared system of record |
-| Statement revision tracking | Track changes to published statements, preserve history |
-| Audit trail foundation | Log sensitive changes for trust and debugging |
-
-#### M3: Bill Ingestion & Extraction
-
-| Feature | Description |
-|---|---|
-| Manual PDF/image upload | Upload bill documents directly |
-| Landlord bill-ingestion email address | Forward bills to a dedicated email for ingestion |
-| Provider bill formats (data-driven) | Configurable extraction profiles per provider |
-| Example document previews | Help landlords pick the right bill format |
-| New bill format request workflow | Submit sample bill when correct format doesn't exist |
-| Deterministic extraction flow | Apply bill format rules to extract charge data |
-| Extraction validation and correction | Review, correct, and approve extracted data |
-| Raw document storage | Store source documents with ingestion metadata |
-| Ingestion status handling | Track document processing state |
-
-#### M4: Tenant Trust & Collaboration
-
-| Feature | Description |
-|---|---|
-| Tenant statement view | Tenant sees published statements with what they owe |
-| Charge source transparency indicators | Show if charge is manual, imported, or corrected |
-| Source document preview/access | Tenant can view the original bill |
-| Multiple tenants per property | Equal permission scope for shared households |
-| Tenant-side split coordination | Tenants divide their portion without changing landlord obligations |
-| Tenant invites | Invite household members to shared visibility |
-| Charge dispute/review flow | Structured way to question charges |
-| Tenant marks paid | Tenant records payment with method, date, receipt |
-| Landlord confirms/rejects payment | Landlord reviews and confirms or rejects with reason |
-| Landlord Pix key | Profile-level Pix key with per-unit override, shown on mark-as-paid |
-| Payment receipt upload | Optional receipt upload as proof of payment |
-| In-app notifications | Notification center for workflow events |
-| Email notifications | Email alerts for key moments (statement ready, payment, disputes) |
-
-#### M5: Launch Readiness
-
-| Feature | Description |
-|---|---|
-| Tenant-invites-landlord flow | Tenant-driven landlord acquisition loop |
-| Landlord acquisition attribution | Track where new landlords come from |
-| Pulse surveys | Trust and clarity signals at end of billing cycle |
-| PostHog analytics instrumentation | Event tracking for activation, usage, growth |
-| QA and testing | Permission tests, money calculations, workflow coverage |
-| LGPD-conscious review | Privacy and data handling audit |
-| Deployment and launch prep | Production deploy, monitoring, launch checklist |
-
-### Notes for Linear Setup
-
-- One **Project** named "mabenn MVP" containing all work
-- Create **Milestones** (M1–M5) inside the project
-- Create **Issues** for each feature, assigned to the corresponding milestone
-- Larger features should be broken into sub-issues during implementation
-- Use **Labels** for feature categories: `auth`, `properties`, `charges`, `statements`, `ingestion`, `tenants`, `payments`, `notifications`, `analytics`, `infrastructure`
-- Set milestone target dates based on the roadmap timeline
-- Link the GitHub repo so branch/PR automation works
+Wireframes in `docs/wireframes/` are low-fidelity structural guides. Use them for layout structure and content hierarchy. Apply design judgment for color, spacing, typography. Follow the design system skill and design tokens in `globals.css`. Never copy wireframe grays or placeholder styling into production code.
 
 ---
 
-## Versioning & releases
+## Rules & Skills Reference
 
-- Use **semantic versioning** (`MAJOR.MINOR.PATCH`).
-  - `MAJOR` — breaking or milestone releases
-  - `MINOR` — new features
-  - `PATCH` — bug fixes, small improvements
-- Create a **GitHub Release** for each feature PR merged to `main`.
-- Changelog and version bump happen **inside the feature PR** — not as a separate commit after merge. This ensures only one Vercel deployment per release.
-- Workflow for a feature PR:
-  1. Update `CHANGELOG.md` with the new version entry
-  2. Bump `version` in `package.json`
-  3. Commit as part of the feature branch (separate commit or included in the main commit)
-  4. Push and create PR
-  5. Merge PR to `main`
-  6. If there are new Supabase migrations, push them to production: `npx supabase db push --linked`
-  7. Tag: `git tag vX.Y.Z`
-  8. Push tag: `git push origin vX.Y.Z`
-  9. Create release: `gh release create vX.Y.Z --title "vX.Y.Z — Short description" --generate-notes`
+Detailed guidance lives in rules and skills — not duplicated here:
 
----
-
-## Changelog & update notifications
-
-- **`CHANGELOG.md`** lives at the project root and is the single source of truth for release notes.
-- Write changelog entries for **lay users**, not developers (e.g., "Install mabenn to your home screen" instead of "PWA support with Serwist").
-- Each version gets a `## vX.Y.Z` heading followed by bullet points.
-- At build time, `next.config.ts` parses `CHANGELOG.md` to extract notes for the current `package.json` version and exposes them as `NEXT_PUBLIC_APP_VERSION` and `NEXT_PUBLIC_RELEASE_NOTES`.
-- When the service worker activates an update, `SwUpdateNotifier` shows a toast with the current version's release notes and a "View past updates" link to `/changelog`.
-- The `/changelog` route is a static page that renders the full `CHANGELOG.md` with `react-markdown`.
-- When releasing a new version, update `CHANGELOG.md` **before** bumping the version in `package.json`.
-
----
-
-## Final Reminders
-
-This product wins by being:
-
-- simpler than spreadsheets
-- clearer than email threads
-- more trustworthy than ad hoc billing
-- more focused than bloated property-management software
-
-Every implementation decision should protect that.
-
-When in doubt:
-
-- simplify
-- make it clearer
-- preserve trust
-- keep it mobile-first
-- avoid building the future at the expense of the MVP
+- **Security & LGPD** — `.claude/rules/security-lgpd.md`
+- **Database migrations** — `.claude/rules/database-migrations.md`
+- **Linear + GitHub workflow** — `.claude/rules/linear-github.md`
+- **Versioning & releases** — `.claude/rules/versioning-releases.md`
+- **Frontend patterns** (hooks, forms, component ordering) — `.claude/skills/frontend-patterns/`
+- **Data modeling** (money, entities, provider profiles) — `.claude/skills/data-modeling/`
+- **Statement workflow** — `.claude/skills/statement-workflow/`
+- **Bill ingestion & extraction** — `.claude/skills/bill-ingestion/`
+- **Payment workflow** — `.claude/skills/payment-workflow/`
+- **Tenant trust** — `.claude/skills/tenant-trust/`
+- **Email templates** — `.claude/skills/email-templates/`
+- **Notifications** — `.claude/skills/notifications/`
+- **Testing priorities** — `.claude/skills/testing/`
+- **Analytics events & funnels** — `.claude/skills/analytics/`
+- **Design system** — `.claude/skills/design-system/`
+- **Component library** — `.claude/skills/component-library/`

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
+import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
@@ -44,16 +45,8 @@ export async function GET(request: Request) {
       const cookieStore = await cookies()
       const pendingInviteCode = cookieStore.get('pending_invite_code')?.value
       if (pendingInviteCode) {
-        const inviteCode = decodeURIComponent(pendingInviteCode).trim().toUpperCase()
-        await supabase
-          .from('invitations')
-          .update({
-            status: 'accepted',
-            accepted_by: data.session.user.id,
-            accepted_at: new Date().toISOString(),
-          })
-          .eq('code', inviteCode)
-          .eq('status', 'pending')
+        const inviteCode = decodeURIComponent(pendingInviteCode)
+        await redeemInviteByCodeCore(supabase, data.session.user.id, inviteCode)
 
         // Clear the cookie
         const response = NextResponse.redirect(buildUrl(next))

@@ -14,6 +14,7 @@ Instrument the product from day one with PostHog.
 
 - property_created
 - charge_definition_created
+- statement_draft_created
 - bill_received
 - extraction_failed
 - correction_submitted
@@ -26,6 +27,20 @@ Instrument the product from day one with PostHog.
 - payment_rejected
 - payment_confirmed
 - pulse_survey_answered
+
+## Required Person Properties
+
+- `acquisition_channel` — set once at signup via `posthog.identify`. Derived from the `source` column on the redeemed invitation (`'waitlist'` | `'direct'`). Future values: `'tenant_invite'`, `'organic'`.
+
+## Landlord Activation Funnel
+
+The core metric: does a landlord who signs up actually use the billing workflow?
+
+```
+signed_up → property_created → charge_definition_created → tenant_invited → statement_draft_created → statement_published → statement_viewed → payment_marked → payment_confirmed
+```
+
+Each drop-off tells you something actionable. This funnel can be broken down by `acquisition_channel` to compare channel quality.
 
 ## Philosophy
 
