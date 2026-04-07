@@ -15,6 +15,16 @@ Prioritize tests around: permissions/access control, money calculations, respons
 
 Not every component needs exhaustive testing. The sensitive workflow logic does.
 
+## Test File Location
+
+Place test files in a `__tests__/` directory colocated with the module they test. For example:
+
+- `src/lib/invitations/__tests__/accept-tenant-invite.integration.test.ts` tests `src/lib/invitations/accept-tenant-invite.ts`
+- `src/lib/__tests__/validation.test.ts` tests `src/lib/validation.ts`
+- `src/app/actions/properties/__tests__/invite-tenant.test.ts` tests `src/app/actions/properties/invite-tenant.ts`
+
+Unit tests use the suffix `.test.ts`. Integration tests use `.integration.test.ts`.
+
 ## Integration Tests
 
 Run against a real local Supabase instance with actual DB operations, RLS policies, and constraints.
