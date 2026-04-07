@@ -1,7 +1,15 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
 import { PostHogIdentify } from '@/components/posthog-identify'
+
+export const metadata: Metadata = {
+  title: {
+    absolute: 'mabenn',
+    template: '%s | mabenn',
+  },
+}
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()

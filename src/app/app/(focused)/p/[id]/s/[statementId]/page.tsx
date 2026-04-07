@@ -1,12 +1,32 @@
+import type { Metadata } from 'next'
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
 import { FadeIn } from '@/components/fade-in'
-import { fetchStatement, statementQueryKey } from '@/lib/queries/statement'
+import { statementQueryKey } from '@/lib/queries/statement'
 import { fetchStatementCharges, statementChargesQueryKey } from '@/lib/queries/statement-charges'
-import { fetchProperty, propertyQueryKey } from '@/lib/queries/property'
-import { fetchUnit, unitQueryKey } from '@/lib/queries/unit'
+import { propertyQueryKey } from '@/lib/queries/property'
+import { unitQueryKey } from '@/lib/queries/unit'
+import { getStatement, getProperty, getUnit } from '@/lib/queries/server'
 import { fetchMissingCharges, missingChargesQueryKey } from '@/lib/queries/missing-charges'
 import { StatementDraft } from './statement-draft'
+
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; statementId: string }>
+}): Promise<Metadata> {
+  const { statementId } = await params
+  try {
+    const statement = await getStatement(statementId)
+    const unit = await getUnit(statement.unitId)
+    const period = `${MONTH_SHORT[statement.periodMonth - 1]} ${statement.periodYear}`
+    return { title: `${period} Statement — ${unit.name}` }
+  } catch {
+    return { title: 'Statement' }
+  }
+}
 
 export default async function StatementPage({
   params,
@@ -17,25 +37,23 @@ export default async function StatementPage({
   const supabase = await createClient()
   const queryClient = new QueryClient()
 
-  // Fetch statement first to get unitId and period
-  const statement = await queryClient.fetchQuery({
-    queryKey: statementQueryKey(statementId),
-    queryFn: () => fetchStatement(supabase, statementId),
-  })
+  // Fetch via React.cache (shared with generateMetadata)
+  const [statement, property] = await Promise.all([
+    getStatement(statementId),
+    getProperty(propertyId),
+  ])
+  const unit = await getUnit(statement.unitId)
 
-  // Prefetch all remaining data in parallel
+  // Seed React Query cache for client hydration
+  queryClient.setQueryData(statementQueryKey(statementId), statement)
+  queryClient.setQueryData(propertyQueryKey(propertyId), property)
+  queryClient.setQueryData(unitQueryKey(statement.unitId), unit)
+
+  // Prefetch remaining data
   await Promise.all([
     queryClient.prefetchQuery({
       queryKey: statementChargesQueryKey(statementId),
       queryFn: () => fetchStatementCharges(supabase, statementId),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: propertyQueryKey(propertyId),
-      queryFn: () => fetchProperty(supabase, propertyId),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: unitQueryKey(statement.unitId),
-      queryFn: () => fetchUnit(supabase, statement.unitId),
     }),
     queryClient.prefetchQuery({
       queryKey: missingChargesQueryKey(statement.unitId, statementId),

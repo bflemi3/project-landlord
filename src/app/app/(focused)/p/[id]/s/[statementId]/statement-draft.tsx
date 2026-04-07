@@ -19,6 +19,7 @@ import { useStatement } from '@/lib/hooks/use-statement'
 import { useUnit } from '@/lib/hooks/use-unit'
 import { useProperty } from '@/lib/hooks/use-property'
 import { formatPeriod } from '@/lib/statement-urgency'
+import { formatAddress } from '@/lib/address/format-address'
 import { SummaryCard } from './sections/summary-card'
 import { CompletenessWarning } from './sections/completeness-warning'
 import { ChargesList, scrollToMissingCharges } from './sections/charges-list'
@@ -52,8 +53,7 @@ export function StatementDraft({ statementId, propertyId }: { statementId: strin
     })
   }, [statementId])
 
-  const address = [property.street, property.number].filter(Boolean).join(', ')
-  const subtitle = [unit.name, address].filter(Boolean).join(' · ')
+  const subtitle = formatAddress(property)
 
   function handleAddCharge() {
     setEditingInstance(null)

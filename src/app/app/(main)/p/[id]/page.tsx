@@ -1,7 +1,9 @@
+import type { Metadata } from 'next'
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
 import { FadeIn } from '@/components/fade-in'
-import { fetchProperty, propertyQueryKey } from '@/lib/queries/property'
+import { propertyQueryKey } from '@/lib/queries/property'
+import { getProperty } from '@/lib/queries/server'
 import { fetchUnit, unitQueryKey } from '@/lib/queries/unit'
 import { fetchUnitCharges, unitChargesQueryKey } from '@/lib/queries/unit-charges'
 import { fetchUnitTenants, unitTenantsQueryKey } from '@/lib/queries/unit-tenants'
@@ -10,16 +12,24 @@ import { fetchUnitStatements, unitStatementsQueryKey } from '@/lib/queries/unit-
 import { fetchMissingCharges, missingChargesQueryKey } from '@/lib/queries/missing-charges'
 import { PropertyDetail } from './property-detail'
 
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params
+  try {
+    const property = await getProperty(id)
+    return { title: property.name }
+  } catch {
+    return { title: 'Property' }
+  }
+}
+
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const supabase = await createClient()
   const queryClient = new QueryClient()
 
-  // Prefetch property and its units' data on the server
-  const property = await queryClient.fetchQuery({
-    queryKey: propertyQueryKey(id),
-    queryFn: () => fetchProperty(supabase, id),
-  })
+  // Fetch property via React.cache (shared with generateMetadata)
+  const property = await getProperty(id)
+  queryClient.setQueryData(propertyQueryKey(id), property)
 
   // Prefetch all unit data in parallel
   if (property) {
