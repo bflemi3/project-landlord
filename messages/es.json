@@ -371,6 +371,7 @@
     "tapToAttachBill": "Toca para adjuntar una factura",
     "uploaded": "Subido",
     "fileTooLarge": "Archivo muy grande. Tamaño máximo es {max}MB.",
+    "billRemovedOnSave": "La factura se eliminará al guardar.",
     "incomplete": "incompleto",
     "uploadFailed": "Error al subir. Inténtelo de nuevo."
   },

@@ -371,6 +371,7 @@
     "tapToAttachBill": "Toque para anexar uma conta",
     "uploaded": "Enviado",
     "fileTooLarge": "Arquivo muito grande. Tamanho máximo é {max}MB.",
+    "billRemovedOnSave": "A conta será removida ao salvar.",
     "incomplete": "incompleta",
     "uploadFailed": "Falha no upload. Tente novamente."
   },

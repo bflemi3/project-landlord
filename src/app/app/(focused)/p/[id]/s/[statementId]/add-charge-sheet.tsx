@@ -15,7 +15,6 @@ import { addChargeToStatement } from '@/app/actions/statements/add-charge'
 import { updateChargeInstance } from '@/app/actions/statements/update-charge-instance'
 import { removeChargeInstance } from '@/app/actions/statements/remove-charge-instance'
 import { createSourceDocumentRecord } from '@/app/actions/statements/create-source-document-record'
-import { getSourceDocumentUrl } from '@/app/actions/statements/get-source-document-url'
 import { deleteBillDocument } from '@/app/actions/statements/delete-bill-document'
 import { deleteStorageFile } from '@/app/actions/storage/delete-storage-file'
 import { saveChargeAsDefinition } from '@/app/actions/statements/save-charge-definition'
@@ -110,7 +109,7 @@ function AddChargeForm({
   const isEditing = !!existingInstance
   const isFillingMissing = !!missingCharge
   const isAdHoc = !isEditing && !isFillingMissing
-  const isVariable = missingCharge?.chargeType === 'variable'
+  const isVariable = missingCharge?.chargeType === 'variable' || existingInstance?.chargeType === 'variable'
   const [confirmingRemove, setConfirmingRemove] = useState(false)
   const [saveForLater, setSaveForLater] = useState(false)
   const [savedChargeType, setSavedChargeType] = useState<'recurring' | 'variable'>('recurring')
@@ -135,7 +134,6 @@ function AddChargeForm({
 
   // Bill attachment state
   const [file, setFile] = useState<File | null>(null)
-  const [existingDocumentUrl, setExistingDocumentUrl] = useState<string | null>(null)
   const [uploadedStoragePath, setUploadedStoragePath] = useState<string | null>(null)
   const [removedExistingBill, setRemovedExistingBill] = useState(false)
   const [authToken, setAuthToken] = useState<string | null>(null)
@@ -143,25 +141,25 @@ function AddChargeForm({
   const savedRef = useRef(false)
   const uploadedStoragePathRef = useRef<string | null>(null)
 
+
   const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency
   const numAmount = Number(amount.replace(',', '.'))
   const amountMinor = numAmount ? Math.round(numAmount * 100) : 0
-  const canSave = name.trim().length > 0 && amountMinor > 0
+  const isValid = name.trim().length > 0 && amountMinor > 0
+  const isDirty = isEditing
+    ? amountMinor !== existingInstance.amountMinor || removedExistingBill || !!file
+    : true // new charges are always "dirty"
+  const canSave = isValid && isDirty
 
-  // Fetch signed URL and auth token on mount
+  // Fetch auth token on mount
   useEffect(() => {
     async function init() {
       const supabase = createClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (session) setAuthToken(session.access_token)
-
-      if (existingInstance?.sourceDocumentId && !removedExistingBill) {
-        const { url } = await getSourceDocumentUrl(existingInstance.sourceDocumentId)
-        setExistingDocumentUrl(url)
-      }
     }
     init()
-  }, [existingInstance?.sourceDocumentId, removedExistingBill])
+  }, [])
 
   // Clean up orphaned storage files on unmount
   useEffect(() => {
@@ -183,20 +181,17 @@ function AddChargeForm({
     }
 
     setFile(selectedFile)
-    setRemovedExistingBill(false)
 
     if (path) {
       setUploadedStoragePath(path)
       uploadedStoragePathRef.current = path
     }
-    setExistingDocumentUrl(null)
+
   }
 
   function handleClear() {
     if (existingInstance?.sourceDocumentId && !removedExistingBill && !file) {
       setRemovedExistingBill(true)
-      setExistingDocumentUrl(null)
-      deleteBillDocument(existingInstance.sourceDocumentId)
     }
 
     if (uploadedStoragePath) {
@@ -206,6 +201,18 @@ function AddChargeForm({
     setFile(null)
     setUploadedStoragePath(null)
     uploadedStoragePathRef.current = null
+  }
+
+  async function handleViewBill(filePath: string) {
+    const supabase = createClient()
+    const { data, error } = await supabase.storage
+      .from('source-documents')
+      .createSignedUrl(filePath, 3600)
+    if (data?.signedUrl) {
+      window.open(data.signedUrl, '_blank')
+    } else if (error) {
+      toast.error(t('uploadFailed'))
+    }
   }
 
   function handleSave() {
@@ -231,15 +238,26 @@ function AddChargeForm({
           periodYear,
           periodMonth,
         })
+        if (!newDocId) {
+          // DB record creation failed — clean up the orphaned storage file
+          deleteStorageFile('source-documents', uploadedStoragePath)
+          toast.error(t('uploadFailed'))
+          return
+        }
         documentId = newDocId
       }
 
       if (isEditing) {
+        // Delete old bill if user removed it (whether or not they added a new one)
+        if (removedExistingBill && existingInstance.sourceDocumentId) {
+          deleteBillDocument(existingInstance.sourceDocumentId)
+        }
+
         let newSourceDocumentId: string | null | undefined
-        if (removedExistingBill && !documentId) {
-          newSourceDocumentId = null
-        } else if (documentId) {
+        if (documentId) {
           newSourceDocumentId = documentId
+        } else if (removedExistingBill) {
+          newSourceDocumentId = null
         } else {
           newSourceDocumentId = undefined
         }
@@ -307,7 +325,6 @@ function AddChargeForm({
   }
 
   const showExistingBill = !!existingInstance?.sourceDocument && !removedExistingBill && !file
-  const fileUploadUrl = showExistingBill ? existingDocumentUrl : undefined
   const fileUploadFileName = showExistingBill ? existingInstance?.sourceDocument?.fileName : undefined
 
   return (
@@ -351,11 +368,15 @@ function AddChargeForm({
 
         <FileUpload
           file={file}
-          uploadedUrl={fileUploadUrl}
           uploadedFileName={fileUploadFileName}
           onFileSelect={handleFileSelect}
           onClear={handleClear}
-          hint={isVariable && !file && !showExistingBill ? t('billNudge') : undefined}
+          onView={showExistingBill && existingInstance?.sourceDocument?.filePath
+            ? () => handleViewBill(existingInstance.sourceDocument!.filePath)
+            : undefined}
+          hint={removedExistingBill && !file
+            ? t('billRemovedOnSave')
+            : isVariable && !file && !showExistingBill ? t('billNudge') : undefined}
           bucket="source-documents"
           generateStoragePath={generateStoragePath}
           authToken={authToken ?? undefined}

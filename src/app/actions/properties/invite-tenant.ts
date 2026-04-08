@@ -120,8 +120,9 @@ export async function inviteTenant(
     .eq('id', propertyId)
     .single()
 
-  const addressOneLine = property ? formatAddress(property) : ''
-  const addressHtml = property ? formatAddressHtml(property) : ''
+  const addressFields = property ? { ...property, countryCode: property.country_code } : null
+  const addressOneLine = addressFields ? formatAddress(addressFields) : ''
+  const addressHtml = addressFields ? formatAddressHtml(addressFields) : ''
   const propertyName = addressOneLine || property?.name || ''
 
   const result = await inviteTenantCore(supabase, {

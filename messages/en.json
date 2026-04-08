@@ -371,6 +371,7 @@
     "tapToAttachBill": "Tap to attach a bill",
     "uploaded": "Uploaded",
     "fileTooLarge": "File is too large. Maximum size is {max}MB.",
+    "billRemovedOnSave": "Bill will be removed when you save.",
     "incomplete": "incomplete",
     "uploadFailed": "Upload failed. Please try again."
   },

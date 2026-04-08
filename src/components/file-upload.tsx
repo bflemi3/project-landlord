@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect, type MutableRefObject } from 'react'
 import { useTranslations } from 'next-intl'
-import { Upload, FileText, X, Eye } from 'lucide-react'
+import { Upload, FileText, X, Eye, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { uploadFile, type UploadFileResult } from '@/lib/storage/upload-file'
 
@@ -14,6 +14,7 @@ export function FileUpload({
   uploadedUrl,
   uploadedFileName,
   onClear,
+  onView,
   maxSizeMB = MAX_SIZE_MB,
   accept = 'application/pdf,image/*',
   className,
@@ -30,6 +31,7 @@ export function FileUpload({
   uploadedUrl?: string | null
   uploadedFileName?: string | null
   onClear?: () => void
+  onView?: () => void
   maxSizeMB?: number
   accept?: string
   className?: string
@@ -47,10 +49,11 @@ export function FileUpload({
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<number | undefined>(undefined)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [viewing, setViewing] = useState(false)
 
   const maxBytes = maxSizeMB * 1024 * 1024
   const activeFile = file ?? selectedFile
-  const hasFile = !!activeFile || !!uploadedUrl
+  const hasFile = !!activeFile || !!uploadedUrl || !!uploadedFileName
   const isUploading = progress !== undefined && progress >= 0 && progress < 100
   const isImage = activeFile?.type.startsWith('image/') ?? false
 
@@ -159,22 +162,36 @@ export function FileUpload({
                 </div>
               </div>
             ) : (
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-sm text-muted-foreground">
                 {activeFile ? `${(activeFile.size / 1024).toFixed(0)} KB` : t('uploaded')}
               </p>
             )}
           </div>
 
           <div className="flex shrink-0 items-center gap-1">
-            {previewUrl && !isUploading && (
-              <a
-                href={previewUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <Eye className="size-4" />
-              </a>
+            {(onView || previewUrl) && !isUploading && (
+              onView ? (
+                <button
+                  type="button"
+                  disabled={viewing}
+                  onClick={async () => {
+                    setViewing(true)
+                    try { await onView() } finally { setViewing(false) }
+                  }}
+                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                >
+                  {viewing ? <Loader2 className="size-4 animate-spin" /> : <Eye className="size-4" />}
+                </button>
+              ) : (
+                <a
+                  href={previewUrl!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <Eye className="size-4" />
+                </a>
+              )
             )}
             <button
               type="button"
@@ -202,7 +219,7 @@ export function FileUpload({
           {t('tapToAttachBill')}
         </p>
         {hint && (
-          <p className="text-center text-xs text-muted-foreground/70">
+          <p className="rounded-lg bg-amber-500/10 px-3 py-1.5 text-center text-sm text-amber-600 dark:text-amber-400">
             {hint}
           </p>
         )}
@@ -215,7 +232,7 @@ export function FileUpload({
         className="hidden"
       />
       {error && (
-        <p className="mt-2 text-center text-xs text-destructive">{error}</p>
+        <p className="mt-2 text-center text-sm text-destructive">{error}</p>
       )}
     </div>
   )

@@ -393,11 +393,29 @@ Shared form primitives used by both the onboarding charge config sheet and the s
 
 **File:** `src/components/file-upload.tsx`
 
-File picker with thumbnail preview, progress bar, and size validation.
+File picker with thumbnail preview, progress bar, size validation, and optional immediate upload to Supabase Storage.
 
-**Props:** `onFileSelect`, `file?`, `uploadedUrl?`, `progress?`, `onClear?`, `maxSizeMB?` (default 10), `accept?` (default PDF + images)
+**Props:**
 
-**States:** Empty (drop zone), selected (thumbnail + file info + clear), uploading (progress bar).
+| Prop | Type | Description |
+|---|---|---|
+| `onFileSelect?` | `(file, storagePath?) => void` | Called when file is selected. Includes `storagePath` when `generateStoragePath` is provided. |
+| `file?` | `File \| null` | Controlled file from parent |
+| `uploadedUrl?` | `string \| null` | URL of an already-uploaded file (shows file card with Eye icon) |
+| `uploadedFileName?` | `string \| null` | Display name for an already-uploaded file |
+| `onClear?` | `() => void` | Called when file is removed |
+| `hint?` | `string` | Hint text shown below "Tap to attach" in the drop zone |
+| `maxSizeMB?` | `number` | Max file size (default 10) |
+| `accept?` | `string` | Accepted MIME types (default PDF + images) |
+| `bucket?` | `string` | Supabase Storage bucket name — enables immediate upload |
+| `generateStoragePath?` | `(file) => string` | Returns a storage path for the file. Called at upload time. |
+| `authToken?` | `string` | Supabase auth token for upload |
+| `supabaseUrl?` | `string` | Supabase project URL for upload |
+| `uploadPromiseRef?` | `MutableRefObject` | Ref set during upload so the parent can await it at save time |
+
+**Upload mode:** When `bucket`, `generateStoragePath`, `authToken`, and `supabaseUrl` are all provided, the component uploads immediately on file select with real progress reporting. The parent can await `uploadPromiseRef.current` to wait for an in-flight upload before saving.
+
+**States:** Empty (drop zone with optional hint), selected/uploading (file card + progress bar), uploaded (file card with Eye/X actions).
 
 ---
 

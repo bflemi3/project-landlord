@@ -30,9 +30,6 @@ vi.mock('@/app/actions/statements/add-charge', () => ({
 vi.mock('@/app/actions/statements/save-charge-definition', () => ({
   saveChargeAsDefinition: vi.fn().mockResolvedValue({ success: true }),
 }))
-vi.mock('@/app/actions/statements/get-source-document-url', () => ({
-  getSourceDocumentUrl: vi.fn().mockResolvedValue({ url: 'https://example.com/signed-bill.pdf' }),
-}))
 vi.mock('@/app/actions/statements/delete-bill-document', () => ({
   deleteBillDocument: vi.fn().mockResolvedValue({ success: true }),
 }))
@@ -50,6 +47,13 @@ vi.mock('@/lib/supabase/client', () => ({
     auth: {
       getSession: vi.fn().mockResolvedValue({
         data: { session: { access_token: 'test-token' } },
+      }),
+    },
+    storage: {
+      from: vi.fn().mockReturnValue({
+        createSignedUrl: vi.fn().mockResolvedValue({
+          data: { signedUrl: 'https://example.com/signed-bill.pdf' },
+        }),
       }),
     },
   }),
@@ -143,7 +147,7 @@ describe('AddChargeSheet — bill attachment', () => {
     expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
   })
 
-  it('calls deleteBillDocument when removing an existing bill', async () => {
+  it('does not delete bill on X click — only marks for removal', async () => {
     renderSheet({ existingInstance: existingInstanceWithBill })
 
     await waitFor(() => {
@@ -154,8 +158,12 @@ describe('AddChargeSheet — bill attachment', () => {
     fireEvent.click(clearButton)
 
     const { deleteBillDocument } = await import('@/app/actions/statements/delete-bill-document')
+    // Should NOT be called yet — deletion happens at save time
+    expect(deleteBillDocument).not.toHaveBeenCalled()
+
+    // Dropzone should appear (bill removed from UI)
     await waitFor(() => {
-      expect(deleteBillDocument).toHaveBeenCalledWith('doc-1')
+      expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
     })
   })
 
@@ -223,6 +231,67 @@ describe('AddChargeSheet — bill attachment', () => {
     // The first deleteStorageFile call was from clearing
     const callCountAfterClear = (deleteStorageFile as ReturnType<typeof vi.fn>).mock.calls.length
     expect(callCountAfterClear).toBeGreaterThan(callCountBefore)
+  })
+
+  it('deletes old bill on save when user replaced it with a new file', async () => {
+    renderSheet({ existingInstance: existingInstanceWithBill })
+
+    await waitFor(() => {
+      expect(screen.getByText('electricity-march.pdf')).toBeInTheDocument()
+    })
+
+    // Remove existing bill
+    const clearButton = screen.getByTestId('file-clear-btn')
+    fireEvent.click(clearButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
+    })
+
+    // Add a replacement file
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement
+    const file = new File(['new content'], 'replacement.pdf', { type: 'application/pdf' })
+    fireEvent.change(input, { target: { files: [file] } })
+
+    await waitFor(() => {
+      expect(screen.getByText('replacement.pdf')).toBeInTheDocument()
+    })
+
+    // Save
+    const saveButton = screen.getByText('Save changes')
+    fireEvent.click(saveButton)
+
+    const { deleteBillDocument } = await import('@/app/actions/statements/delete-bill-document')
+    await waitFor(() => {
+      expect(deleteBillDocument).toHaveBeenCalledWith('doc-1')
+    })
+  })
+
+  it('does not delete old bill when modal is closed without saving', async () => {
+    const onOpenChange = vi.fn()
+    renderSheet({ existingInstance: existingInstanceWithBill, onOpenChange })
+
+    await waitFor(() => {
+      expect(screen.getByText('electricity-march.pdf')).toBeInTheDocument()
+    })
+
+    // Remove existing bill
+    const clearButton = screen.getByTestId('file-clear-btn')
+    fireEvent.click(clearButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
+    })
+
+    const { deleteBillDocument } = await import('@/app/actions/statements/delete-bill-document')
+    ;(deleteBillDocument as ReturnType<typeof vi.fn>).mockClear()
+
+    // Close without saving (click Cancel)
+    const cancelButton = screen.getByText('Cancel')
+    fireEvent.click(cancelButton)
+
+    // deleteBillDocument should NOT have been called
+    expect(deleteBillDocument).not.toHaveBeenCalled()
   })
 
   it('cleans up orphaned storage file on unmount without saving', async () => {
