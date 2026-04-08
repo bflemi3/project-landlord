@@ -76,7 +76,7 @@ describe('FileUpload', () => {
       const file = new File(['content'], 'bill.pdf', { type: 'application/pdf' })
       fireEvent.change(input, { target: { files: [file] } })
 
-      expect(onFileSelect).toHaveBeenCalledWith(file)
+      expect(onFileSelect).toHaveBeenCalledWith(file, undefined)
     })
 
     it('calls onClear when X button is clicked', () => {
@@ -84,7 +84,7 @@ describe('FileUpload', () => {
       const file = new File(['content'], 'bill.pdf', { type: 'application/pdf' })
       renderWithIntl(<FileUpload file={file} onClear={onClear} />)
 
-      const clearButton = screen.getByRole('button')
+      const clearButton = screen.getByTestId('file-clear-btn')
       fireEvent.click(clearButton)
 
       expect(onClear).toHaveBeenCalled()
@@ -193,7 +193,7 @@ describe('FileUpload', () => {
       const callArgs = mockUploadFile.mock.calls[0][0]
       const signal = callArgs.signal as AbortSignal
 
-      const clearButton = screen.getByRole('button')
+      const clearButton = screen.getByTestId('file-clear-btn')
       fireEvent.click(clearButton)
 
       expect(signal.aborted).toBe(true)

@@ -17,13 +17,15 @@ export function FileUpload({
   maxSizeMB = MAX_SIZE_MB,
   accept = 'application/pdf,image/*',
   className,
+  hint,
   bucket,
   storagePath,
+  generateStoragePath,
   authToken,
   supabaseUrl,
   uploadPromiseRef,
 }: {
-  onFileSelect?: (file: File) => void
+  onFileSelect?: (file: File, storagePath?: string) => void
   file?: File | null
   uploadedUrl?: string | null
   uploadedFileName?: string | null
@@ -31,8 +33,10 @@ export function FileUpload({
   maxSizeMB?: number
   accept?: string
   className?: string
+  hint?: string
   bucket?: string
   storagePath?: string
+  generateStoragePath?: (file: File) => string
   authToken?: string
   supabaseUrl?: string
   uploadPromiseRef?: MutableRefObject<Promise<UploadFileResult> | null>
@@ -42,7 +46,6 @@ export function FileUpload({
   const abortRef = useRef<AbortController | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<number | undefined>(undefined)
-  const [uploadComplete, setUploadComplete] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const maxBytes = maxSizeMB * 1024 * 1024
@@ -50,7 +53,6 @@ export function FileUpload({
   const hasFile = !!activeFile || !!uploadedUrl
   const isUploading = progress !== undefined && progress >= 0 && progress < 100
   const isImage = activeFile?.type.startsWith('image/') ?? false
-  const canUpload = !!bucket && !!storagePath && !!authToken && !!supabaseUrl
 
   useEffect(() => {
     return () => {
@@ -58,29 +60,27 @@ export function FileUpload({
     }
   }, [])
 
-  function startUpload(selectedFile: File) {
-    if (!canUpload) return
+  function startUpload(selectedFile: File, uploadPath: string) {
+    if (!bucket || !authToken || !supabaseUrl) return
 
     abortRef.current?.abort()
     const controller = new AbortController()
     abortRef.current = controller
 
     setProgress(0)
-    setUploadComplete(false)
     setError(null)
 
     const promise = uploadFile({
       file: selectedFile,
-      bucket: bucket!,
-      path: storagePath!,
-      authToken: authToken!,
-      supabaseUrl: supabaseUrl!,
+      bucket,
+      path: uploadPath,
+      authToken,
+      supabaseUrl,
       onProgress: setProgress,
       signal: controller.signal,
     }).then((result) => {
       if (result.success) {
         setProgress(100)
-        setUploadComplete(true)
       } else if (result.error !== 'Upload aborted') {
         setError(t('uploadFailed'))
         setProgress(undefined)
@@ -106,10 +106,12 @@ export function FileUpload({
 
     setError(null)
     setSelectedFile(selected)
-    onFileSelect?.(selected)
 
-    if (canUpload) {
-      startUpload(selected)
+    const uploadPath = generateStoragePath?.(selected) ?? storagePath
+    onFileSelect?.(selected, uploadPath)
+
+    if (bucket && uploadPath && authToken && supabaseUrl) {
+      startUpload(selected, uploadPath)
     }
   }
 
@@ -120,7 +122,6 @@ export function FileUpload({
 
     setError(null)
     setProgress(undefined)
-    setUploadComplete(false)
     setSelectedFile(null)
     if (inputRef.current) inputRef.current.value = ''
     onClear?.()
@@ -134,6 +135,7 @@ export function FileUpload({
       <div className={cn('rounded-2xl border border-border p-3', className)}>
         <div className="flex items-center gap-3">
           {isImage && previewUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element -- blob URL from local file, not optimizable */
             <img
               src={previewUrl}
               alt={fileName}
@@ -193,12 +195,17 @@ export function FileUpload({
       <button
         type="button"
         onClick={() => inputRef.current?.click()}
-        className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border px-4 py-5 transition-colors hover:border-primary/30 hover:bg-muted/30"
+        className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-muted/50 px-4 py-5 transition-colors hover:border-primary/30 hover:bg-muted/70"
       >
         <Upload className="size-5 text-muted-foreground" />
         <p className="text-center text-sm text-muted-foreground">
           {t('tapToAttachBill')}
         </p>
+        {hint && (
+          <p className="text-center text-xs text-muted-foreground/70">
+            {hint}
+          </p>
+        )}
       </button>
       <input
         ref={inputRef}

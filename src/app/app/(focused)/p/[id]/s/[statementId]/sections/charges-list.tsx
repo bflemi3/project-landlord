@@ -107,27 +107,19 @@ export function ChargesList({
             {missingCharges.map((missing) => {
               const Icon = CHARGE_TYPE_ICONS[missing.chargeType] ?? Zap
               return (
-                <ChargeRow key={missing.definitionId} disabled className="border-transparent opacity-50">
+                <ChargeRow
+                  key={missing.definitionId}
+                  className="border-transparent"
+                  onClick={onAddMissingCharge ? () => onAddMissingCharge(missing) : undefined}
+                >
                   <ChargeRowIcon>
                     <Icon className="size-4" />
                   </ChargeRowIcon>
                   <ChargeRowContent>
                     <ChargeRowTitle>{missing.name}</ChargeRowTitle>
-                    <Badge variant="secondary" className="mt-0.5 text-xs">{t('missingBadge')}</Badge>
+                    <Badge className="mt-0.5 border-0 bg-amber-500/15 text-xs text-amber-500">{t('missingBadge')}</Badge>
                   </ChargeRowContent>
-                  {onAddMissingCharge && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-primary"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onAddMissingCharge(missing)
-                      }}
-                    >
-                      {t('add')}
-                    </Button>
-                  )}
+                  <span className="text-sm font-semibold text-primary">{t('add')}</span>
                 </ChargeRow>
               )
             })}

@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { ResponsiveModal } from '@/components/responsive-modal'
-import { InfoBox, InfoBoxContent } from '@/components/info-box'
 import { ChargeNameInput, AmountInput, PayerToggle, SplitSlider } from '@/components/charge-form-fields'
 import { FileUpload } from '@/components/file-upload'
 import { addChargeToStatement } from '@/app/actions/statements/add-charge'
@@ -140,7 +139,6 @@ function AddChargeForm({
   const [uploadedStoragePath, setUploadedStoragePath] = useState<string | null>(null)
   const [removedExistingBill, setRemovedExistingBill] = useState(false)
   const [authToken, setAuthToken] = useState<string | null>(null)
-  const [storagePath, setStoragePath] = useState<string | null>(null)
   const uploadPromiseRef = useRef<Promise<UploadFileResult> | null>(null)
   const savedRef = useRef(false)
   const uploadedStoragePathRef = useRef<string | null>(null)
@@ -174,7 +172,12 @@ function AddChargeForm({
     }
   }, [])
 
-  function handleFileSelect(selectedFile: File) {
+  function generateStoragePath(selectedFile: File): string {
+    const fileExt = selectedFile.name.split('.').pop() ?? ''
+    return `${unitId}/${periodYear}-${String(periodMonth).padStart(2, '0')}/${crypto.randomUUID()}.${fileExt}`
+  }
+
+  function handleFileSelect(selectedFile: File, path?: string) {
     if (uploadedStoragePath) {
       deleteStorageFile('source-documents', uploadedStoragePath)
     }
@@ -182,11 +185,10 @@ function AddChargeForm({
     setFile(selectedFile)
     setRemovedExistingBill(false)
 
-    const fileExt = selectedFile.name.split('.').pop() ?? ''
-    const path = `${unitId}/${periodYear}-${String(periodMonth).padStart(2, '0')}/${crypto.randomUUID()}.${fileExt}`
-    setStoragePath(path)
-    setUploadedStoragePath(path)
-    uploadedStoragePathRef.current = path
+    if (path) {
+      setUploadedStoragePath(path)
+      uploadedStoragePathRef.current = path
+    }
     setExistingDocumentUrl(null)
   }
 
@@ -202,7 +204,6 @@ function AddChargeForm({
     }
 
     setFile(null)
-    setStoragePath(null)
     setUploadedStoragePath(null)
     uploadedStoragePathRef.current = null
   }
@@ -289,6 +290,7 @@ function AddChargeForm({
       queryClient.invalidateQueries({ queryKey: statementQueryKey(statementId) })
       queryClient.invalidateQueries({ queryKey: missingChargesQueryKey(unitId, statementId) })
 
+      onSaved?.({ name: name.trim(), amountMinor, isAdHoc })
       onClose()
     })
   }
@@ -347,22 +349,15 @@ function AddChargeForm({
           </>
         )}
 
-        {isVariable && !file && !showExistingBill && (
-          <InfoBox variant="default" className="text-sm">
-            <InfoBoxContent>
-              {t('billNudge')}
-            </InfoBoxContent>
-          </InfoBox>
-        )}
-
         <FileUpload
           file={file}
           uploadedUrl={fileUploadUrl}
           uploadedFileName={fileUploadFileName}
           onFileSelect={handleFileSelect}
           onClear={handleClear}
+          hint={isVariable && !file && !showExistingBill ? t('billNudge') : undefined}
           bucket="source-documents"
-          storagePath={storagePath ?? undefined}
+          generateStoragePath={generateStoragePath}
           authToken={authToken ?? undefined}
           supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL}
           uploadPromiseRef={uploadPromiseRef}
