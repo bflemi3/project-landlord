@@ -17,48 +17,33 @@ export interface InviteContextError {
 
 /**
  * Validates an invite code and returns context for the sign-up page.
- * Uses the admin-level query (server-side only) — not the anon RPC.
+ * Uses a security-definer RPC so it works for unauthenticated users.
  */
 export async function validateAndFetchInviteContext(
   rawCode: string,
 ): Promise<InviteContext | InviteContextError> {
   const supabase = await createClient()
-  const code = rawCode.trim().toUpperCase()
 
-  const { data: invite, error } = await supabase
-    .from('invitations')
-    .select('code, invited_email, invited_name, property_id, expires_at')
-    .eq('code', code)
-    .eq('status', 'pending')
-    .is('accepted_by', null)
-    .single()
+  const { data, error } = await supabase.rpc('validate_invite_with_context', {
+    invite_code: rawCode,
+  })
 
-  if (error || !invite) {
+  if (error || !data || data.length === 0) {
     return { valid: false, reason: 'invalid' }
   }
 
-  // Check expiration
-  if (invite.expires_at && new Date(invite.expires_at) <= new Date()) {
-    return { valid: false, reason: 'expired' }
-  }
+  const row = data[0]
 
-  // Fetch property name if available
-  let propertyName: string | null = null
-  if (invite.property_id) {
-    const { data: property } = await supabase
-      .from('properties')
-      .select('name')
-      .eq('id', invite.property_id)
-      .single()
-    propertyName = property?.name ?? null
+  if (row.is_expired) {
+    return { valid: false, reason: 'expired' }
   }
 
   return {
     valid: true,
-    code: invite.code!,
-    invitedEmail: invite.invited_email,
-    invitedName: invite.invited_name,
-    propertyName,
+    code: row.code,
+    invitedEmail: row.invited_email,
+    invitedName: row.invited_name,
+    propertyName: row.property_name,
   }
 }
 

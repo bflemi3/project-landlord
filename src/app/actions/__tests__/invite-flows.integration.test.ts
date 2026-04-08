@@ -7,12 +7,13 @@ import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
 
 // Mock the server-side Supabase client so validateAndFetchInviteContext works in Node tests
 // (next/headers is not available outside Next.js runtime)
+// Uses anon key to properly test the security-definer RPC works for unauthenticated users
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => {
     const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
     return createSupabaseClient(
       'http://127.0.0.1:54321',
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      process.env.SUPABASE_ANON_KEY!,
     )
   },
 }))
