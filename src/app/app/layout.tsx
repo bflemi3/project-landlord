@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
+import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
 import { PostHogIdentify } from '@/components/posthog-identify'
 
 export const metadata: Metadata = {
@@ -29,7 +31,28 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .eq('id', userId)
     .single()
 
-  if (!profile?.has_redeemed_invite) {
+  // Check for pending invite code cookie (set during sign-in with code)
+  const cookieStore = await cookies()
+  const pendingCode = cookieStore.get('pending_invite_code')?.value
+
+  if (pendingCode && !profile?.has_redeemed_invite) {
+    const inviteCode = decodeURIComponent(pendingCode)
+    await redeemInviteByCodeCore(supabase, userId, inviteCode)
+
+    // Re-fetch profile to check has_redeemed_invite after redemption
+    const { data: updatedProfile } = await supabase
+      .from('profiles')
+      .select('has_redeemed_invite')
+      .eq('id', userId)
+      .single()
+
+    if (!updatedProfile?.has_redeemed_invite) {
+      redirect('/auth/enter-code')
+    }
+    // Cookie will be stale but harmless since invite is already redeemed
+  }
+
+  if (!profile?.has_redeemed_invite && !pendingCode) {
     redirect('/auth/enter-code')
   }
 
