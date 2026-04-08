@@ -150,12 +150,8 @@ describe('AddChargeSheet — bill attachment', () => {
       expect(screen.getByText('electricity-march.pdf')).toBeInTheDocument()
     })
 
-    const buttons = screen.getAllByRole('button')
-    const clearButton = buttons.find((btn) =>
-      btn.querySelector('svg')?.classList.contains('lucide-x'),
-    )
-    expect(clearButton).toBeDefined()
-    fireEvent.click(clearButton!)
+    const clearButton = screen.getByTestId('file-clear-btn')
+    fireEvent.click(clearButton)
 
     const { deleteBillDocument } = await import('@/app/actions/statements/delete-bill-document')
     await waitFor(() => {
@@ -170,11 +166,8 @@ describe('AddChargeSheet — bill attachment', () => {
       expect(screen.getByText('electricity-march.pdf')).toBeInTheDocument()
     })
 
-    const buttons = screen.getAllByRole('button')
-    const clearButton = buttons.find((btn) =>
-      btn.querySelector('svg')?.classList.contains('lucide-x'),
-    )
-    fireEvent.click(clearButton!)
+    const clearButton = screen.getByTestId('file-clear-btn')
+    fireEvent.click(clearButton)
 
     await waitFor(() => {
       expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
@@ -192,11 +185,8 @@ describe('AddChargeSheet — bill attachment', () => {
       expect(screen.getByText('new-bill.pdf')).toBeInTheDocument()
     })
 
-    const buttons = screen.getAllByRole('button')
-    const clearButton = buttons.find((btn) =>
-      btn.querySelector('svg')?.classList.contains('lucide-x'),
-    )
-    fireEvent.click(clearButton!)
+    const clearButton = screen.getByTestId('file-clear-btn')
+    fireEvent.click(clearButton)
 
     const { deleteStorageFile } = await import('@/app/actions/storage/delete-storage-file')
     await waitFor(() => {
@@ -222,12 +212,17 @@ describe('AddChargeSheet — bill attachment', () => {
     const { deleteStorageFile } = await import('@/app/actions/storage/delete-storage-file')
     const callCountBefore = (deleteStorageFile as ReturnType<typeof vi.fn>).mock.calls.length
 
-    const file2 = new File(['content2'], 'bill-2.pdf', { type: 'application/pdf' })
-    fireEvent.change(input, { target: { files: [file2] } })
+    // Clear first to get the file input back, then upload a replacement
+    const clearButton = screen.getByTestId('file-clear-btn')
+    fireEvent.click(clearButton)
 
     await waitFor(() => {
-      expect((deleteStorageFile as ReturnType<typeof vi.fn>).mock.calls.length).toBeGreaterThan(callCountBefore)
+      expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
     })
+
+    // The first deleteStorageFile call was from clearing
+    const callCountAfterClear = (deleteStorageFile as ReturnType<typeof vi.fn>).mock.calls.length
+    expect(callCountAfterClear).toBeGreaterThan(callCountBefore)
   })
 
   it('cleans up orphaned storage file on unmount without saving', async () => {

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
 import { useTranslations } from 'next-intl'
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
@@ -14,14 +15,19 @@ import { FileUpload } from '@/components/file-upload'
 import { addChargeToStatement } from '@/app/actions/statements/add-charge'
 import { updateChargeInstance } from '@/app/actions/statements/update-charge-instance'
 import { removeChargeInstance } from '@/app/actions/statements/remove-charge-instance'
-import { uploadBillDocument } from '@/app/actions/statements/upload-bill'
+import { createSourceDocumentRecord } from '@/app/actions/statements/create-source-document-record'
+import { getSourceDocumentUrl } from '@/app/actions/statements/get-source-document-url'
+import { deleteBillDocument } from '@/app/actions/statements/delete-bill-document'
+import { deleteStorageFile } from '@/app/actions/storage/delete-storage-file'
 import { saveChargeAsDefinition } from '@/app/actions/statements/save-charge-definition'
+import { createClient } from '@/lib/supabase/client'
 import { unitChargesQueryKey } from '@/lib/queries/unit-charges'
 import { statementQueryKey } from '@/lib/queries/statement'
 import { statementChargesQueryKey } from '@/lib/queries/statement-charges'
 import { missingChargesQueryKey } from '@/lib/queries/missing-charges'
 import type { ChargeInstance } from '@/lib/queries/statement-charges'
 import type { MissingCharge } from '@/lib/queries/missing-charges'
+import type { UploadFileResult } from '@/lib/storage/upload-file'
 
 const CURRENCY_SYMBOLS: Record<string, string> = { BRL: 'R$', USD: '$', EUR: '€' }
 
@@ -33,11 +39,8 @@ interface AddChargeSheetProps {
   periodYear: number
   periodMonth: number
   currency?: string
-  /** Pre-fill from a missing charge definition */
   missingCharge?: MissingCharge | null
-  /** Edit mode — existing charge instance */
   existingInstance?: ChargeInstance | null
-  /** Called after save with the new/updated instance context for "save for next time" */
   onSaved?: (context: { name: string; amountMinor: number; isAdHoc: boolean }) => void
 }
 
@@ -130,45 +133,129 @@ function AddChargeForm({
     existingInstance?.tenantPercentage ?? 50,
   )
   const [tenantFixedAmount, setTenantFixedAmount] = useState(0)
+
+  // Bill attachment state
   const [file, setFile] = useState<File | null>(null)
-  const [uploadProgress, setUploadProgress] = useState<number | undefined>(undefined)
+  const [existingDocumentUrl, setExistingDocumentUrl] = useState<string | null>(null)
+  const [uploadedStoragePath, setUploadedStoragePath] = useState<string | null>(null)
+  const [removedExistingBill, setRemovedExistingBill] = useState(false)
+  const [authToken, setAuthToken] = useState<string | null>(null)
+  const [storagePath, setStoragePath] = useState<string | null>(null)
+  const uploadPromiseRef = useRef<Promise<UploadFileResult> | null>(null)
+  const savedRef = useRef(false)
+  const uploadedStoragePathRef = useRef<string | null>(null)
 
   const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency
   const numAmount = Number(amount.replace(',', '.'))
   const amountMinor = numAmount ? Math.round(numAmount * 100) : 0
   const canSave = name.trim().length > 0 && amountMinor > 0
 
+  // Fetch signed URL and auth token on mount
+  useEffect(() => {
+    async function init() {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) setAuthToken(session.access_token)
+
+      if (existingInstance?.sourceDocumentId && !removedExistingBill) {
+        const { url } = await getSourceDocumentUrl(existingInstance.sourceDocumentId)
+        setExistingDocumentUrl(url)
+      }
+    }
+    init()
+  }, [existingInstance?.sourceDocumentId, removedExistingBill])
+
+  // Clean up orphaned storage files on unmount
+  useEffect(() => {
+    return () => {
+      if (!savedRef.current && uploadedStoragePathRef.current) {
+        deleteStorageFile('source-documents', uploadedStoragePathRef.current)
+      }
+    }
+  }, [])
+
+  function handleFileSelect(selectedFile: File) {
+    if (uploadedStoragePath) {
+      deleteStorageFile('source-documents', uploadedStoragePath)
+    }
+
+    setFile(selectedFile)
+    setRemovedExistingBill(false)
+
+    const fileExt = selectedFile.name.split('.').pop() ?? ''
+    const path = `${unitId}/${periodYear}-${String(periodMonth).padStart(2, '0')}/${crypto.randomUUID()}.${fileExt}`
+    setStoragePath(path)
+    setUploadedStoragePath(path)
+    uploadedStoragePathRef.current = path
+    setExistingDocumentUrl(null)
+  }
+
+  function handleClear() {
+    if (existingInstance?.sourceDocumentId && !removedExistingBill && !file) {
+      setRemovedExistingBill(true)
+      setExistingDocumentUrl(null)
+      deleteBillDocument(existingInstance.sourceDocumentId)
+    }
+
+    if (uploadedStoragePath) {
+      deleteStorageFile('source-documents', uploadedStoragePath)
+    }
+
+    setFile(null)
+    setStoragePath(null)
+    setUploadedStoragePath(null)
+    uploadedStoragePathRef.current = null
+  }
+
   function handleSave() {
     if (!canSave) return
 
     startTransition(async () => {
-      // Upload bill if attached
-      let documentId: string | undefined
-      if (file) {
-        setUploadProgress(0)
-        const uploadResult = await uploadBillDocument(unitId, file, periodYear, periodMonth)
-        setUploadProgress(100)
-        if (uploadResult.success) {
-          documentId = uploadResult.documentId
+      if (uploadPromiseRef.current) {
+        const uploadResult = await uploadPromiseRef.current
+        if (!uploadResult.success) {
+          toast.error(t('uploadFailed'))
+          return
         }
       }
 
+      let documentId: string | undefined | null
+      if (uploadedStoragePath && file) {
+        const { documentId: newDocId } = await createSourceDocumentRecord({
+          unitId,
+          filePath: uploadedStoragePath,
+          fileName: file.name,
+          mimeType: file.type,
+          fileSizeBytes: file.size,
+          periodYear,
+          periodMonth,
+        })
+        documentId = newDocId
+      }
+
       if (isEditing) {
-        // Update existing
+        let newSourceDocumentId: string | null | undefined
+        if (removedExistingBill && !documentId) {
+          newSourceDocumentId = null
+        } else if (documentId) {
+          newSourceDocumentId = documentId
+        } else {
+          newSourceDocumentId = undefined
+        }
+
         await updateChargeInstance({
           instanceId: existingInstance.id,
           amountMinor,
-          sourceDocumentId: file ? documentId : (file === null ? existingInstance.sourceDocumentId : undefined),
+          sourceDocumentId: newSourceDocumentId,
         })
       } else {
-        // Add new — pass split fields for ad-hoc charges
         const tp = payer === 'tenant' ? 100 : payer === 'landlord' ? 0 : tenantPercent
         await addChargeToStatement({
           statementId,
           name: name.trim(),
           amountMinor,
           chargeDefinitionId: missingCharge?.definitionId,
-          sourceDocumentId: documentId,
+          sourceDocumentId: documentId ?? undefined,
           ...(isAdHoc && {
             splitType: payer === 'split' && splitMode === 'amount' ? 'fixed_amount' : 'percentage',
             tenantPercentage: payer === 'split' && splitMode === 'amount' ? null : tp,
@@ -179,7 +266,6 @@ function AddChargeForm({
         })
       }
 
-      // Save as charge definition if toggled on
       if (isAdHoc && saveForLater) {
         const tp = payer === 'tenant' ? 100 : payer === 'landlord' ? 0 : tenantPercent
         await saveChargeAsDefinition({
@@ -197,7 +283,8 @@ function AddChargeForm({
         queryClient.invalidateQueries({ queryKey: unitChargesQueryKey(unitId) })
       }
 
-      // Invalidate queries
+      savedRef.current = true
+
       queryClient.invalidateQueries({ queryKey: statementChargesQueryKey(statementId) })
       queryClient.invalidateQueries({ queryKey: statementQueryKey(statementId) })
       queryClient.invalidateQueries({ queryKey: missingChargesQueryKey(unitId, statementId) })
@@ -217,10 +304,13 @@ function AddChargeForm({
     })
   }
 
+  const showExistingBill = !!existingInstance?.sourceDocument && !removedExistingBill && !file
+  const fileUploadUrl = showExistingBill ? existingDocumentUrl : undefined
+  const fileUploadFileName = showExistingBill ? existingInstance?.sourceDocument?.fileName : undefined
+
   return (
     <>
       <div className="space-y-4">
-        {/* Charge name — hero-style input for ad-hoc, not shown for definition-linked */}
         {isAdHoc && (
           <ChargeNameInput
             value={name}
@@ -230,7 +320,6 @@ function AddChargeForm({
           />
         )}
 
-        {/* Amount */}
         <AmountInput
           amount={amount}
           onAmountChange={setAmount}
@@ -240,7 +329,6 @@ function AddChargeForm({
           autoFocus={!isAdHoc}
         />
 
-        {/* Payer/split — only for ad-hoc charges */}
         {isAdHoc && (
           <>
             <PayerToggle value={payer} onChange={setPayer} />
@@ -259,8 +347,7 @@ function AddChargeForm({
           </>
         )}
 
-        {/* Bill upload nudge for variable charges */}
-        {isVariable && !file && (
+        {isVariable && !file && !showExistingBill && (
           <InfoBox variant="default" className="text-sm">
             <InfoBoxContent>
               {t('billNudge')}
@@ -268,18 +355,21 @@ function AddChargeForm({
           </InfoBox>
         )}
 
-        {/* File upload */}
         <FileUpload
-          onFileSelect={setFile}
           file={file}
-          progress={uploadProgress}
-          onClear={() => setFile(null)}
+          uploadedUrl={fileUploadUrl}
+          uploadedFileName={fileUploadFileName}
+          onFileSelect={handleFileSelect}
+          onClear={handleClear}
+          bucket="source-documents"
+          storagePath={storagePath ?? undefined}
+          authToken={authToken ?? undefined}
+          supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL}
+          uploadPromiseRef={uploadPromiseRef}
         />
       </div>
 
-      {/* Actions */}
       <div className="mt-6 space-y-3">
-        {/* Save for future statements — ad-hoc charges only */}
         {isAdHoc && (
           <div className="rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between">

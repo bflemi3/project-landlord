@@ -176,6 +176,7 @@ export function FileUpload({
             )}
             <button
               type="button"
+              data-testid="file-clear-btn"
               onClick={handleClear}
               className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
             >
