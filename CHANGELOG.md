@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.10.0
+
+- Attach, view, and remove bills on charges — uploads start instantly with a progress bar
+- Tenant invite emails now show your property address instead of the property name
+- Missing charges are easier to spot and can be added by tapping the full row
+- Tenant and invite modals now show when the tenant joined or was invited
+
 ## v0.9.0
 
 - Tenants can now accept invites directly from the email and sign up
