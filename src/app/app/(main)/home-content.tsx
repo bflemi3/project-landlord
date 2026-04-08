@@ -18,12 +18,7 @@ import { useHomeActions, type HomeAction } from '@/lib/hooks/use-home-actions'
 import { isPropertyComplete, getCompletionSteps } from '@/components/property-card'
 import type { PropertySetupProgress } from '@/lib/types/property'
 
-function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
-  const hour = new Date().getHours()
-  if (hour < 12) return 'goodMorning'
-  if (hour < 18) return 'goodAfternoon'
-  return 'goodEvening'
-}
+type GreetingKey = 'goodMorning' | 'goodAfternoon' | 'goodEvening'
 
 function deriveSetupProgress(p: HomeProperty): PropertySetupProgress {
   return {
@@ -39,26 +34,27 @@ interface HomeContentProps {
   firstName?: string
   userName?: string
   avatarUrl?: string
+  greetingKey: GreetingKey
 }
 
-export function HomeContent({ firstName, userName, avatarUrl }: HomeContentProps) {
+export function HomeContent({ firstName, userName, avatarUrl, greetingKey }: HomeContentProps) {
   const { data: properties } = useHomeProperties()
 
   if (properties.length > 0) {
-    return <PopulatedState firstName={firstName} userName={userName} avatarUrl={avatarUrl} />
+    return <PopulatedState firstName={firstName} userName={userName} avatarUrl={avatarUrl} greetingKey={greetingKey} />
   }
 
-  return <EmptyState firstName={firstName} userName={userName} avatarUrl={avatarUrl} />
+  return <EmptyState firstName={firstName} userName={userName} avatarUrl={avatarUrl} greetingKey={greetingKey} />
 }
 
 // =============================================================================
 // Empty state
 // =============================================================================
 
-function EmptyState({ firstName, userName, avatarUrl }: HomeContentProps) {
+function EmptyState({ firstName, userName, avatarUrl, greetingKey }: HomeContentProps) {
   const t = useTranslations('home')
   const [showComingSoon, setShowComingSoon] = useState(false)
-  const greeting = t(getGreetingKey())
+  const greeting = t(greetingKey)
 
   return (
     <div className="flex h-full flex-col">
@@ -126,9 +122,9 @@ function EmptyState({ firstName, userName, avatarUrl }: HomeContentProps) {
 // Populated state
 // =============================================================================
 
-function PopulatedState({ firstName, userName, avatarUrl }: HomeContentProps) {
+function PopulatedState({ firstName, userName, avatarUrl, greetingKey }: HomeContentProps) {
   const t = useTranslations('home')
-  const greeting = t(getGreetingKey())
+  const greeting = t(greetingKey)
   const { data: properties } = useHomeProperties()
 
   const isSingleProperty = properties.length === 1

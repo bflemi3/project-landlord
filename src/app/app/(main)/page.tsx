@@ -18,6 +18,8 @@ export default async function AppHomePage() {
     .single()
 
   const firstName = profile?.full_name?.split(' ')[0] ?? undefined
+  const hour = new Date().getHours()
+  const greetingKey = hour < 12 ? 'goodMorning' : hour < 18 ? 'goodAfternoon' : 'goodEvening'
 
   // Prefetch data so client hydration matches server render
   const queryClient = new QueryClient()
@@ -39,6 +41,7 @@ export default async function AppHomePage() {
             firstName={firstName}
             userName={profile?.full_name ?? undefined}
             avatarUrl={profile?.avatar_url ?? undefined}
+            greetingKey={greetingKey}
           />
         </FadeIn>
       </HydrationBoundary>
@@ -58,6 +61,7 @@ export default async function AppHomePage() {
           firstName={firstName}
           userName={profile?.full_name ?? undefined}
           avatarUrl={profile?.avatar_url ?? undefined}
+          greetingKey={greetingKey}
         />
       </FadeIn>
     </HydrationBoundary>
