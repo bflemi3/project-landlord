@@ -5,6 +5,7 @@ import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { resend, RESEND_FROM } from '@/lib/resend/client'
 import { getEmailTranslations, type EmailLocale } from '@/emails/i18n'
 import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
+import { formatAddress, formatAddressHtml } from '@/lib/address/format-address'
 
 export interface InviteTenantState {
   success: boolean
@@ -100,7 +101,6 @@ export async function inviteTenant(
   const unitId = (formData.get('unit_id') as string)?.trim()
   const email = (formData.get('email') as string)?.trim().toLowerCase()
   const tenantName = (formData.get('tenant_name') as string)?.trim() || null
-  const propertyName = (formData.get('property_name') as string)?.trim() || ''
   const landlordName = (formData.get('landlord_name') as string)?.trim() || ''
 
   if (!email) {
@@ -112,6 +112,18 @@ export async function inviteTenant(
   }
 
   const supabase = await createClient()
+
+  // Fetch property address for the email
+  const { data: property } = await supabase
+    .from('properties')
+    .select('name, street, number, complement, neighborhood, city, state, country_code')
+    .eq('id', propertyId)
+    .single()
+
+  const addressOneLine = property ? formatAddress(property) : ''
+  const addressHtml = property ? formatAddressHtml(property) : ''
+  const propertyName = addressOneLine || property?.name || ''
+
   const result = await inviteTenantCore(supabase, {
     propertyId,
     unitId,
@@ -138,6 +150,7 @@ export async function inviteTenant(
         tenantName,
         landlordName: resolvedLandlordName,
         propertyName,
+        addressHtml,
         locale,
         code: result.code!,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
@@ -154,6 +167,7 @@ function buildTenantInviteEmail({
   tenantName,
   landlordName,
   propertyName,
+  addressHtml,
   locale,
   code,
   expiresAt,
@@ -161,6 +175,7 @@ function buildTenantInviteEmail({
   tenantName: string | null
   landlordName: string
   propertyName: string
+  addressHtml: string
   locale: EmailLocale
   code: string
   expiresAt: string
@@ -182,7 +197,7 @@ function buildTenantInviteEmail({
     <tr><td>
       <img src="https://mabenn.com/brand/wordmark-light.png" alt="mabenn" height="28" style="display:block;margin:0 auto 32px" />
       <div style="background:#fff;border:1px solid #e4e4e7;border-radius:16px;padding:32px">
-        <p style="font-size:24px;font-weight:700;color:#18181b;margin:0 0 16px">${propertyName}</p>
+        <p style="font-size:20px;font-weight:700;color:#18181b;margin:0 0 16px;line-height:1.4">${addressHtml || propertyName}</p>
         <p style="font-size:16px;color:#52525b;margin:0 0 24px">${greeting} ${body}</p>
         <a href="${signUpUrl}" style="display:block;background:#14b8a6;color:#fff;font-weight:700;font-size:16px;text-align:center;padding:12px 24px;border-radius:12px;text-decoration:none">${t.tenantInvite.button}</a>
         <p style="font-size:13px;color:#a1a1aa;margin:12px 0 0;text-align:center">${t.tenantInvite.manualCode(code)}</p>
