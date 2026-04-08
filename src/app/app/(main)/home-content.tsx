@@ -257,6 +257,7 @@ function ActionRow({ action }: { action: HomeAction }) {
 
   return (
     <Link
+      prefetch
       href={`/app/p/${action.propertyId}${highlight ? `?highlight=${highlight}` : ''}`}
       className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
     >
@@ -305,7 +306,7 @@ function HomePropertyCard({ property: p }: { property: HomeProperty }) {
 
   if (fullySetup) {
     return (
-      <Link href={`/app/p/${p.propertyId}`} className={CARD_CLASS}>
+      <Link prefetch href={`/app/p/${p.propertyId}`} className={CARD_CLASS}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <h3 className="truncate font-semibold text-foreground">{p.name}</h3>
@@ -326,7 +327,7 @@ function HomePropertyCard({ property: p }: { property: HomeProperty }) {
   const total = steps.length
 
   return (
-    <Link href={`/app/p/${p.propertyId}`} className={CARD_CLASS}>
+    <Link prefetch href={`/app/p/${p.propertyId}`} className={CARD_CLASS}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold text-foreground">{p.name}</h3>
