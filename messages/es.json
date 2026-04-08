@@ -55,7 +55,10 @@
     "invalidInviteCode": "Este código es incorrecto o ha expirado. Verifícalo e inténtalo de nuevo.",
     "signInError": "Algo salió mal. Inténtalo de nuevo.",
     "signUpError": "Algo salió mal. Inténtalo de nuevo.",
-    "alreadyRegistered": "Ya existe una cuenta con este correo. Intenta iniciar sesión."
+    "alreadyRegistered": "Ya existe una cuenta con este correo. Intenta iniciar sesión.",
+    "inviteExpired": "Esta invitación ha expirado. Pide a tu propietario que la reenvíe.",
+    "inviteInvalid": "Este enlace de invitación no es válido. Consulta con quien te lo envió.",
+    "invitedTo": "Te invitaron a unirte a {propertyName}"
   },
   "pwa": {
     "whatsNew": "Novedades en v{version}",

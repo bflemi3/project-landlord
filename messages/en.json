@@ -55,7 +55,10 @@
     "invalidInviteCode": "This code is incorrect or has expired. Double-check and try again.",
     "signInError": "Something went wrong. Please try again.",
     "signUpError": "Something went wrong. Please try again.",
-    "alreadyRegistered": "An account with this email already exists. Try signing in instead."
+    "alreadyRegistered": "An account with this email already exists. Try signing in instead.",
+    "inviteExpired": "This invite has expired. Ask your landlord to resend it.",
+    "inviteInvalid": "This invite link is invalid. Check with whoever sent it to you.",
+    "invitedTo": "You've been invited to join {propertyName}"
   },
   "pwa": {
     "whatsNew": "What's new in v{version}",
