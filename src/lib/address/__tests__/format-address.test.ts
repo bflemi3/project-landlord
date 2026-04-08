@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { formatAddress } from '../format-address'
+import { formatAddress, formatAddressHtml } from '../format-address'
 
 describe('formatAddress', () => {
   // ===========================================================================
@@ -214,6 +214,90 @@ describe('formatAddress', () => {
         state: 'RJ',
         countryCode: 'BR',
       })).toBe('Rua X, 1, Centro, RJ')
+    })
+  })
+})
+
+describe('formatAddressHtml', () => {
+  describe('BR format', () => {
+    it('formats full address with br tags, complement on own line', () => {
+      expect(formatAddressHtml({
+        street: 'Rua Augusta',
+        number: '123',
+        complement: 'Apto 4B',
+        neighborhood: 'Consolação',
+        city: 'São Paulo',
+        state: 'SP',
+        countryCode: 'BR',
+      })).toBe('Rua Augusta, 123<br>Apto 4B<br>Consolação<br>São Paulo, SP')
+    })
+
+    it('formats without complement', () => {
+      expect(formatAddressHtml({
+        street: 'Avenida Campeche',
+        number: '533',
+        neighborhood: 'Campeche',
+        city: 'Florianópolis',
+        state: 'SC',
+        countryCode: 'BR',
+      })).toBe('Avenida Campeche, 533<br>Campeche<br>Florianópolis, SC')
+    })
+
+    it('formats without neighborhood', () => {
+      expect(formatAddressHtml({
+        street: 'Rua Augusta',
+        number: '123',
+        city: 'São Paulo',
+        state: 'SP',
+        countryCode: 'BR',
+      })).toBe('Rua Augusta, 123<br>São Paulo, SP')
+    })
+
+    it('formats city only', () => {
+      expect(formatAddressHtml({
+        city: 'São Paulo',
+        state: 'SP',
+        countryCode: 'BR',
+      })).toBe('São Paulo, SP')
+    })
+  })
+
+  describe('US format', () => {
+    it('formats full address with br tags, complement on own line', () => {
+      expect(formatAddressHtml({
+        street: 'Main St',
+        number: '123',
+        complement: 'Apt 4B',
+        neighborhood: 'Downtown',
+        city: 'Austin',
+        state: 'TX',
+        countryCode: 'US',
+      })).toBe('123 Main St<br>Apt 4B<br>Downtown<br>Austin, TX')
+    })
+
+    it('formats without neighborhood', () => {
+      expect(formatAddressHtml({
+        street: 'Oak Ave',
+        number: '456',
+        city: 'Portland',
+        state: 'OR',
+        countryCode: 'US',
+      })).toBe('456 Oak Ave<br>Portland, OR')
+    })
+  })
+
+  describe('edge cases', () => {
+    it('returns empty string for empty fields', () => {
+      expect(formatAddressHtml({})).toBe('')
+    })
+
+    it('handles null fields', () => {
+      expect(formatAddressHtml({
+        street: null,
+        number: null,
+        city: 'São Paulo',
+        state: 'SP',
+      })).toBe('São Paulo, SP')
     })
   })
 })

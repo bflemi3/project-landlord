@@ -11,7 +11,7 @@ export const buttonVariants = cva(
         secondary:
           'bg-secondary text-secondary-foreground hover:not-disabled:brightness-95 dark:hover:not-disabled:brightness-125 aria-expanded:bg-secondary aria-expanded:text-secondary-foreground',
         ghost:
-          'text-muted-foreground hover:not-disabled:bg-muted hover:not-disabled:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:not-disabled:bg-muted/50',
+          'text-muted-foreground hover:not-disabled:bg-muted hover:not-disabled:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:not-disabled:bg-muted/50 [&.text-destructive]:text-destructive [&.text-destructive]:hover:not-disabled:bg-destructive/10 [&.text-destructive]:hover:not-disabled:text-destructive',
         destructive:
           'bg-destructive/10 text-destructive hover:not-disabled:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:not-disabled:bg-destructive/30 dark:focus-visible:ring-destructive/40',
         warning:

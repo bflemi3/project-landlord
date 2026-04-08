@@ -312,6 +312,7 @@
     "tenantTitle": "Inquilino",
     "pendingInviteTitle": "Convite pendente",
     "invitedOn": "Convidado em {date} · {relative}",
+    "joinedOn": "Entrou em {date} · {relative}",
     "editProperty": "Editar imóvel",
     "saveChanges": "Salvar alterações",
     "pauseCharge": "Pausar cobrança",
@@ -370,7 +371,9 @@
     "tapToAttachBill": "Toque para anexar uma conta",
     "uploaded": "Enviado",
     "fileTooLarge": "Arquivo muito grande. Tamanho máximo é {max}MB.",
-    "incomplete": "incompleta"
+    "billRemovedOnSave": "A conta será removida ao salvar.",
+    "incomplete": "incompleta",
+    "uploadFailed": "Falha no upload. Tente novamente."
   },
   "settings": {
     "title": "Configurações",

@@ -5,6 +5,7 @@ export interface UnitTenant {
   userId: string
   name: string | null
   email: string | null
+  joinedAt: string
 }
 
 export async function fetchUnitTenants(supabase: TypedSupabaseClient, unitId: string): Promise<UnitTenant[]> {
@@ -13,6 +14,7 @@ export async function fetchUnitTenants(supabase: TypedSupabaseClient, unitId: st
     .select(`
       id,
       user_id,
+      created_at,
       profile:profiles!inner ( full_name, email )
     `)
     .eq('unit_id', unitId)
@@ -28,6 +30,7 @@ export async function fetchUnitTenants(supabase: TypedSupabaseClient, unitId: st
       userId: m.user_id,
       name: profile.full_name,
       email: profile.email,
+      joinedAt: m.created_at,
     }
   })
 }

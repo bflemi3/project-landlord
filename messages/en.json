@@ -312,6 +312,7 @@
     "tenantTitle": "Tenant",
     "pendingInviteTitle": "Pending invite",
     "invitedOn": "Invited {date} · {relative}",
+    "joinedOn": "Joined {date} · {relative}",
     "editProperty": "Edit property",
     "saveChanges": "Save changes",
     "pauseCharge": "Pause charge",
@@ -370,7 +371,9 @@
     "tapToAttachBill": "Tap to attach a bill",
     "uploaded": "Uploaded",
     "fileTooLarge": "File is too large. Maximum size is {max}MB.",
-    "incomplete": "incomplete"
+    "billRemovedOnSave": "Bill will be removed when you save.",
+    "incomplete": "incomplete",
+    "uploadFailed": "Upload failed. Please try again."
   },
   "settings": {
     "title": "Settings",

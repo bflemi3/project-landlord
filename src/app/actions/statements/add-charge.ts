@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { recalculateStatementTotal } from '@/lib/statements/recalculate-total'
-import { DEFAULT_SPLIT, parseSplit, type AllocationRow } from '@/lib/split-allocations'
+import { parseSplit, type AllocationRow } from '@/lib/split-allocations'
 
 export interface AddChargeInput {
   statementId: string

@@ -312,6 +312,7 @@
     "tenantTitle": "Inquilino",
     "pendingInviteTitle": "Invitación pendiente",
     "invitedOn": "Invitado el {date} · {relative}",
+    "joinedOn": "Se unió el {date} · {relative}",
     "editProperty": "Editar propiedad",
     "saveChanges": "Guardar cambios",
     "pauseCharge": "Pausar cargo",
@@ -370,7 +371,9 @@
     "tapToAttachBill": "Toca para adjuntar una factura",
     "uploaded": "Subido",
     "fileTooLarge": "Archivo muy grande. Tamaño máximo es {max}MB.",
-    "incomplete": "incompleto"
+    "billRemovedOnSave": "La factura se eliminará al guardar.",
+    "incomplete": "incompleto",
+    "uploadFailed": "Error al subir. Inténtelo de nuevo."
   },
   "settings": {
     "title": "Configuración",
