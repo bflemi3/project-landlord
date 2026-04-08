@@ -1,40 +1,98 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect, type MutableRefObject } from 'react'
 import { useTranslations } from 'next-intl'
 import { Upload, FileText, X, Eye } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { uploadFile, type UploadFileResult } from '@/lib/storage/upload-file'
 
 const MAX_SIZE_MB = 10
-const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024
 
 export function FileUpload({
   onFileSelect,
   file,
   uploadedUrl,
-  progress,
+  uploadedFileName,
   onClear,
   maxSizeMB = MAX_SIZE_MB,
   accept = 'application/pdf,image/*',
   className,
+  bucket,
+  storagePath,
+  authToken,
+  supabaseUrl,
+  uploadPromiseRef,
 }: {
-  onFileSelect: (file: File) => void
+  onFileSelect?: (file: File) => void
   file?: File | null
   uploadedUrl?: string | null
-  progress?: number
+  uploadedFileName?: string | null
   onClear?: () => void
   maxSizeMB?: number
   accept?: string
   className?: string
+  bucket?: string
+  storagePath?: string
+  authToken?: string
+  supabaseUrl?: string
+  uploadPromiseRef?: MutableRefObject<Promise<UploadFileResult> | null>
 }) {
   const t = useTranslations('propertyDetail')
   const inputRef = useRef<HTMLInputElement>(null)
+  const abortRef = useRef<AbortController | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [progress, setProgress] = useState<number | undefined>(undefined)
+  const [uploadComplete, setUploadComplete] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const maxBytes = maxSizeMB * 1024 * 1024
-  const hasFile = !!file || !!uploadedUrl
+  const activeFile = file ?? selectedFile
+  const hasFile = !!activeFile || !!uploadedUrl
   const isUploading = progress !== undefined && progress >= 0 && progress < 100
-  const isImage = file?.type.startsWith('image/') ?? false
+  const isImage = activeFile?.type.startsWith('image/') ?? false
+  const canUpload = !!bucket && !!storagePath && !!authToken && !!supabaseUrl
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort()
+    }
+  }, [])
+
+  function startUpload(selectedFile: File) {
+    if (!canUpload) return
+
+    abortRef.current?.abort()
+    const controller = new AbortController()
+    abortRef.current = controller
+
+    setProgress(0)
+    setUploadComplete(false)
+    setError(null)
+
+    const promise = uploadFile({
+      file: selectedFile,
+      bucket: bucket!,
+      path: storagePath!,
+      authToken: authToken!,
+      supabaseUrl: supabaseUrl!,
+      onProgress: setProgress,
+      signal: controller.signal,
+    }).then((result) => {
+      if (result.success) {
+        setProgress(100)
+        setUploadComplete(true)
+      } else if (result.error !== 'Upload aborted') {
+        setError(t('uploadFailed'))
+        setProgress(undefined)
+        if (inputRef.current) inputRef.current.value = ''
+        onClear?.()
+      }
+      if (uploadPromiseRef) uploadPromiseRef.current = null
+      return result
+    })
+
+    if (uploadPromiseRef) uploadPromiseRef.current = promise
+  }
 
   function handleSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = e.target.files?.[0]
@@ -47,24 +105,34 @@ export function FileUpload({
     }
 
     setError(null)
-    onFileSelect(selected)
+    setSelectedFile(selected)
+    onFileSelect?.(selected)
+
+    if (canUpload) {
+      startUpload(selected)
+    }
   }
 
   function handleClear() {
+    abortRef.current?.abort()
+    abortRef.current = null
+    if (uploadPromiseRef) uploadPromiseRef.current = null
+
     setError(null)
+    setProgress(undefined)
+    setUploadComplete(false)
+    setSelectedFile(null)
     if (inputRef.current) inputRef.current.value = ''
     onClear?.()
   }
 
-  // File selected or uploaded — show preview
   if (hasFile) {
-    const fileName = file?.name ?? uploadedUrl?.split('/').pop() ?? 'Document'
-    const previewUrl = file && isImage ? URL.createObjectURL(file) : uploadedUrl
+    const fileName = uploadedFileName ?? activeFile?.name ?? uploadedUrl?.split('/').pop() ?? 'Document'
+    const previewUrl = activeFile && isImage ? URL.createObjectURL(activeFile) : uploadedUrl
 
     return (
       <div className={cn('rounded-2xl border border-border p-3', className)}>
         <div className="flex items-center gap-3">
-          {/* Thumbnail or icon */}
           {isImage && previewUrl ? (
             <img
               src={previewUrl}
@@ -77,7 +145,6 @@ export function FileUpload({
             </div>
           )}
 
-          {/* File info */}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-foreground">{fileName}</p>
             {isUploading ? (
@@ -91,12 +158,11 @@ export function FileUpload({
               </div>
             ) : (
               <p className="mt-0.5 text-xs text-muted-foreground">
-                {file ? `${(file.size / 1024).toFixed(0)} KB` : t('uploaded')}
+                {activeFile ? `${(activeFile.size / 1024).toFixed(0)} KB` : t('uploaded')}
               </p>
             )}
           </div>
 
-          {/* Actions */}
           <div className="flex shrink-0 items-center gap-1">
             {previewUrl && !isUploading && (
               <a
@@ -108,22 +174,19 @@ export function FileUpload({
                 <Eye className="size-4" />
               </a>
             )}
-            {onClear && !isUploading && (
-              <button
-                type="button"
-                onClick={handleClear}
-                className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <X className="size-4" />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleClear}
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <X className="size-4" />
+            </button>
           </div>
         </div>
       </div>
     )
   }
 
-  // No file — show drop zone
   return (
     <div className={className}>
       <button

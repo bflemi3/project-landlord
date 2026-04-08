@@ -370,7 +370,8 @@
     "tapToAttachBill": "Toca para adjuntar una factura",
     "uploaded": "Subido",
     "fileTooLarge": "Archivo muy grande. Tamaño máximo es {max}MB.",
-    "incomplete": "incompleto"
+    "incomplete": "incompleto",
+    "uploadFailed": "Error al subir. Inténtelo de nuevo."
   },
   "settings": {
     "title": "Configuración",

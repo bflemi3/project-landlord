@@ -370,7 +370,8 @@
     "tapToAttachBill": "Tap to attach a bill",
     "uploaded": "Uploaded",
     "fileTooLarge": "File is too large. Maximum size is {max}MB.",
-    "incomplete": "incomplete"
+    "incomplete": "incomplete",
+    "uploadFailed": "Upload failed. Please try again."
   },
   "settings": {
     "title": "Settings",
