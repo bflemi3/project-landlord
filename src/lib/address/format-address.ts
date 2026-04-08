@@ -61,13 +61,12 @@ export function formatAddressHtml(fields: AddressFields): string {
 
   let streetLine: string
   if (country === 'BR') {
-    streetLine = [street, number, complement].filter(Boolean).join(', ')
+    streetLine = [street, number].filter(Boolean).join(', ')
   } else {
-    const base = [number, street].filter(Boolean).join(' ')
-    streetLine = [base, complement].filter(Boolean).join(', ')
+    streetLine = [number, street].filter(Boolean).join(' ')
   }
 
   const cityState = [city, state].filter(Boolean).join(', ')
 
-  return [streetLine, neighborhood, cityState].filter(Boolean).join('<br>')
+  return [streetLine, complement, neighborhood, cityState].filter(Boolean).join('<br>')
 }

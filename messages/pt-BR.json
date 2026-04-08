@@ -312,6 +312,7 @@
     "tenantTitle": "Inquilino",
     "pendingInviteTitle": "Convite pendente",
     "invitedOn": "Convidado em {date} · {relative}",
+    "joinedOn": "Entrou em {date} · {relative}",
     "editProperty": "Editar imóvel",
     "saveChanges": "Salvar alterações",
     "pauseCharge": "Pausar cobrança",

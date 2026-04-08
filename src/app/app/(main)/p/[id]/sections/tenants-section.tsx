@@ -290,18 +290,23 @@ function TenantDetailModal({
     >
       {member && (
         <div>
-          {/* Tenant info */}
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback>{getInitials(member.name, member.email)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              {member.name && <p className="font-semibold text-foreground">{member.name}</p>}
-              {member.email && <p className="text-sm text-muted-foreground">{member.email}</p>}
+          {/* Tenant info card */}
+          <div className="rounded-xl bg-secondary/50 px-4 py-3.5 dark:bg-zinc-800/50">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarFallback>{getInitials(member.name, member.email)}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                {member.name && <p className="font-semibold text-foreground">{member.name}</p>}
+                {member.email && <p className="mt-0.5 truncate text-sm text-muted-foreground">{member.email}</p>}
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
-              <UserCheck className="size-3.5" />
-              {t('active')}
+            <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Clock className="size-3" />
+              {t('joinedOn', {
+                date: format(new Date(member.joinedAt), 'MMM d'),
+                relative: formatDistanceToNow(new Date(member.joinedAt), { addSuffix: true }),
+              })}
             </div>
           </div>
 
@@ -330,9 +335,10 @@ function TenantDetailModal({
           ) : (
             <div className="mt-6">
               <Button
-                variant="link"
+                variant="ghost"
                 onClick={() => setConfirming(true)}
-                className="h-auto p-0 text-sm text-muted-foreground hover:text-destructive"
+                className="h-12 w-full rounded-2xl text-destructive"
+                size="lg"
               >
                 {t('removeTenant')}
               </Button>
@@ -439,15 +445,14 @@ function InviteDetailModal({
                 </div>
               </div>
             ) : (
-              <div className="text-center">
-                <Button
-                  variant="link"
-                  onClick={() => setConfirmCancel(true)}
-                  className="h-auto p-0 text-sm text-muted-foreground hover:text-destructive"
-                >
-                  {t('cancelInvite')}
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                onClick={() => setConfirmCancel(true)}
+                className="h-12 w-full rounded-2xl text-destructive"
+                size="lg"
+              >
+                {t('cancelInvite')}
+              </Button>
             )}
           </div>
         </div>

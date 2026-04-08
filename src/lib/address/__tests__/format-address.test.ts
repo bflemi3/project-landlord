@@ -220,7 +220,7 @@ describe('formatAddress', () => {
 
 describe('formatAddressHtml', () => {
   describe('BR format', () => {
-    it('formats full address with br tags', () => {
+    it('formats full address with br tags, complement on own line', () => {
       expect(formatAddressHtml({
         street: 'Rua Augusta',
         number: '123',
@@ -229,7 +229,7 @@ describe('formatAddressHtml', () => {
         city: 'São Paulo',
         state: 'SP',
         countryCode: 'BR',
-      })).toBe('Rua Augusta, 123, Apto 4B<br>Consolação<br>São Paulo, SP')
+      })).toBe('Rua Augusta, 123<br>Apto 4B<br>Consolação<br>São Paulo, SP')
     })
 
     it('formats without complement', () => {
@@ -263,7 +263,7 @@ describe('formatAddressHtml', () => {
   })
 
   describe('US format', () => {
-    it('formats full address with br tags', () => {
+    it('formats full address with br tags, complement on own line', () => {
       expect(formatAddressHtml({
         street: 'Main St',
         number: '123',
@@ -272,7 +272,7 @@ describe('formatAddressHtml', () => {
         city: 'Austin',
         state: 'TX',
         countryCode: 'US',
-      })).toBe('123 Main St, Apt 4B<br>Downtown<br>Austin, TX')
+      })).toBe('123 Main St<br>Apt 4B<br>Downtown<br>Austin, TX')
     })
 
     it('formats without neighborhood', () => {

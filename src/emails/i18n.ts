@@ -1,6 +1,6 @@
 export type EmailLocale = 'en' | 'pt-BR' | 'es'
 export type InviteSource = 'waitlist' | 'direct'
-export type TenantInviteParams = { tenantName: string | null; landlordName: string; propertyName: string }
+export type TenantInviteParams = { tenantName: string | null; landlordName: string; addressHtml: string }
 
 export const emailTranslations = {
   en: {
@@ -53,8 +53,9 @@ export const emailTranslations = {
     tenantInvite: {
       subject: (propertyName: string) => `You're invited to join ${propertyName} on mabenn`,
       greeting: (name: string | null) => name ? `Hi ${name},` : 'Hi,',
-      body: (landlordName: string, propertyName: string) =>
-        `${landlordName} has invited you to join <strong>${propertyName}</strong> on mabenn. You'll be able to view your monthly statements, see charge details, and track payments.`,
+      intro: (landlordName: string) =>
+        `${landlordName} has added you as a tenant and invited you to manage your billing on mabenn.`,
+      valueProp: 'You\'ll be able to view your monthly statements, see charge breakdowns, and track payments — all in one place.',
       button: 'Join on mabenn',
       hint: 'If you didn\'t expect this invite, you can safely ignore this email.',
       expiresOn: (date: string) => `This invite expires on ${date}.`,
@@ -111,8 +112,9 @@ export const emailTranslations = {
     tenantInvite: {
       subject: (propertyName: string) => `Você foi convidado para ${propertyName} no mabenn`,
       greeting: (name: string | null) => name ? `Olá ${name},` : 'Olá,',
-      body: (landlordName: string, propertyName: string) =>
-        `${landlordName} convidou você para participar de <strong>${propertyName}</strong> no mabenn. Você poderá ver seus extratos mensais, detalhes das cobranças e acompanhar pagamentos.`,
+      intro: (landlordName: string) =>
+        `${landlordName} adicionou você como inquilino e convidou você para gerenciar sua cobrança no mabenn.`,
+      valueProp: 'Você poderá ver seus extratos mensais, detalhes das cobranças e acompanhar pagamentos — tudo em um só lugar.',
       button: 'Entrar no mabenn',
       hint: 'Se você não esperava este convite, pode ignorar este e-mail com segurança.',
       expiresOn: (date: string) => `Este convite expira em ${date}.`,
@@ -169,8 +171,9 @@ export const emailTranslations = {
     tenantInvite: {
       subject: (propertyName: string) => `Te invitaron a unirte a ${propertyName} en mabenn`,
       greeting: (name: string | null) => name ? `Hola ${name},` : 'Hola,',
-      body: (landlordName: string, propertyName: string) =>
-        `${landlordName} te invitó a unirte a <strong>${propertyName}</strong> en mabenn. Podrás ver tus estados de cuenta mensuales, detalles de cargos y seguimiento de pagos.`,
+      intro: (landlordName: string) =>
+        `${landlordName} te agregó como inquilino y te invitó a gestionar tu facturación en mabenn.`,
+      valueProp: 'Podrás ver tus estados de cuenta mensuales, detalle de cargos y seguimiento de pagos — todo en un solo lugar.',
       button: 'Unirse a mabenn',
       hint: 'Si no esperabas esta invitación, puedes ignorar este correo de forma segura.',
       expiresOn: (date: string) => `Esta invitación expira el ${date}.`,

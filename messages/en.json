@@ -312,6 +312,7 @@
     "tenantTitle": "Tenant",
     "pendingInviteTitle": "Pending invite",
     "invitedOn": "Invited {date} · {relative}",
+    "joinedOn": "Joined {date} · {relative}",
     "editProperty": "Edit property",
     "saveChanges": "Save changes",
     "pauseCharge": "Pause charge",
