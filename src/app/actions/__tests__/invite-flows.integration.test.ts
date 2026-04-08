@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { createTestUser, cleanupTestUser, getAdminClient } from '@/test/supabase'
+import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } from '@/test/supabase'
 import { createClient } from '@supabase/supabase-js'
+import { inviteTenantCore } from '@/app/actions/properties/invite-tenant'
 
 const SUPABASE_URL = 'http://127.0.0.1:54321'
 
@@ -144,5 +145,57 @@ describe('validate_invite_code RPC', () => {
     const { data } = await anon.rpc('validate_invite_code', { invite_code: code.toLowerCase() })
 
     expect(data).toBe(true)
+  })
+})
+
+describe('tenant invite creation', () => {
+  const admin = getAdminClient()
+  let landlordUserId: string
+  let landlordClient: Awaited<ReturnType<typeof createTestUser>>['client']
+  let propertyId: string
+  let unitId: string
+
+  beforeAll(async () => {
+    const user = await createTestUser()
+    landlordUserId = user.userId
+    landlordClient = user.client
+    const prop = await createTestProperty(user.client)
+    propertyId = prop.propertyId
+    unitId = prop.unitId
+  })
+
+  afterAll(async () => {
+    await cleanupTestUser(landlordUserId)
+  })
+
+  it('generates a MABENN code and sets expires_at for tenant invites', async () => {
+    const email = `tenant-code-${Date.now()}@test.local`
+
+    const result = await inviteTenantCore(landlordClient, {
+      propertyId,
+      unitId,
+      email,
+      tenantName: 'Test Tenant',
+      landlordName: 'Test Landlord',
+    })
+
+    expect(result.success).toBe(true)
+
+    const { data: invite } = await admin
+      .from('invitations')
+      .select('code, expires_at, status, role')
+      .eq('invited_email', email)
+      .single()
+
+    expect(invite?.code).toMatch(/^MABENN-[A-Z2-9]{4}$/)
+    expect(invite?.expires_at).not.toBeNull()
+    expect(invite?.status).toBe('pending')
+    expect(invite?.role).toBe('tenant')
+
+    // Verify expires_at is ~30 days from now
+    const expiresAt = new Date(invite!.expires_at!)
+    const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    const diff = Math.abs(expiresAt.getTime() - thirtyDaysFromNow.getTime())
+    expect(diff).toBeLessThan(60_000) // within 1 minute
   })
 })

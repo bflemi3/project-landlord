@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { resend, RESEND_FROM } from '@/lib/resend/client'
 import { getEmailTranslations, type EmailLocale } from '@/emails/i18n'
+import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
 
 export interface InviteTenantState {
   success: boolean
@@ -29,6 +30,7 @@ export interface InviteTenantCoreResult {
   }
   locale?: EmailLocale
   resolvedLandlordName?: string
+  code?: string
 }
 
 export async function inviteTenantCore(
@@ -67,6 +69,8 @@ export async function inviteTenantCore(
   }
 
   // Create the invitation
+  const code = generateInviteCode()
+
   const { error: insertError } = await supabase
     .from('invitations')
     .insert({
@@ -77,13 +81,15 @@ export async function inviteTenantCore(
       invited_name: input.tenantName,
       role: 'tenant' as const,
       status: 'pending' as const,
+      code,
+      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     })
 
   if (insertError) {
     return { success: false, errors: { general: 'inviteFailed' } }
   }
 
-  return { success: true, locale, resolvedLandlordName }
+  return { success: true, locale, resolvedLandlordName, code }
 }
 
 export async function inviteTenant(
