@@ -43,9 +43,9 @@ function getSourceLabel(charge: ChargeInstance, t: ReturnType<typeof useTranslat
   return t('manual')
 }
 
-function getSplitLabel(charge: ChargeInstance): string {
+function getSplitLabel(charge: ChargeInstance, t: ReturnType<typeof useTranslations<'propertyDetail'>>): string {
   if (charge.splitType === 'percentage') {
-    if (charge.landlordPercentage === 100) return ' · Landlord pays'
+    if (charge.landlordPercentage === 100) return ` · ${t('landlordPays')}`
     if (charge.tenantPercentage === 100 || charge.tenantPercentage === null) return ''
     return ` · ${charge.tenantPercentage}/${charge.landlordPercentage}`
   }
@@ -90,7 +90,7 @@ export function ChargesList({
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold text-foreground">
-          {t('charges')} ({missingCharges.length > 0 ? `${charges.length} of ${charges.length + missingCharges.length}` : charges.length})
+          {t('charges')} ({missingCharges.length > 0 ? t('chargesOfTotal', { count: charges.length, total: charges.length + missingCharges.length }) : charges.length})
         </h2>
         {onAddCharge && (
           <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={onAddCharge}>
@@ -145,7 +145,7 @@ export function ChargesList({
                 <ChargeRowTitle>{charge.name}</ChargeRowTitle>
                 <ChargeRowDescription>
                   {sourceLabel}
-                  {getSplitLabel(charge)}
+                  {getSplitLabel(charge, t)}
                   {hasBill && (
                     <>
                       {' · '}

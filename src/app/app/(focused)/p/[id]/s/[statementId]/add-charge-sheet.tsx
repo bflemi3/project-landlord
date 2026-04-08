@@ -479,7 +479,7 @@ function AddChargeForm({
                 className="h-10 flex-1 rounded-xl"
                 disabled={isPending}
               >
-                Cancel
+                {t('cancel')}
               </Button>
             </div>
           </div>
