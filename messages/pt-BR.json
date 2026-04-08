@@ -55,7 +55,10 @@
     "invalidInviteCode": "Este código está incorreto ou expirou. Verifique e tente novamente.",
     "signInError": "Algo deu errado. Tente novamente.",
     "signUpError": "Algo deu errado. Tente novamente.",
-    "alreadyRegistered": "Já existe uma conta com este e-mail. Tente entrar."
+    "alreadyRegistered": "Já existe uma conta com este e-mail. Tente entrar.",
+    "inviteExpired": "Este convite expirou. Peça ao seu proprietário para reenviar.",
+    "inviteInvalid": "Este link de convite é inválido. Verifique com quem o enviou.",
+    "invitedTo": "Você foi convidado para {propertyName}"
   },
   "pwa": {
     "whatsNew": "Novidades na v{version}",

@@ -21,6 +21,7 @@ import {
   getDaysUntilPublishBy,
   getPublishByDay,
 } from '@/lib/statement-urgency'
+import { formatDays } from '@/lib/format-days'
 import { computeFinancialSummary } from '@/lib/statements/financial-summary'
 import { createStatement } from '@/app/actions/statements/create-statement'
 import { unitStatementsQueryKey } from '@/lib/queries/unit-statements'
@@ -157,7 +158,3 @@ function getOrdinalSuffix(n: number): string {
   return s[(v - 20) % 10] || s[v] || s[0]
 }
 
-function formatDays(n: number): string {
-  if (n === 0) return 'today'
-  return n === 1 ? '1 day' : `${n} days`
-}

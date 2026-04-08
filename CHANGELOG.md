@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.9.0
+
+- Tenants can now accept invites directly from the email and sign up
+- Invite emails include a direct sign-up link, expiration date, and manual code
+- Tenants see a dedicated home page after signing in
+- Fixed statement urgency showing negative days (e.g., "-6 days overdue")
+
 ## v0.8.2
 
 - Fixed incorrect "Tenant owes" amount when the landlord covers a charge fully

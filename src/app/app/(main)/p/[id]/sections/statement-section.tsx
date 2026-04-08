@@ -25,6 +25,7 @@ import {
   getDaysUntilPublishBy,
   type UrgencyLevel,
 } from '@/lib/statement-urgency'
+import { formatDays } from '@/lib/format-days'
 
 export function StatementSection({ unitId, propertyId }: { unitId: string; propertyId: string }) {
   const t = useTranslations('propertyDetail')
@@ -236,8 +237,8 @@ function DraftCard({
             urgency === 'overdue' ? 'text-destructive' : urgency === 'approaching' ? 'text-amber-600 dark:text-amber-400' : 'text-primary'
           }`}>
             {t('completeStatement')}
-            {urgency === 'overdue' && ` — ${t('draftNotPublished').toLowerCase()}`}
-            {urgency === 'approaching' && ` — ${daysUntil}d left`}
+            {urgency === 'overdue' && ` — ${t('daysOverdue', { days: formatDays(daysUntil) })}`}
+            {urgency === 'approaching' && ` — ${daysUntil === 0 ? t('dueToday') : t('daysLeft', { days: formatDays(daysUntil) })}`}
             <ChevronRight className="size-4 transition-transform group-hover:translate-x-0.5" />
           </div>
         </div>
@@ -245,3 +246,4 @@ function DraftCard({
     </div>
   )
 }
+

@@ -4,6 +4,7 @@ import { FadeIn } from '@/components/fade-in'
 import { fetchHomeProperties, homePropertiesQueryKey } from '@/lib/queries/home-properties'
 import { fetchHomeActions, homeActionsQueryKey } from '@/lib/queries/home-actions'
 import { HomeContent } from './home-content'
+import { TenantHomeContent } from './tenant-home-content'
 
 export default async function AppHomePage() {
   const supabase = await createClient()
@@ -20,16 +21,35 @@ export default async function AppHomePage() {
 
   // Prefetch data so client hydration matches server render
   const queryClient = new QueryClient()
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: homePropertiesQueryKey(),
-      queryFn: () => fetchHomeProperties(supabase),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: homeActionsQueryKey(),
-      queryFn: () => fetchHomeActions(supabase),
-    }),
-  ])
+  const properties = await fetchHomeProperties(supabase)
+
+  await queryClient.prefetchQuery({
+    queryKey: homePropertiesQueryKey(),
+    queryFn: () => properties,
+  })
+
+  const hasLandlordProperties = properties.some((p) => p.role === 'landlord')
+
+  // Tenant-only users see a separate home page
+  if (!hasLandlordProperties && properties.length > 0) {
+    return (
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <FadeIn className="h-full">
+          <TenantHomeContent
+            firstName={firstName}
+            userName={profile?.full_name ?? undefined}
+            avatarUrl={profile?.avatar_url ?? undefined}
+          />
+        </FadeIn>
+      </HydrationBoundary>
+    )
+  }
+
+  // Landlords (or users with no properties) see the full dashboard
+  await queryClient.prefetchQuery({
+    queryKey: homeActionsQueryKey(),
+    queryFn: () => fetchHomeActions(supabase),
+  })
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

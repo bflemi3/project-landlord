@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { resend, RESEND_FROM } from '@/lib/resend/client'
 import { getEmailTranslations, type EmailLocale } from '@/emails/i18n'
+import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
 
 export async function resendInvite(inviteId: string): Promise<{ success: boolean }> {
   const supabase = await createClient()
@@ -18,6 +19,9 @@ export async function resendInvite(inviteId: string): Promise<{ success: boolean
     .single()
 
   if (!invite) return { success: false }
+
+  const newCode = generateInviteCode()
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
 
   const { data: property } = await supabase
     .from('properties')
@@ -47,16 +51,22 @@ export async function resendInvite(inviteId: string): Promise<{ success: boolean
         landlordName,
         propertyName,
         locale,
+        code: newCode,
+        expiresAt,
       }),
     })
   } catch {
     return { success: false }
   }
 
-  // Update the timestamp so the UI reflects when the invite was last sent
+  // Update code, expiry, and timestamp so the UI reflects when the invite was last sent
   await supabase
     .from('invitations')
-    .update({ updated_at: new Date().toISOString() })
+    .update({
+      code: newCode,
+      expires_at: expiresAt,
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', inviteId)
 
   return { success: true }
@@ -67,15 +77,24 @@ function buildTenantInviteEmail({
   landlordName,
   propertyName,
   locale,
+  code,
+  expiresAt,
 }: {
   tenantName: string | null
   landlordName: string
   propertyName: string
   locale: EmailLocale
+  code: string
+  expiresAt: string
 }): string {
   const t = getEmailTranslations(locale)
   const greeting = t.tenantInvite.greeting(tenantName)
   const body = t.tenantInvite.body(landlordName, propertyName)
+  const signUpUrl = `https://mabenn.com/auth/sign-up?code=${encodeURIComponent(code)}`
+  const expiresDate = new Date(expiresAt).toLocaleDateString(
+    locale === 'pt-BR' ? 'pt-BR' : locale === 'es' ? 'es' : 'en-US',
+    { month: 'long', day: 'numeric', year: 'numeric' },
+  )
 
   return `<!DOCTYPE html>
 <html>
@@ -87,8 +106,9 @@ function buildTenantInviteEmail({
       <div style="background:#fff;border:1px solid #e4e4e7;border-radius:16px;padding:32px">
         <p style="font-size:24px;font-weight:700;color:#18181b;margin:0 0 16px">${propertyName}</p>
         <p style="font-size:16px;color:#52525b;margin:0 0 24px">${greeting} ${body}</p>
-        <a href="https://mabenn.com/auth/sign-up" style="display:block;background:#14b8a6;color:#fff;font-weight:700;font-size:16px;text-align:center;padding:12px 24px;border-radius:12px;text-decoration:none">${t.tenantInvite.button}</a>
-        <p style="font-size:14px;color:#a1a1aa;margin:8px 0 0">${t.tenantInvite.hint}</p>
+        <a href="${signUpUrl}" style="display:block;background:#14b8a6;color:#fff;font-weight:700;font-size:16px;text-align:center;padding:12px 24px;border-radius:12px;text-decoration:none">${t.tenantInvite.button}</a>
+        <p style="font-size:13px;color:#a1a1aa;margin:12px 0 0;text-align:center">${t.tenantInvite.manualCode(code)}</p>
+        <p style="font-size:13px;color:#a1a1aa;margin:4px 0 0;text-align:center">${t.tenantInvite.expiresOn(expiresDate)}</p>
       </div>
       <hr style="border:none;border-top:1px solid #e4e4e7;margin:32px 0" />
       <p style="font-size:14px;color:#a1a1aa;text-align:center;margin:0">${t.footer}</p>

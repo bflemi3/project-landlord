@@ -57,6 +57,8 @@ export const emailTranslations = {
         `${landlordName} has invited you to join <strong>${propertyName}</strong> on mabenn. You'll be able to view your monthly statements, see charge details, and track payments.`,
       button: 'Join on mabenn',
       hint: 'If you didn\'t expect this invite, you can safely ignore this email.',
+      expiresOn: (date: string) => `This invite expires on ${date}.`,
+      manualCode: (code: string) => `Or enter this code manually: ${code}`,
     },
   },
   'pt-BR': {
@@ -113,6 +115,8 @@ export const emailTranslations = {
         `${landlordName} convidou você para participar de <strong>${propertyName}</strong> no mabenn. Você poderá ver seus extratos mensais, detalhes das cobranças e acompanhar pagamentos.`,
       button: 'Entrar no mabenn',
       hint: 'Se você não esperava este convite, pode ignorar este e-mail com segurança.',
+      expiresOn: (date: string) => `Este convite expira em ${date}.`,
+      manualCode: (code: string) => `Ou insira este código manualmente: ${code}`,
     },
   },
   es: {
@@ -169,6 +173,8 @@ export const emailTranslations = {
         `${landlordName} te invitó a unirte a <strong>${propertyName}</strong> en mabenn. Podrás ver tus estados de cuenta mensuales, detalles de cargos y seguimiento de pagos.`,
       button: 'Unirse a mabenn',
       hint: 'Si no esperabas esta invitación, puedes ignorar este correo de forma segura.',
+      expiresOn: (date: string) => `Esta invitación expira el ${date}.`,
+      manualCode: (code: string) => `O ingresa este código manualmente: ${code}`,
     },
   },
 } as const

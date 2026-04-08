@@ -4,16 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resend, RESEND_FROM, RESEND_REPLY_TO } from '@/lib/resend/client'
 import { InviteCode, type InviteSource } from '@/emails/invite-code'
 import { type EmailLocale, getEmailTranslations } from '@/emails/i18n'
-
-function generateInviteCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
-  const prefix = 'MABEN'
-  let suffix = ''
-  for (let i = 0; i < 4; i++) {
-    suffix += chars[Math.floor(Math.random() * chars.length)]
-  }
-  return `${prefix}-${suffix}`
-}
+import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
 
 interface SendInviteOptions {
   email: string

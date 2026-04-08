@@ -17,6 +17,7 @@ function SignInForm() {
   const t = useTranslations('auth')
   const searchParams = useSearchParams()
   const errorParam = searchParams.get('error')
+  const code = searchParams.get('code')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -27,6 +28,9 @@ function SignInForm() {
   async function handleGoogleSignIn() {
     setError('')
     setLoadingGoogle(true)
+    if (code) {
+      document.cookie = `pending_invite_code=${encodeURIComponent(code)};path=/;max-age=3600;samesite=lax`
+    }
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -44,6 +48,9 @@ function SignInForm() {
     e.preventDefault()
     setError('')
     setLoadingEmail(true)
+    if (code) {
+      document.cookie = `pending_invite_code=${encodeURIComponent(code)};path=/;max-age=3600;samesite=lax`
+    }
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
@@ -155,7 +162,7 @@ function SignInForm() {
       <div className="mt-10 text-center">
         <p className="text-sm text-muted-foreground">
           {t('dontHaveAccount')}{' '}
-          <Link href="/auth/sign-up" className="font-semibold text-foreground">
+          <Link href={code ? `/auth/sign-up?code=${encodeURIComponent(code)}` : '/auth/sign-up'} className="font-semibold text-foreground">
             {t('signUp')}
           </Link>
         </p>
