@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { getAdminClient, createTestUser, createTestProperty, cleanupTestUser } from '@/test/supabase'
 import { acceptTenantInvite } from '../accept-tenant-invite'
+import { generateInviteCode } from '../generate-invite-code'
 
 const admin = getAdminClient()
 
@@ -39,6 +40,8 @@ async function createPendingInvite(email: string, overrides: Record<string, unkn
     unit_id: unitId,
     role: 'tenant' as const,
     status: 'pending' as const,
+    code: generateInviteCode(),
+    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     ...overrides,
   })
   if (error) throw new Error(`Failed to create invite: ${error.message}`)
