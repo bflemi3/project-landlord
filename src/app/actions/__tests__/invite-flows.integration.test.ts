@@ -1,9 +1,24 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } from '@/test/supabase'
 import { createClient } from '@supabase/supabase-js'
 import { inviteTenantCore } from '@/app/actions/properties/invite-tenant'
 import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
 import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
+
+// Mock the server-side Supabase client so validateAndFetchInviteContext works in Node tests
+// (next/headers is not available outside Next.js runtime)
+vi.mock('@/lib/supabase/server', () => ({
+  createClient: async () => {
+    const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
+    return createSupabaseClient(
+      'http://127.0.0.1:54321',
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    )
+  },
+}))
+
+// Import after mock is set up
+const { validateAndFetchInviteContext } = await import('@/app/actions/validate-invite')
 
 const SUPABASE_URL = 'http://127.0.0.1:54321'
 
@@ -464,6 +479,130 @@ describe('redeemInviteByCodeCore membership creation', () => {
     expect(memberships).toHaveLength(1)
 
     await cleanupTestUser(tenantUserId)
+  })
+})
+
+describe('validateAndFetchInviteContext', () => {
+  const admin = getAdminClient()
+  let landlordUserId: string
+  let propertyId: string
+  let unitId: string
+
+  beforeAll(async () => {
+    const user = await createTestUser()
+    landlordUserId = user.userId
+    const prop = await createTestProperty(user.client)
+    propertyId = prop.propertyId
+    unitId = prop.unitId
+  })
+
+  afterAll(async () => {
+    await cleanupTestUser(landlordUserId)
+  })
+
+  it('returns context for a valid pending invite code', async () => {
+    const code = generateInviteCode()
+    const email = `ctx-valid-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: email,
+      invited_name: 'Context Tenant',
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'pending',
+      property_id: propertyId,
+      unit_id: unitId,
+    })
+
+    const result = await validateAndFetchInviteContext(code)
+
+    expect(result.valid).toBe(true)
+    if (!result.valid) return
+
+    expect(result.code).toBe(code)
+    expect(result.invitedEmail).toBe(email)
+    expect(result.invitedName).toBe('Context Tenant')
+    expect(result.propertyName).toBeTruthy()
+  })
+
+  it('returns "invalid" for a non-existent code', async () => {
+    const result = await validateAndFetchInviteContext('DOES-NOT-EXIST')
+    expect(result).toEqual({ valid: false, reason: 'invalid' })
+  })
+
+  it('returns "expired" for an expired invite code', async () => {
+    const code = generateInviteCode()
+    const email = `ctx-expired-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: email,
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'pending',
+      property_id: propertyId,
+      unit_id: unitId,
+      expires_at: new Date(Date.now() - 86_400_000).toISOString(),
+    })
+
+    const result = await validateAndFetchInviteContext(code)
+    expect(result).toEqual({ valid: false, reason: 'expired' })
+  })
+
+  it('returns "invalid" for an already-accepted code', async () => {
+    const code = generateInviteCode()
+    const email = `ctx-accepted-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: email,
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'accepted',
+      accepted_by: landlordUserId,
+      property_id: propertyId,
+      unit_id: unitId,
+    })
+
+    const result = await validateAndFetchInviteContext(code)
+    expect(result).toEqual({ valid: false, reason: 'invalid' })
+  })
+
+  it('is case-insensitive', async () => {
+    const code = generateInviteCode()
+    const email = `ctx-case-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: email,
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'pending',
+      property_id: propertyId,
+      unit_id: unitId,
+    })
+
+    const result = await validateAndFetchInviteContext(code.toLowerCase())
+    expect(result.valid).toBe(true)
+  })
+
+  it('returns null propertyName for landlord invites without property', async () => {
+    const code = generateInviteCode()
+    const email = `ctx-ll-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: email,
+      invited_by: landlordUserId,
+      role: 'landlord',
+      status: 'pending',
+    })
+
+    const result = await validateAndFetchInviteContext(code)
+    expect(result.valid).toBe(true)
+    if (!result.valid) return
+    expect(result.propertyName).toBeNull()
   })
 })
 
