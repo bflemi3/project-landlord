@@ -10,15 +10,13 @@ Branch inside `HomeContent` based on whether the user has landlord properties. N
 
 ## Changes
 
-### `src/app/app/(main)/home-content.tsx`
+### `src/app/app/(main)/page.tsx`
 
-Check if the user has any properties with `role === 'landlord'`. If not, render `TenantHomeContent` instead of the existing landlord UI.
+After prefetching `homeProperties`, check if the user has any properties with `role === 'landlord'`. If not, render `<TenantHomeContent />` instead of `<HomeContent />`. The branching happens at the server component level so we avoid unnecessary data prefetching for tenants.
 
 ### `src/app/app/(main)/tenant-home-content.tsx` (new)
 
-Simple component that shows a greeting with the user's first name. Placeholder for future tenant onboarding/dashboard work.
-
-Receives `firstName?: string` as a prop.
+Client component that follows the established pattern — fetches its own data via hooks (e.g., `useProfile` for the user's name). No props needed. Placeholder for future tenant onboarding/dashboard work.
 
 ## What We're Not Building
 
