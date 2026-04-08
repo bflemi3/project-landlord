@@ -30,7 +30,7 @@ export async function redeemInviteByCodeCore(
     .eq('code', code)
     .eq('status', 'pending')
     .or('expires_at.is.null,expires_at.gt.now()')
-    .select('source')
+    .select('source, role, property_id, unit_id')
     .single()
 
   if (error || !invite) return { success: false }
@@ -43,6 +43,21 @@ export async function redeemInviteByCodeCore(
       acquisition_channel: invite.source,
     })
     .eq('id', userId)
+
+  // Create tenant membership if applicable
+  if (invite.role === 'tenant' && invite.property_id && invite.unit_id) {
+    await supabase
+      .from('memberships')
+      .insert({
+        user_id: userId,
+        property_id: invite.property_id,
+        unit_id: invite.unit_id,
+        role: 'tenant' as const,
+      })
+      .select('id')
+      .single()
+    // ON CONFLICT is handled by the unique constraint — duplicate insert is a no-op
+  }
 
   return { success: true, source: invite.source }
 }

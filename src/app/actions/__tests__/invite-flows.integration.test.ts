@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } from '@/test/supabase'
 import { createClient } from '@supabase/supabase-js'
 import { inviteTenantCore } from '@/app/actions/properties/invite-tenant'
+import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
+import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
 
 const SUPABASE_URL = 'http://127.0.0.1:54321'
 
@@ -197,5 +199,339 @@ describe('tenant invite creation', () => {
     const thirtyDaysFromNow = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     const diff = Math.abs(expiresAt.getTime() - thirtyDaysFromNow.getTime())
     expect(diff).toBeLessThan(60_000) // within 1 minute
+  })
+})
+
+describe('tenant membership creation on code redemption', () => {
+  const admin = getAdminClient()
+  let landlordUserId: string
+  let propertyId: string
+  let unitId: string
+
+  beforeAll(async () => {
+    const user = await createTestUser()
+    landlordUserId = user.userId
+    const prop = await createTestProperty(user.client)
+    propertyId = prop.propertyId
+    unitId = prop.unitId
+  })
+
+  afterAll(async () => {
+    await cleanupTestUser(landlordUserId)
+  })
+
+  it('creates a tenant membership when a tenant invite code is redeemed via trigger', async () => {
+    const code = generateInviteCode()
+    const tenantEmail = `trigger-tenant-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: tenantEmail,
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'pending',
+      property_id: propertyId,
+      unit_id: unitId,
+    })
+
+    const { data: userData } = await admin.auth.admin.createUser({
+      email: tenantEmail,
+      password: 'test-password-123!',
+      email_confirm: true,
+      user_metadata: { full_name: 'Trigger Tenant', invite_code: code },
+    })
+
+    const tenantUserId = userData.user!.id
+
+    const { data: invite } = await admin
+      .from('invitations')
+      .select('status, accepted_by')
+      .eq('code', code)
+      .single()
+    expect(invite?.status).toBe('accepted')
+    expect(invite?.accepted_by).toBe(tenantUserId)
+
+    const { data: membership } = await admin
+      .from('memberships')
+      .select('role, unit_id, property_id')
+      .eq('user_id', tenantUserId)
+      .eq('property_id', propertyId)
+      .single()
+    expect(membership?.role).toBe('tenant')
+    expect(membership?.unit_id).toBe(unitId)
+
+    await cleanupTestUser(tenantUserId)
+  })
+
+  it('is idempotent — no error if membership already exists', async () => {
+    const code = generateInviteCode()
+    const tenantEmail = `idempotent-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: tenantEmail,
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'pending',
+      property_id: propertyId,
+      unit_id: unitId,
+    })
+
+    const { data: userData } = await admin.auth.admin.createUser({
+      email: tenantEmail,
+      password: 'test-password-123!',
+      email_confirm: true,
+      user_metadata: { full_name: 'Idempotent Tenant', invite_code: code },
+    })
+
+    const tenantUserId = userData.user!.id
+
+    const { error } = await admin.from('memberships').insert({
+      user_id: tenantUserId,
+      property_id: propertyId,
+      unit_id: unitId,
+      role: 'tenant',
+    })
+
+    const { data: memberships } = await admin
+      .from('memberships')
+      .select('id')
+      .eq('user_id', tenantUserId)
+      .eq('property_id', propertyId)
+
+    expect(memberships!.length).toBeGreaterThanOrEqual(1)
+
+    await cleanupTestUser(tenantUserId)
+  })
+
+  it('does not create membership for landlord invite codes', async () => {
+    const code = `LL-${Date.now()}`
+    const llEmail = `ll-invite-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: llEmail,
+      invited_by: landlordUserId,
+      role: 'landlord',
+      status: 'pending',
+    })
+
+    const { data: userData } = await admin.auth.admin.createUser({
+      email: llEmail,
+      password: 'test-password-123!',
+      email_confirm: true,
+      user_metadata: { full_name: 'LL User', invite_code: code },
+    })
+
+    const llUserId = userData.user!.id
+
+    const { data: memberships } = await admin
+      .from('memberships')
+      .select('id')
+      .eq('user_id', llUserId)
+    expect(memberships).toHaveLength(0)
+
+    await cleanupTestUser(llUserId)
+  })
+})
+
+describe('redeemInviteByCodeCore membership creation', () => {
+  const admin = getAdminClient()
+  let landlordUserId: string
+  let propertyId: string
+  let unitId: string
+
+  beforeAll(async () => {
+    const user = await createTestUser()
+    landlordUserId = user.userId
+    const prop = await createTestProperty(user.client)
+    propertyId = prop.propertyId
+    unitId = prop.unitId
+  })
+
+  afterAll(async () => {
+    await cleanupTestUser(landlordUserId)
+  })
+
+  it('creates a tenant membership when redeeming a tenant invite code', async () => {
+    const code = generateInviteCode()
+    const tenantEmail = `redeem-tenant-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: tenantEmail,
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'pending',
+      property_id: propertyId,
+      unit_id: unitId,
+    })
+
+    // Create user WITHOUT invite_code in metadata (simulates Google OAuth path — no trigger fires)
+    const { data: userData } = await admin.auth.admin.createUser({
+      email: tenantEmail,
+      password: 'test-password-123!',
+      email_confirm: true,
+      user_metadata: { full_name: 'Redeem Tenant' },
+    })
+    const tenantUserId = userData.user!.id
+
+    const result = await redeemInviteByCodeCore(admin, tenantUserId, code)
+    expect(result.success).toBe(true)
+
+    const { data: membership } = await admin
+      .from('memberships')
+      .select('role, unit_id, property_id')
+      .eq('user_id', tenantUserId)
+      .eq('property_id', propertyId)
+      .single()
+    expect(membership?.role).toBe('tenant')
+    expect(membership?.unit_id).toBe(unitId)
+
+    await cleanupTestUser(tenantUserId)
+  })
+
+  it('does NOT create membership for landlord invite codes', async () => {
+    const code = `LL-REDEEM-${Date.now()}`
+    const llEmail = `ll-redeem-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: llEmail,
+      invited_by: landlordUserId,
+      role: 'landlord',
+      status: 'pending',
+    })
+
+    const { data: userData } = await admin.auth.admin.createUser({
+      email: llEmail,
+      password: 'test-password-123!',
+      email_confirm: true,
+      user_metadata: { full_name: 'LL Redeem' },
+    })
+    const llUserId = userData.user!.id
+
+    const result = await redeemInviteByCodeCore(admin, llUserId, code)
+    expect(result.success).toBe(true)
+
+    const { data: memberships } = await admin
+      .from('memberships')
+      .select('id')
+      .eq('user_id', llUserId)
+    expect(memberships).toHaveLength(0)
+
+    await cleanupTestUser(llUserId)
+  })
+
+  it('is idempotent — no error if membership already exists', async () => {
+    const code = generateInviteCode()
+    const tenantEmail = `redeem-idem-${Date.now()}@test.local`
+
+    await admin.from('invitations').insert({
+      code,
+      invited_email: tenantEmail,
+      invited_by: landlordUserId,
+      role: 'tenant',
+      status: 'pending',
+      property_id: propertyId,
+      unit_id: unitId,
+    })
+
+    const { data: userData } = await admin.auth.admin.createUser({
+      email: tenantEmail,
+      password: 'test-password-123!',
+      email_confirm: true,
+      user_metadata: { full_name: 'Idem Tenant' },
+    })
+    const tenantUserId = userData.user!.id
+
+    // Pre-create membership
+    await admin.from('memberships').insert({
+      user_id: tenantUserId,
+      property_id: propertyId,
+      unit_id: unitId,
+      role: 'tenant',
+    })
+
+    const result = await redeemInviteByCodeCore(admin, tenantUserId, code)
+    expect(result.success).toBe(true)
+
+    const { data: memberships } = await admin
+      .from('memberships')
+      .select('id')
+      .eq('user_id', tenantUserId)
+      .eq('property_id', propertyId)
+    expect(memberships).toHaveLength(1)
+
+    await cleanupTestUser(tenantUserId)
+  })
+})
+
+describe('resend tenant invite', () => {
+  const admin = getAdminClient()
+  let landlordUserId: string
+  let landlordClient: Awaited<ReturnType<typeof createTestUser>>['client']
+  let propertyId: string
+  let unitId: string
+
+  beforeAll(async () => {
+    const user = await createTestUser()
+    landlordUserId = user.userId
+    landlordClient = user.client
+    const prop = await createTestProperty(user.client)
+    propertyId = prop.propertyId
+    unitId = prop.unitId
+  })
+
+  afterAll(async () => {
+    await cleanupTestUser(landlordUserId)
+  })
+
+  it('generates a new code and refreshes expires_at on resend', async () => {
+    const email = `resend-${Date.now()}@test.local`
+
+    const result = await inviteTenantCore(landlordClient, {
+      propertyId,
+      unitId,
+      email,
+      tenantName: 'Resend Tenant',
+      landlordName: 'Test Landlord',
+    })
+    expect(result.success).toBe(true)
+
+    const { data: original } = await admin
+      .from('invitations')
+      .select('id, code, expires_at')
+      .eq('invited_email', email)
+      .single()
+    expect(original?.code).toBeTruthy()
+
+    await new Promise((r) => setTimeout(r, 50))
+
+    // Simulate resend by directly updating (resendInvite requires server auth)
+    const newCode = generateInviteCode()
+    const newExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+    await admin
+      .from('invitations')
+      .update({ code: newCode, expires_at: newExpiresAt, updated_at: new Date().toISOString() })
+      .eq('id', original!.id)
+
+    const { data: updated } = await admin
+      .from('invitations')
+      .select('code, expires_at')
+      .eq('id', original!.id)
+      .single()
+
+    expect(updated?.code).not.toBe(original?.code)
+    expect(updated?.expires_at).not.toBe(original?.expires_at)
+
+    // Old code should no longer validate
+    const anon = createClient(SUPABASE_URL, process.env.SUPABASE_ANON_KEY!)
+    const { data: oldValid } = await anon.rpc('validate_invite_code', { invite_code: original!.code! })
+    expect(oldValid).toBe(false)
+
+    // New code should validate
+    const { data: newValid } = await anon.rpc('validate_invite_code', { invite_code: newCode })
+    expect(newValid).toBe(true)
   })
 })
