@@ -556,6 +556,8 @@ src/data/
 │   ├── shared.ts           # Types, query keys, fetch functions (pure)
 │   ├── server.ts           # 'use cache' + cacheLife wrappers
 │   ├── client.ts           # React Query hooks (useSuspenseQuery)
+│   ├── __tests__/
+│   │   └── shared.test.ts  # Unit tests for fetch functions
 │   └── actions/
 │       ├── create-property.ts
 │       ├── update-property.ts
@@ -563,12 +565,25 @@ src/data/
 │       ├── resend-invite.ts
 │       ├── cancel-invite.ts
 │       ├── remove-tenant.ts
-│       └── validate-property.ts
+│       ├── validate-property.ts
+│       └── __tests__/
+│           ├── create-charges.integration.test.ts      # from src/app/actions/properties/__tests__/
+│           ├── invite-tenant.integration.test.ts
+│           ├── cancel-invite.integration.test.ts
+│           ├── remove-tenant.integration.test.ts
+│           ├── remove-charge.integration.test.ts
+│           ├── toggle-charge-active.integration.test.ts
+│           ├── update-charge.integration.test.ts
+│           ├── update-property.integration.test.ts
+│           ├── validate-property.integration.test.ts
+│           └── redeem-invite-trigger.integration.test.ts
 ├── units/
 │   ├── shared.ts           # fetchUnit, fetchUnitCharges, fetchUnitTenants,
 │   │                       # fetchUnitInvites, fetchUnitStatements, types, keys
 │   ├── server.ts
 │   ├── client.ts
+│   ├── __tests__/
+│   │   └── shared.test.ts
 │   └── actions/
 │       ├── add-unit.ts
 │       ├── create-charges.ts
@@ -580,6 +595,8 @@ src/data/
 │   │                       # fetchMissingCharges, types, keys
 │   ├── server.ts
 │   ├── client.ts
+│   ├── __tests__/
+│   │   └── shared.test.ts
 │   └── actions/
 │       ├── create-statement.ts
 │       ├── add-charge.ts
@@ -589,38 +606,53 @@ src/data/
 │       ├── save-charge-definition.ts
 │       ├── create-source-document-record.ts
 │       ├── delete-bill-document.ts
-│       └── get-source-document-url.ts
+│       ├── get-source-document-url.ts
+│       └── __tests__/
+│           ├── create-statement.integration.test.ts    # from src/app/actions/statements/__tests__/
+│           ├── statement-charges.integration.test.ts
+│           ├── generate-instances.integration.test.ts
+│           ├── create-source-document-record.test.ts   # from src/app/actions/statements/
+│           ├── create-source-document-record.integration.test.ts
+│           ├── delete-bill-document.test.ts
+│           ├── delete-bill-document.integration.test.ts
+│           ├── get-source-document-url.test.ts
+│           └── get-source-document-url.integration.test.ts
 ├── profiles/
 │   ├── shared.ts           # fetchProfile, UserProfile type, query key
 │   ├── server.ts           # cached profile for server components (greeting, avatar)
 │   ├── client.ts           # useProfile hook
+│   ├── __tests__/
+│   │   └── shared.test.ts
 │   └── actions/
 │       └── redeem-invite-by-code.ts
 ├── invitations/
 │   ├── shared.ts
+│   ├── __tests__/
+│   │   └── shared.test.ts
 │   └── actions/
 │       ├── send-invite.ts
 │       ├── validate-invite.ts
-│       └── redeem-invite.ts
+│       ├── redeem-invite.ts
+│       └── __tests__/
+│           └── invite-flows.integration.test.ts        # from src/app/actions/__tests__/
 ├── home/
 │   ├── shared.ts           # fetchHomeProperties, fetchHomeActions, types, keys
 │   ├── server.ts
-│   └── client.ts
+│   ├── client.ts
+│   └── __tests__/
+│       └── shared.test.ts
 ├── shared/
 │   ├── create-hook.ts      # Factory: createSuspenseHook(queryKey, fetchFn)
 │   └── supabase.ts         # Re-export client/server Supabase creators
-└── __tests__/
-    ├── properties/
-    │   └── queries.test.ts
-    ├── units/
-    │   └── queries.test.ts
-    ├── statements/
-    │   └── queries.test.ts
-    ├── profiles/
-    │   └── queries.test.ts
-    └── home/
-        └── queries.test.ts
+└── storage/
+    └── actions/
+        ├── delete-storage-file.ts
+        └── __tests__/
+            ├── delete-storage-file.test.ts             # from src/app/actions/storage/
+            └── delete-storage-file.integration.test.ts
 ```
+
+Convention: `__tests__/` directories sit next to the source they test — `shared.test.ts` next to `shared.ts`, action tests inside `actions/__tests__/`. This follows the existing codebase pattern (e.g., `src/app/actions/properties/__tests__/`).
 
 ### File Responsibilities
 
@@ -685,18 +717,42 @@ export function createSuspenseHook<TData, TArgs extends unknown[]>(
 - Move existing fetch functions from `src/lib/queries/*.ts` into domain `shared.ts` files
 - Move existing hooks from `src/lib/hooks/use-*.ts` (data hooks only) into domain `client.ts` files using the factory
 - Move server actions from `src/app/actions/` into domain `actions/` directories
+- Move storage actions from `src/app/actions/storage/` to `src/data/storage/actions/`
 - Utility hooks (`use-media-query`, `use-install-prompt`, etc.) stay in `src/lib/hooks/` — they're not data hooks
 - `src/lib/queries/server.ts` (`getProperty`, `getStatement`, `getUnit` with React.cache) merges into domain `server.ts` files, replacing `React.cache` with `'use cache'`
 - Update all import paths across the codebase
-- Existing action integration tests move with their actions; test import paths update accordingly
 
-### Tests
+### Test Migration
 
-Add unit tests for:
-- Each `shared.ts` fetch function (mock Supabase client, verify query shape and return types)
-- Each `server.ts` cache function (verify caching behavior)
+Existing tests move to `__tests__/` directories colocated with their source, following the current codebase convention:
 
-Existing action integration tests (20+ files) move to `src/data/<domain>/actions/__tests__/` with updated import paths.
+| Current Location | New Location |
+|---|---|
+| `src/app/actions/properties/__tests__/*.integration.test.ts` (10 files) | `src/data/properties/actions/__tests__/` |
+| `src/app/actions/statements/__tests__/*.integration.test.ts` (3 files) | `src/data/statements/actions/__tests__/` |
+| `src/app/actions/statements/*.test.ts` + `*.integration.test.ts` (8 files) | `src/data/statements/actions/__tests__/` |
+| `src/app/actions/__tests__/invite-flows.integration.test.ts` | `src/data/invitations/actions/__tests__/` |
+| `src/app/actions/storage/*.test.ts` + `*.integration.test.ts` (2 files) | `src/data/storage/actions/__tests__/` |
+
+Tests that live outside the data layer stay where they are:
+- `src/lib/__tests__/` (split-allocations, validation, statement-urgency, etc.)
+- `src/lib/address/__tests__/` (format-address, brazil, etc.)
+- `src/lib/statements/__tests__/` (financial-summary, recalculate-total)
+- `src/lib/invitations/__tests__/` (accept-tenant-invite, generate-invite-code)
+- `src/components/*.test.tsx` (file-upload)
+- `src/app/**/*.test.tsx` (add-charge-sheet)
+
+All moved tests must have their import paths updated and pass after migration. No test should be deleted or skipped.
+
+### New Tests
+
+Add unit tests for each domain's `shared.ts` fetch functions (mock Supabase client, verify query shape and return types):
+- `src/data/properties/__tests__/shared.test.ts`
+- `src/data/units/__tests__/shared.test.ts`
+- `src/data/statements/__tests__/shared.test.ts`
+- `src/data/profiles/__tests__/shared.test.ts`
+- `src/data/invitations/__tests__/shared.test.ts`
+- `src/data/home/__tests__/shared.test.ts`
 
 ---
 
