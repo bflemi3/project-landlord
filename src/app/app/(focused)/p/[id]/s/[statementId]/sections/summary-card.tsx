@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from 'next-intl'
 import { useStatement } from '@/lib/hooks/use-statement'
-import { useUnit } from '@/lib/hooks/use-unit'
+import { useUnit } from '@/data/units/client'
 import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
 import { formatCurrency } from '@/lib/format-currency'
 import { Separator } from '@/components/ui/separator'

@@ -2,13 +2,15 @@ import type { Metadata } from 'next'
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
 import { FadeIn } from '@/components/fade-in'
-import { propertyQueryKey } from '@/lib/queries/property'
+import { propertyQueryKey } from '@/data/properties/shared'
 import { getProperty } from '@/lib/queries/server'
-import { fetchUnit, unitQueryKey } from '@/lib/queries/unit'
-import { fetchUnitCharges, unitChargesQueryKey } from '@/lib/queries/unit-charges'
-import { fetchUnitTenants, unitTenantsQueryKey } from '@/lib/queries/unit-tenants'
-import { fetchUnitInvites, unitInvitesQueryKey } from '@/lib/queries/unit-invites'
-import { fetchUnitStatements, unitStatementsQueryKey } from '@/lib/queries/unit-statements'
+import {
+  fetchUnit, unitQueryKey,
+  fetchUnitCharges, unitChargesQueryKey,
+  fetchUnitTenants, unitTenantsQueryKey,
+  fetchUnitInvites, unitInvitesQueryKey,
+  fetchUnitStatements, unitStatementsQueryKey,
+} from '@/data/units/shared'
 import { fetchMissingCharges, missingChargesQueryKey } from '@/lib/queries/missing-charges'
 import { PropertyDetail } from './property-detail'
 

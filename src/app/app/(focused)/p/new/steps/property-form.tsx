@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { getAddressProvider } from '@/lib/address/provider'
-import { validateProperty, type ValidatePropertyState } from '@/app/actions/properties/validate-property'
+import { validateProperty, type ValidatePropertyState } from '@/data/properties/actions/validate-property'
 import { CepField } from './cep-field'
 
 const addressProvider = getAddressProvider('BR')

@@ -16,8 +16,8 @@ import {
   DetailPageLayoutSidebar,
 } from '@/components/detail-page-layout'
 import { useStatement } from '@/lib/hooks/use-statement'
-import { useUnit } from '@/lib/hooks/use-unit'
-import { useProperty } from '@/lib/hooks/use-property'
+import { useUnit } from '@/data/units/client'
+import { useProperty } from '@/data/properties/client'
 import { formatPeriod } from '@/lib/statement-urgency'
 import { formatAddress } from '@/lib/address/format-address'
 import { SummaryCard } from './sections/summary-card'

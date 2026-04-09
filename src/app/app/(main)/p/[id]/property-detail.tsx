@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { useProperty } from '@/lib/hooks/use-property'
+import { useProperty } from '@/data/properties/client'
 import { HighlightProvider } from '@/lib/hooks/use-highlight-target'
 import { PageHeader, PageHeaderBack } from '@/components/page-header'
 import {

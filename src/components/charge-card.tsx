@@ -13,7 +13,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format-currency'
-import type { ChargeDefinition } from '@/lib/hooks/use-unit-charges'
+import type { ChargeDefinition } from '@/data/units/client'
 
 const CHARGE_TYPE_ICONS: Record<string, React.ElementType> = {
   rent: Home,

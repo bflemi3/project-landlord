@@ -3,10 +3,8 @@
 import { useTranslations } from 'next-intl'
 import { Check, Clock } from 'lucide-react'
 import { getCompletionSteps, isPropertyComplete } from '@/components/property-card'
-import { useProperty } from '@/lib/hooks/use-property'
-import { useUnitCharges } from '@/lib/hooks/use-unit-charges'
-import { useUnitTenants } from '@/lib/hooks/use-unit-tenants'
-import { useUnitInvites } from '@/lib/hooks/use-unit-invites'
+import { useProperty } from '@/data/properties/client'
+import { useUnitCharges, useUnitTenants, useUnitInvites } from '@/data/units/client'
 
 export function SetupProgressSection({ propertyId }: { propertyId: string }) {
   const tP = useTranslations('properties')

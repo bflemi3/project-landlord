@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { createChargesCore, type ChargeInput } from '@/app/actions/properties/create-charges'
+import { createChargesCore, type ChargeInput } from '@/data/units/actions/create-charges'
 
 export interface SaveChargeDefinitionInput {
   unitId: string

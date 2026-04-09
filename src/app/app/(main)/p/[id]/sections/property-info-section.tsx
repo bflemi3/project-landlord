@@ -7,9 +7,9 @@ import { Pencil, MapPin } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { PropertyForm, type PropertyFormValues } from '@/app/app/(focused)/p/new/steps/property-form'
-import { updateProperty } from '@/app/actions/properties/update-property'
-import { useProperty } from '@/lib/hooks/use-property'
-import { propertyQueryKey } from '@/lib/queries/property'
+import { updateProperty } from '@/data/properties/actions/update-property'
+import { useProperty } from '@/data/properties/client'
+import { propertyQueryKey } from '@/data/properties/shared'
 
 export function PropertyInfoSection({ propertyId }: { propertyId: string }) {
   const t = useTranslations('propertyDetail')

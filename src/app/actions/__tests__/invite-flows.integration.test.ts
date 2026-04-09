@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } from '@/test/supabase'
 import { createClient } from '@supabase/supabase-js'
-import { inviteTenantCore } from '@/app/actions/properties/invite-tenant'
+import { inviteTenantCore } from '@/data/properties/actions/invite-tenant'
 import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
 import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
 

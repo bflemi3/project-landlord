@@ -1,6 +1,6 @@
 'use client'
 
-import { useProperty } from '@/lib/hooks/use-property'
+import { useProperty } from '@/data/properties/client'
 
 export function PropertyHeader({ propertyId }: { propertyId: string }) {
   const { data: property } = useProperty(propertyId)

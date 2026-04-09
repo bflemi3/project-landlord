@@ -9,10 +9,8 @@ import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { useHighlightTarget } from '@/lib/hooks/use-highlight-target'
-import { useUnit } from '@/lib/hooks/use-unit'
-import { useUnitCharges } from '@/lib/hooks/use-unit-charges'
-import { useUnitStatements } from '@/lib/hooks/use-unit-statements'
-import { useProperty } from '@/lib/hooks/use-property'
+import { useUnit, useUnitCharges, useUnitStatements } from '@/data/units/client'
+import { useProperty } from '@/data/properties/client'
 import { formatCurrency } from '@/lib/format-currency'
 import {
   getCurrentPeriod,
@@ -24,7 +22,7 @@ import {
 import { formatDays } from '@/lib/format-days'
 import { computeFinancialSummary } from '@/lib/statements/financial-summary'
 import { createStatement } from '@/app/actions/statements/create-statement'
-import { unitStatementsQueryKey } from '@/lib/queries/unit-statements'
+import { unitStatementsQueryKey } from '@/data/units/shared'
 import { homeActionsQueryKey, homePropertiesQueryKey } from '@/data/home/shared'
 
 export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; propertyId: string }) {

@@ -17,10 +17,10 @@ import { InviteTenantsForm, type InviteEntry } from './steps/invite-tenants-form
 import { ChargesForm, type ChargeData } from './steps/charges-form'
 import type { ChargeConfig } from './steps/charge-config-sheet'
 import { SetupComplete } from './steps/setup-complete'
-import { createProperty, type CreatePropertyState } from '@/app/actions/properties/create-property'
+import { createProperty, type CreatePropertyState } from '@/data/properties/actions/create-property'
 import { formatPropertyName } from '@/lib/address/format-property-name'
-import { inviteTenant } from '@/app/actions/properties/invite-tenant'
-import { createCharges } from '@/app/actions/properties/create-charges'
+import { inviteTenant } from '@/data/properties/actions/invite-tenant'
+import { createCharges } from '@/data/units/actions/create-charges'
 import posthog from 'posthog-js'
 const TOTAL_STEPS = 3
 

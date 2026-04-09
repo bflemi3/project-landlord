@@ -1,7 +1,7 @@
 'use client'
 
-import { useProperty } from '@/lib/hooks/use-property'
-import { useUnit } from '@/lib/hooks/use-unit'
+import { useProperty } from '@/data/properties/client'
+import { useUnit } from '@/data/units/client'
 import { ChargesSection } from './charges-section'
 
 export function UnitSection({ unitId, propertyId }: { unitId: string; propertyId: string }) {

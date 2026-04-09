@@ -23,7 +23,7 @@ import { deleteBillDocument } from '@/app/actions/statements/delete-bill-documen
 import { deleteStorageFile } from '@/app/actions/storage/delete-storage-file'
 import { saveChargeAsDefinition } from '@/app/actions/statements/save-charge-definition'
 import { createClient } from '@/lib/supabase/client'
-import { unitChargesQueryKey } from '@/lib/queries/unit-charges'
+import { unitChargesQueryKey } from '@/data/units/shared'
 import { statementQueryKey } from '@/lib/queries/statement'
 import { statementChargesQueryKey } from '@/lib/queries/statement-charges'
 import { missingChargesQueryKey } from '@/lib/queries/missing-charges'
