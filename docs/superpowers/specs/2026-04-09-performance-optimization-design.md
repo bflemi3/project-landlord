@@ -398,38 +398,48 @@ Usage is identical to today — callers don't pass `index`:
 - Preload triggered when the sheet opens (the expand/collapse section isn't visible until user picks "Split" payer)
 - Static UI (form fields, labels, slider) renders immediately; animated section loads lazily
 
-Pattern:
+Pattern — extract the animated section into its own file and use `React.lazy`. No state, no double render:
+
 ```tsx
-// Inside the component file
-import { lazy, Suspense, useEffect, useState } from 'react'
+// src/components/animated-split-section.tsx
+'use client'
+import { AnimatePresence, motion } from 'motion/react'
 
-// Preload function — call when sheet opens
-const motionPromise = () => import('motion/react')
-
-function AnimatedSplitSection({ show, children }: { show: boolean; children: React.ReactNode }) {
-  const [Motion, setMotion] = useState<typeof import('motion/react') | null>(null)
-
-  useEffect(() => {
-    motionPromise().then(setMotion)
-  }, [])
-
-  if (!Motion) return show ? <div>{children}</div> : null
-
+export function AnimatedSplitSection({ show, children }: { show: boolean; children: React.ReactNode }) {
   return (
-    <Motion.AnimatePresence>
+    <AnimatePresence>
       {show && (
-        <Motion.motion.div
+        <motion.div
           initial={{ height: 0, opacity: 0 }}
           animate={{ height: 'auto', opacity: 1 }}
           exit={{ height: 0, opacity: 0 }}
         >
           {children}
-        </Motion.motion.div>
+        </motion.div>
       )}
-    </Motion.AnimatePresence>
+    </AnimatePresence>
   )
 }
 ```
+
+```tsx
+// Inside charge-config-sheet.tsx or add-charge-sheet.tsx
+import { lazy, Suspense } from 'react'
+
+const AnimatedSplitSection = lazy(() =>
+  import('@/components/animated-split-section').then(m => ({ default: m.AnimatedSplitSection }))
+)
+
+// Preload when sheet opens — fires the dynamic import early
+export const preloadAnimatedSplit = () => import('@/components/animated-split-section')
+
+// In the component's render:
+<Suspense fallback={show ? <div>{children}</div> : null}>
+  <AnimatedSplitSection show={show}>{children}</AnimatedSplitSection>
+</Suspense>
+```
+
+`React.lazy` suspends on first render until the chunk loads, then renders directly — single render, no state. The `preloadAnimatedSplit()` call fires the import early (when the sheet opens) so by the time the user selects "Split", the chunk is already cached.
 
 **`create-property-flow.tsx` (property wizard):**
 - Dynamic-import `SlideIn` component (which uses `motion/react`)
