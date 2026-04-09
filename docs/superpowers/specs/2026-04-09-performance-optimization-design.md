@@ -299,11 +299,15 @@ Tailwind keyframe in `globals.css`:
 }
 ```
 
-**`FadeUp` + `FadeUp.Group`** — refactor to CSS server components:
+**`FadeUp` + `FadeUp.Group`** — refactor to CSS animations. `FadeUp` is a server component (zero JS). `FadeUp.Group` is a lightweight client component that auto-indexes its `FadeUp` children via `Children.map` + `cloneElement` — preserving the current DX where callers don't manually pass index.
 
 ```tsx
-// src/components/fade-up.tsx (server component, zero JS)
-function FadeUp({ children, delay, index, className }: {
+// src/components/fade-up.tsx
+
+import { cn } from '@/lib/utils'
+
+// Server component — zero JS, receives index from Group
+export function FadeUp({ children, delay, index, className }: {
   children: React.ReactNode
   delay?: number
   index?: number
@@ -323,13 +327,30 @@ function FadeUp({ children, delay, index, className }: {
     </div>
   )
 }
+```
 
-function FadeUpGroup({ children, baseDelay = 0, stagger = 0.08, className }: {
+```tsx
+// src/components/fade-up-group.tsx
+'use client'
+
+import { Children, cloneElement, isValidElement } from 'react'
+import { FadeUp } from './fade-up'
+
+// Client component — auto-injects index into FadeUp children
+export function FadeUpGroup({ children, baseDelay = 0, stagger = 0.08, className }: {
   children: React.ReactNode
   baseDelay?: number
   stagger?: number
   className?: string
 }) {
+  let index = 0
+  const indexed = Children.map(children, (child) => {
+    if (isValidElement(child) && child.type === FadeUp) {
+      return cloneElement(child, { index: index++ } as Record<string, unknown>)
+    }
+    return child
+  })
+
   return (
     <div
       className={className}
@@ -338,7 +359,7 @@ function FadeUpGroup({ children, baseDelay = 0, stagger = 0.08, className }: {
         '--stagger': `${stagger}s`,
       } as React.CSSProperties}
     >
-      {children}
+      {indexed}
     </div>
   )
 }
@@ -355,7 +376,16 @@ Tailwind keyframe in `globals.css`:
 }
 ```
 
-The `FadeUp.Group` API shape stays the same. The `index` prop replaces the React context-based auto-indexing (callers pass `index={0}`, `index={1}`, etc.). This eliminates ~100 lines of Framer Motion + context code.
+Usage is identical to today — callers don't pass `index`:
+```tsx
+<FadeUpGroup stagger={0.1} baseDelay={0.1}>
+  <FadeUp><h1>...</h1></FadeUp>
+  <FadeUp><p>...</p></FadeUp>
+  <FadeUp><div>...</div></FadeUp>
+</FadeUpGroup>
+```
+
+`FadeUp.Group` is a thin client wrapper (~15 lines) that only runs `Children.map` — no Framer Motion, no context. Server component children passed through `FadeUp` render on the server as normal.
 
 **Landing page:** Replace `motion.h1`, `motion.p`, `motion.div` with `FadeUp` components using explicit delays (0.1, 0.2, 0.35) matching the current `custom` values. The animation curve and timing must match exactly — no visual regression. The `fadeUp` variants object in `landing.tsx` uses `duration: 0.5` and `ease: [0.25, 0.1, 0.25, 1]` which maps directly to the CSS `cubic-bezier(0.25, 0.1, 0.25, 1)`.
 
