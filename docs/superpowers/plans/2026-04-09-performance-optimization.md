@@ -20,6 +20,7 @@ These tasks have zero dependencies on each other and can all run simultaneously.
 
 ### Task 1.1: CSS Animation Keyframes + FadeIn Refactor
 
+**Model:** Sonnet
 **Spec sections:** 6 (CSS Replacements)
 
 **Files:**
@@ -87,6 +88,7 @@ git commit -m "refactor: replace Framer Motion FadeIn with CSS server component"
 
 ### Task 1.2: FadeUp + FadeUpGroup CSS Refactor
 
+**Model:** Sonnet
 **Spec sections:** 6 (CSS Replacements)
 
 **Files:**
@@ -210,6 +212,7 @@ git commit -m "refactor: replace Framer Motion FadeUp with CSS server components
 
 ### Task 1.3: Landing Page — Replace Framer Motion with CSS FadeUp
 
+**Model:** Opus 4.6 — animation timing must match exactly, no visual regression allowed
 **Spec sections:** 6 (Landing page)
 
 **Files:**
@@ -291,6 +294,7 @@ git commit -m "refactor: replace Framer Motion on landing page with CSS FadeUp"
 
 ### Task 1.4: Add Missing loading.tsx Files
 
+**Model:** Sonnet
 **Spec sections:** 2
 
 **Files:**
@@ -338,6 +342,7 @@ git commit -m "feat: add loading.tsx to home and property creation routes"
 
 ### Task 1.5: Enable cacheComponents in next.config.ts
 
+**Model:** Sonnet
 **Spec sections:** 12
 
 **Files:**
@@ -376,6 +381,7 @@ git commit -m "perf: enable cacheComponents for server component caching"
 
 ### Task 1.6: Middleware Invite-Code Gate via JWT Custom Claim
 
+**Model:** Opus 4.6 — security-critical auth logic + DB migration + middleware modification
 **Spec sections:** 8
 
 **Files:**
@@ -461,6 +467,7 @@ git commit -m "feat: move invite-code gate to middleware via JWT custom claim"
 
 ### Task 1.7: AnimatedSplitSection Component
 
+**Model:** Sonnet
 **Spec sections:** 6 (Dynamic Import with Preload)
 
 **Files:**
@@ -512,6 +519,7 @@ git commit -m "feat: extract AnimatedSplitSection for lazy Framer Motion loading
 
 ### Task 1.8: Convert Property Creation Page to Server Component
 
+**Model:** Sonnet
 **Spec sections:** 11
 
 **Files:**
@@ -558,6 +566,7 @@ Depends on: Task 1.7 (AnimatedSplitSection component exists)
 
 ### Task 2.1: Dynamic Import Framer Motion in charge-config-sheet.tsx
 
+**Model:** Sonnet
 **Spec sections:** 6 (charge-config-sheet)
 
 **Files:**
@@ -613,6 +622,7 @@ git commit -m "perf: lazy-load Framer Motion in charge-config-sheet"
 
 ### Task 2.2: Dynamic Import Framer Motion in add-charge-sheet.tsx
 
+**Model:** Sonnet
 **Spec sections:** 6 (add-charge-sheet)
 
 **Files:**
@@ -641,6 +651,7 @@ git commit -m "perf: lazy-load Framer Motion in add-charge-sheet"
 
 ### Task 2.3: Dynamic Import SlideIn in Property Wizard
 
+**Model:** Sonnet
 **Spec sections:** 6 (create-property-flow)
 
 **Files:**
@@ -700,6 +711,7 @@ git commit -m "perf: lazy-load SlideIn with top-level preload in property wizard
 
 ### Task 2.4: Dynamic Import Framer Motion in Sign-Up Form
 
+**Model:** Opus 4.6 — complex AnimatePresence step transition, needs careful extraction to preserve exact behavior
 **Spec sections:** 6 (sign-up-form)
 
 **Files:**
@@ -745,6 +757,7 @@ No dependencies on Phases 1-2 (can run in parallel). This is the largest phase.
 
 ### Task 3.1: Create Data Layer Scaffolding + Hook Factory
 
+**Model:** Opus 4.6 — foundational abstraction that all other data tasks depend on, must get types right
 **Spec sections:** 9
 
 **Files:**
@@ -796,6 +809,7 @@ git commit -m "feat: add data layer scaffolding with hook factory"
 
 ### Task 3.2: Migrate Home Domain
 
+**Model:** Opus 4.6 — first domain migration, establishes the pattern all others follow
 **Spec sections:** 9
 
 **Files:**
@@ -973,6 +987,7 @@ git commit -m "refactor: migrate home queries and hooks to src/data/home"
 
 ### Task 3.3: Migrate Properties Domain
 
+**Model:** Sonnet — follows established pattern from Task 3.2
 **Spec sections:** 9
 
 Same pattern as Task 3.2 but for the properties domain.
@@ -1006,6 +1021,7 @@ git commit -m "refactor: migrate properties queries, hooks, and actions to src/d
 
 ### Task 3.4: Migrate Units Domain
 
+**Model:** Sonnet — follows established pattern, most files but mechanical
 **Spec sections:** 9
 
 Same pattern. The units domain has the most query files: `fetchUnit`, `fetchUnitCharges`, `fetchUnitTenants`, `fetchUnitInvites`, `fetchUnitStatements`.
@@ -1030,6 +1046,7 @@ git commit -m "refactor: migrate units queries, hooks, and actions to src/data/u
 
 ### Task 3.5: Migrate Statements Domain
 
+**Model:** Sonnet — follows established pattern
 **Spec sections:** 9
 
 **Files:**
@@ -1052,6 +1069,7 @@ git commit -m "refactor: migrate statements queries, hooks, and actions to src/d
 
 ### Task 3.6: Migrate Profiles Domain
 
+**Model:** Opus 4.6 — inline fetch logic needs extraction, profile is used by PostHogIdentify + AppBar + greeting
 **Spec sections:** 9
 
 **Files:**
@@ -1076,6 +1094,7 @@ git commit -m "refactor: migrate profiles query, hook, and actions to src/data/p
 
 ### Task 3.7: Migrate Invitations Domain + Storage Domain
 
+**Model:** Sonnet — follows established pattern
 **Spec sections:** 9
 
 **Files:**
@@ -1111,6 +1130,8 @@ git commit -m "refactor: migrate invitations and storage to src/data"
 
 ### Task 3.8: Clean Up Old Directories
 
+**Model:** Sonnet
+
 After all domains are migrated.
 
 - [ ] **Step 1: Delete empty old directories**
@@ -1145,6 +1166,7 @@ Depends on: Phase 1 Task 1.6 (middleware invite gate), Phase 3 (data layer — f
 
 ### Task 4.1: Strip App Layout to Static Shell
 
+**Model:** Opus 4.6 — critical architectural change, must preserve auth flow and PostHog identification
 **Spec sections:** 1, 1b, 7
 
 **Files:**
@@ -1237,6 +1259,7 @@ These tasks are large and sequential within each page but the three page refacto
 
 ### Task 5.1: Stream Home Page
 
+**Model:** Opus 4.6 — decomposing 378-line client component into server/client pairs, multiple states (empty/populated/tenant)
 **Spec sections:** 3, 1b
 
 **Files:**
@@ -1302,6 +1325,7 @@ git commit -m "perf: stream home page with server components and Suspense"
 
 ### Task 5.2: Stream Property Detail Page
 
+**Model:** Opus 4.6 — most complex page, 10+ queries, per-unit loops, highlight/search params, DetailPageLayout
 **Spec sections:** 4, 1b
 
 **Files:**
@@ -1354,6 +1378,7 @@ git commit -m "perf: stream property detail page with server components and Susp
 
 ### Task 5.3: Stream Statement Draft Page
 
+**Model:** Opus 4.6 — complex sheet state extraction, server/client communication via context, DetailPageLayout
 **Spec sections:** 5, 1b
 
 **Files:**
@@ -1405,6 +1430,7 @@ Depends on: Phase 3 (profiles server.ts), Phase 4 (stripped layout)
 
 ### Task 6.1: Refactor AppBar to Server/Client Split
 
+**Model:** Sonnet
 **Spec sections:** 10
 
 **Files:**
@@ -1487,6 +1513,7 @@ git commit -m "perf: split AppBar into static Wordmark + streamed UserAvatarMenu
 
 ### Task 6.2: Add Cache Invalidation to Server Actions
 
+**Model:** Sonnet
 **Spec sections:** 12
 
 **Files:**
@@ -1520,82 +1547,67 @@ git commit -m "feat: add cache invalidation to server actions for streaming comp
 
 ---
 
-### Task 6.3: Create Next.js Performance Patterns Rule
+### Task 6.3: Update Existing Rules & Skills with Performance Patterns
+
+**Model:** Opus 4.6 — needs to understand existing rule/skill structure and integrate without duplication
+
+Rather than creating a standalone rule, update the existing places where developers already look for guidance:
 
 **Files:**
-- Create: `.claude/rules/nextjs-performance.md`
+- Modify: `.claude/skills/frontend-patterns/SKILL.md`
+- Modify: `CLAUDE.md`
 
-- [ ] **Step 1: Write the performance patterns rule**
+- [ ] **Step 1: Update frontend-patterns skill — Data Fetching section**
 
-Create `.claude/rules/nextjs-performance.md`:
+In `.claude/skills/frontend-patterns/SKILL.md`, replace/update the "Data Fetching" section to reflect the new architecture:
 
-```markdown
-# Next.js Performance Patterns
+- All data fetching code lives in `src/data/<domain>/` with `shared.ts` (pure fetch functions), `server.ts` (`'use cache'` wrappers), `client.ts` (React Query hooks via `createSuspenseHook` factory)
+- Never use `HydrationBoundary` / `dehydrate` / server-side `QueryClient` — streaming replaces this pattern
+- Never fetch your own API routes from server components — call the data function directly
+- Server actions that mutate cached data must call `revalidatePath()` or `revalidateTag()`
 
-## Server vs Client Components
+- [ ] **Step 2: Update frontend-patterns skill — add Server vs Client Components section**
 
+Add a section covering:
 - Keep layouts and page shells as server components — never add `'use client'` to layouts
-- Push `'use client'` down the tree — only the interactive leaf components should be client
+- Push `'use client'` down the tree — only interactive leaf components should be client
 - Use server components for data fetching with `'use cache'` + `cacheLife()`
 - Client components are for: click handlers, form state, hooks, browser APIs
+- Auth redirects happen in middleware, not in layouts — never add async auth checks to layouts
 
-## Data Fetching
+- [ ] **Step 3: Update frontend-patterns skill — add Streaming & Suspense section**
 
-- All data fetching code lives in `src/data/<domain>/`
-- `shared.ts` — pure fetch functions (used by both server and client)
-- `server.ts` — `'use cache'` wrappers for streaming server components
-- `client.ts` — React Query hooks via `createSuspenseHook` factory
-- Never fetch your own API routes from server components — call the data function directly
-- Never use `HydrationBoundary` / `dehydrate` / server-side `QueryClient` — streaming replaces this pattern
-
-## Streaming & Suspense
-
+Add a section covering:
 - Every meaningful route must have a `loading.tsx` returning `<PageLoader />`
 - Wrap independent data-fetching sections in `<Suspense>` with structurally-matching skeleton fallbacks
 - Wrap each streamed section in `<FadeIn>` for smooth appearance
-- Keep skeletons structurally matching their resolved content to prevent layout shift
-- Static parts of the page (headers, labels, navigation) render immediately outside Suspense
+- Static parts of the page render immediately outside Suspense
 
-## Caching
+- [ ] **Step 4: Update frontend-patterns skill — add Framer Motion section**
 
-- `cacheComponents: true` is enabled in `next.config.ts`
-- Server fetchers use `'use cache'` + `cacheLife('minutes')`
-- Server actions that mutate data must call `revalidatePath()` or `revalidateTag()` to bust caches
-- React Query handles client-side caching for back-navigation and mutations
-
-## Framer Motion
-
+Add a section covering:
 - Never import `motion/react` directly at the top of a file — always use dynamic import
 - Use CSS animations (`animate-fade-in`, `animate-fade-up`) for simple transitions
-- For `AnimatePresence` (mount/unmount animations): extract to a separate component file, lazy-load with `React.lazy` + top-level `import()` preload
-- Pattern for preload: `const promise = import('./component'); const Component = lazy(() => promise.then(...))`
+- For `AnimatePresence`: extract to separate file, lazy-load with `React.lazy` + top-level `import()` preload
+- Pattern: `const promise = import('./component'); const Component = lazy(() => promise.then(...))`
 
-## Navigation
+- [ ] **Step 5: Update CLAUDE.md Performance section**
 
-- Use `next/link` for all internal navigation — never `<a href>`
-- `loading.tsx` on every route enables partial prefetching
-- Back/close buttons should feel instant — static layout + client cache + loading states handle this
+Update the existing "Performance" section in `CLAUDE.md` to add:
+- `cacheComponents: true` is enabled — server component results are cached across requests
+- Server fetchers use `'use cache'` + `cacheLife()` — mutations must call `revalidatePath()`/`revalidateTag()`
+- Layouts must be static shells — no async auth checks or DB queries in layouts
+- Use `next/link` everywhere, `loading.tsx` on every route for partial prefetching
 
-## Auth
+- [ ] **Step 6: Verify no duplication or contradiction between CLAUDE.md and frontend-patterns**
 
-- Auth redirects happen in middleware, not in layouts
-- Middleware checks JWT claims (no DB queries) for invite-code gate
-- Never add async auth checks to layouts — this blocks all child routes
-```
+Read both files end-to-end. Ensure CLAUDE.md has the high-level principles and frontend-patterns has the implementation details. No conflicting guidance.
 
-- [ ] **Step 2: Update CLAUDE.md to reference the new rule**
-
-In the "Rules & Skills Reference" section of `CLAUDE.md`, add:
-
-```markdown
-- **Next.js performance** — `.claude/rules/nextjs-performance.md`
-```
-
-- [ ] **Step 3: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add .claude/rules/nextjs-performance.md CLAUDE.md
-git commit -m "docs: add Next.js performance patterns rule for future development"
+git add .claude/skills/frontend-patterns/SKILL.md CLAUDE.md
+git commit -m "docs: update frontend-patterns and CLAUDE.md with performance patterns"
 ```
 
 ---
@@ -1607,6 +1619,8 @@ Depends on: All previous phases complete
 ---
 
 ### Task 7.1: Full Regression Test
+
+**Model:** Opus 4.6
 
 - [ ] **Step 1: Run all tests**
 
@@ -1649,6 +1663,8 @@ Open browser DevTools → Network tab. Navigate to the home page. Confirm `motio
 ---
 
 ### Task 7.2: Code Review
+
+**Model:** Opus 4.6
 
 Use the `superpowers:code-reviewer` agent to perform a thorough code review of all changes against the spec and plan. The review must check:
 
