@@ -1645,3 +1645,62 @@ Walk through every page and interaction:
 Open browser DevTools → Network tab. Navigate to the home page. Confirm `motion` chunk is NOT loaded. Navigate to property detail — confirm `motion` chunk is NOT loaded. Open a charge config sheet with split — confirm `motion` chunk loads then.
 
 - [ ] **Step 5: Commit any final fixes if needed**
+
+---
+
+### Task 7.2: Code Review
+
+Use the `superpowers:code-reviewer` agent to perform a thorough code review of all changes against the spec and plan. The review must check:
+
+- [ ] **Step 1: Review against spec goals**
+
+Verify each spec goal is met:
+- Navigation between authenticated pages feels near-instant (static layout, no server roundtrip blocking)
+- Back/close buttons respond immediately (loading.tsx + client cache + static layout)
+- First paint shows meaningful content within ~100ms (streaming + skeletons)
+- Framer Motion loads on zero pages by default (check all dynamic imports are correct)
+- Data layer is centralized in `src/data/` with `shared.ts` / `server.ts` / `client.ts` per domain
+- No visual regressions on landing page animations
+
+- [ ] **Step 2: Bug audit**
+
+Check for common issues introduced by this type of refactor:
+- Missing imports after file moves (grep for old import paths that weren't updated)
+- Broken test imports (all test files reference new paths)
+- Server/client boundary violations (`'use client'` components imported into server components incorrectly)
+- Missing `'use cache'` directives on server fetchers
+- Missing `revalidatePath()` / `revalidateTag()` calls in mutation actions
+- Suspense boundaries missing fallbacks or wrapping the wrong scope
+- React Query hooks still used in components that should now be server components
+- `HydrationBoundary` / `dehydrate` / `QueryClient` still referenced anywhere
+
+- [ ] **Step 3: Performance audit**
+
+Verify the architecture actually delivers the performance goals:
+- App layout (`src/app/app/layout.tsx`) has ZERO async operations — no `await`, no `createClient()`, no DB queries
+- Middleware handles auth + invite gate via JWT claims only — no DB queries
+- Every route under `/app/*` has a `loading.tsx`
+- Framer Motion is not in any page's default bundle (only lazy-loaded)
+- `cacheComponents: true` is set in `next.config.ts`
+- All `server.ts` files use `'use cache'` + `cacheLife()`
+
+- [ ] **Step 4: Regression audit**
+
+Verify zero UI/UX regression by checking:
+- All skeletons structurally match their resolved content (same card shapes, grid columns, spacing)
+- `FadeIn` wraps each streamed section (not raw CSS classes)
+- Landing page CSS animation values match the original Framer Motion values (duration, easing, delays)
+- `FadeUpGroup` auto-indexes correctly (no manual `index` props at call sites)
+- `AnimatedSplitSection` matches the original expand/collapse behavior in charge config sheets
+- `StatementSheetController` preserves all sheet state and callbacks from original `StatementDraft`
+- Property detail `HighlightProvider` and search params behavior preserved
+- Mobile headers (MobileHeader in home, inline headers elsewhere) still render correctly
+- Desktop AppBar Wordmark + avatar positioning unchanged
+
+- [ ] **Step 5: Rule completeness check**
+
+Verify `.claude/rules/nextjs-performance.md` captures all patterns established by this refactor. Check it's referenced in `CLAUDE.md`.
+
+- [ ] **Step 6: File any issues found and fix before merging**
+
+Any bugs, regressions, or spec violations found in steps 1-5 must be fixed. Re-run tests after fixes.
