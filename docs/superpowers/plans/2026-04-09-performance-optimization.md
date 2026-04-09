@@ -1555,7 +1555,6 @@ Rather than creating a standalone rule, update the existing places where develop
 
 **Files:**
 - Modify: `.claude/skills/frontend-patterns/SKILL.md`
-- Modify: `CLAUDE.md`
 
 - [ ] **Step 1: Update frontend-patterns skill — Data Fetching section**
 
@@ -1591,23 +1590,15 @@ Add a section covering:
 - For `AnimatePresence`: extract to separate file, lazy-load with `React.lazy` + top-level `import()` preload
 - Pattern: `const promise = import('./component'); const Component = lazy(() => promise.then(...))`
 
-- [ ] **Step 5: Update CLAUDE.md Performance section**
+- [ ] **Step 5: Verify no duplication or contradiction with CLAUDE.md**
 
-Update the existing "Performance" section in `CLAUDE.md` to add:
-- `cacheComponents: true` is enabled — server component results are cached across requests
-- Server fetchers use `'use cache'` + `cacheLife()` — mutations must call `revalidatePath()`/`revalidateTag()`
-- Layouts must be static shells — no async auth checks or DB queries in layouts
-- Use `next/link` everywhere, `loading.tsx` on every route for partial prefetching
+Read CLAUDE.md's Performance section. Ensure the frontend-patterns skill adds detail without contradicting it. CLAUDE.md stays as-is — it already references frontend-patterns in its Rules & Skills Reference section.
 
-- [ ] **Step 6: Verify no duplication or contradiction between CLAUDE.md and frontend-patterns**
-
-Read both files end-to-end. Ensure CLAUDE.md has the high-level principles and frontend-patterns has the implementation details. No conflicting guidance.
-
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add .claude/skills/frontend-patterns/SKILL.md CLAUDE.md
-git commit -m "docs: update frontend-patterns and CLAUDE.md with performance patterns"
+git add .claude/skills/frontend-patterns/SKILL.md
+git commit -m "docs: update frontend-patterns skill with performance patterns"
 ```
 
 ---
