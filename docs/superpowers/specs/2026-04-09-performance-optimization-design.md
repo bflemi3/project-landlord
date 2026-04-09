@@ -233,8 +233,9 @@ StatementPage (server, fetches statement + property + unit)
 │   ├── Header:
 │   │   ├── CloseButton (client) -> router.push back to property
 │   │   ├── Title + Draft badge + subtitle (server, from cached data)
-│   │   └── SummaryCard (mobile only, server, cached)
-│   │       fetches: statement, unit, missing charges
+│   │   └── Suspense fallback={<SummarySkeleton />} (mobile only)
+│   │       └── SummaryCard (server, cached)
+│   │           fetches: statement, unit, missing charges
 │   │
 │   ├── Main column:
 │   │   ├── Suspense fallback={<CompletenessWarningSkeleton />}
@@ -246,7 +247,8 @@ StatementPage (server, fetches statement + property + unit)
 │   │           └── charge row click handlers (client)
 │   │
 │   ├── Sidebar:
-│   │   ├── SummaryCard (desktop only, server, cached)
+│   │   ├── Suspense fallback={<SummarySkeleton />} (desktop only)
+│   │   │   └── SummaryCard (server, cached)
 │   │   └── Review & Publish button + audit note (server, static)
 │   │
 │   └── Mobile bottom bar:
