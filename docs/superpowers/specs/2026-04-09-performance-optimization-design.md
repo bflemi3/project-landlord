@@ -514,7 +514,7 @@ export function PostHogIdentify() {
 }
 ```
 
-Move `PostHogIdentify` from the app layout into the `(main)` layout (which already has Suspense for AppBar). It renders inside the same Suspense boundary — no additional loading state needed.
+`PostHogIdentify` stays in the app layout (not `(main)` layout) so it covers both `(main)` and `(focused)` pages. Since it renders `null` and reads from `useProfile()` client-side, it adds zero visual weight to the static shell. No Suspense boundary needed — it just silently identifies the user once the profile loads.
 
 ---
 
@@ -717,8 +717,7 @@ MainLayout (server)
 ├── AppBar (server, static)
 │   ├── Wordmark (server, no data)                -> renders instantly
 │   └── Suspense fallback={null}
-│       └── UserAvatarMenu (server, cached)       -> fades in via CSS when ready
-├── PostHogIdentify (client, inside Suspense)     -> reads useProfile(), renders null
+│       └── UserAvatarMenu (server, cached)       -> fades in via FadeIn when ready
 ├── {children}
 ├── SwUpdateNotifier (client)
 └── InstallPrompt (client)
@@ -726,7 +725,7 @@ MainLayout (server)
 
 `UserAvatarMenu` becomes a server component that reads from the cached profile fetcher (`src/data/profiles/server.ts`), wrapped in `<FadeIn>`. The logo renders instantly. The avatar fades in once the cached profile resolves. On subsequent navigations with a warm cache, both appear together.
 
-`PostHogIdentify` moves here from the app layout, inside the same Suspense boundary.
+Note: `PostHogIdentify` stays in the parent app layout (Section 7), not here — it needs to cover both `(main)` and `(focused)` pages.
 
 ---
 
@@ -812,6 +811,6 @@ The specific invalidation strategy per action is an implementation detail — th
 - Section 1b (remove HydrationBoundary) happens naturally as part of Sections 1, 3, 4, 5 — each page drops its prefetch/dehydrate boilerplate when refactored to streaming
 - Section 3, 4, 5 (streaming) depend on Section 9 (data centralization) — streaming server components need the `server.ts` cached fetchers
 - Section 6 (Framer Motion) is independent — can be done in any order
-- Section 7 (PostHogIdentify) depends on Section 1 (strip layout) — moves out of layout
+- Section 7 (PostHogIdentify) depends on Section 1 (strip layout) — stays in app layout but switches from server props to client-side useProfile()
 - Section 10 (AppBar) depends on Section 9 (data centralization) — avatar menu reads from cached profile
 - Section 12 (cacheComponents) is independent but most valuable after Sections 3-5 and 9
