@@ -13,6 +13,19 @@ The app feels slow everywhere: initial load after sign-in, navigating to propert
 - Data layer is centralized, domain-organized, and testable
 - No visual regressions on landing page animations
 
+## Critical Constraint: Zero UI/UX Regression
+
+This is a performance refactor, not a redesign. Every page, component, and interaction must look and behave identically after the refactor. Specifically:
+
+- **Layout:** Same spacing, sizing, grid structure, responsive breakpoints, mobile/desktop differences
+- **Content:** Same text, icons, badges, colors, states (empty, loading, populated, error)
+- **Interactions:** Same click targets, navigation destinations, sheet/modal behavior, mutation flows, optimistic updates, toast messages
+- **Animations:** Same timing, easing, and visual effect (especially landing page hero, property wizard step transitions, charge config expand/collapse)
+- **Skeletons:** Must structurally match the resolved content — same card shapes, section heights, grid columns — to prevent layout shift when content streams in
+- **Loading states:** `PageLoader` behavior preserved; new Suspense skeletons feel natural, not jarring
+
+Every task in the implementation plan must include a visual verification step confirming no regression before committing.
+
 ## Non-Goals
 
 - Rewriting React Query out of the app (it stays for client-side cache + mutations)
