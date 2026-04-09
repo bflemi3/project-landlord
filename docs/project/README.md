@@ -1,4 +1,4 @@
-# Rental Billing & Utility Automation SaaS MVP v3
+# mabenn — Rental Billing & Utility Coordination MVP
 
 _A shared billing and charge-coordination app for landlords and tenants in Brazil_
 
@@ -445,54 +445,54 @@ Phase 1 should be organized around reaching real usability for Alex and the foun
 
 ### Now – First Usable Product
 
-|Feature|Why It Matters|
-|---|---|
-|Email + Google sign-in|Low-friction onboarding for landlords and tenants|
-|English + Brazilian Portuguese + Spanish localization|Supports Brazil-first usage while serving international renters in Brazil|
-|PWA foundation|Installable experience without app-store overhead|
-|Property and unit setup|Core object model for the app|
-|Multi-property landlord support|Ensures the system can support more than a single-property use case without reworking the model later|
-|Charge definitions|Lets landlords define rent and expected recurring or variable charges|
-|Monthly recurring charge support|Covers the common case immediately while leaving room for future cadence expansion|
-|Currency-aware money model|Supports BRL now and future expansion later without changing the model|
-|Country-aware data model|Keeps the architecture future-ready while the MVP remains operationally Brazil-only|
-|Landlord/tenant responsibility allocation|Defines who pays which portion of a charge|
-|Draft charge instances|Supports a review-first workflow before anything is published|
-|Manual PDF/image upload|Critical fallback and the fastest path to real bill-backed usage|
-|Landlord bill-ingestion email address|Low-friction way to send bills into the system once the core workflow is working|
-|Provider invoice profiles (data-driven, team-managed)|Keeps extraction logic configurable while limiting MVP complexity|
-|Example document previews for invoice-profile selection|Helps landlords choose the right profile when a provider has multiple bill formats|
-|New invoice-profile request workflow|Lets landlords submit a sample bill when the correct profile does not yet exist|
-|Extraction validation and correction workflow|Builds trust through human review|
-|Statement completeness indicator with publish warnings|Helps landlords catch missing expected charges without blocking the workflow|
-|Monthly statement publishing|Creates the shared system of record|
-|Statement revision tracking|Preserves transparency when published statements change|
-|Basic audit trail|Supports trust, debugging, and LGPD-conscious accountability|
+|Feature|Why It Matters|Status|
+|---|---|---|
+|Email + Google sign-in|Low-friction onboarding for landlords and tenants|**Shipped** (v0.2)|
+|English + Brazilian Portuguese + Spanish localization|Supports Brazil-first usage while serving international renters in Brazil|**Shipped** (v0.3)|
+|PWA foundation|Installable experience without app-store overhead|**Shipped** (v0.4)|
+|Property and unit setup|Core object model for the app|**Shipped** (v0.6)|
+|Multi-property landlord support|Ensures the system can support more than a single-property use case without reworking the model later|**Shipped** (v0.6)|
+|Charge definitions|Lets landlords define rent and expected recurring or variable charges|**Shipped** (v0.6)|
+|Monthly recurring charge support|Covers the common case immediately while leaving room for future cadence expansion|**Shipped** (v0.6)|
+|Currency-aware money model|Supports BRL now and future expansion later without changing the model|**Shipped**|
+|Country-aware data model|Keeps the architecture future-ready while the MVP remains operationally Brazil-only|**Shipped**|
+|Landlord/tenant responsibility allocation|Defines who pays which portion of a charge|**Shipped** (v0.8)|
+|Draft charge instances|Supports a review-first workflow before anything is published|**Shipped** (v0.8)|
+|Manual PDF/image upload|Critical fallback and the fastest path to real bill-backed usage|**Shipped** (v0.10)|
+|Landlord bill-ingestion email address|Low-friction way to send bills into the system once the core workflow is working|Not started|
+|Provider invoice profiles (data-driven, team-managed)|Keeps extraction logic configurable while limiting MVP complexity|Not started|
+|Example document previews for invoice-profile selection|Helps landlords choose the right profile when a provider has multiple bill formats|Not started|
+|New invoice-profile request workflow|Lets landlords submit a sample bill when the correct profile does not yet exist|Not started|
+|Extraction validation and correction workflow|Builds trust through human review|Not started|
+|Statement completeness indicator with publish warnings|Helps landlords catch missing expected charges without blocking the workflow|**Shipped** (v0.8)|
+|Monthly statement publishing|Creates the shared system of record|**Shipped** (v0.8)|
+|Statement revision tracking|Preserves transparency when published statements change|Not started|
+|Basic audit trail|Supports trust, debugging, and LGPD-conscious accountability|Not started|
 
 ### Next – Trust + Collaboration
 
-|Feature|Why It Matters|
-|---|---|
-|Tenant statement view|Gives tenants clarity on what is owed and why|
-|Charge source transparency indicators|Shows whether a charge was manual, imported, or imported then corrected|
-|Source document preview / access|Strengthens tenant trust and supports review of charges|
-|Multiple tenants per property with equal permission scope|Supports shared households cleanly without introducing a separate roommate role in the MVP|
-|Tenant-side split coordination|Allows tenants to divide the tenant portion without overriding landlord-defined obligations|
-|Tenant invites|Lets tenants bring other household members into the shared visibility and split workflow|
-|Tenant charge dispute / review flow|Gives tenants a structured way to question charges or allocations while keeping the workflow lightweight|
-|Tenant marks paid / landlord confirms|Supports the initial manual payment-confirmation workflow|
-|In-app notifications + email notifications|Keeps all parties aligned|
+|Feature|Why It Matters|Status|
+|---|---|---|
+|Tenant statement view|Gives tenants clarity on what is owed and why|**Shipped** (v0.9)|
+|Charge source transparency indicators|Shows whether a charge was manual, imported, or imported then corrected|Not started|
+|Source document preview / access|Strengthens tenant trust and supports review of charges|**Shipped** (v0.10)|
+|Multiple tenants per property with equal permission scope|Supports shared households cleanly without introducing a separate roommate role in the MVP|**Shipped** (v0.6)|
+|Tenant-side split coordination|Allows tenants to divide the tenant portion without overriding landlord-defined obligations|Not started|
+|Tenant invites|Lets tenants bring other household members into the shared visibility and split workflow|**Shipped** (v0.6, v0.9)|
+|Tenant charge dispute / review flow|Gives tenants a structured way to question charges or allocations while keeping the workflow lightweight|Not started|
+|Tenant marks paid / landlord confirms|Supports the initial manual payment-confirmation workflow|Not started|
+|In-app notifications + email notifications|Keeps all parties aligned|Not started|
 
 ### Before External Launch – Growth Readiness + MVP Hardening
 
-|Feature|Why It Matters|
-|---|---|
-|Public landing page + landlord self-serve sign-up|Supports direct landlord acquisition without requiring an invite|
-|Tenant-invites-landlord flow|Creates a lightweight tenant-driven acquisition loop|
-|Landlord acquisition attribution tracking|Measures whether new landlords come from landing page, tenants, or future referral paths|
-|Light / dark / system theme support|Cheap to scaffold correctly from the start and aligns with modern app expectations|
-|Lightweight in-app pulse surveys|Captures trust, clarity, and time-saved signals that behavior alone cannot measure|
-|PostHog analytics|Measures activation, usage, quality, and growth loops from day one|
+|Feature|Why It Matters|Status|
+|---|---|---|
+|Public landing page + landlord self-serve sign-up|Supports direct landlord acquisition without requiring an invite|**Shipped** (v0.5)|
+|Tenant-invites-landlord flow|Creates a lightweight tenant-driven acquisition loop|Not started|
+|Landlord acquisition attribution tracking|Measures whether new landlords come from landing page, tenants, or future referral paths|Not started|
+|Light / dark / system theme support|Cheap to scaffold correctly from the start and aligns with modern app expectations|**Shipped** (v0.2)|
+|Lightweight in-app pulse surveys|Captures trust, clarity, and time-saved signals that behavior alone cannot measure|Not started|
+|PostHog analytics|Measures activation, usage, quality, and growth loops from day one|**Shipped** (basic integration)|
 
 ### Phase 2 – Post-Launch Enhancements
 
@@ -1032,11 +1032,11 @@ Below is a practical estimate for getting the MVP from plan to launch. This assu
 | ------------------------------ | ---------------------- | ---------------------------------------------- |
 | Claude Code                    | $100                   | Founder-covered internal build cost during MVP |
 | Vercel                         | $20                    | Pro plan for commercial use                    |
-| Supabase                       | $25                    | Pro plan for production reliability            |
-| PostHog                        | $0                     | Generous free tier for MVP analytics           |
+| Supabase                       | $0                     | Free tier sufficient for MVP scale             |
+| PostHog                        | $0                     | Free tier sufficient for MVP analytics         |
 | Email (Resend)                 | $0                     | Free tier (3,000 emails/month)                 |
 
-**Early MVP operating range:** **$145/month**, of which **$45/month is infrastructure** and $100/month is founder-covered development tooling.
+**Early MVP operating range:** **$120/month**, of which **$20/month is infrastructure** and $100/month is founder-covered development tooling.
 
 ### Future Cost Considerations
 
@@ -1051,41 +1051,82 @@ These are not MVP requirements, but should be noted:
 
 ## 9. Development Roadmap
 
-A focused MVP should be built in phases that match the product strategy above: get to a real, usable landlord workflow first, then layer in tenant trust and collaboration, then harden the MVP for broader external launch.
+A focused MVP built in phases that match the product strategy above: get to a real, usable landlord workflow first, then layer in tenant trust and collaboration, then harden the product for broader external launch.
 
-The roadmap should reflect three priorities:
+The roadmap reflects three priorities:
 1. **Reach a usable landlord workflow as fast as possible**
 2. **Add the tenant-facing trust and collaboration features that make the product actually better than a spreadsheet**
 3. **Harden the product for external launch only after the core workflow is working well**
 
-| Phase | Goal | Deliverables |
+### Progress Summary (as of April 2026)
+
+Development started in early March 2026. The build has followed the intended phase order, with some tenant collaboration work pulled forward because it naturally fit alongside the landlord workflow.
+
+| Phase | Goal | Status |
 |---|---|---|
-| Weeks 1–2 | Discovery, UX direction, and foundation decisions | Finalized scope, core user flows, schema and relationship modeling, role/permission rules, wireframes for priority screens, architecture decisions, analytics plan, initial provider/invoice-profile strategy |
-| Weeks 3–4 | Core app foundation + public entry points | Public landing page, landlord self-serve sign-up foundation, auth, property and unit setup, multi-property landlord support, memberships/roles, country-aware + currency-aware data model foundation, PWA shell, theme support scaffolding |
-| Weeks 5–6 | Landlord-first billing workflow | Charge definitions, monthly recurring charge support, landlord/tenant responsibility allocation, draft charge instances, statement generation, statement completeness indicator with publish warnings, monthly statement publishing, statement revision tracking, audit trail foundation |
-| Weeks 7–8 | Bill ingestion and provider-profile workflow | Manual PDF/image upload, landlord bill-ingestion email address, provider invoice profiles, example document previews for invoice-profile selection, new invoice-profile request workflow, deterministic extraction flow, validation/correction workflow, raw document storage and ingestion status handling |
-| Weeks 9–10 | Tenant trust + collaboration workflows | Tenant statement view, charge source transparency indicators, source document preview/access, multiple tenants per property with equal visibility scope, tenant-side split coordination, tenant invites, structured charge dispute flow, payment marked / payment confirmed workflow, notification flows |
-| Weeks 11–12 | External-launch readiness and MVP hardening | Public sign-up polish, tenant-invites-landlord flow, landlord acquisition attribution tracking, pulse surveys, PostHog instrumentation, QA, deployment, LGPD-conscious review, launch prep and handoff |
+| Discovery, UX direction, and foundation decisions | Finalized scope, core user flows, schema and relationship modeling, role/permission rules, wireframes for priority screens, architecture decisions, analytics plan | **Complete** |
+| Core app foundation + public entry points | Public landing page, landlord self-serve sign-up, auth, property and unit setup, multi-property support, memberships/roles, country-aware + currency-aware data model, PWA shell, theme support | **Complete** (v0.2–v0.6) |
+| Landlord-first billing workflow | Charge definitions, monthly recurring charges, landlord/tenant responsibility allocation, draft charge instances, statement generation, completeness warnings, statement publishing | **Complete** (v0.7–v0.8) |
+| Tenant onboarding + bill attachment | Tenant invite acceptance with email deep-link, tenant home page, bill upload and attachment to charges with progress indicator | **Complete** (v0.9–v0.10) |
+| Bill ingestion and provider-profile workflow | Landlord bill-ingestion email address, provider invoice profiles, example document previews, new invoice-profile request workflow, deterministic extraction flow, validation/correction workflow | **Not started** — manual upload is live as the interim workflow |
+| Remaining tenant trust + collaboration | Charge source transparency indicators, tenant-side split coordination, charge dispute flow, payment marked / confirmed workflow, notification flows, statement revision tracking | **Not started** |
+| External-launch readiness and MVP hardening | Tenant-invites-landlord flow, landlord acquisition attribution tracking, pulse surveys, full PostHog instrumentation, QA, LGPD-conscious review, privacy policy at `/privacidade`, launch prep | **Not started** |
+
+### Remaining Work
+
+The following features are required to reach MVP launch readiness:
+
+**Ingestion pipeline (landlord trust)**
+- Landlord bill-ingestion email address
+- Provider invoice profiles (data-driven, team-managed)
+- Example document previews for invoice-profile selection
+- New invoice-profile request workflow
+- Deterministic extraction and validation/correction workflow
+
+**Payment and dispute workflows (tenant trust)**
+- Tenant marks paid / landlord confirms or rejects
+- Landlord Pix key display and copy
+- Payment receipt upload
+- Charge dispute / review flow with structured reasons
+
+**Transparency and collaboration**
+- Charge source transparency indicators (manual, imported, corrected)
+- Tenant-side split coordination
+- Statement revision tracking
+
+**Notifications**
+- Email notifications for statement publish, payment events, disputes
+- In-app notification system
+
+**Growth and launch hardening**
+- Tenant-invites-landlord acquisition flow
+- Landlord acquisition attribution tracking
+- Lightweight in-app pulse surveys
+- Basic audit trail
+- LGPD review and privacy policy at `/privacidade`
+- QA pass and launch prep
 
 ### Delivery Strategy
 
 The product should be demoed incrementally in the same order the value is created:
 
-1. **Landing page + landlord sign-up + property creation**
-2. **Charge definitions + recurring billing + draft statement generation**
-3. **Completeness review + publish workflow + revision-aware statements**
-4. **Bill ingestion + invoice-profile selection + validation/correction**
-5. **Tenant statement experience + source transparency + split coordination**
-6. **Disputes + payment confirmation workflow + notifications**
-7. **External launch readiness + analytics + growth loops**
+1. ~~Landing page + landlord sign-up + property creation~~ **Done**
+2. ~~Charge definitions + recurring billing + draft statement generation~~ **Done**
+3. ~~Completeness review + publish workflow~~ **Done**
+4. ~~Tenant invites + acceptance + tenant home~~ **Done**
+5. ~~Bill attachment to charges~~ **Done**
+6. **Bill ingestion + invoice-profile selection + validation/correction**
+7. **Payment confirmation workflow + disputes + notifications**
+8. **Tenant splits + source transparency + revision tracking**
+9. **External launch readiness + analytics + growth loops**
 
 ### Practical Build Sequence
 
-The MVP should be built in this order on purpose:
+The MVP is being built in this order on purpose:
 
-- **First usable product:** landlord setup, charges, statements, manual upload, and publish flow
-- **Then trust layer:** ingestion review, source transparency, revision history, disputes, and payment confirmation
-- **Then collaboration and growth:** tenant invites, tenant-invites-landlord, self-serve acquisition, attribution, and surveys
+- **First usable product:** landlord setup, charges, statements, manual upload, and publish flow — **complete**
+- **Then trust layer:** ingestion pipeline, source transparency, revision history, disputes, and payment confirmation — **in progress**
+- **Then collaboration and growth:** tenant splits, tenant-invites-landlord, attribution, surveys, and launch hardening — **upcoming**
 
 This keeps the build aligned with the product strategy above: solve the real monthly workflow first, prove trust and usability second, and only then optimize for broader acquisition and launch readiness.
 
