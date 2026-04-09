@@ -167,21 +167,29 @@ HomePage (server)
 
 ### Change
 
-Split into streaming server components:
+Split into streaming server components. The page uses `DetailPageLayout` with a main column and sidebar:
 
 ```
 PropertyPage (server)
-├── PropertyHeader (server, cached)              -> streams immediately
-├── Suspense fallback={<SectionSkeleton />}
-│   └── BillingSummary (server, cached)          -> streams when ready
-├── Suspense fallback={<SectionSkeleton />}
-│   └── ChargesSection (server, cached)          -> streams when ready
-│       └── ChargeConfigSheet (client)           -> dynamic-imports motion/react internally
-├── Suspense fallback={<SectionSkeleton />}
-│   └── TenantsSection (server, cached)          -> streams when ready
-├── Suspense fallback={<SectionSkeleton />}
-│   └── StatementsSection (server, cached)       -> streams when ready
+├── PropertyHeader (server, cached)              -> streams immediately (name, address, back button)
+│
+├── Main column:
+│   ├── Suspense fallback={<BillingSummarySkeleton />}
+│   │   └── BillingSummaryCard (server, cached)  -> streams when ready (per unit: period status, generate button, financial summary)
+│   │       └── GenerateStatementButton (client) -> mutation handler
+│   ├── SetupProgressSection (mobile only)       -> can be server, cached
+│   └── Suspense fallback={<ChargesSkeleton />}
+│       └── UnitSection (server, cached)         -> streams when ready (per unit: charges list)
+│           └── ChargeConfigSheet (client)       -> dynamic-imports motion/react internally
+│
+├── Sidebar:
+│   ├── SetupProgressSection (desktop only)
+│   ├── PropertyInfoSection (server, cached)     -> address details
+│   └── Suspense fallback={<TenantsSkeleton />}
+│       └── TenantsSection (server, cached)      -> streams when ready (per unit: tenant list + invites)
 ```
+
+Note: There is no standalone "Statements section" — statement data (current period drafts, financial summaries) lives inside `BillingSummaryCard`. The `BillingSummaryCard` calls `useUnitStatements` today; after refactoring, it fetches via `'use cache'` server fetchers.
 
 - Each section fetches its own data via `'use cache'` server fetchers.
 - Interactive parts (edit buttons, modals, sheets) remain client components within each section.
