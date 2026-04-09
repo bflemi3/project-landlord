@@ -223,19 +223,43 @@ Note: There is no standalone "Statements section" — statement data (current pe
 
 ### Change
 
+The page uses `DetailPageLayout` with header, main column, and sidebar — same layout system as property detail.
+
+Key constraint: `StatementDraft` currently holds **sheet state** (`sheetOpen`, `editingInstance`, `fillingMissing`) and passes callbacks to `ChargesList` and `CompletenessWarning`. This state orchestration is inherently client-side. The refactor moves data fetching to server components while keeping interaction state in a client wrapper.
+
 ```
-StatementPage (server)
-├── StatementHeader (server, cached)             -> streams immediately
-├── Suspense fallback={<SummarySkeleton />}
-│   └── SummaryCard (server, cached)             -> streams when ready
-├── Suspense fallback={<ChargesSkeleton />}
-│   └── ChargesList (server, cached)             -> streams when ready
-│       └── AddChargeSheet (client)              -> dynamic-imports motion/react internally
-└── Suspense fallback={<WarningSkeleton />}
-    └── CompletenessWarning (server, cached)     -> streams when ready
+StatementPage (server, fetches statement + property + unit)
+├── DetailPageLayout
+│   ├── Header:
+│   │   ├── CloseButton (client) -> router.push back to property
+│   │   ├── Title + Draft badge + subtitle (server, from cached data)
+│   │   └── SummaryCard (mobile only, server, cached)
+│   │       fetches: statement, unit, missing charges
+│   │
+│   ├── Main column:
+│   │   ├── Suspense fallback={<CompletenessWarningSkeleton />}
+│   │   │   └── CompletenessWarning (server, cached)
+│   │   │       fetches: statement, missing charges
+│   │   └── Suspense fallback={<ChargesListSkeleton />}
+│   │       └── ChargesList (server, cached)
+│   │           fetches: statement, statement charges, missing charges
+│   │           └── charge row click handlers (client)
+│   │
+│   ├── Sidebar:
+│   │   ├── SummaryCard (desktop only, server, cached)
+│   │   └── Review & Publish button + audit note (server, static)
+│   │
+│   └── Mobile bottom bar:
+│       └── Review & Publish button + audit note
+│
+└── StatementSheetController (client)
+    └── AddChargeSheet (client) -> manages sheetOpen, editingInstance, fillingMissing state
+        dynamic-imports motion/react internally
 ```
 
-Same pattern as property detail. Remove top-level `<FadeIn>`.
+The `StatementSheetController` is a client component that holds the sheet state and exposes callbacks. Server-rendered sections communicate with it via a shared context or by rendering client action buttons that call up to the controller.
+
+Remove top-level `<FadeIn>` — individual sections wrapped in `<FadeIn>` independently.
 
 ---
 
