@@ -1,8 +1,12 @@
 'use client'
 
-import { useState, useTransition, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { useState, useTransition, useRef, useEffect, lazy, Suspense } from 'react'
 import { useTranslations } from 'next-intl'
+
+const animatedSplitPromise = import('@/components/animated-split-section')
+const AnimatedSplitSection = lazy(() =>
+  animatedSplitPromise.then(m => ({ default: m.AnimatedSplitSection }))
+)
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -398,47 +402,39 @@ function AddChargeForm({
                 onCheckedChange={setSaveForLater}
               />
             </div>
-            <AnimatePresence>
-              {saveForLater && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-3">
-                    <p className="mb-2 text-sm text-muted-foreground">{t('chargeType')}</p>
-                    <div className="flex h-10 rounded-lg border border-border bg-secondary/50 p-0.5">
-                      <button
-                        type="button"
-                        onClick={() => setSavedChargeType('recurring')}
-                        className={cn(
-                          'flex-1 rounded-md text-sm font-medium transition-colors',
-                          savedChargeType === 'recurring'
-                            ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {t('chargeTypeFixed')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSavedChargeType('variable')}
-                        className={cn(
-                          'flex-1 rounded-md text-sm font-medium transition-colors',
-                          savedChargeType === 'variable'
-                            ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {t('chargeTypeVariable')}
-                      </button>
-                    </div>
+            <Suspense fallback={null}>
+              <AnimatedSplitSection show={saveForLater}>
+                <div className="mt-3">
+                  <p className="mb-2 text-sm text-muted-foreground">{t('chargeType')}</p>
+                  <div className="flex h-10 rounded-lg border border-border bg-secondary/50 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setSavedChargeType('recurring')}
+                      className={cn(
+                        'flex-1 rounded-md text-sm font-medium transition-colors',
+                        savedChargeType === 'recurring'
+                          ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {t('chargeTypeFixed')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSavedChargeType('variable')}
+                      className={cn(
+                        'flex-1 rounded-md text-sm font-medium transition-colors',
+                        savedChargeType === 'variable'
+                          ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {t('chargeTypeVariable')}
+                    </button>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+              </AnimatedSplitSection>
+            </Suspense>
           </div>
         )}
         <Button
