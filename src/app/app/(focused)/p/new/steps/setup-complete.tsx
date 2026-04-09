@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Check, MapPin, Users, Receipt, ChevronLeft } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { FadeUp } from '@/components/fade-up'
+import { FadeUpGroup } from '@/components/fade-up-group'
 import { InfoBox, InfoBoxContent, InfoBoxDivider } from '@/components/info-box'
 
 interface SetupCompleteProps {
@@ -19,7 +20,7 @@ export function SetupComplete({ propertyName, propertyId, tenantCount = 0, charg
 
   return (
     <div className="flex min-h-[60svh] flex-col items-center justify-center text-center">
-      <FadeUp.Group stagger={0.1}>
+      <FadeUpGroup stagger={0.1}>
         <FadeUp className="mb-6">
           <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-primary/10">
             <Check className="size-8 text-primary" />
@@ -70,7 +71,7 @@ export function SetupComplete({ propertyName, propertyId, tenantCount = 0, charg
             {t('goHome')}
           </Link>
         </FadeUp>
-      </FadeUp.Group>
+      </FadeUpGroup>
     </div>
   )
 }
