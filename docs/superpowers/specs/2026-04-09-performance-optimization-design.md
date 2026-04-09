@@ -167,29 +167,32 @@ HomePage (server)
 
 ### Change
 
-Split into streaming server components. The page uses `DetailPageLayout` with a main column and sidebar:
+Decompose into streaming server components, keeping the current section structure intact. The page uses `DetailPageLayout` with a main column and sidebar. Each section currently fetches its own data via React Query hooks — after refactoring, the page becomes a server component that streams each section independently via Suspense.
+
+The current structure loops `property.unitIds` for BillingSummaryCard, UnitSection (charges), and TenantsSection. This multi-unit loop stays as-is — we are not reorganizing around units.
 
 ```
-PropertyPage (server)
+PropertyPage (server, fetches property to get unitIds)
 ├── PropertyHeader (server, cached)              -> streams immediately (name, address, back button)
 │
-├── Main column:
-│   ├── Suspense fallback={<BillingSummarySkeleton />}
-│   │   └── BillingSummaryCard (server, cached)  -> streams when ready (per unit: period status, generate button, financial summary)
-│   │       └── GenerateStatementButton (client) -> mutation handler
-│   ├── SetupProgressSection (mobile only)       -> can be server, cached
-│   └── Suspense fallback={<ChargesSkeleton />}
-│       └── UnitSection (server, cached)         -> streams when ready (per unit: charges list)
-│           └── ChargeConfigSheet (client)       -> dynamic-imports motion/react internally
-│
-├── Sidebar:
-│   ├── SetupProgressSection (desktop only)
-│   ├── PropertyInfoSection (server, cached)     -> address details
-│   └── Suspense fallback={<TenantsSkeleton />}
-│       └── TenantsSection (server, cached)      -> streams when ready (per unit: tenant list + invites)
+├── DetailPageLayout
+│   ├── Main column:
+│   │   ├── Suspense fallback={<BillingSummarySkeleton />}  (per unitId)
+│   │   │   └── BillingSummaryCard (server, cached per unit)
+│   │   │       └── GenerateStatementButton (client) -> mutation handler
+│   │   ├── SetupProgressSection (mobile only, server)
+│   │   └── Suspense fallback={<UnitSectionSkeleton />}  (per unitId)
+│   │       └── UnitSection (server, cached per unit) -> charges list
+│   │           └── ChargeConfigSheet (client) -> dynamic-imports motion/react internally
+│   │
+│   └── Sidebar:
+│       ├── SetupProgressSection (desktop only, server)
+│       ├── PropertyInfoSection (server, cached)
+│       └── Suspense fallback={<TenantsSkeleton />}  (per unitId)
+│           └── TenantsSection (server, cached per unit)
 ```
 
-Note: There is no standalone "Statements section" — statement data (current period drafts, financial summaries) lives inside `BillingSummaryCard`. The `BillingSummaryCard` calls `useUnitStatements` today; after refactoring, it fetches via `'use cache'` server fetchers.
+Note: There is no standalone "Statements section" — statement data (current period drafts, financial summaries) lives inside `BillingSummaryCard`.
 
 - Each section fetches its own data via `'use cache'` server fetchers.
 - Interactive parts (edit buttons, modals, sheets) remain client components within each section.
