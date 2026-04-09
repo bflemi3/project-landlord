@@ -151,7 +151,7 @@ HomePage (server)
 
 **Key decisions:**
 - `Greeting` does not need Suspense — it reads from a cached profile fetch that resolves near-instantly. If cache is cold, the query is fast enough (single row by PK) to not need a skeleton.
-- Each streamed section fades in via CSS `animate-fade-in` class as it resolves (no page-level `<FadeIn>` wrapper).
+- Each streamed section is wrapped in the refactored `<FadeIn>` component (CSS-based server component, no Framer Motion) so it fades in as it resolves. No page-level `<FadeIn>` wrapper — each section gets its own.
 - Property cards and action items are client components only for click handlers and navigation — the list rendering is server-side.
 - Remove the top-level `<FadeIn>` wrapper from the home page since individual sections fade in independently.
 - The redundant profile query on the home page is eliminated — greeting reads from the same cached profile fetcher used by the avatar menu.
@@ -185,7 +185,7 @@ PropertyPage (server)
 
 - Each section fetches its own data via `'use cache'` server fetchers.
 - Interactive parts (edit buttons, modals, sheets) remain client components within each section.
-- Remove the top-level `<FadeIn>` wrapper — individual sections fade in via CSS.
+- Remove the top-level `<FadeIn>` wrapper — individual sections are each wrapped in `<FadeIn>` independently.
 - The existing `PropertyDetail` client component is decomposed into these server/client pairs.
 - React Query stays for mutations (adding charges, inviting tenants, etc.) and client-side cache for back-navigation.
 
@@ -612,7 +612,7 @@ MainLayout (server)
 └── InstallPrompt (client)
 ```
 
-`UserAvatarMenu` becomes a server component that reads from the cached profile fetcher (`src/data/profiles/server.ts`). The logo renders instantly. The avatar fades in via CSS `animate-fade-in` once the cached profile resolves. On subsequent navigations with a warm cache, both appear together.
+`UserAvatarMenu` becomes a server component that reads from the cached profile fetcher (`src/data/profiles/server.ts`), wrapped in `<FadeIn>`. The logo renders instantly. The avatar fades in once the cached profile resolves. On subsequent navigations with a warm cache, both appear together.
 
 `PostHogIdentify` moves here from the app layout, inside the same Suspense boundary.
 
