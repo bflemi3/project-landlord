@@ -60,6 +60,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
 ---
 
+## Section 1b: Remove HydrationBoundary Pattern Entirely
+
+### Current
+
+Four files use the `QueryClient` → `prefetchQuery()` → `dehydrate()` → `<HydrationBoundary>` pattern to hand server-fetched data to React Query on the client:
+
+1. `src/app/app/layout.tsx` — profile
+2. `src/app/app/(main)/page.tsx` — home properties + actions
+3. `src/app/app/(main)/p/[id]/page.tsx` — property + units + charges + tenants + invites + statements
+4. `src/app/app/(focused)/p/[id]/s/[statementId]/page.tsx` — statement + charges + missing charges
+
+### Why it's no longer needed
+
+With streaming server components, the server renders the actual UI and streams it to the browser. The user sees content immediately — before React even hydrates. There's no gap where a client component needs pre-populated React Query data to avoid a refetch flash.
+
+Client components that still use React Query (for mutations, optimistic updates, background refetching) fetch client-side via `useSuspenseQuery`. This is how the hooks already work — `HydrationBoundary` was just pre-warming the cache. Since the server-streamed content is already visible, the client-side fetch is invisible to the user.
+
+### Change
+
+Remove from all four files:
+- `QueryClient` instantiation
+- All `prefetchQuery()` / `setQueryData()` calls
+- `dehydrate()` calls
+- `<HydrationBoundary>` wrapper
+
+The `QueryProvider` in root layout stays — React Query is still used for mutations and client-side cache. Only the server-to-client data handoff via dehydration is removed.
+
+---
+
 ## Section 2: Add `loading.tsx` to Missing Routes
 
 ### Current
@@ -652,6 +681,7 @@ The specific invalidation strategy per action is an implementation detail — th
 | # | Change | Impact | Effort |
 |---|---|---|---|
 | 1 | Strip app layout to static shell | Unblocks all navigation | Medium |
+| 1b | Remove HydrationBoundary pattern from all pages | Simpler pages, no server prefetch boilerplate | Low |
 | 2 | Add `loading.tsx` to missing routes | Instant navigation feedback | Low |
 | 3 | Stream home page (greeting, cards, actions as server components) | Instant first paint, cached sections | High |
 | 4 | Stream property detail page | Independent section loading | High |
@@ -667,6 +697,7 @@ The specific invalidation strategy per action is an implementation detail — th
 ## Dependencies Between Sections
 
 - Section 1 (strip layout) depends on Section 8 (middleware invite gate) — can't remove invite check from layout until middleware handles it
+- Section 1b (remove HydrationBoundary) happens naturally as part of Sections 1, 3, 4, 5 — each page drops its prefetch/dehydrate boilerplate when refactored to streaming
 - Section 3, 4, 5 (streaming) depend on Section 9 (data centralization) — streaming server components need the `server.ts` cached fetchers
 - Section 6 (Framer Motion) is independent — can be done in any order
 - Section 7 (PostHogIdentify) depends on Section 1 (strip layout) — moves out of layout
