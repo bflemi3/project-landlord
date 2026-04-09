@@ -1560,41 +1560,53 @@ Rather than creating a standalone rule, update the existing places where develop
 
 In `.claude/skills/frontend-patterns/SKILL.md`, replace/update the "Data Fetching" section to reflect the new architecture:
 
-- All data fetching code lives in `src/data/<domain>/` with `shared.ts` (pure fetch functions), `server.ts` (`'use cache'` wrappers), `client.ts` (React Query hooks via `createSuspenseHook` factory)
-- Never use `HydrationBoundary` / `dehydrate` / server-side `QueryClient` — streaming replaces this pattern
+- All data fetching code lives in `src/data/<domain>/` with `shared.ts` (pure fetch functions + types + query keys), `server.ts` (`'use cache'` + `cacheLife()` wrappers), `client.ts` (React Query hooks via `createSuspenseHook` factory), `actions/` (mutations)
+- Server fetchers must use `'use cache'` directive + `cacheLife('minutes')` — this is how streaming server components get cached data
+- Never use `HydrationBoundary` / `dehydrate` / server-side `QueryClient` — streaming replaces this pattern entirely
 - Never fetch your own API routes from server components — call the data function directly
-- Server actions that mutate cached data must call `revalidatePath()` or `revalidateTag()`
+- Server actions that mutate cached data must call `revalidatePath()` or `revalidateTag()` to bust caches
+- React Query is for client-side concerns only: mutations, optimistic updates, background refetching, back-navigation cache. It is NOT used for server-to-client data handoff
 
 - [ ] **Step 2: Update frontend-patterns skill — add Server vs Client Components section**
 
 Add a section covering:
-- Keep layouts and page shells as server components — never add `'use client'` to layouts
-- Push `'use client'` down the tree — only interactive leaf components should be client
+- Layouts must have zero async operations — no `await`, no `createClient()`, no DB queries, no `cookies()`. A layout that blocks renders blocks every child route on every navigation
+- Push `'use client'` down the tree — layouts and pages should be server components, only interactive leaf components should be client
 - Use server components for data fetching with `'use cache'` + `cacheLife()`
 - Client components are for: click handlers, form state, hooks, browser APIs
-- Auth redirects happen in middleware, not in layouts — never add async auth checks to layouts
+- Auth redirects and access checks happen in middleware via JWT claims, never in layouts
 
 - [ ] **Step 3: Update frontend-patterns skill — add Streaming & Suspense section**
 
 Add a section covering:
-- Every meaningful route must have a `loading.tsx` returning `<PageLoader />`
-- Wrap independent data-fetching sections in `<Suspense>` with structurally-matching skeleton fallbacks
-- Wrap each streamed section in `<FadeIn>` for smooth appearance
-- Static parts of the page render immediately outside Suspense
+- Every meaningful route must have a `loading.tsx` returning `<PageLoader />` — this enables partial prefetching
+- Wrap independent data-fetching sections in `<Suspense>` with skeleton fallbacks
+- Skeleton fallbacks must structurally match their resolved content — same card shapes, grid columns, section heights, spacing — to prevent layout shift when content streams in
+- Wrap each streamed section in `<FadeIn>` for smooth appearance as it resolves. No page-level `<FadeIn>` — each section gets its own
+- Static parts of the page (headers, labels, navigation) render immediately outside Suspense
+- `cacheComponents: true` is enabled in `next.config.ts` — server component render results are cached across requests
 
-- [ ] **Step 4: Update frontend-patterns skill — add Framer Motion section**
+- [ ] **Step 4: Update frontend-patterns skill — add Navigation section**
+
+Add a section covering:
+- Use `next/link` (`<Link>`) for all internal navigation — never `<a href>` tags, which cause full page reloads
+- `loading.tsx` on every route enables partial prefetching for `<Link>` navigations
+- Back/close buttons feel instant due to: static layout (no server roundtrip) + React Query client cache + loading states
+
+- [ ] **Step 5: Update frontend-patterns skill — add Framer Motion section**
 
 Add a section covering:
 - Never import `motion/react` directly at the top of a file — always use dynamic import
-- Use CSS animations (`animate-fade-in`, `animate-fade-up`) for simple transitions
-- For `AnimatePresence`: extract to separate file, lazy-load with `React.lazy` + top-level `import()` preload
-- Pattern: `const promise = import('./component'); const Component = lazy(() => promise.then(...))`
+- Use CSS animations (`animate-fade-in`, `animate-fade-up`) for simple opacity/transform transitions
+- For `AnimatePresence` (mount/unmount animations): extract to a separate component file, lazy-load with `React.lazy` + top-level `import()` preload
+- Preload pattern: `const promise = import('./component'); const Component = lazy(() => promise.then(...))`
+- The top-level `import()` fires when the parent module is parsed — not on render, not on user interaction. Framer Motion downloads in the background while the user interacts with static UI
 
-- [ ] **Step 5: Verify no duplication or contradiction with CLAUDE.md**
+- [ ] **Step 6: Verify no duplication or contradiction with CLAUDE.md**
 
 Read CLAUDE.md's Performance section. Ensure the frontend-patterns skill adds detail without contradicting it. CLAUDE.md stays as-is — it already references frontend-patterns in its Rules & Skills Reference section.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
 git add .claude/skills/frontend-patterns/SKILL.md
