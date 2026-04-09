@@ -54,6 +54,17 @@ export async function updateSession(request: NextRequest) {
     return redirectWithCookies(url, supabaseResponse)
   }
 
+  // Authenticated users on /app who haven't redeemed invite → redirect to enter-code
+  if (user && pathname.startsWith('/app')) {
+    const appMetadata = (user as Record<string, unknown>).app_metadata as Record<string, unknown> | undefined
+    const hasRedeemedInvite = appMetadata?.has_redeemed_invite === true
+    if (!hasRedeemedInvite) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth/enter-code'
+      return redirectWithCookies(url, supabaseResponse)
+    }
+  }
+
   // Authenticated users trying to access /auth → redirect to /app
   // (except passthrough paths that need auth context)
   const isPassthrough = AUTH_PASSTHROUGH_PATHS.some((p) => pathname.startsWith(p))
