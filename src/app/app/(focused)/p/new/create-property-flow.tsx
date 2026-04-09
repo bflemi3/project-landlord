@@ -1,12 +1,16 @@
 'use client'
 
-import { useState, useCallback, useRef, useTransition } from 'react'
+import { useState, useCallback, useRef, useTransition, lazy, Suspense } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { X, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { SlideIn } from '@/components/slide-in'
+
+const slideInPromise = import('@/components/slide-in')
+const SlideIn = lazy(() =>
+  slideInPromise.then(m => ({ default: m.SlideIn }))
+)
 import { StepProgress } from '@/components/step-progress'
 import { PropertyForm, type PropertyFormValues } from './steps/property-form'
 import { InviteTenantsForm, type InviteEntry } from './steps/invite-tenants-form'
@@ -190,35 +194,37 @@ export function CreatePropertyFlow() {
             </PropertyForm>
           </div>
         ) : (
-          <SlideIn activeKey={step} className="flex flex-1 flex-col">
-            <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-6 pb-8">
-              {step === 2 && (
-                <InviteTenantsForm
-                  propertyName={propertyName}
-                  onSubmit={handleInvitesComplete}
-                  isSubmitting={false}
-                  stateRef={inviteData}
-                />
-              )}
-              {step === 3 && (
-                <ChargesForm
-                  onSubmit={handleChargesComplete}
-                  isSubmitting={isPending}
-                  initialConfigs={chargeData.current.length > 0 ? chargeData.current : undefined}
-                  stateRef={chargeData}
-                  dueDayRef={chargeDueDay}
-                />
-              )}
-              {step === 4 && (
-                <SetupComplete
-                  propertyName={propertyName}
-                  propertyId={createdPropertyId.current}
-                  tenantCount={inviteData.current.filter((i) => i.email.trim()).length}
-                  chargeCount={chargeData.current.length}
-                />
-              )}
-            </div>
-          </SlideIn>
+          <Suspense fallback={null}>
+            <SlideIn activeKey={step} className="flex flex-1 flex-col">
+              <div className="mx-auto flex min-h-0 w-full max-w-lg flex-1 flex-col px-6 pb-8">
+                {step === 2 && (
+                  <InviteTenantsForm
+                    propertyName={propertyName}
+                    onSubmit={handleInvitesComplete}
+                    isSubmitting={false}
+                    stateRef={inviteData}
+                  />
+                )}
+                {step === 3 && (
+                  <ChargesForm
+                    onSubmit={handleChargesComplete}
+                    isSubmitting={isPending}
+                    initialConfigs={chargeData.current.length > 0 ? chargeData.current : undefined}
+                    stateRef={chargeData}
+                    dueDayRef={chargeDueDay}
+                  />
+                )}
+                {step === 4 && (
+                  <SetupComplete
+                    propertyName={propertyName}
+                    propertyId={createdPropertyId.current}
+                    tenantCount={inviteData.current.filter((i) => i.email.trim()).length}
+                    chargeCount={chargeData.current.length}
+                  />
+                )}
+              </div>
+            </SlideIn>
+          </Suspense>
         )}
       </div>
     </div>
