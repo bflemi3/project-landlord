@@ -25,8 +25,7 @@ import { formatDays } from '@/lib/format-days'
 import { computeFinancialSummary } from '@/lib/statements/financial-summary'
 import { createStatement } from '@/app/actions/statements/create-statement'
 import { unitStatementsQueryKey } from '@/lib/queries/unit-statements'
-import { homeActionsQueryKey } from '@/lib/queries/home-actions'
-import { homePropertiesQueryKey } from '@/lib/queries/home-properties'
+import { homeActionsQueryKey, homePropertiesQueryKey } from '@/data/home/shared'
 
 export function BillingSummaryCard({ unitId, propertyId }: { unitId: string; propertyId: string }) {
   const t = useTranslations('propertyDetail')

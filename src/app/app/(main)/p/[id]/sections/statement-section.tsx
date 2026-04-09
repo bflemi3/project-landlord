@@ -15,8 +15,7 @@ import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
 import { useProperty } from '@/lib/hooks/use-property'
 import { createStatement } from '@/app/actions/statements/create-statement'
 import { unitStatementsQueryKey } from '@/lib/queries/unit-statements'
-import { homePropertiesQueryKey } from '@/lib/queries/home-properties'
-import { homeActionsQueryKey } from '@/lib/queries/home-actions'
+import { homePropertiesQueryKey, homeActionsQueryKey } from '@/data/home/shared'
 import { formatCurrency } from '@/lib/format-currency'
 import {
   getCurrentPeriod,

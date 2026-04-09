@@ -1,8 +1,7 @@
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
 import { FadeIn } from '@/components/fade-in'
-import { fetchHomeProperties, homePropertiesQueryKey } from '@/lib/queries/home-properties'
-import { fetchHomeActions, homeActionsQueryKey } from '@/lib/queries/home-actions'
+import { fetchHomeProperties, homePropertiesQueryKey, fetchHomeActions, homeActionsQueryKey } from '@/data/home/shared'
 import { HomeContent } from './home-content'
 import { TenantHomeContent } from './tenant-home-content'
 
