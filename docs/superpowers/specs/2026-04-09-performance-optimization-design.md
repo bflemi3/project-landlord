@@ -393,12 +393,11 @@ Usage is identical to today — callers don't pass `index`:
 
 ### Dynamic Import with Preload — Per Component
 
-**`charge-config-sheet.tsx`** and **`add-charge-sheet.tsx`:**
-- Internally dynamic-import `motion/react` (specifically `motion` and `AnimatePresence`)
-- Preload triggered when the sheet opens (the expand/collapse section isn't visible until user picks "Split" payer)
-- Static UI (form fields, labels, slider) renders immediately; animated section loads lazily
+**Preload pattern:** All Framer Motion dynamic imports use a top-level `import()` that fires as soon as the parent module is parsed by the browser — not on render, not on user interaction. `React.lazy` then resolves instantly from the already-in-flight (or already-resolved) promise. No state, no double render, and the chunk starts downloading as early as possible.
 
-Pattern — extract the animated section into its own file and use `React.lazy`. No state, no double render:
+**`charge-config-sheet.tsx`** and **`add-charge-sheet.tsx`:**
+
+Extract the animated expand/collapse into its own file. The parent component's top-level `import()` starts downloading the chunk immediately when the parent bundle loads. Static UI (form fields, labels, slider) renders immediately; the animated section is ready by the time the user picks "Split".
 
 ```tsx
 // src/components/animated-split-section.tsx
@@ -423,15 +422,14 @@ export function AnimatedSplitSection({ show, children }: { show: boolean; childr
 ```
 
 ```tsx
-// Inside charge-config-sheet.tsx or add-charge-sheet.tsx
+// Inside charge-config-sheet.tsx or add-charge-sheet.tsx — top of file
 import { lazy, Suspense } from 'react'
 
+// Fires immediately when this module is parsed — not on render
+const animatedSplitPromise = import('@/components/animated-split-section')
 const AnimatedSplitSection = lazy(() =>
-  import('@/components/animated-split-section').then(m => ({ default: m.AnimatedSplitSection }))
+  animatedSplitPromise.then(m => ({ default: m.AnimatedSplitSection }))
 )
-
-// Preload when sheet opens — fires the dynamic import early
-export const preloadAnimatedSplit = () => import('@/components/animated-split-section')
 
 // In the component's render:
 <Suspense fallback={show ? <div>{children}</div> : null}>
@@ -439,28 +437,52 @@ export const preloadAnimatedSplit = () => import('@/components/animated-split-se
 </Suspense>
 ```
 
-`React.lazy` suspends on first render until the chunk loads, then renders directly — single render, no state. The `preloadAnimatedSplit()` call fires the import early (when the sheet opens) so by the time the user selects "Split", the chunk is already cached.
-
 **`create-property-flow.tsx` (property wizard):**
-- Dynamic-import `SlideIn` component (which uses `motion/react`)
-- Preload `motion/react` on mount via `useEffect(() => { import('motion/react') }, [])` — fires during step 1 while user fills the property form
-- By step 2 (first `SlideIn` usage), Framer Motion chunk is already downloaded
-- `FadeUp` in `setup-complete.tsx` (step 4) replaced with CSS `FadeUp.Group` — no Framer Motion needed
+
+Top-level `import()` starts downloading `SlideIn` (and its Framer Motion dependency) as soon as the wizard bundle loads. By step 2 (first `SlideIn` usage), the chunk is already resolved.
+
+```tsx
+// create-property-flow.tsx — top of file
+import { lazy, Suspense } from 'react'
+
+const slideInPromise = import('@/components/slide-in')
+const SlideIn = lazy(() =>
+  slideInPromise.then(m => ({ default: m.SlideIn }))
+)
+
+// Step 1 renders without SlideIn (no animation needed)
+// Steps 2-4 use SlideIn — chunk is already loaded
+```
+
+`FadeUp` in `setup-complete.tsx` (step 4) replaced with CSS `FadeUp.Group` — no Framer Motion needed.
 
 **`sign-up-form.tsx`:**
-- Dynamic-import `motion/react` with preload on mount
-- The invite code form (step 1) renders without animation
-- By the time the user submits the code and the `AnimatePresence` transition fires, Framer Motion is loaded
+
+Same pattern — top-level `import()` fires when the sign-up bundle loads. By the time the user submits the invite code and the `AnimatePresence` step transition fires, the chunk is resolved.
+
+```tsx
+// sign-up-form.tsx — top of file
+import { lazy, Suspense } from 'react'
+
+const motionPromise = import('motion/react')
+const AnimatedStepTransition = lazy(() =>
+  motionPromise.then(m => ({
+    default: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) =>
+      // wrapper that uses m.AnimatePresence + m.motion.div
+      // exact implementation matches current step transition behavior
+  }))
+)
+```
 
 ### Final Framer Motion Map
 
 | Route | Framer Motion loads? | When? |
 |---|---|---|
 | Home page | No | — |
-| Property detail | Only if user opens split config | Preloaded when ChargeConfigSheet opens |
-| Statement draft | Only if user opens split config | Preloaded when AddChargeSheet opens |
-| Property wizard | Background during step 1 | Preloaded on mount, ready by step 2 |
-| Sign-up form | Background on mount | Preloaded, ready for code→form transition |
+| Property detail | Only if charge-config-sheet bundle loads | Starts downloading when sheet component's bundle is parsed |
+| Statement draft | Only if add-charge-sheet bundle loads | Starts downloading when sheet component's bundle is parsed |
+| Property wizard | Immediately with wizard bundle | Top-level import, resolved before step 2 |
+| Sign-up form | Immediately with sign-up bundle | Top-level import, resolved before code validation |
 | Landing page | No | CSS only |
 
 ---
