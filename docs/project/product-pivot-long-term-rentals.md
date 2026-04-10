@@ -286,8 +286,8 @@ Barcode scanning is only used for condo fee setup. Utility charges don't need it
 - Tenant invites (landlord invites tenant to property)
 - Notifications system
 
-### Features that may be deprioritized
-- Statement drafting/publishing workflow (more automated in new model)
+### Features removed
+- **Monthly statement workflow (draft/review/publish) is replaced entirely.** There is no landlord-generated statement. Instead, both parties share a live billing view — a real-time dashboard of all charges for the month (rent, utilities, condo fee), their amounts, due dates, and payment status. It updates automatically as payments are detected. No publishing, no drafts, no revisions. If extraction accuracy is high, this becomes the single place tenants come to see what they owe, when, and to whom — replacing the need to check multiple utility apps and bank statements. Most months, neither party needs to actively engage with the platform — it works in the background and notifies them only when something needs attention.
 
 ### Features that stay as-is
 - Charge splits (roommates sharing a unit, partial responsibility between LL and tenant)

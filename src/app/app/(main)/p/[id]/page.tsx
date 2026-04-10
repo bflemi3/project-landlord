@@ -1,10 +1,17 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import {  DetailPageLayout } from '@/components/detail-page-layout'
+import { FadeIn } from '@/components/fade-in'
+import {
+  DetailPageLayout,
+  DetailPageLayoutHeader,
+  DetailPageLayoutBody,
+} from '@/components/detail-page-layout'
 import { getProperty } from '@/data/properties/server'
 import { HighlightWrapper } from './highlight-wrapper'
-import { PropertyPageContent } from './property-page-content'
-import { PropertyDetailSkeleton } from './sections/skeletons'
+import { PropertyHeader } from './sections/property-header'
+import { MainColumn } from './main-column'
+import { Sidebar } from './sidebar'
+import { HeaderSkeleton } from './sections/skeletons'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
@@ -17,7 +24,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 /**
- * Property detail page — renders layout shell instantly, streams all content.
+ * Property detail page — synchronous, no blocking awaits.
+ *
+ * Header streams independently (fetches property for name/address).
+ * MainColumn and Sidebar call cached getProperty() for unitIds (instant
+ * if header already fetched via React.cache). Sections within each
+ * stream independently via their own Suspense boundaries.
  */
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -25,9 +37,18 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   return (
     <HighlightWrapper>
       <DetailPageLayout>
-        <Suspense fallback={<PropertyDetailSkeleton />}>
-          <PropertyPageContent propertyId={id} />
-        </Suspense>
+        <DetailPageLayoutHeader>
+          <Suspense fallback={<HeaderSkeleton />}>
+            <FadeIn>
+              <PropertyHeader propertyId={id} />
+            </FadeIn>
+          </Suspense>
+        </DetailPageLayoutHeader>
+
+        <DetailPageLayoutBody>
+          <MainColumn propertyId={id} />
+          <Sidebar propertyId={id} />
+        </DetailPageLayoutBody>
       </DetailPageLayout>
     </HighlightWrapper>
   )

@@ -3,6 +3,7 @@ import { getUnit } from '@/data/units/server'
 import { ChargesSection } from './charges-section'
 
 export async function UnitSection({ unitId, propertyId }: { unitId: string; propertyId: string }) {
+  // Both calls use React.cache() — getProperty() resolves from cache (already fetched by MainColumn)
   const [property, unit] = await Promise.all([
     getProperty(propertyId),
     getUnit(unitId),
