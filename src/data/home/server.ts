@@ -1,13 +1,13 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
+import { getUserId } from '@/lib/supabase/get-user-id'
 import { fetchUserRoles, fetchHomeProperties, fetchHomeActions } from './shared'
 import type { UserRole, HomeProperty, HomeAction } from './shared'
 
 export const getUserRoles = cache(async (): Promise<UserRole[]> => {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getClaims()
-  const userId = data?.claims?.sub as string | undefined
+  const userId = await getUserId()
   if (!userId) return []
+  const supabase = await createClient()
   return fetchUserRoles(supabase, userId)
 })
 
