@@ -19,8 +19,10 @@ export async function HomeRouter() {
     return <EmptyHome />
   }
 
-  // Landlord view takes priority — if user has any landlord properties,
-  // show the landlord dashboard. Mixed view is a future concern.
+  if (isLandlord && isTenant) {
+    return <MixedHome />
+  }
+
   if (isLandlord) {
     return <LandlordHome />
   }
