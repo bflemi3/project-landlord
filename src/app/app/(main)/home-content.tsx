@@ -10,13 +10,9 @@ import {
 } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { StickyBottomBar } from '@/components/sticky-bottom-bar'
-import { Wordmark } from '@/components/wordmark'
-import { UserMenuTrigger } from '@/components/user-menu'
 import { isPropertyComplete, getCompletionSteps } from '@/components/property-card'
 import type { HomeProperty, HomeAction } from '@/data/home/shared'
 import type { PropertySetupProgress } from '@/lib/types/property'
-
-type GreetingKey = 'goodMorning' | 'goodAfternoon' | 'goodEvening'
 
 function deriveSetupProgress(p: HomeProperty): PropertySetupProgress {
   return {
@@ -29,56 +25,28 @@ function deriveSetupProgress(p: HomeProperty): PropertySetupProgress {
 }
 
 // =============================================================================
-// Greeting — client (useTranslations)
-// =============================================================================
-
-export function Greeting({ firstName, greetingKey, propertyCount }: { firstName?: string; greetingKey: GreetingKey; propertyCount: number }) {
-  const t = useTranslations('home')
-  const greeting = t(greetingKey)
-
-  return (
-    <div className="mb-8">
-      <h1 className="text-2xl font-bold text-foreground">
-        {greeting}{firstName ? `, ${firstName}` : ''}
-      </h1>
-      {propertyCount > 1 && (
-        <p className="mt-1.5 text-lg text-muted-foreground">
-          {propertyCount} {t('propertiesCount')}
-        </p>
-      )}
-    </div>
-  )
-}
-
-// =============================================================================
 // Empty state — fully client (useState for "coming soon" toggle)
 // =============================================================================
 
 interface EmptyStateProps {
   firstName?: string
-  userName?: string
-  avatarUrl?: string
-  greetingKey: GreetingKey
+  greeting: string
 }
 
-export function EmptyState({ firstName, userName, avatarUrl, greetingKey }: EmptyStateProps) {
+export function EmptyState({ firstName, greeting }: EmptyStateProps) {
   const t = useTranslations('home')
   const [showComingSoon, setShowComingSoon] = useState(false)
-  const greeting = t(greetingKey)
 
   return (
-    <div className="flex h-full flex-col">
-      <MobileHeader userName={userName} avatarUrl={avatarUrl} />
-      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-4 md:pt-14">
-        <div className="w-full max-w-2xl">
-          <div className="mb-10 text-center">
-            <h1 className="text-2xl font-bold text-foreground md:text-3xl">
-              {greeting}{firstName ? `, ${firstName}` : ''}.
-            </h1>
-            <p className="mt-2 text-base text-muted-foreground md:text-lg">
-              {t('roleChoiceSubtitle')}
-            </p>
-          </div>
+    <div className="w-full max-w-2xl">
+      <div className="mb-10 text-center">
+        <h1 className="text-2xl font-bold text-foreground md:text-3xl">
+          {greeting}{firstName ? `, ${firstName}` : ''}.
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground md:text-lg">
+          {t('roleChoiceSubtitle')}
+        </p>
+      </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <Link
@@ -116,46 +84,21 @@ export function EmptyState({ firstName, userName, avatarUrl, greetingKey }: Empt
             </button>
           </div>
 
-          <div className="mt-5 flex items-start justify-center gap-2.5 rounded-xl bg-secondary/40 px-5 py-3 text-center dark:bg-transparent dark:px-0">
-            <span className="flex h-5 shrink-0 items-center"><ArrowLeftRight className="size-3.5 text-muted-foreground/50" /></span>
-            <p className="text-sm leading-relaxed text-muted-foreground/70 dark:text-muted-foreground">{t('roleNote')}</p>
-          </div>
-        </div>
+      <div className="mt-5 flex items-start justify-center gap-2.5 rounded-xl bg-secondary/40 px-5 py-3 text-center dark:bg-transparent dark:px-0">
+        <span className="flex h-5 shrink-0 items-center"><ArrowLeftRight className="size-3.5 text-muted-foreground/50" /></span>
+        <p className="text-sm leading-relaxed text-muted-foreground/70 dark:text-muted-foreground">{t('roleNote')}</p>
       </div>
     </div>
   )
 }
 
 // =============================================================================
-// Mobile header — client (UserMenuTrigger is a client component)
-// =============================================================================
-
-export function MobileHeader({ userName, avatarUrl }: { userName?: string; avatarUrl?: string }) {
-  return (
-    <div className="flex shrink-0 items-center justify-between px-5 pt-4 md:hidden">
-      <Wordmark className="h-5" href="/app" />
-      <UserMenuTrigger userName={userName} avatarUrl={avatarUrl} />
-    </div>
-  )
-}
-
-// =============================================================================
-// Property card list — client (Link click handlers, setup progress rendering)
+// Property card — client (Link click handlers, setup progress rendering)
 // =============================================================================
 
 const CARD_CLASS = 'group block w-full overflow-hidden rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30'
 
-export function PropertyCardList({ properties }: { properties: HomeProperty[] }) {
-  return (
-    <div className="grid gap-3 md:grid-cols-2">
-      {properties.map((p) => (
-        <HomePropertyCard key={p.propertyId} property={p} />
-      ))}
-    </div>
-  )
-}
-
-function HomePropertyCard({ property: p }: { property: HomeProperty }) {
+export function PropertyCard({ property: p }: { property: HomeProperty }) {
   const tP = useTranslations('properties')
   const t = useTranslations('home')
 
@@ -342,12 +285,12 @@ function ActionRow({ action }: { action: HomeAction }) {
 // Bottom bar — client (Link)
 // =============================================================================
 
-export function HomeBottomBar({ isSingleProperty }: { isSingleProperty: boolean }) {
+export function HomeBottomBar() {
   const t = useTranslations('home')
 
   return (
     <StickyBottomBar>
-      <div className={`mx-auto flex justify-center ${isSingleProperty ? 'max-w-xl' : 'max-w-4xl'}`}>
+      <div className="mx-auto flex max-w-4xl justify-center">
         <Link
           href="/app/p/new"
           className={buttonVariants({ variant: 'ghost', className: 'h-10 rounded-2xl px-6 text-muted-foreground' })}

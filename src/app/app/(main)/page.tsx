@@ -1,21 +1,18 @@
 import { Suspense } from 'react'
-import { FadeIn } from '@/components/fade-in'
-import { CardsSkeleton, ActionsSkeleton } from './home-skeletons'
-import { MobileHeader, HomeBottomBar } from './home-content'
-import { HomeContent } from './home-server-content'
+import { HomeRouter } from './home-router'
 import { PageLoader } from '@/components/page-loader'
 
 /**
- * Home page — renders shell instantly, streams data-dependent content.
+ * Home page — renders instantly, streams content.
  *
- * The entire data-dependent section (greeting, cards, actions, empty state,
- * tenant view) is wrapped in a single Suspense boundary because the role
- * check (landlord vs tenant vs empty) determines which layout to render.
+ * The only blocking query is the router's role check (SELECT DISTINCT role
+ * FROM memberships) which is near-instant. Once the role is determined,
+ * the appropriate view renders with sections streaming independently.
  */
 export default function AppHomePage() {
   return (
     <Suspense fallback={<PageLoader />}>
-      <HomeContent />
+      <HomeRouter />
     </Suspense>
   )
 }

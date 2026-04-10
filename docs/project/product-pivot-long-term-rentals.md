@@ -45,17 +45,47 @@ Mabenn becomes a **long-term rental management platform** for landlords and tena
 
 **Problem:** Landlord has no visibility into whether tenant is paying bills. Tenant has no easy way to prove they're current. Both rely on informal communication.
 
+**Rent is first class. Property expenses are second class.**
+
+The landlord's primary concern is: "how much money am I making from this property?" Seeing that rent was paid each month is the core value. Revenue tracking — monthly, cumulative, per-contract, per-property — is the centerpiece of the landlord experience.
+
+Property expenses (utilities, condo fees) are important but secondary. The landlord wants to know they're being paid on time and have visibility into late/missing payments, but this supports the revenue picture — it's not the main event.
+
 **What we do:**
-- Automate monthly bill tracking for the rental property (utilities, condo fees, rent)
+- Track rent payment as the primary metric — was it paid, when, how much
+- Track property expenses (utilities, condo fees) as secondary — are they being paid on time
 - Both landlord and tenant see what's due each month and when it's paid
 - Landlord doesn't need to rely on tenant manually reaching out — peace of mind
 - Tenant gets credit for being responsible — proof of payment history
+- Surface late/missing payments clearly for both rent and expenses
 
 **Revenue visibility for landlords:**
 - Show how much the landlord is making each month (rent minus any landlord-covered charges)
 - Show cumulative revenue over time — throughout the year, lifecycle of the contract, and overall for the property
 - Make this feel rewarding — watching revenue grow over the contract lifecycle
 - Consider gamification elements to make the financial tracking engaging
+
+**Tenant reputation system:**
+- Tenants earn a rating based on timely payments (rent, utilities, condo fees)
+- This rating is portable — if the tenant moves to another landlord on the platform, the new landlord can see their payment history and reliability score
+- Creates a real incentive for tenants to pay on time and stay on the platform
+- Creates a network effect — landlords want to use Mabenn because they can vet tenants, tenants want to use Mabenn because their good history follows them
+- Future expansion: could become a trust signal for rental applications, reducing the need for fiadores (guarantors) or caução (security deposits)
+
+**Landlord reputation system:**
+- Landlords earn a rating based on responsiveness to maintenance requests, tenant ratings, dispute resolution, etc.
+- Portable across tenants — future tenants can see the landlord's track record before committing to a rental
+- Creates a two-sided trust marketplace — both parties have skin in the game
+- Incentivizes landlords to be responsive and fair, tenants to pay on time
+- Combined with tenant reputation, this positions Mabenn as a trust layer for Brazilian rentals — not just a management tool
+
+**How expenses are captured — three mechanisms:**
+
+1. **Condo fees → DDA (boleto system).** Condo fees are issued as boletos bancarios and can be auto-discovered via DDA (Celcoin API) by registering the tenant's or landlord's CPF. Water is often bundled into the condo boleto — we do not separate it out. The condo fee is treated as one opaque charge. We store the invoice PDF if the user forwards it for transparency, but it's optional.
+
+2. **Utilities → Mabenn-built ingestion flows.** Utility bills (electric, gas, internet, standalone water) are captured through automated bill ingestion — email forwarding, upload, or photo. Some providers have web portals where usage can be looked up by account number or CPF, which Mabenn can use as a validation layer to confirm extraction was correct. Each provider's ingestion and validation flow is built and controlled by Mabenn engineering — this is not user-configurable or AI-driven.
+
+3. **Payment confirmation → Open Finance.** Whether the tenant (or landlord) actually paid each expense is detected via Open Finance — both parties connect their bank accounts, and we watch for matching transactions.
 
 **How this connects to our DDA / Open Finance research:**
 
@@ -68,7 +98,7 @@ Brazil has two separate billing instruments, and they behave differently:
 
 **Bill discovery (knowing a new bill exists):**
 - **Condo fees** (boletos bancarios) can be auto-discovered via DDA. We register the CPF (tenant's or landlord's, depending on who owns the bill) through Celcoin's DDA API, and we receive webhook notifications when new boletos are issued to that CPF. No bank login required — just CPF + a signed adhesion term.
-- **Utility bills** (convenio guides) cannot be auto-discovered through any existing platform. They flow through a completely separate system that has no CPF-based lookup for non-bank companies. For these, bill discovery still requires manual action: the user uploads the bill, forwards it via email, or we extract it from a photo/PDF.
+- **Utility bills** (convenio guides) cannot be auto-discovered through any existing platform. Unlike boletos, there is no centralized registry for convênio guides — each utility company manages its own billing independently, so there is no CPF-based lookup available to anyone. For these, bill discovery still requires manual action: the user uploads the bill, forwards it via email, or we extract it from a photo/PDF.
 - **Rent** is not a bill issued by a third party — it's defined in the contract. We know the amount and due date from the contract terms.
 
 **Payment detection (knowing a bill was paid):**
@@ -95,6 +125,84 @@ Brazil has two separate billing instruments, and they behave differently:
 
 **Bill ownership flexibility:**
 The platform supports both models. When setting up charges for a property, the landlord indicates who holds each bill (landlord or tenant). The payment detection logic follows accordingly — watching the right bank feed for each charge type. If the landlord transfers a utility to the tenant mid-contract, the configuration updates and we start watching the tenant's feed instead.
+
+**Provider coverage is region-specific:**
+
+Utilities vary by region (Florianopolis electricity = Enliv, Sao Paulo electricity = ENEL, etc.). During property setup, Mabenn derives the utility providers from the property address and presents them as defaults. The user confirms or changes them. If a provider doesn't exist in our system, the user is notified with clear UX (not a dead end) and prompted to upload an example bill so engineering has what they need to build the ingestion flow. Mabenn engineering is alerted — ideally with an automatic Linear ticket (with the example bill attached) so the provider build gets tracked and prioritized.
+
+Every provider's data extraction flow is built by Mabenn engineering. Quality and accuracy are controlled, not crowd-sourced or AI-guessed.
+
+**Ingestion error handling:**
+
+When extraction runs and fails or produces suspect results, both engineering and users must be notified. Engineering needs error visibility for debugging and improving flows. Users need a well-thought-out UX that explains what happened and what to do (re-upload, manually enter, wait for fix). Not just a generic error state.
+
+**Release strategy:**
+
+Since rent is first class and works everywhere (contract terms + bank feed), a full Brazil release is possible even without complete provider coverage. The key requirement is excellent UX for regions and providers we don't yet support — transparent about what's available, what's coming, and persistent nudges to complete expense setup since it adds real value.
+
+A full Brazil release also gives us analytics-driven prioritization: we can track where users are signing up, which providers are being requested, and how many properties are blocked on missing providers — then focus engineering effort on the highest-demand regions first. Controlled release by region is also an option if we want a polished experience everywhere from day one. Either way, a system must exist to surface missing providers and alert engineering.
+
+**Friction points:**
+
+1. **Tenant won't connect bank account** — we lose the primary payment detection mechanism for expenses. Need fallback options (manual confirmation, LL bank feed if available).
+2. **Tenant/LL won't set up utility providers** — can't show expense payment status without knowing which providers to track. Need good "not yet configured" UX with nudges to complete setup.
+3. **LL won't connect bank account** — if tenant also didn't connect, we can't verify rent payment at all. Need UX for this edge case.
+4. **Open Finance regulatory unknowns** — using Pluggy/Belvo for bank account hookup may involve red tape, approvals, or timeline risks. Needs targeted research: what does it take to go live, what's the timeline, what are the blockers?
+5. **Users won't manually validate extracted expense values** — we could ask users to confirm extraction results, but this is friction they'll likely ignore. Provider web portal cross-checks (automated) are more reliable than user validation.
+
+**Mitigating friction through gamification and reputation:** Many of these friction points (connecting bank, setting up providers, validating expenses) could be incentivized by tying them to the user's reputation score. Completing setup steps, connecting your bank, and confirming expense data could all contribute to a higher trust rating — giving both landlords and tenants a reason to engage rather than skip.
+
+---
+
+### User Onboarding
+
+1. Sign in (Google OAuth or email/password)
+2. Profile setup: name, avatar, CPF
+   - Google sign-in pre-fills name and avatar — user can change
+3. Done
+
+### Property Creation
+
+1. **Enter property address** — from this we derive utility providers for the region
+2. **Set up rent and expense charges:**
+   - **Rent:** Amount and due date from contract terms
+   - **Utility providers:** Auto-detected from address, user confirms or changes. If a provider isn't in our system, user is notified and engineering is alerted
+   - **Condomínio:** Presented as a suggested expense (see condo fee setup below). If the user removes it or skips it, that's fine — either not a condo or they'll do it later
+3. **Invite tenant** (skippable — LL may set up property before having a tenant or before they're ready to invite)
+
+No "is this a condo?" toggle or property type selection. The charge setup implicitly tells us what kind of property it is based on which expenses the user keeps. The product works progressively — user can set up just rent on day one and add expenses later.
+
+### Condo Fee Setup — Barcode Capture
+
+When the user enables "Condomínio" as an expense, we need the administradora's CNPJ to register for DDA. We get this from the boleto barcode.
+
+**On mobile:**
+1. **Primary:** Open camera → scan barcode
+2. **Fallback:** Upload a photo of the barcode from gallery
+3. **Fallback:** Manually type the linha digitável (47 digits)
+
+**On desktop:**
+1. **Primary: "Scan with your phone"** — prominent, the encouraged path
+   - QR code or short link displayed on screen
+   - User opens link on phone → camera opens → scans boleto barcode
+   - Phone shows: "Got it. You can close this page."
+   - Desktop updates seamlessly via Supabase Realtime — no refresh needed
+   - Phone session is capture-only — no navigation, no continuing setup from phone
+2. **Fallback:** Upload a photo of the barcode
+3. **Fallback:** Type the linha digitável manually
+
+**After capture (any method):**
+- Extract issuer CNPJ + name + amount from the barcode
+- Show confirmation: "Your condo is managed by [Administradora Name] — R$[amount]/month. Correct?"
+- Register CPF for DDA to auto-discover future condo boletos
+
+Barcode scanning is only used for condo fee setup. Utility charges don't need it — we already know the provider from the address, and utilities are convênio guides (not boletos) so there's no DDA registration to do.
+
+**Condo fee invoice PDF:** Each property has a dedicated ingestion email. We nudge the user to forward their condo statement to that email for record-keeping. Optional — DDA handles amount + due date + payment status without it.
+
+**Water in condos:** When water is bundled into the condo boleto (common in condo buildings), we do not separate it as a distinct expense. The condo fee is treated as one charge: "Condomínio — R$950 — Paid." If the property is a standalone house, water shows up as its own utility provider through the standard ingestion flow.
+
+---
 
 ### Pillar 2: Contract Management
 
@@ -179,8 +287,10 @@ The platform supports both models. When setting up charges for a property, the l
 - Notifications system
 
 ### Features that may be deprioritized
-- Complex responsibility allocation (simpler in long-term — typically tenant pays everything or clear split)
 - Statement drafting/publishing workflow (more automated in new model)
+
+### Features that stay as-is
+- Charge splits (roommates sharing a unit, partial responsibility between LL and tenant)
 
 ---
 

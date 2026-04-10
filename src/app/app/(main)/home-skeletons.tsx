@@ -3,6 +3,14 @@
  * Structurally match the resolved content to prevent layout shift.
  */
 
+export function GreetingSkeleton() {
+  return (
+    <div className="mb-8">
+      <div className="h-8 w-64 animate-pulse rounded-lg bg-muted" />
+    </div>
+  )
+}
+
 const CARD_SKELETON_CLASS =
   'w-full overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80 dark:shadow-none'
 

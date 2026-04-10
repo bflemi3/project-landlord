@@ -1,9 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import {
-  DetailPageLayout,
-  DetailPageLayoutHeader,
-} from '@/components/detail-page-layout'
+import {  DetailPageLayout } from '@/components/detail-page-layout'
 import { getProperty } from '@/data/properties/server'
 import { HighlightWrapper } from './highlight-wrapper'
 import { PropertyPageContent } from './property-page-content'

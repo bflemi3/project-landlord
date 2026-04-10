@@ -1,5 +1,21 @@
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
+// --- User Roles (router query) ---
+
+export type UserRole = 'landlord' | 'tenant'
+
+export async function fetchUserRoles(supabase: TypedSupabaseClient): Promise<UserRole[]> {
+  const { data, error } = await supabase
+    .from('memberships')
+    .select('role')
+    .is('deleted_at', null)
+
+  if (error || !data) return []
+
+  const roles = [...new Set(data.map((row) => row.role as UserRole))]
+  return roles
+}
+
 // --- Home Properties ---
 
 export interface HomeProperty {

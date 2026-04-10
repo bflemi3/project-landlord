@@ -1,6 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import { fetchHomeProperties, fetchHomeActions } from './shared'
-import type { HomeProperty, HomeAction } from './shared'
+import { fetchUserRoles, fetchHomeProperties, fetchHomeActions } from './shared'
+import type { UserRole, HomeProperty, HomeAction } from './shared'
+
+export async function getUserRoles(): Promise<UserRole[]> {
+  const supabase = await createClient()
+  return fetchUserRoles(supabase)
+}
 
 export async function getHomeProperties(): Promise<HomeProperty[]> {
   const supabase = await createClient()
