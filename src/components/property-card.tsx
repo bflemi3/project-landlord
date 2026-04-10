@@ -1,5 +1,3 @@
-'use client'
-
 import type { PropertySetupProgress, PropertyOperationalData } from '@/lib/types/property'
 
 // =============================================================================
