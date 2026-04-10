@@ -2,26 +2,19 @@
 
 import { useEffect } from 'react'
 import posthog from 'posthog-js'
+import { useProfile } from '@/data/profiles/client'
 
-interface PostHogIdentifyProps {
-  userId: string
-  email?: string
-  name?: string
-  locale?: string
-  acquisitionChannel?: string
-}
+export function PostHogIdentify() {
+  const { data: profile } = useProfile()
 
-export function PostHogIdentify({ userId, email, name, locale, acquisitionChannel }: PostHogIdentifyProps) {
   useEffect(() => {
-    if (userId) {
-      posthog.identify(userId, {
-        ...(email && { email }),
-        ...(name && { name }),
-        ...(locale && { locale }),
-        ...(acquisitionChannel && { acquisition_channel: acquisitionChannel }),
+    if (profile?.id) {
+      posthog.identify(profile.id, {
+        ...(profile.email && { email: profile.email }),
+        ...(profile.fullName && { name: profile.fullName }),
       })
     }
-  }, [userId, email, name, locale, acquisitionChannel])
+  }, [profile])
 
   return null
 }
