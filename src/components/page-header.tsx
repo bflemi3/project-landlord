@@ -20,6 +20,7 @@ function PageHeaderBack({ className, href, children, ...props }: React.Component
     <Link
       data-slot="page-header-back"
       href={href}
+      prefetch
       className={cn(
         'mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground',
         className,
