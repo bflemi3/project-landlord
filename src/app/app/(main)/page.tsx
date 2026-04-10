@@ -1,68 +1,95 @@
-import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/server'
+import { Suspense } from 'react'
 import { FadeIn } from '@/components/fade-in'
-import { fetchHomeProperties, homePropertiesQueryKey, fetchHomeActions, homeActionsQueryKey } from '@/data/home/shared'
-import { HomeContent } from './home-content'
+import { getProfile } from '@/data/profiles/server'
+import { getHomeProperties, getHomeActions } from '@/data/home/server'
+import { CardsSkeleton, ActionsSkeleton } from './home-skeletons'
+import { EmptyState, MobileHeader, PropertyCardList, ActionList, HomeBottomBar, Greeting } from './home-content'
 import { TenantHomeContent } from './tenant-home-content'
 
-export default async function AppHomePage() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getClaims()
-  const userId = data?.claims?.sub as string
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, avatar_url')
-    .eq('id', userId)
-    .single()
-
-  const firstName = profile?.full_name?.split(' ')[0] ?? undefined
+function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
   const hour = new Date().getHours()
-  const greetingKey = hour < 12 ? 'goodMorning' : hour < 18 ? 'goodAfternoon' : 'goodEvening'
+  return hour < 12 ? 'goodMorning' : hour < 18 ? 'goodAfternoon' : 'goodEvening'
+}
 
-  // Prefetch data so client hydration matches server render
-  const queryClient = new QueryClient()
-  const properties = await fetchHomeProperties(supabase)
+export default async function AppHomePage() {
+  const [profile, properties] = await Promise.all([
+    getProfile(),
+    getHomeProperties(),
+  ])
 
-  await queryClient.prefetchQuery({
-    queryKey: homePropertiesQueryKey(),
-    queryFn: () => properties,
-  })
+  const firstName = profile?.fullName?.split(' ')[0] ?? undefined
+  const userName = profile?.fullName ?? undefined
+  const avatarUrl = profile?.avatarUrl ?? undefined
+  const greetingKey = getGreetingKey()
 
   const hasLandlordProperties = properties.some((p) => p.role === 'landlord')
 
   // Tenant-only users see a separate home page
   if (!hasLandlordProperties && properties.length > 0) {
     return (
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <FadeIn className="h-full">
-          <TenantHomeContent
-            firstName={firstName}
-            userName={profile?.full_name ?? undefined}
-            avatarUrl={profile?.avatar_url ?? undefined}
-            greetingKey={greetingKey}
-          />
-        </FadeIn>
-      </HydrationBoundary>
-    )
-  }
-
-  // Landlords (or users with no properties) see the full dashboard
-  await queryClient.prefetchQuery({
-    queryKey: homeActionsQueryKey(),
-    queryFn: () => fetchHomeActions(supabase),
-  })
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
       <FadeIn className="h-full">
-        <HomeContent
+        <TenantHomeContent
           firstName={firstName}
-          userName={profile?.full_name ?? undefined}
-          avatarUrl={profile?.avatar_url ?? undefined}
+          userName={userName}
+          avatarUrl={avatarUrl}
           greetingKey={greetingKey}
         />
       </FadeIn>
-    </HydrationBoundary>
+    )
+  }
+
+  // No properties — show empty/role-choice state
+  if (properties.length === 0) {
+    return (
+      <FadeIn className="h-full">
+        <EmptyState
+          firstName={firstName}
+          userName={userName}
+          avatarUrl={avatarUrl}
+          greetingKey={greetingKey}
+        />
+      </FadeIn>
+    )
+  }
+
+  // Landlord dashboard — stream property cards and actions
+  const isSingleProperty = properties.length === 1
+
+  return (
+    <div className="flex h-full flex-col">
+      <MobileHeader userName={userName} avatarUrl={avatarUrl} />
+      <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 md:pt-6">
+        <div className={`mx-auto ${isSingleProperty ? 'max-w-xl' : 'max-w-4xl'}`}>
+          <FadeIn>
+            <Greeting firstName={firstName} greetingKey={greetingKey} propertyCount={properties.length} />
+          </FadeIn>
+
+          <FadeIn>
+            <Suspense fallback={<CardsSkeleton />}>
+              <PropertyCardsSection properties={properties} />
+            </Suspense>
+          </FadeIn>
+
+          <FadeIn>
+            <Suspense fallback={<ActionsSkeleton />}>
+              <ActionsSection />
+            </Suspense>
+          </FadeIn>
+        </div>
+      </div>
+
+      <HomeBottomBar isSingleProperty={isSingleProperty} />
+    </div>
   )
+}
+
+// Server component that passes already-fetched properties to client card list
+function PropertyCardsSection({ properties }: { properties: Awaited<ReturnType<typeof getHomeProperties>> }) {
+  return <PropertyCardList properties={properties} />
+}
+
+// Server component that fetches actions and passes to client action list
+async function ActionsSection() {
+  const actions = await getHomeActions()
+  return <ActionList actions={actions} />
 }

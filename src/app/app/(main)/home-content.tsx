@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { motion } from 'motion/react'
 import {
   Building2, Plus, DoorOpen,
   ChevronRight, ArrowLeftRight,
@@ -13,9 +12,8 @@ import { buttonVariants } from '@/components/ui/button-variants'
 import { StickyBottomBar } from '@/components/sticky-bottom-bar'
 import { Wordmark } from '@/components/wordmark'
 import { UserMenuTrigger } from '@/components/user-menu'
-import { useHomeProperties, type HomeProperty } from '@/data/home/client'
-import { useHomeActions, type HomeAction } from '@/data/home/client'
 import { isPropertyComplete, getCompletionSteps } from '@/components/property-card'
+import type { HomeProperty, HomeAction } from '@/data/home/shared'
 import type { PropertySetupProgress } from '@/lib/types/property'
 
 type GreetingKey = 'goodMorning' | 'goodAfternoon' | 'goodEvening'
@@ -30,28 +28,40 @@ function deriveSetupProgress(p: HomeProperty): PropertySetupProgress {
   }
 }
 
-interface HomeContentProps {
+// =============================================================================
+// Greeting — client (useTranslations)
+// =============================================================================
+
+export function Greeting({ firstName, greetingKey, propertyCount }: { firstName?: string; greetingKey: GreetingKey; propertyCount: number }) {
+  const t = useTranslations('home')
+  const greeting = t(greetingKey)
+
+  return (
+    <div className="mb-8">
+      <h1 className="text-2xl font-bold text-foreground">
+        {greeting}{firstName ? `, ${firstName}` : ''}
+      </h1>
+      {propertyCount > 1 && (
+        <p className="mt-1.5 text-lg text-muted-foreground">
+          {propertyCount} {t('propertiesCount')}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// =============================================================================
+// Empty state — fully client (useState for "coming soon" toggle)
+// =============================================================================
+
+interface EmptyStateProps {
   firstName?: string
   userName?: string
   avatarUrl?: string
   greetingKey: GreetingKey
 }
 
-export function HomeContent({ firstName, userName, avatarUrl, greetingKey }: HomeContentProps) {
-  const { data: properties } = useHomeProperties()
-
-  if (properties.length > 0) {
-    return <PopulatedState firstName={firstName} userName={userName} avatarUrl={avatarUrl} greetingKey={greetingKey} />
-  }
-
-  return <EmptyState firstName={firstName} userName={userName} avatarUrl={avatarUrl} greetingKey={greetingKey} />
-}
-
-// =============================================================================
-// Empty state
-// =============================================================================
-
-function EmptyState({ firstName, userName, avatarUrl, greetingKey }: HomeContentProps) {
+export function EmptyState({ firstName, userName, avatarUrl, greetingKey }: EmptyStateProps) {
   const t = useTranslations('home')
   const [showComingSoon, setShowComingSoon] = useState(false)
   const greeting = t(greetingKey)
@@ -95,9 +105,7 @@ function EmptyState({ firstName, userName, avatarUrl, greetingKey }: HomeContent
               <h3 className="text-lg font-semibold text-foreground">{t('iRentProperty')}</h3>
               <div className="mt-1.5 min-h-[3.5rem] text-sm leading-relaxed text-muted-foreground">
                 {showComingSoon ? (
-                  <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-                    {t('comingSoonDescription')}
-                  </motion.p>
+                  <p className="animate-fade-in">{t('comingSoonDescription')}</p>
                 ) : (
                   <p>{t('iRentPropertyDescription')}</p>
                 )}
@@ -119,169 +127,10 @@ function EmptyState({ firstName, userName, avatarUrl, greetingKey }: HomeContent
 }
 
 // =============================================================================
-// Populated state
+// Mobile header — client (UserMenuTrigger is a client component)
 // =============================================================================
 
-function PopulatedState({ firstName, userName, avatarUrl, greetingKey }: HomeContentProps) {
-  const t = useTranslations('home')
-  const greeting = t(greetingKey)
-  const { data: properties } = useHomeProperties()
-
-  const isSingleProperty = properties.length === 1
-
-  return (
-    <div className="flex h-full flex-col">
-      <MobileHeader userName={userName} avatarUrl={avatarUrl} />
-      <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 md:pt-6">
-        <div className={`mx-auto ${isSingleProperty ? 'max-w-xl' : 'max-w-4xl'}`}>
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-foreground">
-              {greeting}{firstName ? `, ${firstName}` : ''}
-            </h1>
-            {properties.length > 1 && (
-              <p className="mt-1.5 text-lg text-muted-foreground">
-                {properties.length} {t('propertiesCount')}
-              </p>
-            )}
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-2">
-            {properties.map((p) => (
-              <HomePropertyCard key={p.propertyId} property={p} />
-            ))}
-          </div>
-
-          <WhatsNextSection />
-        </div>
-      </div>
-
-      <StickyBottomBar>
-        <div className={`mx-auto flex justify-center ${isSingleProperty ? 'max-w-xl' : 'max-w-4xl'}`}>
-          <Link
-            href="/app/p/new"
-            className={buttonVariants({ variant: 'ghost', className: 'h-10 rounded-2xl px-6 text-muted-foreground' })}
-          >
-            <Plus className="size-4" />
-            {t('addProperty')}
-          </Link>
-        </div>
-      </StickyBottomBar>
-    </div>
-  )
-}
-
-// =============================================================================
-// What's Next — action items from the home_action_items view
-// =============================================================================
-
-const ACTION_ICONS: Record<string, React.ElementType> = {
-  invite_tenants: UserPlus,
-  configure_charges: Receipt,
-  pending_invite: Clock,
-  generate_statement: FileText,
-}
-
-const ACTION_COLORS: Record<string, string> = {
-  invite_tenants: 'text-primary',
-  configure_charges: 'text-primary',
-  pending_invite: 'text-amber-500',
-  generate_statement: 'text-primary',
-}
-
-function WhatsNextSection() {
-  const t = useTranslations('home')
-  const { data: actions } = useHomeActions()
-
-  if (actions.length === 0) return null
-
-  return (
-    <div className="mt-8">
-      <h3 className="mb-3 text-base font-semibold text-foreground">{t('whatsNext')}</h3>
-      <div className="space-y-2">
-        {actions.map((action, i) => (
-          <ActionRow key={`${action.actionType}-${action.propertyId}-${i}`} action={action} />
-        ))}
-      </div>
-    </div>
-  )
-}
-
-function getActionHash(action: HomeAction): string {
-  switch (action.actionType) {
-    case 'pending_invite':
-      return action.detailId ? `invite-${action.detailId}` : 'tenants'
-    case 'invite_tenants':
-      return 'invite-btn'
-    case 'configure_charges':
-      return 'add-charge'
-    case 'generate_statement':
-      return 'generate-statement'
-    default:
-      return ''
-  }
-}
-
-function ActionRow({ action }: { action: HomeAction }) {
-  const t = useTranslations('home')
-  const Icon = ACTION_ICONS[action.actionType] ?? ChevronRight
-  const color = ACTION_COLORS[action.actionType] ?? 'text-primary'
-
-  let title: string
-  let description: string
-
-  switch (action.actionType) {
-    case 'pending_invite':
-      title = action.detailName
-        ? t('pendingInviteNamed', { name: action.detailName })
-        : t('pendingInviteSingular')
-      description = action.propertyName
-      break
-    case 'invite_tenants':
-      title = t('actionInviteTenants')
-      description = action.propertyName
-      break
-    case 'configure_charges':
-      title = t('actionSetUpCharges')
-      description = action.propertyName
-      break
-    case 'generate_statement':
-      title = t('actionGenerateStatement')
-      description = action.propertyName
-      break
-    default:
-      title = ''
-      description = ''
-  }
-
-  const highlight = getActionHash(action)
-
-  return (
-    <Link
-      prefetch
-      href={`/app/p/${action.propertyId}${highlight ? `?highlight=${highlight}` : ''}`}
-      className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
-    >
-      <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary ${color}`}>
-        <Icon className="size-4" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground">{title}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
-      </div>
-      <ChevronRight className="size-4 shrink-0 text-muted-foreground/40" />
-    </Link>
-  )
-}
-
-// =============================================================================
-// Home property card — renders setup or operating state based on data
-// =============================================================================
-
-// =============================================================================
-// Mobile header — inline logo + avatar, hidden on desktop (floating AppBar handles it)
-// =============================================================================
-
-function MobileHeader({ userName, avatarUrl }: { userName?: string; avatarUrl?: string }) {
+export function MobileHeader({ userName, avatarUrl }: { userName?: string; avatarUrl?: string }) {
   return (
     <div className="flex shrink-0 items-center justify-between px-5 pt-4 md:hidden">
       <Wordmark className="h-5" href="/app" />
@@ -291,10 +140,20 @@ function MobileHeader({ userName, avatarUrl }: { userName?: string; avatarUrl?: 
 }
 
 // =============================================================================
-// Home property card
+// Property card list — client (Link click handlers, setup progress rendering)
 // =============================================================================
 
 const CARD_CLASS = 'group block w-full overflow-hidden rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30'
+
+export function PropertyCardList({ properties }: { properties: HomeProperty[] }) {
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      {properties.map((p) => (
+        <HomePropertyCard key={p.propertyId} property={p} />
+      ))}
+    </div>
+  )
+}
 
 function HomePropertyCard({ property: p }: { property: HomeProperty }) {
   const tP = useTranslations('properties')
@@ -374,5 +233,129 @@ function HomePropertyCard({ property: p }: { property: HomeProperty }) {
         ))}
       </div>
     </Link>
+  )
+}
+
+// =============================================================================
+// Action rows — client (Link click handlers)
+// =============================================================================
+
+const ACTION_ICONS: Record<string, React.ElementType> = {
+  invite_tenants: UserPlus,
+  configure_charges: Receipt,
+  pending_invite: Clock,
+  generate_statement: FileText,
+}
+
+const ACTION_COLORS: Record<string, string> = {
+  invite_tenants: 'text-primary',
+  configure_charges: 'text-primary',
+  pending_invite: 'text-amber-500',
+  generate_statement: 'text-primary',
+}
+
+function getActionHash(action: HomeAction): string {
+  switch (action.actionType) {
+    case 'pending_invite':
+      return action.detailId ? `invite-${action.detailId}` : 'tenants'
+    case 'invite_tenants':
+      return 'invite-btn'
+    case 'configure_charges':
+      return 'add-charge'
+    case 'generate_statement':
+      return 'generate-statement'
+    default:
+      return ''
+  }
+}
+
+export function ActionList({ actions }: { actions: HomeAction[] }) {
+  const t = useTranslations('home')
+
+  if (actions.length === 0) return null
+
+  return (
+    <div className="mt-8">
+      <h3 className="mb-3 text-base font-semibold text-foreground">{t('whatsNext')}</h3>
+      <div className="space-y-2">
+        {actions.map((action, i) => (
+          <ActionRow key={`${action.actionType}-${action.propertyId}-${i}`} action={action} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ActionRow({ action }: { action: HomeAction }) {
+  const t = useTranslations('home')
+  const Icon = ACTION_ICONS[action.actionType] ?? ChevronRight
+  const color = ACTION_COLORS[action.actionType] ?? 'text-primary'
+
+  let title: string
+  let description: string
+
+  switch (action.actionType) {
+    case 'pending_invite':
+      title = action.detailName
+        ? t('pendingInviteNamed', { name: action.detailName })
+        : t('pendingInviteSingular')
+      description = action.propertyName
+      break
+    case 'invite_tenants':
+      title = t('actionInviteTenants')
+      description = action.propertyName
+      break
+    case 'configure_charges':
+      title = t('actionSetUpCharges')
+      description = action.propertyName
+      break
+    case 'generate_statement':
+      title = t('actionGenerateStatement')
+      description = action.propertyName
+      break
+    default:
+      title = ''
+      description = ''
+  }
+
+  const highlight = getActionHash(action)
+
+  return (
+    <Link
+      prefetch
+      href={`/app/p/${action.propertyId}${highlight ? `?highlight=${highlight}` : ''}`}
+      className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
+    >
+      <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary ${color}`}>
+        <Icon className="size-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-foreground">{title}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+      </div>
+      <ChevronRight className="size-4 shrink-0 text-muted-foreground/40" />
+    </Link>
+  )
+}
+
+// =============================================================================
+// Bottom bar — client (Link)
+// =============================================================================
+
+export function HomeBottomBar({ isSingleProperty }: { isSingleProperty: boolean }) {
+  const t = useTranslations('home')
+
+  return (
+    <StickyBottomBar>
+      <div className={`mx-auto flex justify-center ${isSingleProperty ? 'max-w-xl' : 'max-w-4xl'}`}>
+        <Link
+          href="/app/p/new"
+          className={buttonVariants({ variant: 'ghost', className: 'h-10 rounded-2xl px-6 text-muted-foreground' })}
+        >
+          <Plus className="size-4" />
+          {t('addProperty')}
+        </Link>
+      </div>
+    </StickyBottomBar>
   )
 }
