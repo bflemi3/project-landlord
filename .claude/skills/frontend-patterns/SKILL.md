@@ -48,13 +48,42 @@ Principle: stable → reactive → side-effectful → behavioral.
 
 **Rules:**
 
-- Server fetchers in `server.ts` call `createClient()` and delegate to `shared.ts` — they run per-request (Supabase requires cookies for auth, which is incompatible with `'use cache'`)
-- Never use `HydrationBoundary` / `dehydrate` / server-side `QueryClient` — streaming replaces this pattern entirely
+- Server fetchers in `server.ts` are wrapped in `React.cache()` for per-request deduplication — multiple components calling the same fetcher in one render share a single DB hit
+- Server fetchers call `createClient()` (Supabase server client with cookies) and delegate to `shared.ts`
 - Never fetch your own API routes from server components — call the data function directly
-- Server actions that mutate data should call `revalidatePath()` or `revalidateTag()` when server-side caching is enabled
-- React Query is for **client-side concerns only**: mutations, optimistic updates, background refetching, back-navigation cache. It is NOT used for server-to-client data handoff
+- Server actions that mutate data must call `revalidatePath()` or `revalidateTag()` to bust caches
 - Prefer `useSuspenseQuery` over `useQuery` — wrap with `<Suspense>` boundaries
 - Strong loading / empty / error / success states
+
+## Client Components with useSuspenseQuery — SSR Hydration
+
+`'use client'` components that use `useSuspenseQuery` are server-side rendered by Next.js. The browser Supabase client (`createBrowserClient`) has no auth during SSR, so queries fail. **Every client component using `useSuspenseQuery` must be wrapped in `HydrationBoundary` with prefetched data from a parent server component.**
+
+**Pattern:** Create a server component wrapper that prefetches the data the client component needs, then dehydrates it:
+
+```tsx
+// server wrapper
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+
+export async function SectionWrapper({ unitId }: { unitId: string }) {
+  const queryClient = new QueryClient()
+  const [unit, charges] = await Promise.all([getUnit(unitId), getUnitCharges(unitId)])
+  queryClient.setQueryData(unitQueryKey(unitId), unit)
+  queryClient.setQueryData(unitChargesQueryKey(unitId), charges)
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ClientSection unitId={unitId} />   {/* useSuspenseQuery finds data in cache */}
+    </HydrationBoundary>
+  )
+}
+```
+
+**Rules:**
+- Only use `HydrationBoundary` for client components with `useSuspenseQuery` — server components don't need it
+- The server wrapper prefetches using `server.ts` functions (authenticated, `React.cache()` deduplicates)
+- The client component's `useSuspenseQuery` finds data in the hydrated cache during SSR — no auth failure
+- This follows TanStack React Query's official Advanced SSR pattern
 
 ## Server vs Client Components
 
