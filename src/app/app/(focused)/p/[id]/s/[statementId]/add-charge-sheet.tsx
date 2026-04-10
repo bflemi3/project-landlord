@@ -20,7 +20,7 @@ import { updateChargeInstance } from '@/data/statements/actions/update-charge-in
 import { removeChargeInstance } from '@/data/statements/actions/remove-charge-instance'
 import { createSourceDocumentRecord } from '@/data/statements/actions/create-source-document-record'
 import { deleteBillDocument } from '@/data/statements/actions/delete-bill-document'
-import { deleteStorageFile } from '@/app/actions/storage/delete-storage-file'
+import { deleteStorageFile } from '@/data/storage/actions/delete-storage-file'
 import { saveChargeAsDefinition } from '@/data/statements/actions/save-charge-definition'
 import { createClient } from '@/lib/supabase/client'
 import { unitChargesQueryKey } from '@/data/units/shared'

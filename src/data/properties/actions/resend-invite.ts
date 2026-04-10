@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { resend, RESEND_FROM } from '@/lib/resend/client'
 import { getEmailTranslations, type EmailLocale } from '@/emails/i18n'
-import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
+import { generateInviteCode } from '@/data/invitations/generate-invite-code'
 import { formatAddress, formatAddressHtml } from '@/lib/address/format-address'
 
 export async function resendInvite(inviteId: string): Promise<{ success: boolean }> {

@@ -33,7 +33,7 @@ vi.mock('@/data/statements/actions/save-charge-definition', () => ({
 vi.mock('@/data/statements/actions/delete-bill-document', () => ({
   deleteBillDocument: vi.fn().mockResolvedValue({ success: true }),
 }))
-vi.mock('@/app/actions/storage/delete-storage-file', () => ({
+vi.mock('@/data/storage/actions/delete-storage-file', () => ({
   deleteStorageFile: vi.fn().mockResolvedValue({ success: true }),
 }))
 vi.mock('@/data/statements/actions/create-source-document-record', () => ({
@@ -196,7 +196,7 @@ describe('AddChargeSheet — bill attachment', () => {
     const clearButton = screen.getByTestId('file-clear-btn')
     fireEvent.click(clearButton)
 
-    const { deleteStorageFile } = await import('@/app/actions/storage/delete-storage-file')
+    const { deleteStorageFile } = await import('@/data/storage/actions/delete-storage-file')
     await waitFor(() => {
       expect(deleteStorageFile).toHaveBeenCalledWith(
         'source-documents',
@@ -217,7 +217,7 @@ describe('AddChargeSheet — bill attachment', () => {
       expect(screen.getByText('bill-1.pdf')).toBeInTheDocument()
     })
 
-    const { deleteStorageFile } = await import('@/app/actions/storage/delete-storage-file')
+    const { deleteStorageFile } = await import('@/data/storage/actions/delete-storage-file')
     const callCountBefore = (deleteStorageFile as ReturnType<typeof vi.fn>).mock.calls.length
 
     // Clear first to get the file input back, then upload a replacement
@@ -305,7 +305,7 @@ describe('AddChargeSheet — bill attachment', () => {
       expect(screen.getByText('orphan-bill.pdf')).toBeInTheDocument()
     })
 
-    const { deleteStorageFile } = await import('@/app/actions/storage/delete-storage-file')
+    const { deleteStorageFile } = await import('@/data/storage/actions/delete-storage-file')
     ;(deleteStorageFile as ReturnType<typeof vi.fn>).mockClear()
 
     unmount()

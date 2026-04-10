@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { resend, RESEND_FROM, RESEND_REPLY_TO } from '@/lib/resend/client'
 import { InviteCode, type InviteSource } from '@/emails/invite-code'
 import { type EmailLocale, getEmailTranslations } from '@/emails/i18n'
-import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
+import { generateInviteCode } from '@/data/invitations/generate-invite-code'
 
 interface SendInviteOptions {
   email: string

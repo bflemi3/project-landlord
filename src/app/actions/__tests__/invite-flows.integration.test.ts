@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } from '@/test/supabase'
 import { createClient } from '@supabase/supabase-js'
 import { inviteTenantCore } from '@/data/properties/actions/invite-tenant'
-import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
+import { generateInviteCode } from '@/data/invitations/generate-invite-code'
 import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 
 // Mock the server-side Supabase client so validateAndFetchInviteContext works in Node tests
