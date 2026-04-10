@@ -200,7 +200,7 @@ Barcode scanning is only used for condo fee setup. Utility charges don't need it
 
 **Condo fee invoice PDF:** Each property has a dedicated ingestion email. We nudge the user to forward their condo statement to that email for record-keeping. Optional — DDA handles amount + due date + payment status without it.
 
-**Water in condos:** When water is bundled into the condo boleto (common in condo buildings), we do not separate it as a distinct expense. The condo fee is treated as one charge: "Condomínio — R$950 — Paid." If the property is a standalone house, water shows up as its own utility provider through the standard ingestion flow.
+**Water:** Water is always presented as its own expense charge during setup, regardless of property type. If the user fills it in, we track it as a standalone utility. If they skip it, that likely signals water is bundled into the condo fee — and that's fine. Either way, no extra questions or toggles needed. The user's choice implicitly tells us how water is handled for that property.
 
 ---
 
