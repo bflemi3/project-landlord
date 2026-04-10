@@ -37,11 +37,55 @@ Principle: stable → reactive → side-effectful → behavioral.
 
 ## Data Fetching
 
-- **TanStack Query** for all client-side data fetching — no raw `useEffect` + `fetch`
+**Domain-organized data layer** — all data fetching code lives in `src/data/<domain>/`:
+
+| File | Purpose |
+|---|---|
+| `shared.ts` | Pure fetch functions, TypeScript types, query keys |
+| `server.ts` | `'use cache'` + `cacheLife()` wrappers for streaming server components |
+| `client.ts` | React Query hooks via `createSuspenseHook` factory |
+| `actions/` | Server actions (mutations with `revalidatePath()` / `revalidateTag()`) |
+
+**Rules:**
+
+- Server fetchers must use `'use cache'` directive + `cacheLife('minutes')` — this is how streaming server components get cached data
+- Never use `HydrationBoundary` / `dehydrate` / server-side `QueryClient` — streaming replaces this pattern entirely
+- Never fetch your own API routes from server components — call the data function directly
+- Server actions that mutate cached data must call `revalidatePath()` or `revalidateTag()` to bust caches
+- React Query is for **client-side concerns only**: mutations, optimistic updates, background refetching, back-navigation cache. It is NOT used for server-to-client data handoff
 - Prefer `useSuspenseQuery` over `useQuery` — wrap with `<Suspense>` boundaries
-- Client components for interactive authenticated flows
-- Server components only where clearly beneficial
 - Strong loading / empty / error / success states
+
+## Server vs Client Components
+
+- **Layouts must have zero async operations** — no `await`, no `createClient()`, no DB queries, no `cookies()`. A blocking layout blocks every child route on every navigation
+- Push `'use client'` down the tree — layouts and pages should be server components, only interactive leaf components should be client
+- Use server components for data fetching with `'use cache'` + `cacheLife()`
+- Client components are for: click handlers, form state, hooks, browser APIs
+- Auth redirects and access checks happen in middleware via JWT claims, never in layouts
+
+## Streaming & Suspense
+
+- Every meaningful route must have a `loading.tsx` returning `<PageLoader />` — this enables partial prefetching
+- Wrap independent data-fetching sections in `<Suspense>` with skeleton fallbacks
+- Skeleton fallbacks must structurally match their resolved content — same card shapes, grid columns, section heights, spacing — to prevent layout shift when content streams in
+- Wrap each streamed section in `<FadeIn>` for smooth appearance as it resolves. No page-level `<FadeIn>` — each section gets its own
+- Static parts of the page (headers, labels, navigation) render immediately outside Suspense
+- `cacheComponents: true` is enabled in `next.config.ts` — server component render results are cached across requests
+
+## Navigation
+
+- Use `next/link` (`<Link>`) for all internal navigation — never `<a href>` tags, which cause full page reloads
+- `loading.tsx` on every route enables partial prefetching for `<Link>` navigations
+- Back/close buttons feel instant due to: static layout (no server roundtrip) + React Query client cache + loading states
+
+## Framer Motion
+
+- Never import `motion/react` directly at the top of a file — always use dynamic import
+- Use CSS animations (`animate-fade-in`, `animate-fade-up`) for simple opacity/transform transitions
+- For `AnimatePresence` (mount/unmount animations): extract to a separate component file, lazy-load with `React.lazy` + top-level `import()` preload
+- Preload pattern: `const promise = import('./component'); const Component = lazy(() => promise.then(...))`
+- The top-level `import()` fires when the parent module is parsed — not on render, not on user interaction. Framer Motion downloads in the background while the user interacts with static UI
 
 ## Form Patterns
 
