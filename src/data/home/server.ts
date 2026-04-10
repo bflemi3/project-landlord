@@ -5,9 +5,10 @@ import type { UserRole, HomeProperty, HomeAction } from './shared'
 
 export const getUserRoles = cache(async (): Promise<UserRole[]> => {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return []
-  return fetchUserRoles(supabase, user.id)
+  const { data } = await supabase.auth.getClaims()
+  const userId = data?.claims?.sub as string | undefined
+  if (!userId) return []
+  return fetchUserRoles(supabase, userId)
 })
 
 export const getHomeProperties = cache(async (): Promise<HomeProperty[]> => {
