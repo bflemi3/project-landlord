@@ -1,9 +1,8 @@
 'use client'
 
 import { useTranslations, useLocale } from 'next-intl'
-import { useStatement } from '@/lib/hooks/use-statement'
+import { useStatement, useMissingCharges } from '@/data/statements/client'
 import { useUnit } from '@/data/units/client'
-import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
 import { formatCurrency } from '@/lib/format-currency'
 import { Separator } from '@/components/ui/separator'
 import { getStatementUrgency, getDaysUntilPublishBy, getPublishByDay } from '@/lib/statement-urgency'

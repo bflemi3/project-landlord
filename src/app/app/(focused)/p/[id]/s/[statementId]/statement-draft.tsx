@@ -15,7 +15,7 @@ import {
   DetailPageLayoutMain,
   DetailPageLayoutSidebar,
 } from '@/components/detail-page-layout'
-import { useStatement } from '@/lib/hooks/use-statement'
+import { useStatement } from '@/data/statements/client'
 import { useUnit } from '@/data/units/client'
 import { useProperty } from '@/data/properties/client'
 import { formatPeriod } from '@/lib/statement-urgency'
@@ -24,8 +24,7 @@ import { SummaryCard } from './sections/summary-card'
 import { CompletenessWarning } from './sections/completeness-warning'
 import { ChargesList, scrollToMissingCharges } from './sections/charges-list'
 import { AddChargeSheet } from './add-charge-sheet'
-import type { ChargeInstance } from '@/lib/queries/statement-charges'
-import type { MissingCharge } from '@/lib/queries/missing-charges'
+import type { ChargeInstance, MissingCharge } from '@/data/statements/shared'
 
 export function StatementDraft({ statementId, propertyId }: { statementId: string; propertyId: string }) {
   const t = useTranslations('propertyDetail')

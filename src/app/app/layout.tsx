@@ -3,7 +3,7 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/server'
-import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
+import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 import { PostHogIdentify } from '@/components/posthog-identify'
 
 export const metadata: Metadata = {

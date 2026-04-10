@@ -13,12 +13,8 @@ import {
   ChargeRowDescription,
   ChargeRowAmount,
 } from '@/components/charge-row'
-import { useStatement } from '@/lib/hooks/use-statement'
-import { useStatementCharges } from '@/lib/hooks/use-statement-charges'
-import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
+import { useStatement, useStatementCharges, useMissingCharges, type ChargeInstance, type MissingCharge } from '@/data/statements/client'
 import { formatCurrency } from '@/lib/format-currency'
-import type { ChargeInstance } from '@/lib/queries/statement-charges'
-import type { MissingCharge } from '@/lib/queries/missing-charges'
 
 const CHARGE_TYPE_ICONS: Record<string, React.ElementType> = {
   rent: Home,

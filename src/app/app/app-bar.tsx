@@ -2,7 +2,7 @@
 
 import { Wordmark } from '@/components/wordmark'
 import { UserMenuTrigger } from '@/components/user-menu'
-import { useProfile } from '@/lib/hooks/use-profile'
+import { useProfile } from '@/data/profiles/client'
 
 /**
  * Desktop-only floating logo + avatar.

@@ -21,7 +21,7 @@ import {
 } from '@/lib/statement-urgency'
 import { formatDays } from '@/lib/format-days'
 import { computeFinancialSummary } from '@/lib/statements/financial-summary'
-import { createStatement } from '@/app/actions/statements/create-statement'
+import { createStatement } from '@/data/statements/actions/create-statement'
 import { unitStatementsQueryKey } from '@/data/units/shared'
 import { homeActionsQueryKey, homePropertiesQueryKey } from '@/data/home/shared'
 

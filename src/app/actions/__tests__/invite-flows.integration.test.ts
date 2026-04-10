@@ -3,7 +3,7 @@ import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } f
 import { createClient } from '@supabase/supabase-js'
 import { inviteTenantCore } from '@/data/properties/actions/invite-tenant'
 import { generateInviteCode } from '@/lib/invitations/generate-invite-code'
-import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
+import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 
 // Mock the server-side Supabase client so validateAndFetchInviteContext works in Node tests
 // (next/headers is not available outside Next.js runtime)

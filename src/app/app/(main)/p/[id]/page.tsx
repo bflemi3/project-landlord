@@ -11,7 +11,7 @@ import {
   fetchUnitInvites, unitInvitesQueryKey,
   fetchUnitStatements, unitStatementsQueryKey,
 } from '@/data/units/shared'
-import { fetchMissingCharges, missingChargesQueryKey } from '@/lib/queries/missing-charges'
+import { fetchMissingCharges, missingChargesQueryKey } from '@/data/statements/shared'
 import { PropertyDetail } from './property-detail'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {

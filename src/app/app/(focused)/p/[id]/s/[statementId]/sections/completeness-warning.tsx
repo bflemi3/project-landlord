@@ -1,8 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { useStatement } from '@/lib/hooks/use-statement'
-import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
+import { useStatement, useMissingCharges } from '@/data/statements/client'
 
 export function CompletenessWarning({
   statementId,

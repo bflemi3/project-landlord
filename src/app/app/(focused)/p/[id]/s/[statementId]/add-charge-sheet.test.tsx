@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/re
 import { NextIntlClientProvider } from 'next-intl'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AddChargeSheet } from './add-charge-sheet'
-import type { ChargeInstance } from '@/lib/queries/statement-charges'
+import type { ChargeInstance } from '@/data/statements/shared'
 
 // Mock ResponsiveModal to avoid portal/dialog complexity in tests
 vi.mock('@/components/responsive-modal', () => ({
@@ -18,25 +18,25 @@ vi.mock('motion/react', () => ({
 }))
 
 // Mock server actions
-vi.mock('@/app/actions/statements/update-charge-instance', () => ({
+vi.mock('@/data/statements/actions/update-charge-instance', () => ({
   updateChargeInstance: vi.fn().mockResolvedValue({ success: true }),
 }))
-vi.mock('@/app/actions/statements/remove-charge-instance', () => ({
+vi.mock('@/data/statements/actions/remove-charge-instance', () => ({
   removeChargeInstance: vi.fn().mockResolvedValue({ success: true }),
 }))
-vi.mock('@/app/actions/statements/add-charge', () => ({
+vi.mock('@/data/statements/actions/add-charge', () => ({
   addChargeToStatement: vi.fn().mockResolvedValue({ success: true }),
 }))
-vi.mock('@/app/actions/statements/save-charge-definition', () => ({
+vi.mock('@/data/statements/actions/save-charge-definition', () => ({
   saveChargeAsDefinition: vi.fn().mockResolvedValue({ success: true }),
 }))
-vi.mock('@/app/actions/statements/delete-bill-document', () => ({
+vi.mock('@/data/statements/actions/delete-bill-document', () => ({
   deleteBillDocument: vi.fn().mockResolvedValue({ success: true }),
 }))
 vi.mock('@/app/actions/storage/delete-storage-file', () => ({
   deleteStorageFile: vi.fn().mockResolvedValue({ success: true }),
 }))
-vi.mock('@/app/actions/statements/create-source-document-record', () => ({
+vi.mock('@/data/statements/actions/create-source-document-record', () => ({
   createSourceDocumentRecord: vi.fn().mockResolvedValue({ documentId: 'new-doc-id' }),
 }))
 vi.mock('@/lib/storage/upload-file', () => ({
@@ -157,7 +157,7 @@ describe('AddChargeSheet — bill attachment', () => {
     const clearButton = screen.getByTestId('file-clear-btn')
     fireEvent.click(clearButton)
 
-    const { deleteBillDocument } = await import('@/app/actions/statements/delete-bill-document')
+    const { deleteBillDocument } = await import('@/data/statements/actions/delete-bill-document')
     // Should NOT be called yet — deletion happens at save time
     expect(deleteBillDocument).not.toHaveBeenCalled()
 
@@ -261,7 +261,7 @@ describe('AddChargeSheet — bill attachment', () => {
     const saveButton = screen.getByText('Save changes')
     fireEvent.click(saveButton)
 
-    const { deleteBillDocument } = await import('@/app/actions/statements/delete-bill-document')
+    const { deleteBillDocument } = await import('@/data/statements/actions/delete-bill-document')
     await waitFor(() => {
       expect(deleteBillDocument).toHaveBeenCalledWith('doc-1')
     })
@@ -283,7 +283,7 @@ describe('AddChargeSheet — bill attachment', () => {
       expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
     })
 
-    const { deleteBillDocument } = await import('@/app/actions/statements/delete-bill-document')
+    const { deleteBillDocument } = await import('@/data/statements/actions/delete-bill-document')
     ;(deleteBillDocument as ReturnType<typeof vi.fn>).mockClear()
 
     // Close without saving (click Cancel)

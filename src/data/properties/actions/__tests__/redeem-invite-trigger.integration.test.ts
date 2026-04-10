@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { createTestUser, cleanupTestUser, getAdminClient } from '@/test/supabase'
-import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
+import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 describe('redeem_invite_code trigger', () => {

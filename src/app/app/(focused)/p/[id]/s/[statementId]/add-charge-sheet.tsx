@@ -15,20 +15,22 @@ import { cn } from '@/lib/utils'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { ChargeNameInput, AmountInput, PayerToggle, SplitSlider } from '@/components/charge-form-fields'
 import { FileUpload } from '@/components/file-upload'
-import { addChargeToStatement } from '@/app/actions/statements/add-charge'
-import { updateChargeInstance } from '@/app/actions/statements/update-charge-instance'
-import { removeChargeInstance } from '@/app/actions/statements/remove-charge-instance'
-import { createSourceDocumentRecord } from '@/app/actions/statements/create-source-document-record'
-import { deleteBillDocument } from '@/app/actions/statements/delete-bill-document'
+import { addChargeToStatement } from '@/data/statements/actions/add-charge'
+import { updateChargeInstance } from '@/data/statements/actions/update-charge-instance'
+import { removeChargeInstance } from '@/data/statements/actions/remove-charge-instance'
+import { createSourceDocumentRecord } from '@/data/statements/actions/create-source-document-record'
+import { deleteBillDocument } from '@/data/statements/actions/delete-bill-document'
 import { deleteStorageFile } from '@/app/actions/storage/delete-storage-file'
-import { saveChargeAsDefinition } from '@/app/actions/statements/save-charge-definition'
+import { saveChargeAsDefinition } from '@/data/statements/actions/save-charge-definition'
 import { createClient } from '@/lib/supabase/client'
 import { unitChargesQueryKey } from '@/data/units/shared'
-import { statementQueryKey } from '@/lib/queries/statement'
-import { statementChargesQueryKey } from '@/lib/queries/statement-charges'
-import { missingChargesQueryKey } from '@/lib/queries/missing-charges'
-import type { ChargeInstance } from '@/lib/queries/statement-charges'
-import type { MissingCharge } from '@/lib/queries/missing-charges'
+import {
+  statementQueryKey,
+  statementChargesQueryKey,
+  missingChargesQueryKey,
+  type ChargeInstance,
+  type MissingCharge,
+} from '@/data/statements/shared'
 import type { UploadFileResult } from '@/lib/storage/upload-file'
 
 const CURRENCY_SYMBOLS: Record<string, string> = { BRL: 'R$', USD: '$', EUR: '€' }
