@@ -25,7 +25,6 @@ function parseReleaseNotes(version: string): string {
 const releaseNotes = parseReleaseNotes(appVersion)
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
   devIndicators: false,
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,

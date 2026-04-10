@@ -1,7 +1,36 @@
+import {
+  DetailPageLayoutBody,
+  DetailPageLayoutMain,
+  DetailPageLayoutSidebar,
+} from '@/components/detail-page-layout'
+
 /**
  * Skeleton fallbacks for Suspense boundaries on the property detail page.
  * Each skeleton structurally matches its resolved content to prevent layout shift.
  */
+
+/** Full body skeleton — shown while PropertyBody streams (awaiting getProperty) */
+export function PropertyDetailSkeleton() {
+  return (
+    <DetailPageLayoutBody>
+      <DetailPageLayoutMain>
+        <BillingSummarySkeleton />
+        <UnitSectionSkeleton />
+      </DetailPageLayoutMain>
+      <DetailPageLayoutSidebar>
+        <SetupProgressSkeleton />
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80">
+          <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+          <div className="mt-3 space-y-2">
+            <div className="h-4 w-full animate-pulse rounded bg-muted" />
+            <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+          </div>
+        </div>
+        <TenantsSkeleton />
+      </DetailPageLayoutSidebar>
+    </DetailPageLayoutBody>
+  )
+}
 
 export function BillingSummarySkeleton() {
   return (

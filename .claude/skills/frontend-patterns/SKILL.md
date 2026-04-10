@@ -42,16 +42,16 @@ Principle: stable → reactive → side-effectful → behavioral.
 | File | Purpose |
 |---|---|
 | `shared.ts` | Pure fetch functions, TypeScript types, query keys |
-| `server.ts` | `'use cache'` + `cacheLife()` wrappers for streaming server components |
+| `server.ts` | Server-side fetch wrappers for streaming server components |
 | `client.ts` | React Query hooks via `createSuspenseHook` factory |
 | `actions/` | Server actions (mutations with `revalidatePath()` / `revalidateTag()`) |
 
 **Rules:**
 
-- Server fetchers must use `'use cache'` directive + `cacheLife('minutes')` — this is how streaming server components get cached data
+- Server fetchers in `server.ts` call `createClient()` and delegate to `shared.ts` — they run per-request (Supabase requires cookies for auth, which is incompatible with `'use cache'`)
 - Never use `HydrationBoundary` / `dehydrate` / server-side `QueryClient` — streaming replaces this pattern entirely
 - Never fetch your own API routes from server components — call the data function directly
-- Server actions that mutate cached data must call `revalidatePath()` or `revalidateTag()` to bust caches
+- Server actions that mutate data should call `revalidatePath()` or `revalidateTag()` when server-side caching is enabled
 - React Query is for **client-side concerns only**: mutations, optimistic updates, background refetching, back-navigation cache. It is NOT used for server-to-client data handoff
 - Prefer `useSuspenseQuery` over `useQuery` — wrap with `<Suspense>` boundaries
 - Strong loading / empty / error / success states
@@ -60,7 +60,7 @@ Principle: stable → reactive → side-effectful → behavioral.
 
 - **Layouts must have zero async operations** — no `await`, no `createClient()`, no DB queries, no `cookies()`. A blocking layout blocks every child route on every navigation
 - Push `'use client'` down the tree — layouts and pages should be server components, only interactive leaf components should be client
-- Use server components for data fetching with `'use cache'` + `cacheLife()`
+- Use server components for data fetching — they call server.ts functions that create a Supabase client per-request
 - Client components are for: click handlers, form state, hooks, browser APIs
 - Auth redirects and access checks happen in middleware via JWT claims, never in layouts
 
@@ -71,7 +71,7 @@ Principle: stable → reactive → side-effectful → behavioral.
 - Skeleton fallbacks must structurally match their resolved content — same card shapes, grid columns, section heights, spacing — to prevent layout shift when content streams in
 - Wrap each streamed section in `<FadeIn>` for smooth appearance as it resolves. No page-level `<FadeIn>` — each section gets its own
 - Static parts of the page (headers, labels, navigation) render immediately outside Suspense
-- `cacheComponents: true` is enabled in `next.config.ts` — server component render results are cached across requests
+- Server component streaming provides fast initial paint — React Query handles client-side caching for back-navigation and refetching
 
 ## Navigation
 
