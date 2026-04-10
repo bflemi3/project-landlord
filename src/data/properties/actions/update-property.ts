@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 
@@ -44,6 +45,7 @@ export async function updatePropertyCore(
     })
     .eq('id', input.propertyId)
 
+  if (!error) revalidatePath(`/app/p/${input.propertyId}`)
   return { success: !error }
 }
 

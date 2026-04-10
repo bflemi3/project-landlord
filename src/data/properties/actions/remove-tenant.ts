@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 export async function removeTenantCore(
@@ -16,7 +17,11 @@ export async function removeTenantCore(
   return { success: !error }
 }
 
-export async function removeTenant(membershipId: string): Promise<{ success: boolean }> {
+export async function removeTenant(membershipId: string, propertyId?: string): Promise<{ success: boolean }> {
   const supabase = await createClient()
-  return removeTenantCore(supabase, membershipId)
+  const result = await removeTenantCore(supabase, membershipId)
+  if (result.success) {
+    revalidatePath(propertyId ? `/app/p/${propertyId}` : '/app', propertyId ? undefined : 'layout')
+  }
+  return result
 }

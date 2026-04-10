@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
@@ -98,7 +99,12 @@ export async function createChargesCore(
 export async function createCharges(
   unitId: string,
   charges: ChargeInput[],
+  propertyId?: string,
 ): Promise<CreateChargesResult> {
   const supabase = await createClient()
-  return createChargesCore(supabase, unitId, charges)
+  const result = await createChargesCore(supabase, unitId, charges)
+  if (result.success) {
+    revalidatePath(propertyId ? `/app/p/${propertyId}` : '/app', propertyId ? undefined : 'layout')
+  }
+  return result
 }

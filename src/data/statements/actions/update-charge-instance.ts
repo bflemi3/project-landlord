@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { recalculateStatementTotal } from '@/lib/statements/recalculate-total'
 
@@ -43,7 +44,11 @@ export async function updateChargeInstanceCore(
   return { success: true }
 }
 
-export async function updateChargeInstance(input: UpdateChargeInstanceInput): Promise<{ success: boolean }> {
+export async function updateChargeInstance(input: UpdateChargeInstanceInput & { propertyId?: string }): Promise<{ success: boolean }> {
   const supabase = await createClient()
-  return updateChargeInstanceCore(supabase, input)
+  const result = await updateChargeInstanceCore(supabase, input)
+  if (result.success) {
+    revalidatePath(input.propertyId ? `/app/p/${input.propertyId}` : '/app', input.propertyId ? undefined : 'layout')
+  }
+  return result
 }

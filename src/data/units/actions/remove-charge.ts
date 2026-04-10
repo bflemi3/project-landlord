@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 export async function removeChargeCore(
@@ -16,7 +17,11 @@ export async function removeChargeCore(
   return { success: !error }
 }
 
-export async function removeCharge(chargeId: string): Promise<{ success: boolean }> {
+export async function removeCharge(chargeId: string, propertyId?: string): Promise<{ success: boolean }> {
   const supabase = await createClient()
-  return removeChargeCore(supabase, chargeId)
+  const result = await removeChargeCore(supabase, chargeId)
+  if (result.success) {
+    revalidatePath(propertyId ? `/app/p/${propertyId}` : '/app', propertyId ? undefined : 'layout')
+  }
+  return result
 }

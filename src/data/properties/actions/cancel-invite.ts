@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 export async function cancelInviteCore(
@@ -16,7 +17,11 @@ export async function cancelInviteCore(
   return { success: !error }
 }
 
-export async function cancelInvite(inviteId: string): Promise<{ success: boolean }> {
+export async function cancelInvite(inviteId: string, propertyId?: string): Promise<{ success: boolean }> {
   const supabase = await createClient()
-  return cancelInviteCore(supabase, inviteId)
+  const result = await cancelInviteCore(supabase, inviteId)
+  if (result.success) {
+    revalidatePath(propertyId ? `/app/p/${propertyId}` : '/app', propertyId ? undefined : 'layout')
+  }
+  return result
 }

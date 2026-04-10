@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { recalculateStatementTotal } from '@/lib/statements/recalculate-total'
 import { parseSplit, type AllocationRow } from '@/lib/split-allocations'
@@ -90,7 +91,14 @@ export async function addChargeToStatementCore(
   return { success: true, chargeInstanceId: instance.id }
 }
 
-export async function addChargeToStatement(input: AddChargeInput): Promise<AddChargeResult> {
+export async function addChargeToStatement(input: AddChargeInput & { propertyId?: string }): Promise<AddChargeResult> {
   const supabase = await createClient()
-  return addChargeToStatementCore(supabase, input)
+  const result = await addChargeToStatementCore(supabase, input)
+  if (result.success) {
+    revalidatePath(
+      input.propertyId ? `/app/p/${input.propertyId}/s/${input.statementId}` : '/app',
+      input.propertyId ? undefined : 'layout',
+    )
+  }
+  return result
 }

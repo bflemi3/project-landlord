@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { generateAndPersistInstancesCore } from './generate-instances'
 import { recalculateStatementTotal } from '@/lib/statements/recalculate-total'
@@ -79,7 +80,15 @@ export async function createStatement(
   unitId: string,
   periodYear: number,
   periodMonth: number,
+  propertyId?: string,
 ): Promise<CreateStatementResult> {
   const supabase = await createClient()
-  return createStatementCore(supabase, unitId, periodYear, periodMonth)
+  const result = await createStatementCore(supabase, unitId, periodYear, periodMonth)
+  if (result.success && result.statementId) {
+    revalidatePath(
+      propertyId ? `/app/p/${propertyId}/s/${result.statementId}` : '/app',
+      propertyId ? undefined : 'layout',
+    )
+  }
+  return result
 }

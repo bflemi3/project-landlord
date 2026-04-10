@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import {
   generateChargeInstances,
@@ -118,7 +119,15 @@ export async function generateAndPersistInstances(
   statementId: string,
   periodYear: number,
   periodMonth: number,
+  propertyId?: string,
 ): Promise<GenerateResult> {
   const supabase = await createClient()
-  return generateAndPersistInstancesCore(supabase, unitId, statementId, periodYear, periodMonth)
+  const result = await generateAndPersistInstancesCore(supabase, unitId, statementId, periodYear, periodMonth)
+  if (result.success) {
+    revalidatePath(
+      propertyId ? `/app/p/${propertyId}/s/${statementId}` : '/app',
+      propertyId ? undefined : 'layout',
+    )
+  }
+  return result
 }

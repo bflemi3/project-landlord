@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import { validateProperty, parsePropertyFormData } from './validate-property'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 
@@ -62,5 +63,6 @@ export async function createProperty(
   }
 
   const result = data as { property_id: string; unit_id: string }
+  revalidatePath('/app')
   return { success: true, propertyId: result.property_id, unitId: result.unit_id }
 }

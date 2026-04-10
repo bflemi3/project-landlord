@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { resend, RESEND_FROM } from '@/lib/resend/client'
 import { getEmailTranslations, type EmailLocale } from '@/emails/i18n'
@@ -161,6 +162,7 @@ export async function inviteTenant(
     // Email failed but invitation was created — don't fail the action
   }
 
+  revalidatePath(`/app/p/${propertyId}`)
   return { success: true }
 }
 

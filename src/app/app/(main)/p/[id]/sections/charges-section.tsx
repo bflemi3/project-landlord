@@ -65,6 +65,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         landlordPercent: config.landlordPercent,
         tenantFixedMinor: config.tenantFixedMinor,
         landlordFixedMinor: config.landlordFixedMinor,
+        propertyId,
       })
     } else {
       // Create new
@@ -78,7 +79,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         landlordPercent: config.landlordPercent,
         tenantFixedMinor: config.tenantFixedMinor,
         landlordFixedMinor: config.landlordFixedMinor,
-      }])
+      }], propertyId)
 
       posthog.capture('charge_definition_created', {
         property_id: propertyId,
@@ -94,7 +95,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
 
   async function handleToggleActive() {
     if (!editingCharge) return
-    await toggleChargeActive(editingCharge.id, !editingCharge.isActive)
+    await toggleChargeActive(editingCharge.id, !editingCharge.isActive, propertyId)
     setSheetOpen(false)
     setEditingCharge(null)
     queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
@@ -102,7 +103,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
 
   async function handleRemove() {
     if (!editingCharge) return
-    await removeCharge(editingCharge.id)
+    await removeCharge(editingCharge.id, propertyId)
     setSheetOpen(false)
     setEditingCharge(null)
     queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })

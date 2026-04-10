@@ -48,7 +48,7 @@ export function StatementSection({ unitId, propertyId }: { unitId: string; prope
 
   function handleGenerate() {
     startTransition(async () => {
-      const result = await createStatement(unitId, currentYear, currentMonth)
+      const result = await createStatement(unitId, currentYear, currentMonth, propertyId)
       if (result.success && result.statementId) {
         queryClient.invalidateQueries({ queryKey: unitStatementsQueryKey(unitId) })
         queryClient.invalidateQueries({ queryKey: homeActionsQueryKey() })

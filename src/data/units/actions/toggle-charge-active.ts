@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 export async function toggleChargeActiveCore(
@@ -19,7 +20,12 @@ export async function toggleChargeActiveCore(
 export async function toggleChargeActive(
   chargeId: string,
   isActive: boolean,
+  propertyId?: string,
 ): Promise<{ success: boolean }> {
   const supabase = await createClient()
-  return toggleChargeActiveCore(supabase, chargeId, isActive)
+  const result = await toggleChargeActiveCore(supabase, chargeId, isActive)
+  if (result.success) {
+    revalidatePath(propertyId ? `/app/p/${propertyId}` : '/app', propertyId ? undefined : 'layout')
+  }
+  return result
 }

@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { recalculateStatementTotal } from '@/lib/statements/recalculate-total'
 
@@ -34,7 +35,11 @@ export async function removeChargeInstanceCore(
   return { success: true }
 }
 
-export async function removeChargeInstance(instanceId: string): Promise<{ success: boolean; error?: string }> {
+export async function removeChargeInstance(instanceId: string, propertyId?: string): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
-  return removeChargeInstanceCore(supabase, instanceId)
+  const result = await removeChargeInstanceCore(supabase, instanceId)
+  if (result.success) {
+    revalidatePath(propertyId ? `/app/p/${propertyId}` : '/app', propertyId ? undefined : 'layout')
+  }
+  return result
 }
