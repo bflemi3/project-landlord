@@ -4,7 +4,7 @@ import { DetailPageLayoutSidebar } from '@/components/detail-page-layout'
 import { getProperty } from '@/data/properties/server'
 import { SetupProgressSection } from './sections/setup-progress-section'
 import { PropertyInfoSection } from './sections/property-info-section'
-import { TenantsSection } from './sections/tenants-section'
+import { TenantsSectionWrapper } from './sections/tenants-section-wrapper'
 import {
   SetupProgressSkeleton,
   TenantsSkeleton,
@@ -35,7 +35,7 @@ export async function Sidebar({ propertyId }: { propertyId: string }) {
       {property.unitIds.map((unitId) => (
         <Suspense key={unitId} fallback={<TenantsSkeleton />}>
           <FadeIn>
-            <TenantsSection propertyId={propertyId} unitId={unitId} />
+            <TenantsSectionWrapper propertyId={propertyId} unitId={unitId} />
           </FadeIn>
         </Suspense>
       ))}
