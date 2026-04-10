@@ -4,10 +4,11 @@ import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 export type UserRole = 'landlord' | 'tenant'
 
-export async function fetchUserRoles(supabase: TypedSupabaseClient): Promise<UserRole[]> {
+export async function fetchUserRoles(supabase: TypedSupabaseClient, userId: string): Promise<UserRole[]> {
   const { data, error } = await supabase
     .from('memberships')
     .select('role')
+    .eq('user_id', userId)
     .is('deleted_at', null)
 
   if (error || !data) return []
