@@ -11,7 +11,7 @@ import { HighlightWrapper } from './highlight-wrapper'
 import { PropertyHeader } from './sections/property-header'
 import { MainColumn } from './main-column'
 import { Sidebar } from './sidebar'
-import { HeaderSkeleton } from './sections/skeletons'
+import { HeaderSkeleton, MainColumnSkeleton, SidebarSkeleton } from './sections/skeletons'
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
@@ -46,8 +46,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         </DetailPageLayoutHeader>
 
         <DetailPageLayoutBody>
-          <MainColumn propertyId={id} />
-          <Sidebar propertyId={id} />
+          <Suspense fallback={<MainColumnSkeleton />}>
+            <MainColumn propertyId={id} />
+          </Suspense>
+          <Suspense fallback={<SidebarSkeleton />}>
+            <Sidebar propertyId={id} />
+          </Suspense>
         </DetailPageLayoutBody>
       </DetailPageLayout>
     </HighlightWrapper>
