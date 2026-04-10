@@ -1,9 +1,7 @@
-'use client'
+import { getProperty } from '@/data/properties/server'
 
-import { useProperty } from '@/data/properties/client'
-
-export function PropertyHeader({ propertyId }: { propertyId: string }) {
-  const { data: property } = useProperty(propertyId)
+export async function PropertyHeader({ propertyId }: { propertyId: string }) {
+  const property = await getProperty(propertyId)
 
   const address = [property.street, property.number].filter(Boolean).join(', ')
   const cityState = [property.city, property.state].filter(Boolean).join(', ')

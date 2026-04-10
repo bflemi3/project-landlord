@@ -1,12 +1,12 @@
-'use client'
-
-import { useProperty } from '@/data/properties/client'
-import { useUnit } from '@/data/units/client'
+import { getProperty } from '@/data/properties/server'
+import { getUnit } from '@/data/units/server'
 import { ChargesSection } from './charges-section'
 
-export function UnitSection({ unitId, propertyId }: { unitId: string; propertyId: string }) {
-  const { data: property } = useProperty(propertyId)
-  const { data: unit } = useUnit(unitId)
+export async function UnitSection({ unitId, propertyId }: { unitId: string; propertyId: string }) {
+  const [property, unit] = await Promise.all([
+    getProperty(propertyId),
+    getUnit(unitId),
+  ])
   const showUnitHeader = property.unitIds.length > 1
 
   return (

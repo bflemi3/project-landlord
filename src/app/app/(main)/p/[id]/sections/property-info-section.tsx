@@ -1,23 +1,11 @@
-'use client'
+import { getTranslations } from 'next-intl/server'
+import { MapPin } from 'lucide-react'
+import { getProperty } from '@/data/properties/server'
+import { PropertyInfoActions } from './property-info-actions'
 
-import { useState } from 'react'
-import { useTranslations } from 'next-intl'
-import { useQueryClient } from '@tanstack/react-query'
-import { Pencil, MapPin } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { ResponsiveModal } from '@/components/responsive-modal'
-import { PropertyForm, type PropertyFormValues } from '@/app/app/(focused)/p/new/steps/property-form'
-import { updateProperty } from '@/data/properties/actions/update-property'
-import { useProperty } from '@/data/properties/client'
-import { propertyQueryKey } from '@/data/properties/shared'
-
-export function PropertyInfoSection({ propertyId }: { propertyId: string }) {
-  const t = useTranslations('propertyDetail')
-  const queryClient = useQueryClient()
-  const { data: property } = useProperty(propertyId)
-  const [editOpen, setEditOpen] = useState(false)
-  const [saving, setSaving] = useState(false)
-
+export async function PropertyInfoSection({ propertyId }: { propertyId: string }) {
+  const t = await getTranslations('propertyDetail')
+  const property = await getProperty(propertyId)
 
   const addressLines = [
     [property.street, property.number].filter(Boolean).join(', '),
@@ -27,33 +15,11 @@ export function PropertyInfoSection({ propertyId }: { propertyId: string }) {
     property.postalCode,
   ].filter(Boolean)
 
-  async function handleSave(values: PropertyFormValues) {
-    setSaving(true)
-    await updateProperty({
-      propertyId,
-      name: values.name,
-      street: values.street,
-      number: values.number,
-      complement: values.complement,
-      neighborhood: values.neighborhood,
-      city: values.city,
-      state: values.state,
-      postalCode: values.postal_code,
-      countryCode: values.country_code,
-    })
-    queryClient.invalidateQueries({ queryKey: propertyQueryKey(propertyId) })
-    setSaving(false)
-    setEditOpen(false)
-  }
-
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold text-foreground">{t('propertyInfo')}</h2>
-        <Button variant="ghost" size="sm" className="text-muted-foreground" onClick={() => setEditOpen(true)}>
-          <Pencil className="size-3.5" />
-          {t('edit')}
-        </Button>
+        <PropertyInfoActions propertyId={propertyId} property={property} />
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-5 dark:border-zinc-700 dark:bg-zinc-800/50">
@@ -66,37 +32,6 @@ export function PropertyInfoSection({ propertyId }: { propertyId: string }) {
           </div>
         </div>
       </div>
-
-      <ResponsiveModal
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        className="sm:max-w-lg"
-      >
-        <PropertyForm
-          key={editOpen ? 'open' : 'closed'}
-          onValidated={handleSave}
-          excludePropertyId={propertyId}
-          initialValues={{
-            name: property.name,
-            postal_code: property.postalCode ?? '',
-            street: property.street ?? '',
-            number: property.number ?? '',
-            complement: property.complement ?? '',
-            neighborhood: property.neighborhood ?? '',
-            city: property.city ?? '',
-            state: property.state ?? '',
-            country_code: property.countryCode,
-          }}
-        >
-          <PropertyForm.Name className="mb-4" />
-          <ResponsiveModal.Content className="px-0.5">
-            <PropertyForm.Content />
-          </ResponsiveModal.Content>
-          <ResponsiveModal.Footer>
-            <PropertyForm.Footer label={t('saveChanges')} />
-          </ResponsiveModal.Footer>
-        </PropertyForm>
-      </ResponsiveModal>
     </div>
   )
 }

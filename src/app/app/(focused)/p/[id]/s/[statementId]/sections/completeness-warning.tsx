@@ -1,18 +1,11 @@
-'use client'
+import { getTranslations } from 'next-intl/server'
+import { getStatement, getMissingCharges } from '@/data/statements/server'
+import { ReviewButton } from './completeness-review-button'
 
-import { useTranslations } from 'next-intl'
-import { useStatement, useMissingCharges } from '@/data/statements/client'
-
-export function CompletenessWarning({
-  statementId,
-  onReview,
-}: {
-  statementId: string
-  onReview?: () => void
-}) {
-  const t = useTranslations('propertyDetail')
-  const { data: statement } = useStatement(statementId)
-  const { data: missingCharges } = useMissingCharges(
+export async function CompletenessWarning({ statementId }: { statementId: string }) {
+  const t = await getTranslations('propertyDetail')
+  const statement = await getStatement(statementId)
+  const missingCharges = await getMissingCharges(
     statement.unitId, statementId, statement.periodYear, statement.periodMonth,
   )
 
@@ -29,14 +22,7 @@ export function CompletenessWarning({
             {t('completenessHint')}
           </p>
         </div>
-        {onReview && (
-          <button
-            onClick={onReview}
-            className="shrink-0 text-xs font-medium text-amber-700 underline decoration-amber-500/30 underline-offset-2 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300"
-          >
-            {t('review')}
-          </button>
-        )}
+        <ReviewButton label={t('review')} />
       </div>
     </div>
   )
