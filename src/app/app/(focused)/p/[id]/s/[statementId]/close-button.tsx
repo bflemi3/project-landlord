@@ -1,18 +1,15 @@
-'use client'
-
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { buttonVariants } from '@/components/ui/button-variants'
 
 export function CloseButton({ propertyId }: { propertyId: string }) {
-  const router = useRouter()
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => router.push(`/app/p/${propertyId}`)}
+    <Link
+      href={`/app/p/${propertyId}`}
+      prefetch
+      className={buttonVariants({ variant: 'ghost', size: 'icon' })}
     >
       <X />
-    </Button>
+    </Link>
   )
 }

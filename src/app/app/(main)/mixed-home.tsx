@@ -1,6 +1,5 @@
-import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
-import { FadeIn } from '@/components/fade-in'
+import { SuspenseFadeIn } from '@/components/suspense-fade-in'
 import { getProfile } from '@/data/profiles/server'
 import { GreetingSkeleton } from './home-skeletons'
 
@@ -31,11 +30,9 @@ export function MixedHome() {
     <div className="flex h-full flex-col">
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-4 md:pt-14">
         <div className="w-full max-w-2xl">
-          <Suspense fallback={<GreetingSkeleton />}>
-            <FadeIn>
-              <MixedGreeting />
-            </FadeIn>
-          </Suspense>
+          <SuspenseFadeIn fallback={<GreetingSkeleton />}>
+            <MixedGreeting />
+          </SuspenseFadeIn>
         </div>
       </div>
     </div>

@@ -1,5 +1,4 @@
-import { Suspense } from 'react'
-import { FadeIn } from '@/components/fade-in'
+import { SuspenseFadeIn } from '@/components/suspense-fade-in'
 import { getTranslations } from 'next-intl/server'
 import { getProfile } from '@/data/profiles/server'
 import { EmptyState } from './home-content'
@@ -29,11 +28,9 @@ export function EmptyHome() {
   return (
     <div className="flex h-full flex-col">
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-4 md:pt-14">
-        <Suspense fallback={<GreetingSkeleton />}>
-          <FadeIn>
-            <EmptyGreeting />
-          </FadeIn>
-        </Suspense>
+        <SuspenseFadeIn fallback={<GreetingSkeleton />}>
+          <EmptyGreeting />
+        </SuspenseFadeIn>
       </div>
     </div>
   )

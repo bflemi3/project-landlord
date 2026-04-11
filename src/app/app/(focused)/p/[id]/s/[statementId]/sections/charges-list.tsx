@@ -21,6 +21,11 @@ export async function ChargesList({ statementId }: { statementId: string }) {
       chargesCount={charges.length}
       totalCount={charges.length + missingCharges.length}
       hasMissing={missingCharges.length > 0}
+      statementId={statementId}
+      unitId={statement.unitId}
+      periodYear={statement.periodYear}
+      periodMonth={statement.periodMonth}
+      currency={statement.currency}
     />
   )
 }

@@ -1,5 +1,4 @@
-import { Suspense } from 'react'
-import { FadeIn } from '@/components/fade-in'
+import { SuspenseFadeIn } from '@/components/suspense-fade-in'
 import { LandlordGreeting } from './landlord-greeting'
 import { PropertyCardList } from './property-card-list'
 import { ActionsSection } from './actions-section'
@@ -17,23 +16,17 @@ export function LandlordHome() {
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 md:pt-6">
         <div className="mx-auto max-w-4xl">
-          <Suspense fallback={<GreetingSkeleton />}>
-            <FadeIn>
-              <LandlordGreeting />
-            </FadeIn>
-          </Suspense>
+          <SuspenseFadeIn fallback={<GreetingSkeleton />}>
+            <LandlordGreeting />
+          </SuspenseFadeIn>
 
-          <Suspense fallback={<CardsSkeleton />}>
-            <FadeIn>
-              <PropertyCardList />
-            </FadeIn>
-          </Suspense>
+          <SuspenseFadeIn fallback={<CardsSkeleton />}>
+            <PropertyCardList />
+          </SuspenseFadeIn>
 
-          <Suspense fallback={<ActionsSkeleton />}>
-            <FadeIn>
-              <ActionsSection />
-            </FadeIn>
-          </Suspense>
+          <SuspenseFadeIn fallback={<ActionsSkeleton />}>
+            <ActionsSection />
+          </SuspenseFadeIn>
         </div>
       </div>
 

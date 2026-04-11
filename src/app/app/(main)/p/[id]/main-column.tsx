@@ -1,5 +1,4 @@
-import { Suspense } from 'react'
-import { FadeIn } from '@/components/fade-in'
+import { SuspenseFadeIn } from '@/components/suspense-fade-in'
 import { DetailPageLayoutMain } from '@/components/detail-page-layout'
 import { getProperty } from '@/data/properties/server'
 import { BillingSummaryCard } from './sections/billing-summary-card'
@@ -13,7 +12,7 @@ import {
 
 /**
  * Main column — calls cached getProperty() for unitIds (instant if header already fetched),
- * then renders per-unit sections each in their own Suspense + FadeIn.
+ * then renders per-unit sections each streaming independently.
  */
 export async function MainColumn({ propertyId }: { propertyId: string }) {
   const property = await getProperty(propertyId)
@@ -21,28 +20,22 @@ export async function MainColumn({ propertyId }: { propertyId: string }) {
   return (
     <DetailPageLayoutMain>
       {property.unitIds.map((unitId) => (
-        <Suspense key={`billing-${unitId}`} fallback={<BillingSummarySkeleton />}>
-          <FadeIn>
-            <BillingSummaryCard unitId={unitId} propertyId={propertyId} />
-          </FadeIn>
-        </Suspense>
+        <SuspenseFadeIn key={`billing-${unitId}`} fallback={<BillingSummarySkeleton />}>
+          <BillingSummaryCard unitId={unitId} propertyId={propertyId} />
+        </SuspenseFadeIn>
       ))}
 
       {/* Mobile only: onboarding progress between summary and charges */}
       <div className="md:hidden">
-        <Suspense fallback={<SetupProgressSkeleton />}>
-          <FadeIn>
-            <SetupProgressSection propertyId={propertyId} />
-          </FadeIn>
-        </Suspense>
+        <SuspenseFadeIn fallback={<SetupProgressSkeleton />}>
+          <SetupProgressSection propertyId={propertyId} />
+        </SuspenseFadeIn>
       </div>
 
       {property.unitIds.map((unitId) => (
-        <Suspense key={unitId} fallback={<UnitSectionSkeleton />}>
-          <FadeIn>
-            <UnitSection unitId={unitId} propertyId={propertyId} />
-          </FadeIn>
-        </Suspense>
+        <SuspenseFadeIn key={unitId} fallback={<UnitSectionSkeleton />}>
+          <UnitSection unitId={unitId} propertyId={propertyId} />
+        </SuspenseFadeIn>
       ))}
     </DetailPageLayoutMain>
   )

@@ -289,6 +289,8 @@ Barcode scanning is only used for condo fee setup. Utility charges don't need it
 ### Features removed
 - **Monthly statement workflow (draft/review/publish) is replaced entirely.** There is no landlord-generated statement. Instead, both parties share a live billing view — a real-time dashboard of all charges for the month (rent, utilities, condo fee), their amounts, due dates, and payment status. It updates automatically as payments are detected. No publishing, no drafts, no revisions. If extraction accuracy is high, this becomes the single place tenants come to see what they owe, when, and to whom — replacing the need to check multiple utility apps and bank statements. Most months, neither party needs to actively engage with the platform — it works in the background and notifies them only when something needs attention.
 
+- **The platform maintains a monthly ledger per property.** Each month's charges, amounts, due dates, and payment statuses are recorded as a historical snapshot. The live billing view is the current month's ledger; past months are frozen records. This ledger powers: historical views, LL revenue aggregation (monthly, yearly, per-contract, per-property), tenant payment history (feeds into reputation system), dispute resolution, and any future reporting or export needs.
+
 ### Features that stay as-is
 - Charge splits (roommates sharing a unit, partial responsibility between LL and tenant)
 
@@ -299,6 +301,12 @@ Barcode scanning is only used for condo fee setup. Utility charges don't need it
 **Before:** "Stop using spreadsheets to bill your tenants"
 
 **After:** "Everything you need to manage your rental — without paying 8-12% for property management"
+
+**Tax messaging:** The positioning should also communicate — delicately and legally — that Mabenn does not report to tax authorities. Property management companies automatically report rental income to Receita Federal, which is a major deterrent for small LLs. Mabenn is a tool, not a financial intermediary — we don't touch, process, or report income. The landlord stays in full control of their own tax obligations. This needs to be said carefully (we can't market "avoid taxes") but the message should be clear enough that the target audience understands: using Mabenn doesn't trigger any tax reporting on their behalf. Possible angles:
+- "You stay in control" / "Your finances, your way"
+- "We're a management tool, not a financial intermediary"
+- "No middleman between you and your rental income"
+- Emphasize what we DON'T do (no payment processing, no income handling, no reporting) as a feature, not a limitation
 
 ### Value proposition by user
 

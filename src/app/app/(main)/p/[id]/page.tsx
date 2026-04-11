@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
-import { FadeIn } from '@/components/fade-in'
+import { SuspenseFadeIn } from '@/components/suspense-fade-in'
 import {
   DetailPageLayout,
   DetailPageLayoutHeader,
@@ -38,11 +38,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     <HighlightWrapper>
       <DetailPageLayout>
         <DetailPageLayoutHeader>
-          <Suspense fallback={<HeaderSkeleton />}>
-            <FadeIn>
-              <PropertyHeader propertyId={id} />
-            </FadeIn>
-          </Suspense>
+          <SuspenseFadeIn fallback={<HeaderSkeleton />}>
+            <PropertyHeader propertyId={id} />
+          </SuspenseFadeIn>
         </DetailPageLayoutHeader>
 
         <DetailPageLayoutBody>

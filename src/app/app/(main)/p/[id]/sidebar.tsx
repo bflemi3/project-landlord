@@ -1,5 +1,5 @@
-import { Suspense } from 'react'
 import { FadeIn } from '@/components/fade-in'
+import { SuspenseFadeIn } from '@/components/suspense-fade-in'
 import { DetailPageLayoutSidebar } from '@/components/detail-page-layout'
 import { getProperty } from '@/data/properties/server'
 import { SetupProgressSection } from './sections/setup-progress-section'
@@ -12,7 +12,7 @@ import {
 
 /**
  * Sidebar — calls cached getProperty() for unitIds (instant if already fetched),
- * then renders sections each in their own Suspense + FadeIn.
+ * then renders sections each streaming independently.
  */
 export async function Sidebar({ propertyId }: { propertyId: string }) {
   const property = await getProperty(propertyId)
@@ -21,11 +21,9 @@ export async function Sidebar({ propertyId }: { propertyId: string }) {
     <DetailPageLayoutSidebar>
       {/* Desktop only: onboarding progress in sidebar */}
       <div className="hidden md:block">
-        <Suspense fallback={<SetupProgressSkeleton />}>
-          <FadeIn>
-            <SetupProgressSection propertyId={propertyId} />
-          </FadeIn>
-        </Suspense>
+        <SuspenseFadeIn fallback={<SetupProgressSkeleton />}>
+          <SetupProgressSection propertyId={propertyId} />
+        </SuspenseFadeIn>
       </div>
 
       <FadeIn>
@@ -33,11 +31,9 @@ export async function Sidebar({ propertyId }: { propertyId: string }) {
       </FadeIn>
 
       {property.unitIds.map((unitId) => (
-        <Suspense key={unitId} fallback={<TenantsSkeleton />}>
-          <FadeIn>
-            <TenantsSectionWrapper propertyId={propertyId} unitId={unitId} />
-          </FadeIn>
-        </Suspense>
+        <SuspenseFadeIn key={unitId} fallback={<TenantsSkeleton />}>
+          <TenantsSectionWrapper propertyId={propertyId} unitId={unitId} />
+        </SuspenseFadeIn>
       ))}
     </DetailPageLayoutSidebar>
   )
