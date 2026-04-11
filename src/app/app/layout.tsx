@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
-import { PostHogIdentify } from '@/components/posthog-identify'
+import { PostHogIdentifyWrapper } from './posthog-identify-wrapper'
 
 export const metadata: Metadata = {
   title: {
@@ -13,7 +13,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-svh flex-col">
       <Suspense fallback={null}>
-        <PostHogIdentify />
+        <PostHogIdentifyWrapper />
       </Suspense>
       {children}
     </div>
