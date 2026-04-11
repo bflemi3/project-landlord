@@ -1,10 +1,16 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useCallback, useEffect, lazy, Suspense, type ReactNode } from 'react'
 import Link from 'next/link'
 import { useTranslations, useLocale } from 'next-intl'
-import { AnimatePresence, motion } from 'motion/react'
 import { Loader2, Camera, Mail, ChevronLeft } from 'lucide-react'
+
+// Fire import at module parse time — downloads Framer Motion while user fills invite code
+const _motionPreload = import('./animated-step-transition')
+
+const LazyAnimatedStepTransition = lazy(() =>
+  _motionPreload.then((mod) => ({ default: mod.AnimatedStepTransition }))
+)
 import posthog from 'posthog-js'
 import { createClient } from '@/lib/supabase/client'
 import { useEmailVerification } from '@/lib/hooks/use-email-verification'
@@ -225,7 +231,191 @@ export default function SignUpForm({
     )
   }
 
-  const slideTransition = { duration: 0.3, ease: [0.4, 0, 0.2, 1] as const }
+  const inviteCodeStep: ReactNode = (
+    <>
+      <h1 className="mb-2 text-center text-2xl font-bold">{t('inviteCodeTitle')}</h1>
+      <p className="mb-8 text-center text-sm text-muted-foreground">
+        {t('inviteCodeDescription')}
+      </p>
+
+      {error && (
+        <InfoBox variant="destructive" className="mb-6">
+          <InfoBoxContent>{error}</InfoBoxContent>
+        </InfoBox>
+      )}
+
+      <form onSubmit={handleValidateCode} className="space-y-5">
+        <div>
+          <Label htmlFor="inviteCode" className="mb-2">
+            {t('inviteCode')}
+          </Label>
+          <Input
+            id="inviteCode"
+            type="text"
+            placeholder={t('inviteCodePlaceholder')}
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value)}
+            required
+            disabled={validatingCode}
+            autoComplete="off"
+            autoFocus
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={validatingCode}
+          className="h-12 w-full rounded-2xl"
+          size="lg"
+        >
+          {validatingCode ? <Loader2 className="size-5 animate-spin" /> : null}
+          {t('continueWithCode')}
+        </Button>
+      </form>
+
+      <div className="mt-10 text-center">
+        <p className="text-sm text-muted-foreground">
+          {t('alreadyHaveAccount')}{' '}
+          <Link href={signInHref} className="font-semibold text-foreground">
+            {t('signIn')}
+          </Link>
+        </p>
+      </div>
+    </>
+  )
+
+  const signUpStep: ReactNode = (
+    <>
+      <h1 className="mb-8 text-center text-2xl font-bold">{t('signUp')}</h1>
+
+      {error && (
+        <InfoBox variant="destructive" className="mb-6">
+          <InfoBoxContent>{error}</InfoBoxContent>
+        </InfoBox>
+      )}
+
+      {/* Google */}
+      <button
+        onClick={handleGoogleSignUp}
+        disabled={isLoading}
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
+      >
+        {loadingGoogle ? (
+          <Loader2 className="size-5 animate-spin" />
+        ) : (
+          <GoogleIcon className="size-5" />
+        )}
+        {t('continueWithGoogle')}
+      </button>
+
+      {/* Divider */}
+      <div className="my-8 flex items-center gap-4">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-sm text-muted-foreground">{t('orSignUpWithEmail')}</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      {/* Email form */}
+      <form onSubmit={handleEmailSignUp} className="space-y-5">
+        {/* Avatar upload */}
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="relative flex size-20 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-border transition-colors hover:border-muted-foreground"
+          >
+            {avatarPreview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarPreview} alt={t('avatarPreview')} className="size-full object-cover" />
+            ) : (
+              <Camera className="size-6 text-muted-foreground" />
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarChange}
+              className="hidden"
+            />
+          </button>
+        </div>
+
+        <div>
+          <Label htmlFor="fullName" className="mb-2">
+            {t('fullName')}
+          </Label>
+          <Input
+            id="fullName"
+            type="text"
+            placeholder={t('fullNamePlaceholder')}
+            autoComplete="name"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            disabled={isLoading}
+          />
+        </div>
+        <div>
+          <Label htmlFor="email" className="mb-2">
+            {t('email')}
+          </Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder={t('emailPlaceholder')}
+            autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isLoading}
+          />
+        </div>
+        <div>
+          <Label htmlFor="password" className="mb-2">
+            {t('password')}
+          </Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder={t('passwordPlaceholder')}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            disabled={isLoading}
+            autoComplete="new-password"
+          />
+        </div>
+
+        <Button
+          type="submit"
+          disabled={isLoading}
+          className="h-12 w-full rounded-2xl"
+          size="lg"
+        >
+          {loadingEmail ? <Loader2 className="size-5 animate-spin" /> : null}
+          {t('signUpButton')}
+        </Button>
+      </form>
+
+      {/* Sign in link */}
+      <div className="mt-10 text-center">
+        <p className="text-sm text-muted-foreground">
+          {t('alreadyHaveAccount')}{' '}
+          <Link href={signInHref} className="font-semibold text-foreground">
+            {t('signIn')}
+          </Link>
+        </p>
+      </div>
+    </>
+  )
+
+  // Suspense fallback: render current step without animation
+  const staticFallback = !codeValidated ? (
+    <div>{inviteCodeStep}</div>
+  ) : (
+    <div>{signUpStep}</div>
+  )
 
   return (
     <>
@@ -237,194 +427,13 @@ export default function SignUpForm({
         </p>
       )}
 
-      <AnimatePresence mode="wait">
-        {!codeValidated ? (
-          <motion.div
-            key="invite-code"
-            initial={{ x: 0, opacity: 1 }}
-            exit={{ x: -200, opacity: 0 }}
-            transition={slideTransition}
-          >
-            <h1 className="mb-2 text-center text-2xl font-bold">{t('inviteCodeTitle')}</h1>
-            <p className="mb-8 text-center text-sm text-muted-foreground">
-              {t('inviteCodeDescription')}
-            </p>
-
-            {error && (
-              <InfoBox variant="destructive" className="mb-6">
-                <InfoBoxContent>{error}</InfoBoxContent>
-              </InfoBox>
-            )}
-
-            <form onSubmit={handleValidateCode} className="space-y-5">
-              <div>
-                <Label htmlFor="inviteCode" className="mb-2">
-                  {t('inviteCode')}
-                </Label>
-                <Input
-                  id="inviteCode"
-                  type="text"
-                  placeholder={t('inviteCodePlaceholder')}
-                  value={inviteCode}
-                  onChange={(e) => setInviteCode(e.target.value)}
-                  required
-                  disabled={validatingCode}
-                  autoComplete="off"
-                  autoFocus
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={validatingCode}
-                className="h-12 w-full rounded-2xl"
-                size="lg"
-              >
-                {validatingCode ? <Loader2 className="size-5 animate-spin" /> : null}
-                {t('continueWithCode')}
-              </Button>
-            </form>
-
-            <div className="mt-10 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t('alreadyHaveAccount')}{' '}
-                <Link href={signInHref} className="font-semibold text-foreground">
-                  {t('signIn')}
-                </Link>
-              </p>
-            </div>
-          </motion.div>
-        ) : (
-          <motion.div
-            key="sign-up-form"
-            initial={{ x: 200, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={slideTransition}
-          >
-            <h1 className="mb-8 text-center text-2xl font-bold">{t('signUp')}</h1>
-
-            {error && (
-              <InfoBox variant="destructive" className="mb-6">
-                <InfoBoxContent>{error}</InfoBoxContent>
-              </InfoBox>
-            )}
-
-            {/* Google */}
-            <button
-              onClick={handleGoogleSignUp}
-              disabled={isLoading}
-              className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
-            >
-              {loadingGoogle ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                <GoogleIcon className="size-5" />
-              )}
-              {t('continueWithGoogle')}
-            </button>
-
-            {/* Divider */}
-            <div className="my-8 flex items-center gap-4">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-sm text-muted-foreground">{t('orSignUpWithEmail')}</span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
-
-            {/* Email form */}
-            <form onSubmit={handleEmailSignUp} className="space-y-5">
-              {/* Avatar upload */}
-              <div className="flex justify-center">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="relative flex size-20 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-border transition-colors hover:border-muted-foreground"
-                >
-                  {avatarPreview ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={avatarPreview} alt={t('avatarPreview')} className="size-full object-cover" />
-                  ) : (
-                    <Camera className="size-6 text-muted-foreground" />
-                  )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp"
-                    onChange={handleAvatarChange}
-                    className="hidden"
-                  />
-                </button>
-              </div>
-
-              <div>
-                <Label htmlFor="fullName" className="mb-2">
-                  {t('fullName')}
-                </Label>
-                <Input
-                  id="fullName"
-                  type="text"
-                  placeholder={t('fullNamePlaceholder')}
-                  autoComplete="name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div>
-                <Label htmlFor="email" className="mb-2">
-                  {t('email')}
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder={t('emailPlaceholder')}
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              <div>
-                <Label htmlFor="password" className="mb-2">
-                  {t('password')}
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder={t('passwordPlaceholder')}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  disabled={isLoading}
-                  autoComplete="new-password"
-                />
-              </div>
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="h-12 w-full rounded-2xl"
-                size="lg"
-              >
-                {loadingEmail ? <Loader2 className="size-5 animate-spin" /> : null}
-                {t('signUpButton')}
-              </Button>
-            </form>
-
-            {/* Sign in link */}
-            <div className="mt-10 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t('alreadyHaveAccount')}{' '}
-                <Link href={signInHref} className="font-semibold text-foreground">
-                  {t('signIn')}
-                </Link>
-              </p>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <Suspense fallback={staticFallback}>
+        <LazyAnimatedStepTransition
+          codeValidated={codeValidated}
+          inviteCodeStep={inviteCodeStep}
+          signUpStep={signUpStep}
+        />
+      </Suspense>
     </>
   )
 }

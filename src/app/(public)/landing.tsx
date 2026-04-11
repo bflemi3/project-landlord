@@ -2,23 +2,13 @@
 
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { motion } from 'motion/react'
 import { Building2, FileScan, FileCheck, ShieldCheck, Check } from 'lucide-react'
 import { buttonVariants } from '@/components/ui/button-variants'
 import { cn } from '@/lib/utils'
+import { FadeUp } from '@/components/fade-up'
 import { Wordmark } from '@/components/wordmark'
 import { WaitlistForm } from './waitlist-form'
 import { WaitlistProvider } from './waitlist-context'
-
-// Staggered fade-in animation — uses transform only (no layout shift)
-const fadeUp = {
-  hidden: { opacity: 0, transform: 'translateY(12px)' },
-  visible: (delay: number) => ({
-    opacity: 1,
-    transform: 'translateY(0px)',
-    transition: { duration: 0.5, delay, ease: [0.25, 0.1, 0.25, 1] as const },
-  }),
-}
 
 export function Landing() {
   const t = useTranslations('landing')
@@ -112,36 +102,24 @@ export function Landing() {
         </div>
 
         <div className="relative">
-          <motion.h1
-            className="text-4xl font-bold leading-[1.08] tracking-tight md:text-5xl"
-            initial="hidden"
-            animate="visible"
-            custom={0.1}
-            variants={fadeUp}
-          >
-            {t('heroTitle')}
-          </motion.h1>
-          <motion.p
-            className="mt-5 text-lg leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-xl"
-            initial="hidden"
-            animate="visible"
-            custom={0.2}
-            variants={fadeUp}
-          >
-            {t('heroSubtitle')}
-          </motion.p>
-          <motion.div
-            className="mt-10"
-            initial="hidden"
-            animate="visible"
-            custom={0.35}
-            variants={fadeUp}
-          >
-            <WaitlistForm />
-            <p className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
-              {t('heroNote')}
+          <FadeUp delay={0.1}>
+            <h1 className="text-4xl font-bold leading-[1.08] tracking-tight md:text-5xl">
+              {t('heroTitle')}
+            </h1>
+          </FadeUp>
+          <FadeUp delay={0.2}>
+            <p className="mt-5 text-lg leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-xl">
+              {t('heroSubtitle')}
             </p>
-          </motion.div>
+          </FadeUp>
+          <FadeUp delay={0.35}>
+            <div className="mt-10">
+              <WaitlistForm />
+              <p className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+                {t('heroNote')}
+              </p>
+            </div>
+          </FadeUp>
         </div>
       </section>
 

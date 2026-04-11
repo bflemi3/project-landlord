@@ -8,12 +8,11 @@ import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
 import { ChargeCard } from '@/components/charge-card'
 import { ChargeConfigSheet, type ChargeConfig } from '@/app/app/(focused)/p/new/steps/charge-config-sheet'
-import { createCharges } from '@/app/actions/properties/create-charges'
-import { updateCharge } from '@/app/actions/properties/update-charge'
-import { removeCharge } from '@/app/actions/properties/remove-charge'
-import { toggleChargeActive } from '@/app/actions/properties/toggle-charge-active'
-import { useUnit } from '@/lib/hooks/use-unit'
-import { useUnitCharges, type ChargeDefinition } from '@/lib/hooks/use-unit-charges'
+import { createCharges } from '@/data/units/actions/create-charges'
+import { updateCharge } from '@/data/units/actions/update-charge'
+import { removeCharge } from '@/data/units/actions/remove-charge'
+import { toggleChargeActive } from '@/data/units/actions/toggle-charge-active'
+import { useUnit, useUnitCharges, type ChargeDefinition } from '@/data/units/client'
 import { useHighlightTarget } from '@/lib/hooks/use-highlight-target'
 
 /** Convert a ChargeDefinition (from DB) to a ChargeConfig (for the form) */
@@ -66,6 +65,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         landlordPercent: config.landlordPercent,
         tenantFixedMinor: config.tenantFixedMinor,
         landlordFixedMinor: config.landlordFixedMinor,
+        propertyId,
       })
     } else {
       // Create new
@@ -79,7 +79,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         landlordPercent: config.landlordPercent,
         tenantFixedMinor: config.tenantFixedMinor,
         landlordFixedMinor: config.landlordFixedMinor,
-      }])
+      }], propertyId)
 
       posthog.capture('charge_definition_created', {
         property_id: propertyId,
@@ -95,7 +95,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
 
   async function handleToggleActive() {
     if (!editingCharge) return
-    await toggleChargeActive(editingCharge.id, !editingCharge.isActive)
+    await toggleChargeActive(editingCharge.id, !editingCharge.isActive, propertyId)
     setSheetOpen(false)
     setEditingCharge(null)
     queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })
@@ -103,7 +103,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
 
   async function handleRemove() {
     if (!editingCharge) return
-    await removeCharge(editingCharge.id)
+    await removeCharge(editingCharge.id, propertyId)
     setSheetOpen(false)
     setEditingCharge(null)
     queryClient.invalidateQueries({ queryKey: ['unit-charges', unitId] })

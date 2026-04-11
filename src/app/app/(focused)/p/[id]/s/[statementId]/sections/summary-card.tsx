@@ -1,19 +1,17 @@
-'use client'
-
-import { useTranslations, useLocale } from 'next-intl'
-import { useStatement } from '@/lib/hooks/use-statement'
-import { useUnit } from '@/lib/hooks/use-unit'
-import { useMissingCharges } from '@/lib/hooks/use-missing-charges'
+import { getTranslations } from 'next-intl/server'
+import { getLocale } from 'next-intl/server'
+import { getStatement, getMissingCharges } from '@/data/statements/server'
+import { getUnit } from '@/data/units/server'
 import { formatCurrency } from '@/lib/format-currency'
 import { Separator } from '@/components/ui/separator'
 import { getStatementUrgency, getDaysUntilPublishBy, getPublishByDay } from '@/lib/statement-urgency'
 
-export function SummaryCard({ statementId }: { statementId: string }) {
-  const t = useTranslations('propertyDetail')
-  const locale = useLocale()
-  const { data: statement } = useStatement(statementId)
-  const { data: unit } = useUnit(statement.unitId)
-  const { data: missingCharges } = useMissingCharges(
+export async function SummaryCard({ statementId }: { statementId: string }) {
+  const t = await getTranslations('propertyDetail')
+  const locale = await getLocale()
+  const statement = await getStatement(statementId)
+  const unit = await getUnit(statement.unitId)
+  const missingCharges = await getMissingCharges(
     statement.unitId, statementId, statement.periodYear, statement.periodMonth,
   )
 

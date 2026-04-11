@@ -1,22 +1,20 @@
-'use client'
-
-import { useTranslations } from 'next-intl'
+import { getTranslations } from 'next-intl/server'
 import { Check, Clock } from 'lucide-react'
 import { getCompletionSteps, isPropertyComplete } from '@/components/property-card'
-import { useProperty } from '@/lib/hooks/use-property'
-import { useUnitCharges } from '@/lib/hooks/use-unit-charges'
-import { useUnitTenants } from '@/lib/hooks/use-unit-tenants'
-import { useUnitInvites } from '@/lib/hooks/use-unit-invites'
+import { getProperty } from '@/data/properties/server'
+import { getUnitCharges, getUnitTenants, getUnitInvites } from '@/data/units/server'
 
-export function SetupProgressSection({ propertyId }: { propertyId: string }) {
-  const tP = useTranslations('properties')
-  const { data: property } = useProperty(propertyId)
+export async function SetupProgressSection({ propertyId }: { propertyId: string }) {
+  const tP = await getTranslations('properties')
+  const property = await getProperty(propertyId)
 
   // For setup progress, check the first unit (MVP: single unit per property)
   const firstUnitId = property.unitIds[0] ?? ''
-  const { data: charges } = useUnitCharges(firstUnitId)
-  const { data: members } = useUnitTenants(firstUnitId)
-  const { data: invites } = useUnitInvites(firstUnitId)
+  const [charges, members, invites] = await Promise.all([
+    getUnitCharges(firstUnitId),
+    getUnitTenants(firstUnitId),
+    getUnitInvites(firstUnitId),
+  ])
 
   const activeTenants = members.length
   const pendingInvites = invites.length

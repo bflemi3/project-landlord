@@ -1,9 +1,9 @@
 import 'server-only'
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { fetchProperty } from './property'
-import { fetchStatement } from './statement'
-import { fetchUnit } from './unit'
+import { fetchProperty } from '@/data/properties/shared'
+import { fetchStatement } from '@/data/statements/shared'
+import { fetchUnit } from '@/data/units/shared'
 
 export const getProperty = cache(async (propertyId: string) => {
   const supabase = await createClient()

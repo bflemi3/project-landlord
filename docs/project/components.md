@@ -222,20 +222,35 @@ Contextual message container for inline alerts, instructions, or status messages
 
 ## Animation Components
 
+### SuspenseFadeIn
+
+**File:** `src/components/suspense-fade-in.tsx`
+
+Combines `<Suspense>` + `<FadeIn>` for streaming server components. The standard pattern for all streamed sections.
+
+**Usage:**
+```tsx
+<SuspenseFadeIn fallback={<MySkeleton />}>
+  <MyServerComponent />
+</SuspenseFadeIn>
+```
+
+**When to use:** Every streaming server component section that shows a skeleton while loading.
+
+**When not to use:** Container components (like MainColumn, Sidebar) that don't fade in themselves — use raw `<Suspense>` for those.
+
 ### FadeIn
 
 **File:** `src/components/fade-in.tsx`
 
-Simple opacity fade (0 → 1) on mount. Default duration: 800ms. Used by every `page.tsx` to animate content in after the PageLoader resolves.
+CSS-based opacity fade (0 → 1) on mount. Duration: 800ms ease-out. Server component (zero JS). Used internally by `SuspenseFadeIn` and for non-suspended sections that need a fade.
 
-**Usage:** Wrap page content in the server component's return:
+**Usage:**
 ```tsx
-<FadeIn className="h-full">
-  <PageContent />
+<FadeIn>
+  <PropertyInfoSection />
 </FadeIn>
 ```
-
-**Important:** Always pass `className="h-full"` so the flex height chain isn't broken.
 
 ### PageLoader
 
@@ -247,20 +262,22 @@ Universal loading indicator — the mabenn "m" mark with an orbital ring animati
 
 ### FadeUp
 
-**File:** `src/components/fade-up.tsx`
+**Files:** `src/components/fade-up.tsx` (server component), `src/components/fade-up-group.tsx` (client component)
 
-Fade-in-and-up entrance animation. Used for staggered reveals on page load.
+CSS-based fade-in-and-up entrance animation. Used for staggered reveals on page load (e.g., landing page hero).
 
 **Usage:**
 ```tsx
-<FadeUp.Group stagger={0.08}>
+<FadeUpGroup stagger={0.08}>
   <FadeUp>First element</FadeUp>   {/* delay: 0 */}
   <FadeUp>Second element</FadeUp>  {/* delay: 0.08 */}
   <FadeUp>Third element</FadeUp>   {/* delay: 0.16 */}
-</FadeUp.Group>
+</FadeUpGroup>
 ```
 
-**When to use:** Page-level entrance animations for content sections. Standard stagger: `0.08s`.
+`FadeUpGroup` auto-indexes `FadeUp` children — no manual index props needed. For standalone use without a group: `<FadeUp delay={0.2}>`.
+
+**When to use:** Page-level entrance animations for content sections.
 
 **When not to use:** Don't animate every element. Use for major content blocks on page load, not for individual list items or form fields.
 

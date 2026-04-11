@@ -1,8 +1,12 @@
 'use client'
 
-import { useState, useTransition, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'motion/react'
+import { useState, useTransition, useRef, useEffect, lazy, Suspense } from 'react'
 import { useTranslations } from 'next-intl'
+
+const animatedSplitPromise = import('@/components/animated-split-section')
+const AnimatedSplitSection = lazy(() =>
+  animatedSplitPromise.then(m => ({ default: m.AnimatedSplitSection }))
+)
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -11,20 +15,22 @@ import { cn } from '@/lib/utils'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { ChargeNameInput, AmountInput, PayerToggle, SplitSlider } from '@/components/charge-form-fields'
 import { FileUpload } from '@/components/file-upload'
-import { addChargeToStatement } from '@/app/actions/statements/add-charge'
-import { updateChargeInstance } from '@/app/actions/statements/update-charge-instance'
-import { removeChargeInstance } from '@/app/actions/statements/remove-charge-instance'
-import { createSourceDocumentRecord } from '@/app/actions/statements/create-source-document-record'
-import { deleteBillDocument } from '@/app/actions/statements/delete-bill-document'
-import { deleteStorageFile } from '@/app/actions/storage/delete-storage-file'
-import { saveChargeAsDefinition } from '@/app/actions/statements/save-charge-definition'
+import { addChargeToStatement } from '@/data/statements/actions/add-charge'
+import { updateChargeInstance } from '@/data/statements/actions/update-charge-instance'
+import { removeChargeInstance } from '@/data/statements/actions/remove-charge-instance'
+import { createSourceDocumentRecord } from '@/data/statements/actions/create-source-document-record'
+import { deleteBillDocument } from '@/data/statements/actions/delete-bill-document'
+import { deleteStorageFile } from '@/data/storage/actions/delete-storage-file'
+import { saveChargeAsDefinition } from '@/data/statements/actions/save-charge-definition'
 import { createClient } from '@/lib/supabase/client'
-import { unitChargesQueryKey } from '@/lib/queries/unit-charges'
-import { statementQueryKey } from '@/lib/queries/statement'
-import { statementChargesQueryKey } from '@/lib/queries/statement-charges'
-import { missingChargesQueryKey } from '@/lib/queries/missing-charges'
-import type { ChargeInstance } from '@/lib/queries/statement-charges'
-import type { MissingCharge } from '@/lib/queries/missing-charges'
+import { unitChargesQueryKey } from '@/data/units/shared'
+import {
+  statementQueryKey,
+  statementChargesQueryKey,
+  missingChargesQueryKey,
+  type ChargeInstance,
+  type MissingCharge,
+} from '@/data/statements/shared'
 import type { UploadFileResult } from '@/lib/storage/upload-file'
 
 const CURRENCY_SYMBOLS: Record<string, string> = { BRL: 'R$', USD: '$', EUR: '€' }
@@ -398,47 +404,39 @@ function AddChargeForm({
                 onCheckedChange={setSaveForLater}
               />
             </div>
-            <AnimatePresence>
-              {saveForLater && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.2, ease: 'easeInOut' }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-3">
-                    <p className="mb-2 text-sm text-muted-foreground">{t('chargeType')}</p>
-                    <div className="flex h-10 rounded-lg border border-border bg-secondary/50 p-0.5">
-                      <button
-                        type="button"
-                        onClick={() => setSavedChargeType('recurring')}
-                        className={cn(
-                          'flex-1 rounded-md text-sm font-medium transition-colors',
-                          savedChargeType === 'recurring'
-                            ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {t('chargeTypeFixed')}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setSavedChargeType('variable')}
-                        className={cn(
-                          'flex-1 rounded-md text-sm font-medium transition-colors',
-                          savedChargeType === 'variable'
-                            ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
-                            : 'text-muted-foreground',
-                        )}
-                      >
-                        {t('chargeTypeVariable')}
-                      </button>
-                    </div>
+            <Suspense fallback={null}>
+              <AnimatedSplitSection show={saveForLater}>
+                <div className="mt-3">
+                  <p className="mb-2 text-sm text-muted-foreground">{t('chargeType')}</p>
+                  <div className="flex h-10 rounded-lg border border-border bg-secondary/50 p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setSavedChargeType('recurring')}
+                      className={cn(
+                        'flex-1 rounded-md text-sm font-medium transition-colors',
+                        savedChargeType === 'recurring'
+                          ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {t('chargeTypeFixed')}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSavedChargeType('variable')}
+                      className={cn(
+                        'flex-1 rounded-md text-sm font-medium transition-colors',
+                        savedChargeType === 'variable'
+                          ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                          : 'text-muted-foreground',
+                      )}
+                    >
+                      {t('chargeTypeVariable')}
+                    </button>
                   </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                </div>
+              </AnimatedSplitSection>
+            </Suspense>
           </div>
         )}
         <Button

@@ -1,69 +1,18 @@
-import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/server'
-import { FadeIn } from '@/components/fade-in'
-import { fetchHomeProperties, homePropertiesQueryKey } from '@/lib/queries/home-properties'
-import { fetchHomeActions, homeActionsQueryKey } from '@/lib/queries/home-actions'
-import { HomeContent } from './home-content'
-import { TenantHomeContent } from './tenant-home-content'
+import { Suspense } from 'react'
+import { HomeRouter } from './home-router'
+import { PageLoader } from '@/components/page-loader'
 
-export default async function AppHomePage() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getClaims()
-  const userId = data?.claims?.sub as string
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, avatar_url')
-    .eq('id', userId)
-    .single()
-
-  const firstName = profile?.full_name?.split(' ')[0] ?? undefined
-  const hour = new Date().getHours()
-  const greetingKey = hour < 12 ? 'goodMorning' : hour < 18 ? 'goodAfternoon' : 'goodEvening'
-
-  // Prefetch data so client hydration matches server render
-  const queryClient = new QueryClient()
-  const properties = await fetchHomeProperties(supabase)
-
-  await queryClient.prefetchQuery({
-    queryKey: homePropertiesQueryKey(),
-    queryFn: () => properties,
-  })
-
-  const hasLandlordProperties = properties.some((p) => p.role === 'landlord')
-
-  // Tenant-only users see a separate home page
-  if (!hasLandlordProperties && properties.length > 0) {
-    return (
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <FadeIn className="h-full">
-          <TenantHomeContent
-            firstName={firstName}
-            userName={profile?.full_name ?? undefined}
-            avatarUrl={profile?.avatar_url ?? undefined}
-            greetingKey={greetingKey}
-          />
-        </FadeIn>
-      </HydrationBoundary>
-    )
-  }
-
-  // Landlords (or users with no properties) see the full dashboard
-  await queryClient.prefetchQuery({
-    queryKey: homeActionsQueryKey(),
-    queryFn: () => fetchHomeActions(supabase),
-  })
-
+/**
+ * Home page — renders instantly, streams content.
+ *
+ * The only blocking query is the router's role check (SELECT DISTINCT role
+ * FROM memberships) which is near-instant. Once the role is determined,
+ * the appropriate view renders with sections streaming independently.
+ */
+export default function AppHomePage() {
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <FadeIn className="h-full">
-        <HomeContent
-          firstName={firstName}
-          userName={profile?.full_name ?? undefined}
-          avatarUrl={profile?.avatar_url ?? undefined}
-          greetingKey={greetingKey}
-        />
-      </FadeIn>
-    </HydrationBoundary>
+    <Suspense fallback={<PageLoader />}>
+      <HomeRouter />
+    </Suspense>
   )
 }

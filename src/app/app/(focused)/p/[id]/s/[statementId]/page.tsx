@@ -1,14 +1,26 @@
 import type { Metadata } from 'next'
-import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/server'
-import { FadeIn } from '@/components/fade-in'
-import { statementQueryKey } from '@/lib/queries/statement'
-import { fetchStatementCharges, statementChargesQueryKey } from '@/lib/queries/statement-charges'
-import { propertyQueryKey } from '@/lib/queries/property'
-import { unitQueryKey } from '@/lib/queries/unit'
-import { getStatement, getProperty, getUnit } from '@/lib/queries/server'
-import { fetchMissingCharges, missingChargesQueryKey } from '@/lib/queries/missing-charges'
-import { StatementDraft } from './statement-draft'
+import { SuspenseFadeIn } from '@/components/suspense-fade-in'
+import {
+  DetailPageLayout,
+  DetailPageLayoutHeader,
+  DetailPageLayoutBody,
+  DetailPageLayoutMain,
+  DetailPageLayoutSidebar,
+} from '@/components/detail-page-layout'
+import { getStatement } from '@/data/statements/server'
+import { getUnit } from '@/data/units/server'
+import { TrackStatementViewed } from './track-statement-viewed'
+import { StatementHeader } from './statement-header'
+import { SummaryCard } from './sections/summary-card'
+import { CompletenessWarning } from './sections/completeness-warning'
+import { ChargesList } from './sections/charges-list'
+import { ReviewPublishSection } from './review-publish-section'
+import {
+  StatementHeaderSkeleton,
+  SummaryCardSkeleton,
+  CompletenessWarningSkeleton,
+  ChargesListSkeleton,
+} from './skeletons'
 
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
@@ -28,47 +40,63 @@ export async function generateMetadata({
   }
 }
 
+/**
+ * Statement draft page — fully synchronous, zero blocking awaits.
+ *
+ * All sections stream independently via SuspenseFadeIn. Sheet state lives
+ * in ChargesListInteractive (no page-level controller needed).
+ * PostHog tracking fires via a tiny client component.
+ */
 export default async function StatementPage({
   params,
 }: {
   params: Promise<{ id: string; statementId: string }>
 }) {
   const { id: propertyId, statementId } = await params
-  const supabase = await createClient()
-  const queryClient = new QueryClient()
-
-  // Fetch via React.cache (shared with generateMetadata)
-  const [statement, property] = await Promise.all([
-    getStatement(statementId),
-    getProperty(propertyId),
-  ])
-  const unit = await getUnit(statement.unitId)
-
-  // Seed React Query cache for client hydration
-  queryClient.setQueryData(statementQueryKey(statementId), statement)
-  queryClient.setQueryData(propertyQueryKey(propertyId), property)
-  queryClient.setQueryData(unitQueryKey(statement.unitId), unit)
-
-  // Prefetch remaining data
-  await Promise.all([
-    queryClient.prefetchQuery({
-      queryKey: statementChargesQueryKey(statementId),
-      queryFn: () => fetchStatementCharges(supabase, statementId),
-    }),
-    queryClient.prefetchQuery({
-      queryKey: missingChargesQueryKey(statement.unitId, statementId),
-      queryFn: () => fetchMissingCharges(
-        supabase, statement.unitId, statementId,
-        statement.periodYear, statement.periodMonth,
-      ),
-    }),
-  ])
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <FadeIn className="h-full">
-        <StatementDraft statementId={statementId} propertyId={propertyId} />
-      </FadeIn>
-    </HydrationBoundary>
+    <>
+      <TrackStatementViewed statementId={statementId} />
+
+      <DetailPageLayout>
+        <DetailPageLayoutHeader>
+          <SuspenseFadeIn fallback={<StatementHeaderSkeleton />}>
+            <StatementHeader statementId={statementId} propertyId={propertyId} />
+          </SuspenseFadeIn>
+
+          {/* Mobile-only: summary card in header */}
+          <div className="mb-6 md:hidden">
+            <SuspenseFadeIn fallback={<SummaryCardSkeleton />}>
+              <SummaryCard statementId={statementId} />
+            </SuspenseFadeIn>
+          </div>
+        </DetailPageLayoutHeader>
+
+        <DetailPageLayoutBody>
+          <DetailPageLayoutMain>
+            <SuspenseFadeIn fallback={<CompletenessWarningSkeleton />}>
+              <CompletenessWarning statementId={statementId} />
+            </SuspenseFadeIn>
+
+            <SuspenseFadeIn fallback={<ChargesListSkeleton />}>
+              <ChargesList statementId={statementId} />
+            </SuspenseFadeIn>
+          </DetailPageLayoutMain>
+
+          <DetailPageLayoutSidebar>
+            {/* Desktop-only summary card */}
+            <div className="hidden md:block">
+              <SuspenseFadeIn fallback={<SummaryCardSkeleton />}>
+                <SummaryCard statementId={statementId} />
+              </SuspenseFadeIn>
+            </div>
+
+            <SuspenseFadeIn>
+              <ReviewPublishSection statementId={statementId} />
+            </SuspenseFadeIn>
+          </DetailPageLayoutSidebar>
+        </DetailPageLayoutBody>
+      </DetailPageLayout>
+    </>
   )
 }

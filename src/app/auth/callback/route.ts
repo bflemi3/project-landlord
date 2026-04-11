@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
+import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)

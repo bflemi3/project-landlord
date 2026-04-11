@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { validateAndFetchInviteContext } from '@/app/actions/validate-invite'
-import { redeemInviteByCodeCore } from '@/app/actions/redeem-invite-by-code'
+import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 import SignUpForm from './sign-up-form'
 
 interface SignUpPageProps {

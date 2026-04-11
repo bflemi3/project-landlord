@@ -1,9 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
 import { useTranslations } from 'next-intl'
-import { motion, AnimatePresence } from 'motion/react'
 import { Button } from '@/components/ui/button'
+
+const animatedSplitPromise = import('@/components/animated-split-section')
+const AnimatedSplitSection = lazy(() =>
+  animatedSplitPromise.then(m => ({ default: m.AnimatedSplitSection }))
+)
 import { ResponsiveModal } from '@/components/responsive-modal'
 import {
   ChargeNameInput,
@@ -201,28 +205,20 @@ function ChargeConfigForm({
         <PayerToggle value={payer} onChange={setPayer} />
 
         {/* Split slider */}
-        <AnimatePresence>
-          {payer === 'split' && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2, ease: 'easeInOut' }}
-              className="overflow-hidden"
-            >
-              <SplitSlider
-                splitMode={splitMode}
-                onSplitModeChange={setSplitMode}
-                tenantPercent={Number(tenantPercent) || 0}
-                onTenantPercentChange={(pct) => setTenantPercent(String(pct))}
-                tenantFixedAmount={tenantFixedAmount}
-                onTenantFixedAmountChange={setTenantFixedAmount}
-                totalAmount={Number(amount?.replace(',', '.') || '0')}
-                currencySymbol={currencySymbol}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <Suspense fallback={null}>
+          <AnimatedSplitSection show={payer === 'split'}>
+            <SplitSlider
+              splitMode={splitMode}
+              onSplitModeChange={setSplitMode}
+              tenantPercent={Number(tenantPercent) || 0}
+              onTenantPercentChange={(pct) => setTenantPercent(String(pct))}
+              tenantFixedAmount={tenantFixedAmount}
+              onTenantFixedAmountChange={setTenantFixedAmount}
+              totalAmount={Number(amount?.replace(',', '.') || '0')}
+              currencySymbol={currencySymbol}
+            />
+          </AnimatedSplitSection>
+        </Suspense>
       </div>
 
       {/* Actions */}

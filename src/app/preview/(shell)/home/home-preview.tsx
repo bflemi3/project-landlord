@@ -10,6 +10,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/wordmark'
 import { FadeUp } from '@/components/fade-up'
+import { FadeUpGroup } from '@/components/fade-up-group'
 import { isPropertyComplete } from '@/components/property-card'
 import { PreviewOperatingCard, PreviewSetupCard } from '@/app/preview/preview-property-cards'
 import { UrgentActionList } from '@/components/urgent-action-list'
@@ -237,7 +238,7 @@ function SinglePropertyState({
         </div>
       }
     >
-      <FadeUp.Group stagger={0.08}>
+      <FadeUpGroup stagger={0.08}>
         {/* Header */}
         <FadeUp className="mb-8">
           <div className="flex items-start justify-between">
@@ -316,7 +317,7 @@ function SinglePropertyState({
             </div>
           </FadeUp>
         )}
-      </FadeUp.Group>
+      </FadeUpGroup>
     </PageShell>
   )
 }
@@ -373,7 +374,7 @@ function MultiPropertyState({
         </div>
       }
     >
-      <FadeUp.Group stagger={0.08}>
+      <FadeUpGroup stagger={0.08}>
         {/* Header — greeting + portfolio revenue */}
         <FadeUp className="mb-8">
           <div className="flex items-start justify-between">
@@ -427,7 +428,7 @@ function MultiPropertyState({
             ))}
           </div>
         </FadeUp>
-      </FadeUp.Group>
+      </FadeUpGroup>
     </PageShell>
   )
 }
