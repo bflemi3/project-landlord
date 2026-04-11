@@ -329,13 +329,38 @@ Barcode scanning is only used for condo fee setup. Utility charges don't need it
 
 ## Open Questions
 
-1. **Pricing model** — Free for tenants, subscription for landlords? Freemium? Per-property pricing?
-2. **Contract templates** — Build our own or integrate with existing Brazilian contract platforms?
-3. **IPCA data source** — IBGE API? How to get reliable, timely inflation data?
-4. **AI knowledgebase** — RAG over Lei do Inquilinato + contract text? Cost implications?
-5. **Communication hub** — Build chat or integrate with existing messaging (WhatsApp API)?
-6. **Gamification** — What specifically? Streaks, milestones, property portfolio growth visualization?
-7. **Eviction/legal workflow** — How deep do we go? Templates only, or guided process?
-8. **Migration** — How does existing MVP work transition to the new model?
-9. **Maintenance requests** — How structured? Photo uploads, categories, status tracking?
-10. **Multi-property view** — Landlord dashboard across all properties showing aggregate revenue?
+1. **Pricing model** — Not decided yet. Free for tenants, subscription for landlords? Freemium? Per-property pricing?
+2. **Contract templates** — Need to research. Options: build our own, integrate with existing Brazilian contract platforms, or use standard templates as a starting point.
+3. **IPCA data source** — Need to research. IBGE API is a potential source — needs a spike to confirm availability, reliability, and how to integrate.
+4. **AI knowledgebase** — Not phase 1. Needs research later (RAG over Lei do Inquilinato + contract text, cost implications).
+5. **Communication hub** — Will be built in-app (not WhatsApp integration).
+6. **Gamification / reputation details** — Needs a design spike to flesh out specifics (scoring model, what actions contribute, how it's displayed, tenant vs LL differences).
+7. **Eviction/legal workflow** — Phase 1: notifications (email + in-app), draft documents from templates, send docs via email and in-app. Guided processes can come later.
+8. **Migration from current MVP** — Need to figure out how existing work transitions to the new model.
+9. **Maintenance requests** — Not phase 1. Will dive into this later.
+10. **Multi-property view** — Yes, landlord dashboard across all properties showing aggregate revenue.
+
+---
+
+## Engineering Priorities
+
+**Phase 0: Infrastructure spike (local only)**
+
+Before building any product features, we need to build a local-only utility within the application to prove out the core technical integrations end-to-end:
+
+- **DDA integration** (Celcoin) — register CPF, receive condo fee boletos, understand the data
+- **Open Finance bank account hookup** (Pluggy or Belvo) — consent flow, transaction feed, payment matching
+- **Bill ingestion** — email forwarding, extraction, validation
+- **Website scraping** — provider web portals for bill lookup and extraction validation
+
+This is key infrastructure that needs to be well-engineered and understood before any product features are built on top of it. The goal is to eliminate unknowns and prove feasibility before committing to the full product build.
+
+**Equally important: identify any red tape.** Phase 0 must surface regulatory, contractual, or technical blockers before we build on top of these integrations:
+- **Open Finance:** What does it take to go live with Pluggy/Belvo? Contracts, compliance requirements, approval timelines, LGPD implications of storing bank transaction data?
+- **DDA / Celcoin:** What's the commercial contract process? Adhesion term requirements? How long to get API access?
+- **Bill ingestion / scraping:** Any ToS or legal concerns with scraping provider web portals for validation?
+- **Data storage:** What are the LGPD obligations for storing bank transaction data, boleto data, and extracted bill data?
+
+If any of these have blocking timelines or deal-breaking requirements, we need to know before committing to the architecture.
+
+**After the spike:** Deliver key features so Brandon and Alex can start using the platform with real properties.

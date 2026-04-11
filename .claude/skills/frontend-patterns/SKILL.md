@@ -96,9 +96,8 @@ export async function SectionWrapper({ unitId }: { unitId: string }) {
 ## Streaming & Suspense
 
 - Every meaningful route must have a `loading.tsx` returning `<PageLoader />` — this enables partial prefetching
-- Wrap independent data-fetching sections in `<Suspense>` with skeleton fallbacks
+- Use `<SuspenseFadeIn fallback={<Skeleton />}>` for streaming sections — combines Suspense + FadeIn in one component (`@/components/suspense-fade-in`). Do NOT use raw `<Suspense>` + `<FadeIn>` separately.
 - Skeleton fallbacks must structurally match their resolved content — same card shapes, grid columns, section heights, spacing — to prevent layout shift when content streams in
-- Wrap each streamed section in `<FadeIn>` for smooth appearance as it resolves. No page-level `<FadeIn>` — each section gets its own
 - Static parts of the page (headers, labels, navigation) render immediately outside Suspense
 - Server component streaming provides fast initial paint — React Query handles client-side caching for back-navigation and refetching
 
