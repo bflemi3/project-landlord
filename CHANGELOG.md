@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.11.0
+
+- Pages load faster — sections appear progressively instead of waiting for everything at once
+- Navigating between pages feels snappier with instant loading feedback
+- Back and close buttons respond immediately
+
 ## v0.10.0
 
 - Attach, view, and remove bills on charges — uploads start instantly with a progress bar
