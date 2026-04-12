@@ -28,6 +28,14 @@ describe('extractCnpjsFromText', () => {
     expect(result).toEqual([])
   })
 
+  it('filters out invalid check digits (e.g. boleto barcode fragments)', () => {
+    // 14120000098598 is not a valid CNPJ — it's the last 14 digits of a boleto barcode
+    const text = 'CNPJ: 48.581.571/0001-93 barcode 14120000098598'
+    const result = extractCnpjsFromText(text)
+    expect(result).toEqual(['48581571000193'])
+    expect(result).not.toContain('14120000098598')
+  })
+
   it('deduplicates CNPJs', () => {
     const text = 'CNPJ: 49.449.868/0001-62 repeated 49.449.868/0001-62'
     const result = extractCnpjsFromText(text)
