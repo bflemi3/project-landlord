@@ -2,6 +2,7 @@ import { EnlivLookupPanel } from './enliv-lookup'
 import { EnlivUploadPanel } from './enliv-upload'
 import { CnpjIdentifyPanel } from './cnpj-identify'
 import { PluggyConnectPanel } from './pluggy-connect'
+import { EnlivComparePanel } from './enliv-compare'
 
 export default function Phase0Page() {
   return (
@@ -32,6 +33,11 @@ export default function Phase0Page() {
         <section>
           <h2 className="mb-4 text-lg font-semibold">4. Pluggy Open Finance</h2>
           <PluggyConnectPanel />
+        </section>
+
+        <section>
+          <h2 className="mb-4 text-lg font-semibold">5. Cross-Validation: API vs PDF</h2>
+          <EnlivComparePanel />
         </section>
       </div>
     </div>
