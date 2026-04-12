@@ -1,6 +1,6 @@
 'use server'
 
-import pdf from 'pdf-parse'
+import { PDFParse } from 'pdf-parse'
 import { parseEnlivBillText } from '@/lib/providers/enliv/pdf-parser'
 
 export async function extractEnlivBill(formData: FormData) {
@@ -11,11 +11,13 @@ export async function extractEnlivBill(formData: FormData) {
 
   try {
     const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    const pdfData = await pdf(buffer)
-    const extraction = parseEnlivBillText(pdfData.text)
+    const uint8 = new Uint8Array(arrayBuffer)
+    const parser = new PDFParse(uint8)
+    const result = await parser.getText()
+    const text = result.pages.map((p: { text: string }) => p.text).join('\n')
+    const extraction = parseEnlivBillText(text)
 
-    return { success: true as const, data: extraction, rawText: pdfData.text }
+    return { success: true as const, data: extraction, rawText: text }
   } catch (error) {
     return {
       success: false as const,

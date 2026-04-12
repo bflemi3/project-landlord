@@ -28,7 +28,7 @@ export async function fetchPluggyTransactions(itemId: string) {
           id: t.id,
           description: t.description,
           amount: t.amount,
-          date: t.date,
+          date: t.date instanceof Date ? t.date.toISOString() : String(t.date),
           type: t.type,
           category: t.category,
           paymentData: t.paymentData,

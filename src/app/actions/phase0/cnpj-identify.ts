@@ -1,6 +1,6 @@
 'use server'
 
-import pdf from 'pdf-parse'
+import { PDFParse } from 'pdf-parse'
 import { extractCnpjsFromText, lookupCnpj } from '@/lib/cnpj/lookup'
 import type { CnpjIdentification } from '@/lib/cnpj/types'
 
@@ -12,16 +12,18 @@ export async function identifyBillProvider(formData: FormData) {
 
   try {
     const arrayBuffer = await file.arrayBuffer()
-    const buffer = Buffer.from(arrayBuffer)
-    const pdfData = await pdf(buffer)
+    const uint8 = new Uint8Array(arrayBuffer)
+    const parser = new PDFParse(uint8)
+    const result = await parser.getText()
+    const text = result.pages.map((p: { text: string }) => p.text).join('\n')
 
-    const cnpjs = extractCnpjsFromText(pdfData.text)
+    const cnpjs = extractCnpjsFromText(text)
 
     if (cnpjs.length === 0) {
       return {
         success: false as const,
         error: 'No CNPJ found in PDF',
-        rawText: pdfData.text,
+        rawText: text,
       }
     }
 
@@ -42,7 +44,7 @@ export async function identifyBillProvider(formData: FormData) {
     return {
       success: true as const,
       data: { cnpjsFound: cnpjs, lookups: results, errors },
-      rawText: pdfData.text,
+      rawText: text,
     }
   } catch (error) {
     return {
