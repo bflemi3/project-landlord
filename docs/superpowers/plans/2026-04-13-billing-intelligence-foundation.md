@@ -19,5 +19,5 @@ This plan has been split into four sub-plans for efficient execution:
 - **Plan 2:** Test runner — test cases, accuracy measurement, CI, API contract tests
 - **Plan 3:** Playground UI — engineer auth, provider lab, accuracy dashboard
 - **Plan 4:** Custom MCP — Claude Code interface
-- **Plan 5:** Production integration — provider requests, user corrections, notifications
+- **Plan 5:** Production integration — provider requests, user corrections, notifications, per-provider trust levels (new providers require review, trusted providers auto-populate), user can always correct regardless of trust level, corrections on trusted providers are high-signal alerts to engineering
 - **Plan 6:** Knowledge base updates — CLAUDE.md, rules, skills (includes provider discovery skill, mandatory use of `externalFetch` for all external API calls in providers, confidence scoring documentation)
