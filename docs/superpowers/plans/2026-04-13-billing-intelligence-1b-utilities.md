@@ -1,0 +1,891 @@
+# Billing Intelligence Foundation — Plan 1b: Utilities
+
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** Build the shared utility layer — normalization, external dependency monitoring, PDF extraction, and confidence scoring.
+
+**Architecture:** Pure functions with tests. No DB dependencies. No provider-specific logic. These utilities are consumed by providers (Plan 1c) and the orchestration layer.
+
+**Tech Stack:** TypeScript, Vitest, pdf-parse
+
+**Part of:** Billing Intelligence Foundation (Plan 1)
+**Depends on:** Plan 1a (shared types in `src/lib/billing-intelligence/types.ts`)
+**Blocks:** Plan 1c (provider system uses these utilities)
+
+**Key files from Plan 1a that this plan imports:**
+- `src/lib/billing-intelligence/types.ts` — `ExtractionConfidence`, `ExtractionSource`, `FieldConfidence`, `FieldStatus`
+
+---
+## Task 6: Date and money normalization utilities
+
+**Files:**
+- Create: `src/lib/billing-intelligence/normalize.ts`
+- Create: `src/lib/billing-intelligence/__tests__/normalize.test.ts`
+
+- [ ] **Step 1: Write the failing tests**
+
+Create `src/lib/billing-intelligence/__tests__/normalize.test.ts`:
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import {
+  normalizeDate,
+  normalizeMonth,
+  normalizeBarcode,
+  parseBRL,
+  toMinorUnits,
+} from '../normalize'
+
+describe('normalizeDate', () => {
+  it('normalizes BR format DD/MM/YYYY', () => {
+    expect(normalizeDate('24/04/2026')).toBe('2026-04-24')
+  })
+
+  it('normalizes ISO with time', () => {
+    expect(normalizeDate('2026-04-24T19:33:21.923Z')).toBe('2026-04-24')
+  })
+
+  it('passes through YYYY-MM-DD', () => {
+    expect(normalizeDate('2026-04-24')).toBe('2026-04-24')
+  })
+})
+
+describe('normalizeMonth', () => {
+  it('normalizes MAR/2026 to YYYY-MM', () => {
+    expect(normalizeMonth('MAR/2026')).toBe('2026-03')
+  })
+
+  it('normalizes ABR/2026', () => {
+    expect(normalizeMonth('ABR/2026')).toBe('2026-04')
+  })
+
+  it('normalizes JAN/2026', () => {
+    expect(normalizeMonth('JAN/2026')).toBe('2026-01')
+  })
+
+  it('normalizes DEZ/2026', () => {
+    expect(normalizeMonth('DEZ/2026')).toBe('2026-12')
+  })
+
+  it('passes through YYYY-MM', () => {
+    expect(normalizeMonth('2026-03')).toBe('2026-03')
+  })
+})
+
+describe('normalizeBarcode', () => {
+  it('strips spaces, dots, and dashes', () => {
+    expect(normalizeBarcode('74891.16009 06660.307304 32263.871033 5 14260000021847'))
+      .toBe('74891160090666030730432263871033514260000021847')
+  })
+})
+
+describe('parseBRL', () => {
+  it('parses simple amount', () => {
+    expect(parseBRL('218,47')).toBe(218.47)
+  })
+
+  it('parses amount with thousands separator', () => {
+    expect(parseBRL('1.234,56')).toBe(1234.56)
+  })
+
+  it('parses zero', () => {
+    expect(parseBRL('0,00')).toBe(0)
+  })
+})
+
+describe('toMinorUnits', () => {
+  it('converts BRL to centavos', () => {
+    expect(toMinorUnits(218.47)).toBe(21847)
+  })
+
+  it('handles round numbers', () => {
+    expect(toMinorUnits(100)).toBe(10000)
+  })
+
+  it('rounds floating point correctly', () => {
+    expect(toMinorUnits(0.1 + 0.2)).toBe(30)
+  })
+})
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+```bash
+pnpm test src/lib/billing-intelligence/__tests__/normalize.test.ts
+```
+
+- [ ] **Step 3: Implement**
+
+Create `src/lib/billing-intelligence/normalize.ts`:
+
+```typescript
+export function normalizeDate(date: string): string {
+  if (date.includes('T')) return date.split('T')[0]
+  const brMatch = date.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
+  if (brMatch) return `${brMatch[3]}-${brMatch[2]}-${brMatch[1]}`
+  return date
+}
+
+const PT_MONTHS: Record<string, string> = {
+  JAN: '01', FEV: '02', MAR: '03', ABR: '04',
+  MAI: '05', JUN: '06', JUL: '07', AGO: '08',
+  SET: '09', OUT: '10', NOV: '11', DEZ: '12',
+}
+
+export function normalizeMonth(month: string): string {
+  const ptMatch = month.match(/^([A-Z]{3})\/(\d{4})$/)
+  if (ptMatch) {
+    const monthNum = PT_MONTHS[ptMatch[1]]
+    if (monthNum) return `${ptMatch[2]}-${monthNum}`
+  }
+  return month
+}
+
+export function normalizeBarcode(barcode: string): string {
+  return barcode.replace(/[\s.\-]/g, '')
+}
+
+export function parseBRL(value: string): number {
+  return parseFloat(value.replace(/\./g, '').replace(',', '.'))
+}
+
+export function toMinorUnits(amount: number): number {
+  return Math.round(amount * 100)
+}
+```
+
+- [ ] **Step 4: Run tests**
+
+```bash
+pnpm test src/lib/billing-intelligence/__tests__/normalize.test.ts
+```
+
+Expected: all PASS.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/lib/billing-intelligence/normalize.ts src/lib/billing-intelligence/__tests__/normalize.test.ts
+git commit -m "feat: add date, month, barcode, and money normalization utilities"
+```
+
+---
+
+## Task 7: External dependency monitor
+
+**Files:**
+- Create: `src/lib/external/types.ts`
+- Create: `src/lib/external/call.ts`
+- Create: `src/lib/external/__tests__/call.test.ts`
+
+This is a cross-cutting concern. Every external network call (APIs, web scrapes, any dependency) goes through this wrapper. It monitors, captures errors, normalizes them, and reports — so the rest of the codebase doesn't need to handle external failure detection individually.
+
+- [ ] **Step 1: Create types**
+
+Create `src/lib/external/types.ts`:
+
+```typescript
+/**
+ * Normalized result from any external dependency call.
+ * Every external call returns this shape, regardless of the service.
+ */
+export interface ExternalCallResult<T> {
+  success: boolean
+  data?: T
+  error?: ExternalCallError
+  /** Time taken in milliseconds */
+  duration: number
+  service: string
+  operation: string
+  timestamp: string           // ISO 8601
+}
+
+export interface ExternalCallError {
+  /** Normalized error category */
+  category: 'timeout' | 'network' | 'client_error' | 'server_error' | 'unexpected_shape' | 'unknown'
+  /** HTTP status code if applicable */
+  statusCode?: number
+  /** Original error message */
+  message: string
+  /** The service and operation that failed */
+  service: string
+  operation: string
+}
+
+export interface ExternalCallOptions {
+  /** Which external service (e.g., 'brasilapi', 'receitaws', 'enliv-api') */
+  service: string
+  /** What operation (e.g., 'cnpj-lookup', 'fetch-debitos') */
+  operation: string
+  /** Timeout in milliseconds (default: 10000) */
+  timeout?: number
+  /** Optional: validate the response shape. Return true if valid. */
+  validateShape?: (data: unknown) => boolean
+}
+```
+
+- [ ] **Step 2: Write failing tests**
+
+Create `src/lib/external/__tests__/call.test.ts`:
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { externalCall, externalFetch } from '../call'
+
+describe('externalCall', () => {
+  it('returns success with data and duration', async () => {
+    const result = await externalCall({
+      service: 'test-service',
+      operation: 'test-op',
+      fn: async () => ({ value: 42 }),
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ value: 42 })
+    expect(result.duration).toBeGreaterThanOrEqual(0)
+    expect(result.service).toBe('test-service')
+    expect(result.operation).toBe('test-op')
+    expect(result.timestamp).toBeDefined()
+  })
+
+  it('captures and normalizes errors', async () => {
+    const result = await externalCall({
+      service: 'test-service',
+      operation: 'test-op',
+      fn: async () => { throw new Error('connection refused') },
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBeDefined()
+    expect(result.error!.category).toBe('unknown')
+    expect(result.error!.message).toBe('connection refused')
+    expect(result.error!.service).toBe('test-service')
+    expect(result.error!.operation).toBe('test-op')
+  })
+
+  it('tracks duration even on failure', async () => {
+    const result = await externalCall({
+      service: 'test-service',
+      operation: 'test-op',
+      fn: async () => { throw new Error('fail') },
+    })
+
+    expect(result.duration).toBeGreaterThanOrEqual(0)
+  })
+})
+
+describe('externalFetch', () => {
+  beforeEach(() => vi.restoreAllMocks())
+
+  it('returns parsed JSON on 200', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ name: 'test' }), { status: 200 }),
+    )
+
+    const result = await externalFetch({
+      service: 'test-api',
+      operation: 'get-data',
+      url: 'https://example.com/api',
+    })
+
+    expect(result.success).toBe(true)
+    expect(result.data).toEqual({ name: 'test' })
+  })
+
+  it('categorizes 4xx as client_error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response('Not found', { status: 404 }),
+    )
+
+    const result = await externalFetch({
+      service: 'test-api',
+      operation: 'get-data',
+      url: 'https://example.com/api',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error!.category).toBe('client_error')
+    expect(result.error!.statusCode).toBe(404)
+  })
+
+  it('categorizes 5xx as server_error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response('Internal error', { status: 500 }),
+    )
+
+    const result = await externalFetch({
+      service: 'test-api',
+      operation: 'get-data',
+      url: 'https://example.com/api',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error!.category).toBe('server_error')
+    expect(result.error!.statusCode).toBe(500)
+  })
+
+  it('categorizes network failures', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(
+      new TypeError('fetch failed'),
+    )
+
+    const result = await externalFetch({
+      service: 'test-api',
+      operation: 'get-data',
+      url: 'https://example.com/api',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error!.category).toBe('network')
+  })
+
+  it('detects unexpected response shape', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({ unexpected: true }), { status: 200 }),
+    )
+
+    const result = await externalFetch({
+      service: 'test-api',
+      operation: 'get-data',
+      url: 'https://example.com/api',
+      validateShape: (data: unknown) => {
+        const d = data as Record<string, unknown>
+        return 'name' in d
+      },
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error!.category).toBe('unexpected_shape')
+  })
+})
+```
+
+- [ ] **Step 3: Run tests to verify they fail**
+
+```bash
+pnpm test src/lib/external/__tests__/call.test.ts
+```
+
+- [ ] **Step 4: Implement**
+
+Create `src/lib/external/call.ts`:
+
+```typescript
+import type { ExternalCallResult, ExternalCallError } from './types'
+
+/**
+ * Wrap any async function as a monitored external call.
+ * Captures duration, normalizes errors, and provides a uniform result shape.
+ *
+ * Usage:
+ *   const result = await externalCall({
+ *     service: 'brasilapi',
+ *     operation: 'cnpj-lookup',
+ *     fn: async () => fetchSomething(),
+ *   })
+ */
+export async function externalCall<T>(options: {
+  service: string
+  operation: string
+  fn: () => Promise<T>
+}): Promise<ExternalCallResult<T>> {
+  const start = Date.now()
+  const timestamp = new Date().toISOString()
+
+  try {
+    const data = await options.fn()
+    return {
+      success: true,
+      data,
+      duration: Date.now() - start,
+      service: options.service,
+      operation: options.operation,
+      timestamp,
+    }
+  } catch (err) {
+    const error = normalizeError(err, options.service, options.operation)
+    reportError(error)
+    return {
+      success: false,
+      error,
+      duration: Date.now() - start,
+      service: options.service,
+      operation: options.operation,
+      timestamp,
+    }
+  }
+}
+
+/**
+ * Convenience wrapper for external fetch calls.
+ * Handles HTTP status categorization, JSON parsing, and optional shape validation.
+ */
+export async function externalFetch<T = unknown>(options: {
+  service: string
+  operation: string
+  url: string
+  init?: RequestInit
+  timeout?: number
+  validateShape?: (data: unknown) => boolean
+}): Promise<ExternalCallResult<T>> {
+  return externalCall<T>({
+    service: options.service,
+    operation: options.operation,
+    fn: async () => {
+      const controller = new AbortController()
+      const timeoutMs = options.timeout ?? 10000
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+      try {
+        const response = await fetch(options.url, {
+          ...options.init,
+          signal: controller.signal,
+        })
+
+        if (!response.ok) {
+          const category = response.status >= 500 ? 'server_error' : 'client_error'
+          const error: ExternalCallError = {
+            category,
+            statusCode: response.status,
+            message: `${options.service} returned ${response.status}`,
+            service: options.service,
+            operation: options.operation,
+          }
+          reportError(error)
+          throw Object.assign(new Error(error.message), { __externalError: error })
+        }
+
+        const data = await response.json()
+
+        if (options.validateShape && !options.validateShape(data)) {
+          const error: ExternalCallError = {
+            category: 'unexpected_shape',
+            message: `${options.service} returned an unexpected response shape`,
+            service: options.service,
+            operation: options.operation,
+          }
+          reportError(error)
+          throw Object.assign(new Error(error.message), { __externalError: error })
+        }
+
+        return data as T
+      } finally {
+        clearTimeout(timeoutId)
+      }
+    },
+  })
+}
+
+function normalizeError(err: unknown, service: string, operation: string): ExternalCallError {
+  // If it's already a normalized error from externalFetch
+  if (err && typeof err === 'object' && '__externalError' in err) {
+    return (err as { __externalError: ExternalCallError }).__externalError
+  }
+
+  // Abort errors (timeout)
+  if (err instanceof DOMException && err.name === 'AbortError') {
+    return { category: 'timeout', message: `${service} request timed out`, service, operation }
+  }
+
+  // Network errors (TypeError: fetch failed)
+  if (err instanceof TypeError) {
+    return { category: 'network', message: err.message, service, operation }
+  }
+
+  // Generic errors
+  if (err instanceof Error) {
+    return { category: 'unknown', message: err.message, service, operation }
+  }
+
+  return { category: 'unknown', message: String(err), service, operation }
+}
+
+/**
+ * Report an external call error.
+ * Currently logs to console. Will be wired to PostHog/monitoring in production.
+ */
+function reportError(error: ExternalCallError): void {
+  console.error(
+    `[External ${error.category}] ${error.service}/${error.operation}: ${error.message}`,
+    error.statusCode ? `(HTTP ${error.statusCode})` : '',
+  )
+}
+```
+
+- [ ] **Step 5: Run tests**
+
+```bash
+pnpm test src/lib/external/__tests__/call.test.ts
+```
+
+Expected: all PASS.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/lib/external/
+git commit -m "feat: add external dependency monitor with error normalization"
+```
+
+---
+
+## Task 8: PDF text extraction utility
+
+**Files:**
+- Create: `src/lib/billing-intelligence/extraction/pdf.ts`
+
+- [ ] **Step 1: Create the utility**
+
+Create `src/lib/billing-intelligence/extraction/pdf.ts`:
+
+```typescript
+import { PDFParse } from 'pdf-parse'
+
+/**
+ * Extract raw text from a PDF buffer.
+ * Returns concatenated text from all pages.
+ * Provider parsers receive text, not PDF buffers.
+ */
+export async function extractTextFromPdf(buffer: ArrayBuffer): Promise<string> {
+  const uint8 = new Uint8Array(buffer)
+  const parser = new PDFParse(uint8)
+  const result = await parser.getText()
+  return result.pages.map((p: { text: string }) => p.text).join('\n')
+}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/lib/billing-intelligence/extraction/pdf.ts
+git commit -m "feat: add PDF text extraction utility"
+```
+
+---
+
+## Task 9: Extraction confidence utility
+
+**Files:**
+- Create: `src/lib/billing-intelligence/confidence.ts`
+- Create: `src/lib/billing-intelligence/__tests__/confidence.test.ts`
+
+- [ ] **Step 1: Write failing tests**
+
+Create `src/lib/billing-intelligence/__tests__/confidence.test.ts`:
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import {
+  computeFieldStatus,
+  getSourceMethodScore,
+  buildExtractionConfidence,
+} from '../confidence'
+
+describe('getSourceMethodScore', () => {
+  it('scores API highest', () => {
+    expect(getSourceMethodScore('api')).toBe(0.95)
+  })
+
+  it('scores DDA high', () => {
+    expect(getSourceMethodScore('dda')).toBe(0.90)
+  })
+
+  it('scores PDF at 0.80', () => {
+    expect(getSourceMethodScore('pdf')).toBe(0.80)
+  })
+
+  it('scores web-scrape at 0.70', () => {
+    expect(getSourceMethodScore('web-scrape')).toBe(0.70)
+  })
+
+  it('scores email at 0.65', () => {
+    expect(getSourceMethodScore('email')).toBe(0.65)
+  })
+
+  it('scores OCR lowest', () => {
+    expect(getSourceMethodScore('ocr')).toBe(0.50)
+  })
+
+  it('defaults unknown source to 0.50', () => {
+    expect(getSourceMethodScore('unknown' as any)).toBe(0.50)
+  })
+})
+
+describe('computeFieldStatus', () => {
+  it('confirmed: high extraction + validated', () => {
+    expect(computeFieldStatus({ extraction: 0.95, validation: 1.0 }))
+      .toBe('confirmed')
+  })
+
+  it('high: high extraction, no validation', () => {
+    expect(computeFieldStatus({ extraction: 0.95 }))
+      .toBe('high')
+  })
+
+  it('needs-review: medium extraction', () => {
+    expect(computeFieldStatus({ extraction: 0.7 }))
+      .toBe('needs-review')
+  })
+
+  it('needs-review: high extraction but validation discrepancy', () => {
+    expect(computeFieldStatus({ extraction: 0.95, validation: 0.0 }))
+      .toBe('needs-review')
+  })
+
+  it('needs-review: validated but extraction is medium', () => {
+    expect(computeFieldStatus({ extraction: 0.7, validation: 1.0 }))
+      .toBe('needs-review')
+  })
+
+  it('failed: low extraction', () => {
+    expect(computeFieldStatus({ extraction: 0.3 }))
+      .toBe('failed')
+  })
+
+  it('failed: field not found (extraction = 0)', () => {
+    expect(computeFieldStatus({ extraction: 0 }))
+      .toBe('failed')
+  })
+})
+
+describe('buildExtractionConfidence', () => {
+  it('builds confidence with all fields found via PDF', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'pdf',
+      fields: {
+        amountDue: { found: true },
+        dueDate: { found: true },
+        accountNumber: { found: true },
+      },
+    })
+
+    expect(result.source.method).toBe('pdf')
+    expect(result.source.methodScore).toBe(0.80)
+    expect(result.fields.amountDue.extraction).toBe(0.80)
+    expect(result.fields.amountDue.status).toBe('high')
+    expect(result.summary.totalFields).toBe(3)
+    expect(result.summary.high).toBe(3)
+    expect(result.summary.autoAcceptable).toBe(true)
+  })
+
+  it('builds confidence with missing fields', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'pdf',
+      fields: {
+        amountDue: { found: true },
+        dueDate: { found: false },
+      },
+    })
+
+    expect(result.fields.amountDue.status).toBe('high')
+    expect(result.fields.dueDate.extraction).toBe(0)
+    expect(result.fields.dueDate.status).toBe('failed')
+    expect(result.summary.failed).toBe(1)
+    expect(result.summary.autoAcceptable).toBe(false)
+  })
+
+  it('builds confidence with validation results', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'pdf',
+      fields: {
+        amountDue: { found: true, validation: 1.0, validationSource: 'api' },
+        dueDate: { found: true, validation: 0.0, validationSource: 'api' },
+      },
+    })
+
+    expect(result.fields.amountDue.status).toBe('confirmed')
+    expect(result.fields.amountDue.validationSource).toBe('api')
+    expect(result.fields.dueDate.status).toBe('needs-review')
+    expect(result.summary.confirmed).toBe(1)
+    expect(result.summary.needsReview).toBe(1)
+    expect(result.summary.autoAcceptable).toBe(false)
+  })
+
+  it('API source produces higher extraction confidence', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'api',
+      fields: {
+        amountDue: { found: true },
+      },
+    })
+
+    expect(result.fields.amountDue.extraction).toBe(0.95)
+    expect(result.fields.amountDue.status).toBe('high')
+  })
+
+  it('OCR source produces lower extraction confidence', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'ocr',
+      fields: {
+        amountDue: { found: true },
+      },
+    })
+
+    expect(result.fields.amountDue.extraction).toBe(0.50)
+    expect(result.fields.amountDue.status).toBe('needs-review')
+  })
+})
+```
+
+- [ ] **Step 2: Run tests to verify they fail**
+
+```bash
+pnpm test src/lib/billing-intelligence/__tests__/confidence.test.ts
+```
+
+- [ ] **Step 3: Implement**
+
+Create `src/lib/billing-intelligence/confidence.ts`:
+
+```typescript
+import type {
+  ExtractionConfidence,
+  ExtractionSource,
+  FieldConfidence,
+  FieldStatus,
+} from './types'
+
+/**
+ * Base reliability scores by source method.
+ * These are initial values subject to calibration as we collect real accuracy data.
+ * When a field is found, its extraction confidence is set to the source method score.
+ * When a field is not found, its extraction confidence is 0.
+ */
+const SOURCE_METHOD_SCORES: Record<string, number> = {
+  api: 0.95,
+  dda: 0.90,
+  pdf: 0.80,
+  'web-scrape': 0.70,
+  email: 0.65,
+  ocr: 0.50,
+}
+
+/** Get the base reliability score for a source method. */
+export function getSourceMethodScore(method: ExtractionSource): number {
+  return SOURCE_METHOD_SCORES[method] ?? 0.50
+}
+
+/**
+ * Compute the routing status for a single field based on its
+ * extraction and validation confidence.
+ *
+ * Extraction confidence: "did we read it correctly?" (0-1)
+ * Validation confidence: "does it match another source?" (0-1, optional)
+ *
+ * Status routing:
+ * - confirmed:    extraction >= 0.9 AND validated >= 0.9
+ * - high:         extraction >= 0.9, no validation or not yet validated
+ * - needs-review: extraction 0.5-0.9, or validation found discrepancy
+ * - failed:       extraction < 0.5 or field not found
+ */
+export function computeFieldStatus(input: {
+  extraction: number
+  validation?: number
+}): FieldStatus {
+  const { extraction, validation } = input
+
+  // Validation discrepancy always forces review
+  if (validation !== undefined && validation < 0.5) return 'needs-review'
+
+  // Validated and extraction is good
+  if (validation !== undefined && validation >= 0.9 && extraction >= 0.9) return 'confirmed'
+
+  // Good extraction, no validation (or validation not yet run)
+  if (extraction >= 0.9) return 'high'
+
+  // Medium extraction
+  if (extraction >= 0.5) return 'needs-review'
+
+  // Low extraction or not found
+  return 'failed'
+}
+
+interface FieldInput {
+  found: boolean
+  validation?: number
+  validationSource?: string
+}
+
+interface ConfidenceInput {
+  sourceMethod: ExtractionSource
+  fields: Record<string, FieldInput>
+}
+
+/**
+ * Build the full ExtractionConfidence object for an extraction result.
+ * Called by providers after parsing to produce a uniform confidence structure.
+ *
+ * Each field's extraction confidence = source method score if found, 0 if not.
+ * Validation is an independent dimension set per field if a second source is available.
+ * Status routing is computed per field from both dimensions.
+ */
+export function buildExtractionConfidence(
+  input: ConfidenceInput,
+): ExtractionConfidence {
+  const methodScore = getSourceMethodScore(input.sourceMethod)
+
+  const fields: Record<string, FieldConfidence> = {}
+  let confirmed = 0
+  let high = 0
+  let needsReview = 0
+  let failed = 0
+
+  for (const [name, field] of Object.entries(input.fields)) {
+    const extraction = field.found ? methodScore : 0
+    const status = computeFieldStatus({
+      extraction,
+      validation: field.validation,
+    })
+
+    fields[name] = {
+      extraction,
+      status,
+      ...(field.validation !== undefined && { validation: field.validation }),
+      ...(field.validationSource && { validationSource: field.validationSource }),
+    }
+
+    switch (status) {
+      case 'confirmed': confirmed++; break
+      case 'high': high++; break
+      case 'needs-review': needsReview++; break
+      case 'failed': failed++; break
+    }
+  }
+
+  const totalFields = Object.keys(fields).length
+
+  return {
+    fields,
+    source: {
+      method: input.sourceMethod,
+      methodScore,
+    },
+    summary: {
+      totalFields,
+      confirmed,
+      high,
+      needsReview,
+      failed,
+      autoAcceptable: needsReview === 0 && failed === 0,
+    },
+  }
+}
+```
+
+- [ ] **Step 4: Run tests**
+
+```bash
+pnpm test src/lib/billing-intelligence/__tests__/confidence.test.ts
+```
+
+Expected: all PASS.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add src/lib/billing-intelligence/confidence.ts src/lib/billing-intelligence/__tests__/confidence.test.ts
+git commit -m "feat: add uniform extraction confidence scoring utility"
+```
+
+---
+
