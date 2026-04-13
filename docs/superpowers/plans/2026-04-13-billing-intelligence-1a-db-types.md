@@ -4,7 +4,7 @@
 
 **Goal:** Create database migrations and shared TypeScript types for the billing intelligence system.
 
-**Architecture:** Extend existing `providers` and `provider_invoice_profiles` tables. Create `company_cache` and `engineer_allowlist` tables. Define the `ExtractionResult` contract and `Provider` interface that all subsequent plans depend on.
+**Architecture:** Extend existing `providers` and `provider_invoice_profiles` tables. Create `company_cache`, `external_call_log`, and `engineer_allowlist` tables. Define the `ExtractionResult` contract and `Provider` interface that all subsequent plans depend on.
 
 **Tech Stack:** Supabase (Postgres, RLS), TypeScript
 
@@ -168,7 +168,7 @@ npx supabase migration up
 
 ```bash
 git add supabase/migrations/20260413120000_billing_intelligence_profiles.sql
-git commit -m "feat: extend provider_invoice_profiles with category, region, status, capabilities"
+git commit -m "feat: extend provider_invoice_profiles and rename profiles.cpf to tax_id"
 ```
 
 ---

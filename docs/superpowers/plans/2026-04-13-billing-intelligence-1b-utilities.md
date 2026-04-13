@@ -70,6 +70,41 @@ describe('normalizeMonth', () => {
   it('passes through YYYY-MM', () => {
     expect(normalizeMonth('2026-03')).toBe('2026-03')
   })
+
+  // English
+  it('normalizes FEB/2026 (English)', () => {
+    expect(normalizeMonth('FEB/2026')).toBe('2026-02')
+  })
+
+  it('normalizes APR/2026 (English)', () => {
+    expect(normalizeMonth('APR/2026')).toBe('2026-04')
+  })
+
+  it('normalizes SEP/2026 (English)', () => {
+    expect(normalizeMonth('SEP/2026')).toBe('2026-09')
+  })
+
+  it('normalizes DEC/2026 (English)', () => {
+    expect(normalizeMonth('DEC/2026')).toBe('2026-12')
+  })
+
+  // Spanish
+  it('normalizes ENE/2026 (Spanish)', () => {
+    expect(normalizeMonth('ENE/2026')).toBe('2026-01')
+  })
+
+  it('normalizes DIC/2026 (Spanish)', () => {
+    expect(normalizeMonth('DIC/2026')).toBe('2026-12')
+  })
+
+  // Shared across languages
+  it('normalizes JAN/2026 (shared PT/EN)', () => {
+    expect(normalizeMonth('JAN/2026')).toBe('2026-01')
+  })
+
+  it('normalizes MAR/2026 (shared PT/EN/ES)', () => {
+    expect(normalizeMonth('MAR/2026')).toBe('2026-03')
+  })
 })
 
 describe('normalizeBarcode', () => {
@@ -126,17 +161,28 @@ export function normalizeDate(date: string): string {
   return date
 }
 
-const PT_MONTHS: Record<string, string> = {
+/**
+ * Month abbreviation → number mapping.
+ * Supports Portuguese (PT-BR), English (EN), and Spanish (ES).
+ * Duplicate abbreviations (JAN, MAR, JUL, etc.) are shared across languages.
+ */
+const MONTH_ABBREVS: Record<string, string> = {
+  // Portuguese
   JAN: '01', FEV: '02', MAR: '03', ABR: '04',
   MAI: '05', JUN: '06', JUL: '07', AGO: '08',
   SET: '09', OUT: '10', NOV: '11', DEZ: '12',
+  // English (unique ones not already covered by PT)
+  FEB: '02', APR: '04', MAY: '05', AUG: '08',
+  SEP: '09', OCT: '10', DEC: '12',
+  // Spanish (unique ones not already covered by PT or EN)
+  ENE: '01', DIC: '12',
 }
 
 export function normalizeMonth(month: string): string {
-  const ptMatch = month.match(/^([A-Z]{3})\/(\d{4})$/)
-  if (ptMatch) {
-    const monthNum = PT_MONTHS[ptMatch[1]]
-    if (monthNum) return `${ptMatch[2]}-${monthNum}`
+  const match = month.match(/^([A-Z]{3})\/(\d{4})$/)
+  if (match) {
+    const monthNum = MONTH_ABBREVS[match[1]]
+    if (monthNum) return `${match[2]}-${monthNum}`
   }
   return month
 }
@@ -180,6 +226,8 @@ git commit -m "feat: add date, month, barcode, and money normalization utilities
 
 This is a cross-cutting concern. Every external network call (APIs, web scrapes, any dependency) goes through this wrapper. It monitors, captures errors, normalizes them, and reports — so the rest of the codebase doesn't need to handle external failure detection individually.
 
+**Prerequisites:** Verify that `SUPABASE_SERVICE_ROLE_KEY` exists in `.env.local`. This env var is needed by `logCall` to write to the `external_call_log` table via service role. Check with: `grep SUPABASE_SERVICE_ROLE_KEY .env.local`. If missing, get the value from the Supabase dashboard (Project Settings → API → service_role key) and add it.
+
 - [ ] **Step 1: Create types**
 
 Create `src/lib/external/types.ts`:
@@ -217,6 +265,19 @@ export interface ExternalCallOptions {
   service: string
   /** What operation (e.g., 'cnpj-lookup', 'fetch-debitos') */
   operation: string
+  /** The async function to execute */
+  fn: () => Promise<unknown>
+}
+
+export interface ExternalFetchOptions {
+  /** Which external service (e.g., 'brasilapi', 'receitaws', 'enliv-api') */
+  service: string
+  /** What operation (e.g., 'cnpj-lookup', 'fetch-debitos') */
+  operation: string
+  /** The URL to fetch */
+  url: string
+  /** Optional fetch init (method, headers, body, etc.) */
+  init?: RequestInit
   /** Timeout in milliseconds (default: 10000) */
   timeout?: number
   /** Optional: validate the response shape. Return true if valid. */
@@ -231,6 +292,15 @@ Create `src/lib/external/__tests__/call.test.ts`:
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { externalCall, externalFetch } from '../call'
+
+// Mock Supabase so logCall doesn't require a real DB connection in tests
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: () => ({
+    from: () => ({
+      insert: () => Promise.resolve({ error: null }),
+    }),
+  }),
+}))
 
 describe('externalCall', () => {
   it('returns success with data and duration', async () => {
@@ -371,7 +441,7 @@ pnpm test src/lib/external/__tests__/call.test.ts
 Create `src/lib/external/call.ts`:
 
 ```typescript
-import type { ExternalCallResult, ExternalCallError } from './types'
+import type { ExternalCallResult, ExternalCallError, ExternalCallOptions, ExternalFetchOptions } from './types'
 import { createClient } from '@supabase/supabase-js'
 
 function getServiceClient() {
@@ -392,11 +462,7 @@ function getServiceClient() {
  *     fn: async () => fetchSomething(),
  *   })
  */
-export async function externalCall<T>(options: {
-  service: string
-  operation: string
-  fn: () => Promise<T>
-}): Promise<ExternalCallResult<T>> {
+export async function externalCall<T>(options: ExternalCallOptions & { fn: () => Promise<T> }): Promise<ExternalCallResult<T>> {
   const start = Date.now()
   const timestamp = new Date().toISOString()
 
@@ -431,14 +497,7 @@ export async function externalCall<T>(options: {
  * Convenience wrapper for external fetch calls.
  * Handles HTTP status categorization, JSON parsing, and optional shape validation.
  */
-export async function externalFetch<T = unknown>(options: {
-  service: string
-  operation: string
-  url: string
-  init?: RequestInit
-  timeout?: number
-  validateShape?: (data: unknown) => boolean
-}): Promise<ExternalCallResult<T>> {
+export async function externalFetch<T = unknown>(options: ExternalFetchOptions): Promise<ExternalCallResult<T>> {
   return externalCall<T>({
     service: options.service,
     operation: options.operation,
@@ -559,6 +618,7 @@ git commit -m "feat: add external dependency monitor with error normalization"
 
 **Files:**
 - Create: `src/lib/billing-intelligence/extraction/pdf.ts`
+- Create: `src/lib/billing-intelligence/extraction/__tests__/pdf.test.ts`
 
 - [ ] **Step 1: Create the utility**
 
@@ -580,11 +640,57 @@ export async function extractTextFromPdf(buffer: ArrayBuffer): Promise<string> {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Write test**
+
+Create `src/lib/billing-intelligence/extraction/__tests__/pdf.test.ts`:
+
+```typescript
+import { describe, it, expect, vi } from 'vitest'
+import { extractTextFromPdf } from '../pdf'
+
+// Mock pdf-parse since we can't load real PDFs in unit tests
+vi.mock('pdf-parse', () => ({
+  PDFParse: class {
+    constructor(_data: Uint8Array) {}
+    async getText() {
+      return {
+        pages: [
+          { text: 'Page 1 content' },
+          { text: 'Page 2 content' },
+        ],
+      }
+    }
+  },
+}))
+
+describe('extractTextFromPdf', () => {
+  it('returns concatenated text from all pages', async () => {
+    const buffer = new ArrayBuffer(8)
+    const result = await extractTextFromPdf(buffer)
+    expect(result).toBe('Page 1 content\nPage 2 content')
+  })
+
+  it('returns string type', async () => {
+    const buffer = new ArrayBuffer(8)
+    const result = await extractTextFromPdf(buffer)
+    expect(typeof result).toBe('string')
+  })
+})
+```
+
+- [ ] **Step 3: Run tests**
 
 ```bash
-git add src/lib/billing-intelligence/extraction/pdf.ts
-git commit -m "feat: add PDF text extraction utility"
+pnpm test src/lib/billing-intelligence/extraction/__tests__/pdf.test.ts
+```
+
+Expected: all PASS.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add src/lib/billing-intelligence/extraction/
+git commit -m "feat: add PDF text extraction utility with tests"
 ```
 
 ---
@@ -819,21 +925,21 @@ describe('buildExtractionConfidence', () => {
     expect(result.summary.autoAcceptable).toBe(false)
   })
 
-  it('handles mix of all four statuses', () => {
+  it('PDF source: all found fields are needs-review (0.80 < 0.9 threshold)', () => {
     const result = buildExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
-        amountDue: { found: true, validation: 1.0, validationSource: 'api' },  // confirmed (pdf=0.8 is < 0.9, so actually needs-review even with validation)
-        accountNumber: { found: true },                                          // high
-        referenceMonth: { found: false },                                        // failed
+        amountDue: { found: true, validation: 1.0, validationSource: 'api' },  // extraction=0.80 < 0.9 → needs-review despite validation
+        accountNumber: { found: true },                                          // extraction=0.80 < 0.9 → needs-review
+        referenceMonth: { found: false },                                        // extraction=0 → failed
       },
     })
 
-    // Note: PDF source method score is 0.80, which is < 0.9 threshold for 'high'
-    // So even with validation=1.0, extraction=0.80 < 0.9 means it can't be 'confirmed'
     expect(result.fields.amountDue.status).toBe('needs-review')
     expect(result.fields.accountNumber.status).toBe('needs-review')
     expect(result.fields.referenceMonth.status).toBe('failed')
+    expect(result.summary.needsReview).toBe(2)
+    expect(result.summary.failed).toBe(1)
     expect(result.summary.autoAcceptable).toBe(false)
   })
 
