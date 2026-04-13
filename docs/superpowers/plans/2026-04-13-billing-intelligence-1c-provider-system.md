@@ -104,6 +104,7 @@ Create `src/lib/billing-intelligence/identification/cnpj-lookup.ts`:
 
 ```typescript
 import { createClient } from '@supabase/supabase-js'
+import { externalFetch } from '@/lib/external/call'
 
 export interface CompanyInfo {
   cnpj: string
@@ -209,41 +210,56 @@ async function saveToCache(info: CompanyInfo): Promise<void> {
   }
 }
 
-/** Fetch company info from BrasilAPI. Returns CompanyInfo. */
+/** Fetch company info from BrasilAPI using the external dependency monitor. */
 async function fetchFromBrasilApi(cnpj: string): Promise<CompanyInfo> {
-  const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`, { method: 'GET' })
-  if (!response.ok) throw new Error(`BrasilAPI returned ${response.status}`)
-  const data = await response.json()
+  const result = await externalFetch<Record<string, unknown>>({
+    service: 'brasilapi',
+    operation: 'cnpj-lookup',
+    url: `https://brasilapi.com.br/api/cnpj/v1/${cnpj}`,
+  })
 
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message ?? 'BrasilAPI lookup failed')
+  }
+
+  const data = result.data
   return {
-    cnpj: data.cnpj,
-    companyName: data.nome_fantasia || data.razao_social,
-    legalName: data.razao_social,
-    activityCode: data.cnae_fiscal,
-    activityDescription: data.cnae_fiscal_descricao,
-    city: data.municipio,
-    state: data.uf,
+    cnpj: String(data.cnpj),
+    companyName: String(data.nome_fantasia || data.razao_social),
+    legalName: String(data.razao_social),
+    activityCode: Number(data.cnae_fiscal),
+    activityDescription: String(data.cnae_fiscal_descricao),
+    city: String(data.municipio),
+    state: String(data.uf),
     source: 'brasilapi',
     lastUpdated: new Date().toISOString(),
   }
 }
 
-/** Fetch company info from ReceitaWS. Returns CompanyInfo. */
+/** Fetch company info from ReceitaWS using the external dependency monitor. */
 async function fetchFromReceitaWs(cnpj: string): Promise<CompanyInfo> {
-  const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpj}`, { method: 'GET' })
-  if (!response.ok) throw new Error(`ReceitaWS returned ${response.status}`)
-  const data = await response.json()
+  const result = await externalFetch<Record<string, unknown>>({
+    service: 'receitaws',
+    operation: 'cnpj-lookup',
+    url: `https://receitaws.com.br/v1/cnpj/${cnpj}`,
+  })
 
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message ?? 'ReceitaWS lookup failed')
+  }
+
+  const data = result.data
+  const atividades = data.atividade_principal as Array<{ code: string; text: string }> | undefined
   return {
-    cnpj: data.cnpj?.replace(/[.\-/]/g, '') ?? cnpj,
-    companyName: data.fantasia || data.nome,
-    legalName: data.nome,
-    activityCode: data.atividade_principal?.[0]?.code
-      ? parseInt(data.atividade_principal[0].code.replace(/[.\-]/g, ''), 10)
+    cnpj: String(data.cnpj ?? '').replace(/[.\-/]/g, '') || cnpj,
+    companyName: String(data.fantasia || data.nome),
+    legalName: String(data.nome),
+    activityCode: atividades?.[0]?.code
+      ? parseInt(atividades[0].code.replace(/[.\-]/g, ''), 10)
       : 0,
-    activityDescription: data.atividade_principal?.[0]?.text ?? 'Unknown',
-    city: data.municipio,
-    state: data.uf,
+    activityDescription: atividades?.[0]?.text ?? 'Unknown',
+    city: String(data.municipio),
+    state: String(data.uf),
     source: 'receitaws',
     lastUpdated: new Date().toISOString(),
   }
@@ -451,7 +467,11 @@ git commit -m "feat: add provider registry mapping profile IDs to code modules"
 
 ## Task 12: Enliv Campeche provider module
 
-**IMPORTANT:** The code samples below use the field names from the `ExtractionResult` type defined in Task 4. When implementing, read `src/lib/billing-intelligence/types.ts` first and ensure all field names match (e.g., `provider.taxId` not `provider.cnpj`, `customer.taxId` not `customer.document`, `customer.taxIdType` not `customer.documentType`). The extraction should also include `consumption` data (kWh for electricity). Use `computeExtractionConfidence` from Task 8 instead of building confidence objects manually.
+**IMPORTANT:**
+- The code samples below use the field names from the `ExtractionResult` type defined in Plan 1a Task 5. When implementing, read `src/lib/billing-intelligence/types.ts` first and ensure all field names match (e.g., `provider.taxId` not `provider.cnpj`, `customer.taxId` not `customer.document`, `customer.taxIdType` not `customer.documentType`).
+- The extraction should also include `consumption` data (kWh for electricity).
+- Use `buildExtractionConfidence` from Plan 1b Task 9 instead of building confidence objects manually.
+- The `api-client.ts` must use `externalFetch` from `@/lib/external/call` (not raw `fetch`) so all API calls are monitored and logged to `external_call_log`.
 
 **Files:**
 - Create: `src/lib/billing-intelligence/providers/enliv-campeche/index.ts`

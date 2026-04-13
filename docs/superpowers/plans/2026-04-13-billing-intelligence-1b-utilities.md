@@ -372,10 +372,18 @@ Create `src/lib/external/call.ts`:
 
 ```typescript
 import type { ExternalCallResult, ExternalCallError } from './types'
+import { createClient } from '@supabase/supabase-js'
+
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
+}
 
 /**
  * Wrap any async function as a monitored external call.
- * Captures duration, normalizes errors, and provides a uniform result shape.
+ * Captures duration, normalizes errors, logs to DB, and provides a uniform result shape.
  *
  * Usage:
  *   const result = await externalCall({
@@ -394,21 +402,24 @@ export async function externalCall<T>(options: {
 
   try {
     const data = await options.fn()
+    const duration = Date.now() - start
+    logCall({ service: options.service, operation: options.operation, success: true, duration })
     return {
       success: true,
       data,
-      duration: Date.now() - start,
+      duration,
       service: options.service,
       operation: options.operation,
       timestamp,
     }
   } catch (err) {
+    const duration = Date.now() - start
     const error = normalizeError(err, options.service, options.operation)
-    reportError(error)
+    logCall({ service: options.service, operation: options.operation, success: false, duration, error })
     return {
       success: false,
       error,
-      duration: Date.now() - start,
+      duration,
       service: options.service,
       operation: options.operation,
       timestamp,
@@ -451,7 +462,6 @@ export async function externalFetch<T = unknown>(options: {
             service: options.service,
             operation: options.operation,
           }
-          reportError(error)
           throw Object.assign(new Error(error.message), { __externalError: error })
         }
 
@@ -464,7 +474,6 @@ export async function externalFetch<T = unknown>(options: {
             service: options.service,
             operation: options.operation,
           }
-          reportError(error)
           throw Object.assign(new Error(error.message), { __externalError: error })
         }
 
@@ -501,14 +510,31 @@ function normalizeError(err: unknown, service: string, operation: string): Exter
 }
 
 /**
- * Report an external call error.
- * Currently logs to console. Will be wired to PostHog/monitoring in production.
+ * Log an external call (success or failure) to the external_call_log table.
+ * Fire-and-forget — logging failures should not break the calling code.
  */
-function reportError(error: ExternalCallError): void {
-  console.error(
-    `[External ${error.category}] ${error.service}/${error.operation}: ${error.message}`,
-    error.statusCode ? `(HTTP ${error.statusCode})` : '',
-  )
+function logCall(entry: {
+  service: string
+  operation: string
+  success: boolean
+  duration: number
+  error?: ExternalCallError
+}): void {
+  const supabase = getServiceClient()
+  supabase
+    .from('external_call_log')
+    .insert({
+      service: entry.service,
+      operation: entry.operation,
+      success: entry.success,
+      duration_ms: entry.duration,
+      error_category: entry.error?.category ?? null,
+      error_message: entry.error?.message ?? null,
+      status_code: entry.error?.statusCode ?? null,
+    })
+    .then(({ error }) => {
+      if (error) console.error('[external_call_log] Failed to log:', error.message)
+    })
 }
 ```
 
@@ -646,6 +672,49 @@ describe('computeFieldStatus', () => {
     expect(computeFieldStatus({ extraction: 0 }))
       .toBe('failed')
   })
+
+  // Boundary tests
+  it('boundary: extraction exactly 0.9 is high (no validation)', () => {
+    expect(computeFieldStatus({ extraction: 0.9 }))
+      .toBe('high')
+  })
+
+  it('boundary: extraction exactly 0.5 is needs-review', () => {
+    expect(computeFieldStatus({ extraction: 0.5 }))
+      .toBe('needs-review')
+  })
+
+  it('boundary: extraction 0.49 is failed', () => {
+    expect(computeFieldStatus({ extraction: 0.49 }))
+      .toBe('failed')
+  })
+
+  it('boundary: validation exactly 0.9 + high extraction is confirmed', () => {
+    expect(computeFieldStatus({ extraction: 0.9, validation: 0.9 }))
+      .toBe('confirmed')
+  })
+
+  it('boundary: validation 0.5 + high extraction is high (not discrepancy)', () => {
+    // validation >= 0.5 does not trigger discrepancy, but < 0.9 so not confirmed → high
+    expect(computeFieldStatus({ extraction: 0.95, validation: 0.5 }))
+      .toBe('high')
+  })
+
+  it('boundary: validation 0.49 forces needs-review regardless of extraction', () => {
+    expect(computeFieldStatus({ extraction: 0.99, validation: 0.49 }))
+      .toBe('needs-review')
+  })
+
+  it('validation undefined treated same as omitted', () => {
+    expect(computeFieldStatus({ extraction: 0.95, validation: undefined }))
+      .toBe('high')
+  })
+
+  it('medium extraction + medium validation is needs-review', () => {
+    // extraction < 0.9 → needs-review regardless of validation
+    expect(computeFieldStatus({ extraction: 0.7, validation: 0.7 }))
+      .toBe('needs-review')
+  })
 })
 
 describe('buildExtractionConfidence', () => {
@@ -722,6 +791,133 @@ describe('buildExtractionConfidence', () => {
     })
 
     expect(result.fields.amountDue.extraction).toBe(0.50)
+    expect(result.fields.amountDue.status).toBe('needs-review')
+  })
+
+  it('handles empty fields input', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'pdf',
+      fields: {},
+    })
+
+    expect(result.summary.totalFields).toBe(0)
+    expect(result.summary.autoAcceptable).toBe(true)
+  })
+
+  it('handles all fields missing', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'pdf',
+      fields: {
+        amountDue: { found: false },
+        dueDate: { found: false },
+        accountNumber: { found: false },
+      },
+    })
+
+    expect(result.summary.totalFields).toBe(3)
+    expect(result.summary.failed).toBe(3)
+    expect(result.summary.autoAcceptable).toBe(false)
+  })
+
+  it('handles mix of all four statuses', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'pdf',
+      fields: {
+        amountDue: { found: true, validation: 1.0, validationSource: 'api' },  // confirmed (pdf=0.8 is < 0.9, so actually needs-review even with validation)
+        accountNumber: { found: true },                                          // high
+        referenceMonth: { found: false },                                        // failed
+      },
+    })
+
+    // Note: PDF source method score is 0.80, which is < 0.9 threshold for 'high'
+    // So even with validation=1.0, extraction=0.80 < 0.9 means it can't be 'confirmed'
+    expect(result.fields.amountDue.status).toBe('needs-review')
+    expect(result.fields.accountNumber.status).toBe('needs-review')
+    expect(result.fields.referenceMonth.status).toBe('failed')
+    expect(result.summary.autoAcceptable).toBe(false)
+  })
+
+  it('API source with validation achieves confirmed status', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'api',
+      fields: {
+        amountDue: { found: true, validation: 1.0, validationSource: 'web' },
+      },
+    })
+
+    // API extraction=0.95 >= 0.9, validation=1.0 >= 0.9 → confirmed
+    expect(result.fields.amountDue.status).toBe('confirmed')
+    expect(result.summary.confirmed).toBe(1)
+    expect(result.summary.autoAcceptable).toBe(true)
+  })
+
+  it('validation without validationSource omits the field', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'api',
+      fields: {
+        amountDue: { found: true, validation: 1.0 },
+      },
+    })
+
+    expect(result.fields.amountDue.validation).toBe(1.0)
+    expect(result.fields.amountDue.validationSource).toBeUndefined()
+  })
+
+  it('field with found=false ignores validation', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'pdf',
+      fields: {
+        amountDue: { found: false, validation: 1.0, validationSource: 'api' },
+      },
+    })
+
+    // extraction=0 → failed, regardless of validation
+    expect(result.fields.amountDue.extraction).toBe(0)
+    expect(result.fields.amountDue.status).toBe('failed')
+  })
+
+  it('autoAcceptable true when all fields confirmed', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'api',
+      fields: {
+        amountDue: { found: true, validation: 1.0, validationSource: 'web' },
+        dueDate: { found: true, validation: 0.95, validationSource: 'web' },
+      },
+    })
+
+    expect(result.summary.confirmed).toBe(2)
+    expect(result.summary.autoAcceptable).toBe(true)
+  })
+
+  it('DDA source method', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'dda',
+      fields: { amountDue: { found: true } },
+    })
+
+    expect(result.source.method).toBe('dda')
+    expect(result.source.methodScore).toBe(0.90)
+    expect(result.fields.amountDue.extraction).toBe(0.90)
+    expect(result.fields.amountDue.status).toBe('high')
+  })
+
+  it('web-scrape source method', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'web-scrape',
+      fields: { amountDue: { found: true } },
+    })
+
+    expect(result.source.methodScore).toBe(0.70)
+    expect(result.fields.amountDue.status).toBe('needs-review')
+  })
+
+  it('email source method', () => {
+    const result = buildExtractionConfidence({
+      sourceMethod: 'email',
+      fields: { amountDue: { found: true } },
+    })
+
+    expect(result.source.methodScore).toBe(0.65)
     expect(result.fields.amountDue.status).toBe('needs-review')
   })
 })

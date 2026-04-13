@@ -237,14 +237,64 @@ git commit -m "feat: add company_cache and company_cache_history tables"
 
 ---
 
-## Task 3: Database migration — engineer_allowlist
+## Task 3: Database migration — external_call_log
 
 **Files:**
-- Create: `supabase/migrations/20260413120200_engineer_allowlist.sql`
+- Create: `supabase/migrations/20260413120200_external_call_log.sql`
 
 - [ ] **Step 1: Create the migration**
 
-Create `supabase/migrations/20260413120200_engineer_allowlist.sql`:
+Create `supabase/migrations/20260413120200_external_call_log.sql`:
+
+```sql
+-- =============================================================================
+-- External dependency call log
+-- Captures all external API calls (successes and failures) for monitoring.
+-- The engineering playground surfaces this data for debugging and alerting.
+-- =============================================================================
+
+create table external_call_log (
+  id uuid primary key default gen_random_uuid(),
+  service text not null,                  -- 'brasilapi', 'receitaws', 'enliv-api', etc.
+  operation text not null,                -- 'cnpj-lookup', 'fetch-debitos', etc.
+  success boolean not null,
+  duration_ms integer not null,
+  error_category text,                    -- 'timeout', 'network', 'server_error', 'client_error', 'unexpected_shape', 'unknown'
+  error_message text,
+  status_code integer,
+  created_at timestamptz not null default now()
+);
+
+create index idx_external_call_log_service on external_call_log(service, created_at);
+create index idx_external_call_log_errors on external_call_log(success, created_at) where success = false;
+
+-- Server-side only
+alter table external_call_log enable row level security;
+```
+
+- [ ] **Step 2: Apply the migration**
+
+```bash
+npx supabase migration up
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add supabase/migrations/20260413120200_external_call_log.sql
+git commit -m "feat: add external_call_log table for dependency monitoring"
+```
+
+---
+
+## Task 4: Database migration — engineer_allowlist
+
+**Files:**
+- Create: `supabase/migrations/20260413120300_engineer_allowlist.sql`
+
+- [ ] **Step 1: Create the migration**
+
+Create `supabase/migrations/20260413120300_engineer_allowlist.sql`:
 
 ```sql
 -- =============================================================================
@@ -273,13 +323,13 @@ npx supabase migration up
 - [ ] **Step 3: Commit**
 
 ```bash
-git add supabase/migrations/20260413120200_engineer_allowlist.sql
+git add supabase/migrations/20260413120300_engineer_allowlist.sql
 git commit -m "feat: add engineer_allowlist table"
 ```
 
 ---
 
-## Task 4: Shared types for billing intelligence
+## Task 5: Shared types for billing intelligence
 
 **Files:**
 - Create: `src/lib/billing-intelligence/types.ts`
@@ -433,7 +483,7 @@ git commit -m "feat: add shared types for billing intelligence system"
 
 ---
 
-## Task 5: Provider interface
+## Task 6: Provider interface
 
 **Files:**
 - Create: `src/lib/billing-intelligence/providers/types.ts`
