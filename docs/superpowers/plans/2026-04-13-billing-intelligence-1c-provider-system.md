@@ -443,10 +443,9 @@ export function getProviderByProfileId(profileId: string): Provider | undefined 
   return providers.find((p) => p.profileId === profileId)
 }
 
-/** Find providers by company CNPJ. Returns all matching (multiple if different regions). */
 /** Find providers by company tax ID. Returns all matching (multiple if different regions). */
 export function getProvidersByTaxId(taxId: string): Provider[] {
-  const clean = cnpj.replace(/[.\-/]/g, '')
+  const clean = taxId.replace(/[.\-/]/g, '')
   return providers.filter((p) => p.meta.companyTaxId === clean)
 }
 
@@ -480,6 +479,7 @@ git commit -m "feat: add provider registry mapping profile IDs to code modules"
 - Create: `src/lib/billing-intelligence/providers/enliv-campeche/validate.ts`
 - Create: `src/lib/billing-intelligence/providers/enliv-campeche/__tests__/parser.test.ts`
 - Create: `src/lib/billing-intelligence/providers/enliv-campeche/__tests__/api-client.test.ts`
+- Create: `src/lib/billing-intelligence/providers/enliv-campeche/__tests__/validate.test.ts`
 
 This migrates the Phase 0 Enliv code into the new structure, adapting to use `Provider` interface, `ExtractionResult` type, normalized dates/money, and the profile UUID.
 
@@ -573,6 +573,8 @@ function extractField(text: string, pattern: RegExp): string | null {
 Create `src/lib/billing-intelligence/providers/enliv-campeche/api-client.ts`:
 
 ```typescript
+import { externalFetch } from '@/lib/external/call'
+
 const ENLIV_API_BASE = 'https://enliv-api-operacional-e8a27cc79cd8.herokuapp.com'
 
 export interface EnlivDebito {
@@ -599,16 +601,32 @@ function stripFormatting(doc: string): string {
 
 export async function fetchEnlivDebitos(document: string): Promise<EnlivResumoDebitos> {
   const clean = stripFormatting(document)
-  const response = await fetch(`${ENLIV_API_BASE}/v1/cobrancas/cliente/${clean}/resumo-debitos`, { method: 'GET' })
-  if (!response.ok) throw new Error(`Enliv API returned ${response.status}`)
-  return response.json()
+  const result = await externalFetch<EnlivResumoDebitos>({
+    service: 'enliv-api',
+    operation: 'fetch-debitos',
+    url: `${ENLIV_API_BASE}/v1/cobrancas/cliente/${clean}/resumo-debitos`,
+  })
+
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message ?? 'Enliv API fetch-debitos failed')
+  }
+
+  return result.data
 }
 
 export async function fetchEnlivPagas(document: string, page = 1): Promise<EnlivResumoDebitos> {
   const clean = stripFormatting(document)
-  const response = await fetch(`${ENLIV_API_BASE}/v1/cobrancas/cliente/${clean}/resumo-pagas?page=${page}`, { method: 'GET' })
-  if (!response.ok) throw new Error(`Enliv API returned ${response.status}`)
-  return response.json()
+  const result = await externalFetch<EnlivResumoDebitos>({
+    service: 'enliv-api',
+    operation: 'fetch-pagas',
+    url: `${ENLIV_API_BASE}/v1/cobrancas/cliente/${clean}/resumo-pagas?page=${page}`,
+  })
+
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message ?? 'Enliv API fetch-pagas failed')
+  }
+
+  return result.data
 }
 ```
 
@@ -669,6 +687,7 @@ import { parseEnlivBillText } from './parser'
 import { fetchEnlivDebitos, fetchEnlivPagas } from './api-client'
 import { validateEnlivExtraction } from './validate'
 import { normalizeDate, toMinorUnits, normalizeBarcode } from '../../normalize'
+import { buildExtractionConfidence } from '../../confidence'
 
 // Placeholder — will be replaced with the real provider_invoice_profiles.id
 // when Enliv Campeche is created through the engineering playground
@@ -680,6 +699,7 @@ export const enlivCampeche: Provider = {
   meta: {
     companyName: 'Enliv',
     companyTaxId: '49449868000162',
+    countryCode: 'BR',
     displayName: 'Enliv (Campeche)',
     category: 'electricity',
     region: 'SC-florianopolis-campeche',
@@ -704,23 +724,32 @@ export const enlivCampeche: Provider = {
     return parseEnlivBillText(text)
   },
 
-  async lookupBills(document: string): Promise<ExtractionResult[] | null> {
+  async lookupBills(taxId: string): Promise<ExtractionResult[] | null> {
     try {
-      const data = await fetchEnlivDebitos(document)
+      const data = await fetchEnlivDebitos(taxId)
       return data.debitos.map((d) => ({
-        provider: { profileId: PROFILE_ID, companyName: 'Enliv', cnpj: '49449868000162', category: 'electricity' as const },
-        customer: { name: data.nome_cliente, document, documentType: 'cpf' as const, accountNumber: d.cadastroDistribuidora },
+        provider: { profileId: PROFILE_ID, companyName: 'Enliv', taxId: '49449868000162', category: 'electricity' as const },
+        customer: { name: data.nome_cliente, taxId, taxIdType: 'cpf' as const, countryCode: 'BR', accountNumber: d.cadastroDistribuidora },
         billing: { referenceMonth: '', dueDate: normalizeDate(d.vencimento), amountDue: toMinorUnits(d.valor), currency: 'BRL' },
         payment: { linhaDigitavel: normalizeBarcode(d.linha_digitavel), pixPayload: d.emv_pix },
-        confidence: { overall: 0.95, fields: {}, factors: { sourceMethod: 0.95, validationBonus: 0, fieldCompleteness: 0.05, mathConsistency: 0 } },
+        confidence: buildExtractionConfidence({
+          sourceMethod: 'api',
+          fields: {
+            customerName: { found: !!data.nome_cliente },
+            accountNumber: { found: !!d.cadastroDistribuidora },
+            dueDate: { found: !!d.vencimento },
+            amountDue: { found: true },
+            linhaDigitavel: { found: !!d.linha_digitavel },
+          },
+        }),
         rawSource: 'api' as const,
       }))
     } catch { return null }
   },
 
-  async checkPaymentStatus(document: string): Promise<PaymentStatus[] | null> {
+  async checkPaymentStatus(taxId: string): Promise<PaymentStatus[] | null> {
     try {
-      const data = await fetchEnlivPagas(document)
+      const data = await fetchEnlivPagas(taxId)
       return data.debitos.map((d) => ({
         paid: true,
         paidDate: normalizeDate(d.vencimento),
@@ -870,7 +899,100 @@ describe('fetchEnlivPagas', () => {
 })
 ```
 
-- [ ] **Step 7: Run all billing intelligence tests**
+- [ ] **Step 7: Create validate tests**
+
+Create `src/lib/billing-intelligence/providers/enliv-campeche/__tests__/validate.test.ts`:
+
+```typescript
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { validateEnlivExtraction } from '../validate'
+import type { ExtractionResult } from '../../../types'
+import { buildExtractionConfidence } from '../../../confidence'
+
+function makeExtraction(overrides: Partial<ExtractionResult> = {}): ExtractionResult {
+  return {
+    provider: { profileId: 'test', companyName: 'Enliv', taxId: '49449868000162', category: 'electricity' },
+    customer: { name: 'Test', taxId: '04003232909', taxIdType: 'cpf', countryCode: 'BR', accountNumber: '59069412' },
+    billing: { referenceMonth: '2026-03', dueDate: '2026-04-24', amountDue: 21847, currency: 'BRL' },
+    payment: { linhaDigitavel: '74891160090666030730432263871033514260000021847' },
+    confidence: buildExtractionConfidence({ sourceMethod: 'pdf', fields: { amountDue: { found: true } } }),
+    rawSource: 'pdf',
+    ...overrides,
+  }
+}
+
+describe('validateEnlivExtraction', () => {
+  beforeEach(() => vi.restoreAllMocks())
+
+  it('returns valid when API data matches extraction', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({
+        nome_cliente: 'Test',
+        debitos: [{
+          cadastroDistribuidora: '59069412',
+          vencimento: '2026-04-24T00:00:00.000Z',
+          valor: 218.47,
+          linha_digitavel: '74891160090666030730432263871033514260000021847',
+        }],
+      }), { status: 200 }),
+    )
+
+    const result = await validateEnlivExtraction(makeExtraction())
+    expect(result).not.toBeNull()
+    expect(result!.valid).toBe(true)
+    expect(result!.discrepancies).toHaveLength(0)
+  })
+
+  it('returns discrepancy when amount differs', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({
+        nome_cliente: 'Test',
+        debitos: [{
+          cadastroDistribuidora: '59069412',
+          vencimento: '2026-04-24T00:00:00.000Z',
+          valor: 250.00,
+          linha_digitavel: '74891160090666030730432263871033514260000021847',
+        }],
+      }), { status: 200 }),
+    )
+
+    const result = await validateEnlivExtraction(makeExtraction())
+    expect(result!.valid).toBe(false)
+    expect(result!.discrepancies).toContainEqual(
+      expect.objectContaining({ field: 'amountDue' }),
+    )
+  })
+
+  it('returns invalid when no matching barcode found', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response(JSON.stringify({
+        nome_cliente: 'Test',
+        debitos: [{
+          cadastroDistribuidora: '59069412',
+          vencimento: '2026-04-24T00:00:00.000Z',
+          valor: 218.47,
+          linha_digitavel: '00000000000000000000000000000000000000000000000',
+        }],
+      }), { status: 200 }),
+    )
+
+    const result = await validateEnlivExtraction(makeExtraction())
+    expect(result!.valid).toBe(false)
+    expect(result!.discrepancies).toContainEqual(
+      expect.objectContaining({ field: 'barcode' }),
+    )
+  })
+
+  it('returns null when API call fails', async () => {
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('network error'))
+
+    const result = await validateEnlivExtraction(makeExtraction())
+    expect(result).toBeNull()
+  })
+})
+```
+
+- [ ] **Step 8: Run all billing intelligence tests**
 
 ```bash
 pnpm test src/lib/billing-intelligence/
@@ -878,7 +1000,7 @@ pnpm test src/lib/billing-intelligence/
 
 Expected: all PASS.
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
 git add src/lib/billing-intelligence/providers/enliv-campeche/ src/lib/billing-intelligence/providers/registry.ts

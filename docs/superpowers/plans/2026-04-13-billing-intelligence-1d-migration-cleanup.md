@@ -12,46 +12,44 @@
 **Depends on:** Plans 1a, 1b, 1c (all billing-intelligence code exists)
 
 **Key changes:**
-- `src/app/actions/phase0/enliv-lookup.ts` → import from `billing-intelligence/providers/enliv-campeche/api-client`
-- `src/app/actions/phase0/enliv-extract.ts` → import from `billing-intelligence/providers/enliv-campeche/parser`
-- `src/app/actions/phase0/cnpj-identify.ts` → import from `billing-intelligence/identification/`
+- Delete `src/app/app/(main)/dev/phase0/` (entire Phase 0 dev page — replaced by eng playground in Plan 3)
+- Delete `src/app/actions/phase0/` (all Phase 0 server actions)
 - Delete `src/lib/cnpj/lookup.ts`, `src/lib/cnpj/types.ts`, `src/lib/cnpj/__tests__/lookup.test.ts`
-- Delete `src/lib/providers/` (entire directory)
+- Delete `src/lib/providers/` (entire old provider directory)
+- Delete `src/lib/pluggy/` (will be rebuilt in billing-intelligence in a future plan)
+- Delete `src/app/api/pluggy/` (Phase 0 API routes)
 - Keep `src/lib/cnpj/validate.ts` and `src/lib/cpf/validate.ts` (generic utilities)
 
 ---
 ## Task 14: Update Phase 0 imports and clean up old code
 
 **Files:**
-- Modify: `src/app/actions/phase0/enliv-lookup.ts`
-- Modify: `src/app/actions/phase0/enliv-extract.ts`
-- Modify: `src/app/actions/phase0/cnpj-identify.ts`
+- Delete: `src/app/app/(main)/dev/phase0/` (entire directory)
+- Delete: `src/app/actions/phase0/` (entire directory)
 - Delete: `src/lib/cnpj/lookup.ts`, `src/lib/cnpj/types.ts`, `src/lib/cnpj/__tests__/lookup.test.ts`
 - Delete: `src/lib/providers/` (entire directory)
+- Delete: `src/lib/pluggy/` (entire directory)
+- Delete: `src/app/api/pluggy/` (entire directory)
 
 Keep `src/lib/cnpj/validate.ts`, `src/lib/cnpj/__tests__/validate.test.ts`, `src/lib/cpf/` — these are generic utilities.
 
-- [ ] **Step 1: Update server action imports**
+- [ ] **Step 1: Delete Phase 0 dev page and related code**
 
-Update `src/app/actions/phase0/enliv-lookup.ts`:
-- Change import from `@/lib/providers/enliv/api-client` to `@/lib/billing-intelligence/providers/enliv-campeche/api-client`
-
-Update `src/app/actions/phase0/enliv-extract.ts`:
-- Change import from `@/lib/providers/enliv/pdf-parser` to `@/lib/billing-intelligence/providers/enliv-campeche/parser`
-- The new parser returns `ExtractionResult` instead of `EnlivBillExtraction`. The Phase 0 UI expects the old shape. Add a mapping in the server action to convert `ExtractionResult` back to the shape the UI expects, or update the UI components. The simplest approach: return the `ExtractionResult` directly and update the UI to use the new field paths (e.g., `result.data.billing.amountDue` instead of `result.data.amountDue`).
-
-Update `src/app/actions/phase0/cnpj-identify.ts`:
-- Change imports from `@/lib/cnpj/lookup` to `@/lib/billing-intelligence/identification/cnpj-extract` and `@/lib/billing-intelligence/identification/cnpj-lookup`
-
-- [ ] **Step 2: Update Phase 0 UI components for new ExtractionResult shape**
-
-The new parser returns amounts in minor units (centavos) and normalized dates. Update the display in `enliv-upload.tsx` to divide `amountDue` by 100 for display.
-
-- [ ] **Step 3: Delete old files**
+The Phase 0 dev page is replaced entirely by the engineering playground (Plan 3). Delete all Phase 0 code:
 
 ```bash
-rm src/lib/cnpj/lookup.ts src/lib/cnpj/types.ts src/lib/cnpj/__tests__/lookup.test.ts
+rm -rf src/app/app/\(main\)/dev/phase0/
+rm -rf src/app/actions/phase0/
+rm -rf src/app/api/pluggy/
+rm -rf src/lib/pluggy/
+```
+
+- [ ] **Step 2: Delete old provider and CNPJ code (replaced by billing-intelligence)**
+
+```bash
 rm -rf src/lib/providers/
+rm src/lib/cnpj/lookup.ts src/lib/cnpj/types.ts
+rm src/lib/cnpj/__tests__/lookup.test.ts
 ```
 
 - [ ] **Step 4: Run all tests**
@@ -81,9 +79,9 @@ git commit -m "refactor: migrate billing code to src/lib/billing-intelligence an
 
 ## Summary
 
-After all 14 tasks:
+After all 15 tasks:
 
-- **3 DB migrations:** extended `provider_invoice_profiles` with category/region/status/capabilities, added `company_cache` + history (country-agnostic), added `engineer_allowlist` (with user_id FK)
+- **4 DB migrations:** extended `provider_invoice_profiles` with category/region/status/capabilities, added `company_cache` + history (country-agnostic), added `external_call_log` for dependency monitoring, added `engineer_allowlist` (with user_id FK)
 - **Shared types** with `ExtractionResult` contract using `profileId` to link to DB
 - **Provider interface** with `profileId` as the DB link, plus README documenting provider directory structure
 - **External dependency monitor** — cross-cutting wrapper for all external calls with error normalization and reporting
