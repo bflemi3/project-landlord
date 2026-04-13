@@ -11,7 +11,7 @@ import type {
  * When a field is found, its extraction confidence is set to the source method score.
  * When a field is not found, its extraction confidence is 0.
  */
-const SOURCE_METHOD_SCORES: Record<string, number> = {
+const SOURCE_METHOD_SCORES: Record<ExtractionSource, number> = {
   api: 0.95,
   dda: 0.90,
   pdf: 0.80,

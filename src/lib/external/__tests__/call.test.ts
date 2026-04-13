@@ -41,6 +41,18 @@ describe('externalCall', () => {
     expect(result.error!.operation).toBe('test-op')
   })
 
+  it('handles non-Error throws gracefully', async () => {
+    const result = await externalCall({
+      service: 'test-service',
+      operation: 'test-op',
+      fn: async () => { throw 'string error' },
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error!.category).toBe('unknown')
+    expect(result.error!.message).toBe('string error')
+  })
+
   it('tracks duration even on failure', async () => {
     const result = await externalCall({
       service: 'test-service',
@@ -115,6 +127,24 @@ describe('externalFetch', () => {
 
     expect(result.success).toBe(false)
     expect(result.error!.category).toBe('network')
+  })
+
+  it('categorizes non-JSON 200 response as unknown error', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response('plain text', {
+        status: 200,
+        headers: { 'Content-Type': 'text/plain' },
+      }),
+    )
+
+    const result = await externalFetch({
+      service: 'test-api',
+      operation: 'get-data',
+      url: 'https://example.com/api',
+    })
+
+    expect(result.success).toBe(false)
+    expect(result.error).toBeDefined()
   })
 
   it('detects unexpected response shape', async () => {

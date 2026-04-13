@@ -1,11 +1,16 @@
 import type { ExternalCallResult, ExternalCallError, ExternalCallOptions, ExternalFetchOptions } from './types'
 import { createClient } from '@supabase/supabase-js'
 
+let _serviceClient: ReturnType<typeof createClient> | null = null
+
 function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  if (!_serviceClient) {
+    _serviceClient = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    )
+  }
+  return _serviceClient
 }
 
 /**
@@ -136,19 +141,26 @@ function logCall(entry: {
   duration: number
   error?: ExternalCallError
 }): void {
-  const supabase = getServiceClient()
-  supabase
-    .from('external_call_log')
-    .insert({
-      service: entry.service,
-      operation: entry.operation,
-      success: entry.success,
-      duration_ms: entry.duration,
-      error_category: entry.error?.category ?? null,
-      error_message: entry.error?.message ?? null,
-      status_code: entry.error?.statusCode ?? null,
-    })
-    .then(({ error }) => {
-      if (error) console.error('[external_call_log] Failed to log:', error.message)
-    })
+  try {
+    const supabase = getServiceClient()
+    supabase
+      .from('external_call_log')
+      .insert({
+        service: entry.service,
+        operation: entry.operation,
+        success: entry.success,
+        duration_ms: entry.duration,
+        error_category: entry.error?.category ?? null,
+        error_message: entry.error?.message ?? null,
+        status_code: entry.error?.statusCode ?? null,
+      })
+      .then(({ error }) => {
+        if (error) console.error('[external_call_log] Failed to log:', error.message)
+      })
+      .catch((err) => {
+        console.error('[external_call_log] Unexpected error:', err)
+      })
+  } catch (err) {
+    console.error('[external_call_log] Failed to create client:', err)
+  }
 }

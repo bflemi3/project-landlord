@@ -19,6 +19,10 @@ describe('normalizeDate', () => {
   it('passes through YYYY-MM-DD', () => {
     expect(normalizeDate('2026-04-24')).toBe('2026-04-24')
   })
+
+  it('passes through unrecognized formats unchanged', () => {
+    expect(normalizeDate('April 24, 2026')).toBe('April 24, 2026')
+  })
 })
 
 describe('normalizeMonth', () => {
@@ -76,12 +80,34 @@ describe('normalizeMonth', () => {
   it('normalizes MAR/2026 (shared PT/EN/ES)', () => {
     expect(normalizeMonth('MAR/2026')).toBe('2026-03')
   })
+
+  // Case insensitivity
+  it('normalizes lowercase mar/2026', () => {
+    expect(normalizeMonth('mar/2026')).toBe('2026-03')
+  })
+
+  it('normalizes mixed case Abr/2026', () => {
+    expect(normalizeMonth('Abr/2026')).toBe('2026-04')
+  })
+
+  it('passes through unrecognized formats unchanged', () => {
+    expect(normalizeMonth('March 2026')).toBe('March 2026')
+  })
 })
 
 describe('normalizeBarcode', () => {
   it('strips spaces, dots, and dashes', () => {
     expect(normalizeBarcode('74891.16009 06660.307304 32263.871033 5 14260000021847'))
       .toBe('74891160090666030730432263871033514260000021847')
+  })
+
+  it('handles already-clean barcode', () => {
+    expect(normalizeBarcode('74891160090666030730432263871033514260000021847'))
+      .toBe('74891160090666030730432263871033514260000021847')
+  })
+
+  it('handles empty string', () => {
+    expect(normalizeBarcode('')).toBe('')
   })
 })
 
@@ -96,6 +122,18 @@ describe('parseBRL', () => {
 
   it('parses zero', () => {
     expect(parseBRL('0,00')).toBe(0)
+  })
+
+  it('parses large amounts', () => {
+    expect(parseBRL('12.345.678,90')).toBe(12345678.90)
+  })
+
+  it('throws on empty string', () => {
+    expect(() => parseBRL('')).toThrow('parseBRL: invalid input')
+  })
+
+  it('throws on non-numeric input', () => {
+    expect(() => parseBRL('abc')).toThrow('parseBRL: invalid input')
   })
 })
 

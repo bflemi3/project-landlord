@@ -1,3 +1,8 @@
+/**
+ * Normalize a date string to YYYY-MM-DD.
+ * Handles BR format (DD/MM/YYYY), ISO with time, and passthrough for YYYY-MM-DD.
+ * Does NOT validate date ranges — callers must validate if needed.
+ */
 export function normalizeDate(date: string): string {
   if (date.includes('T')) return date.split('T')[0]
   const brMatch = date.match(/^(\d{2})\/(\d{2})\/(\d{4})$/)
@@ -23,7 +28,8 @@ const MONTH_ABBREVS: Record<string, string> = {
 }
 
 export function normalizeMonth(month: string): string {
-  const match = month.match(/^([A-Z]{3})\/(\d{4})$/)
+  const upper = month.toUpperCase()
+  const match = upper.match(/^([A-Z]{3})\/(\d{4})$/)
   if (match) {
     const monthNum = MONTH_ABBREVS[match[1]]
     if (monthNum) return `${match[2]}-${monthNum}`
@@ -35,8 +41,16 @@ export function normalizeBarcode(barcode: string): string {
   return barcode.replace(/[\s.\-]/g, '')
 }
 
+/**
+ * Parse a BRL-formatted string (e.g., "1.234,56") to a number.
+ * Throws on invalid input to prevent NaN from propagating through billing calculations.
+ */
 export function parseBRL(value: string): number {
-  return parseFloat(value.replace(/\./g, '').replace(',', '.'))
+  const result = parseFloat(value.replace(/\./g, '').replace(',', '.'))
+  if (Number.isNaN(result)) {
+    throw new Error(`parseBRL: invalid input "${value}"`)
+  }
+  return result
 }
 
 export function toMinorUnits(amount: number): number {
