@@ -20,4 +20,4 @@ This plan has been split into four sub-plans for efficient execution:
 - **Plan 3:** Playground UI — engineer auth, provider lab, accuracy dashboard
 - **Plan 4:** Custom MCP — Claude Code interface
 - **Plan 5:** Production integration — provider requests, user corrections, notifications
-- **Plan 6:** Knowledge base updates — CLAUDE.md, rules, skills (includes provider discovery skill)
+- **Plan 6:** Knowledge base updates — CLAUDE.md, rules, skills (includes provider discovery skill, mandatory use of `externalFetch` for all external API calls in providers, confidence scoring documentation)

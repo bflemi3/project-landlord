@@ -647,6 +647,14 @@ enliv-campeche/
   same company tax ID)
 - **Shared:** date normalization, money parsing, barcode normalization,
   confidence scoring, tax ID extraction/validation, PDF-to-text conversion
+
+## Mandatory: external dependency monitoring
+
+All external API calls in providers (api-client.ts, scraper.ts, validate.ts)
+**must** use `externalFetch` from `@/lib/external/call` — never raw `fetch()`.
+This ensures every external call is monitored, timed, error-normalized, and
+logged to the `external_call_log` table. The engineering playground surfaces
+this data for debugging and alerting on external dependency issues.
 ```
 
 - [ ] **Step 3: Commit**
