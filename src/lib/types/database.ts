@@ -1,3 +1,50 @@
+Connecting to db 5432
+v0.96.4: Pulling from supabase/postgres-meta
+1dbbb2db815c: Pulling fs layer
+c8f3ed040281: Pulling fs layer
+1e2be9f8a111: Pulling fs layer
+78e1f2f65955: Pulling fs layer
+f6bc6564f93a: Pulling fs layer
+f4c396aa930d: Pulling fs layer
+9c6243177b72: Pulling fs layer
+53fdaf778fe7: Pulling fs layer
+49981ae38b77: Pulling fs layer
+2705dbac373a: Pulling fs layer
+78e1f2f65955: Waiting
+f6bc6564f93a: Waiting
+49981ae38b77: Waiting
+2705dbac373a: Waiting
+f4c396aa930d: Waiting
+53fdaf778fe7: Waiting
+9c6243177b72: Waiting
+c8f3ed040281: Verifying Checksum
+c8f3ed040281: Download complete
+78e1f2f65955: Verifying Checksum
+f6bc6564f93a: Verifying Checksum
+f6bc6564f93a: Download complete
+1dbbb2db815c: Download complete
+1e2be9f8a111: Download complete
+9c6243177b72: Verifying Checksum
+9c6243177b72: Download complete
+f4c396aa930d: Download complete
+49981ae38b77: Verifying Checksum
+49981ae38b77: Download complete
+2705dbac373a: Verifying Checksum
+2705dbac373a: Download complete
+1dbbb2db815c: Pull complete
+c8f3ed040281: Pull complete
+53fdaf778fe7: Verifying Checksum
+53fdaf778fe7: Download complete
+1e2be9f8a111: Pull complete
+78e1f2f65955: Pull complete
+f6bc6564f93a: Pull complete
+f4c396aa930d: Pull complete
+9c6243177b72: Pull complete
+53fdaf778fe7: Pull complete
+49981ae38b77: Pull complete
+2705dbac373a: Pull complete
+Digest: sha256:4dd3e0ff3e9a0f9f62dd1a1a827f124645549b439ddb2a53598575744585e32d
+Status: Downloaded newer image for public.ecr.aws/supabase/postgres-meta:v0.96.4
 export type Json =
   | string
   | number
@@ -211,6 +258,89 @@ export type Database = {
           },
         ]
       }
+      company_cache: {
+        Row: {
+          activity_code: number | null
+          activity_description: string | null
+          city: string | null
+          country_code: string
+          created_at: string
+          fetched_at: string
+          id: string
+          legal_name: string | null
+          source: string
+          state: string | null
+          tax_id: string
+          trade_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          activity_code?: number | null
+          activity_description?: string | null
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          legal_name?: string | null
+          source: string
+          state?: string | null
+          tax_id: string
+          trade_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activity_code?: number | null
+          activity_description?: string | null
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          fetched_at?: string
+          id?: string
+          legal_name?: string | null
+          source?: string
+          state?: string | null
+          tax_id?: string
+          trade_name?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      company_cache_history: {
+        Row: {
+          company_cache_id: string
+          detected_at: string
+          field_changed: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          company_cache_id: string
+          detected_at?: string
+          field_changed: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          company_cache_id?: string
+          detected_at?: string
+          field_changed?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_cache_history_company_cache_id_fkey"
+            columns: ["company_cache_id"]
+            isOneToOne: false
+            referencedRelation: "company_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       disputes: {
         Row: {
           charge_instance_id: string
@@ -275,6 +405,27 @@ export type Database = {
           },
         ]
       }
+      engineer_allowlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       example_documents: {
         Row: {
           created_at: string
@@ -309,6 +460,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      external_call_log: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          error_category: string | null
+          error_message: string | null
+          id: string
+          operation: string
+          service: string
+          status_code: number | null
+          success: boolean
+        }
+        Insert: {
+          created_at?: string
+          duration_ms: number
+          error_category?: string | null
+          error_message?: string | null
+          id?: string
+          operation: string
+          service: string
+          status_code?: number | null
+          success: boolean
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          error_category?: string | null
+          error_message?: string | null
+          id?: string
+          operation?: string
+          service?: string
+          status_code?: number | null
+          success?: boolean
+        }
+        Relationships: []
       }
       invitations: {
         Row: {
@@ -604,7 +791,6 @@ export type Database = {
           acquisition_channel: string | null
           analytics_opt_out: boolean
           avatar_url: string | null
-          cpf: string | null
           created_at: string
           deleted_at: string | null
           email: string
@@ -613,13 +799,13 @@ export type Database = {
           id: string
           phone: string | null
           preferred_locale: string
+          tax_id: string | null
           updated_at: string
         }
         Insert: {
           acquisition_channel?: string | null
           analytics_opt_out?: boolean
           avatar_url?: string | null
-          cpf?: string | null
           created_at?: string
           deleted_at?: string | null
           email: string
@@ -628,13 +814,13 @@ export type Database = {
           id: string
           phone?: string | null
           preferred_locale?: string
+          tax_id?: string | null
           updated_at?: string
         }
         Update: {
           acquisition_channel?: string | null
           analytics_opt_out?: boolean
           avatar_url?: string | null
-          cpf?: string | null
           created_at?: string
           deleted_at?: string | null
           email?: string
@@ -643,6 +829,7 @@ export type Database = {
           id?: string
           phone?: string | null
           preferred_locale?: string
+          tax_id?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -708,6 +895,8 @@ export type Database = {
       }
       provider_invoice_profiles: {
         Row: {
+          capabilities: Json
+          category: Database["public"]["Enums"]["provider_category"] | null
           created_at: string
           extraction_config: Json
           id: string
@@ -716,11 +905,15 @@ export type Database = {
           notes: string | null
           parser_strategy: string
           provider_id: string
+          region: string | null
+          status: Database["public"]["Enums"]["provider_profile_status"]
           updated_at: string
           validation_config: Json
           version: number
         }
         Insert: {
+          capabilities?: Json
+          category?: Database["public"]["Enums"]["provider_category"] | null
           created_at?: string
           extraction_config?: Json
           id?: string
@@ -729,11 +922,15 @@ export type Database = {
           notes?: string | null
           parser_strategy: string
           provider_id: string
+          region?: string | null
+          status?: Database["public"]["Enums"]["provider_profile_status"]
           updated_at?: string
           validation_config?: Json
           version?: number
         }
         Update: {
+          capabilities?: Json
+          category?: Database["public"]["Enums"]["provider_category"] | null
           created_at?: string
           extraction_config?: Json
           id?: string
@@ -742,6 +939,8 @@ export type Database = {
           notes?: string | null
           parser_strategy?: string
           provider_id?: string
+          region?: string | null
+          status?: Database["public"]["Enums"]["provider_profile_status"]
           updated_at?: string
           validation_config?: Json
           version?: number
@@ -1220,6 +1419,16 @@ export type Database = {
         Returns: undefined
       }
       validate_invite_code: { Args: { invite_code: string }; Returns: boolean }
+      validate_invite_with_context: {
+        Args: { invite_code: string }
+        Returns: {
+          code: string
+          invited_email: string
+          invited_name: string
+          is_expired: boolean
+          property_name: string
+        }[]
+      }
     }
     Enums: {
       audit_action:
@@ -1243,6 +1452,16 @@ export type Database = {
       payment_method: "pix" | "bank_transfer" | "cash" | "other"
       payment_status: "pending" | "confirmed" | "rejected"
       pix_key_type: "cpf" | "email" | "phone" | "random"
+      provider_category:
+        | "electricity"
+        | "water"
+        | "gas"
+        | "internet"
+        | "condo"
+        | "sewer"
+        | "insurance"
+        | "other"
+      provider_profile_status: "draft" | "active" | "deprecated"
       split_type: "percentage" | "fixed_amount"
       statement_status: "draft" | "published"
       user_role: "landlord" | "tenant"
@@ -1399,6 +1618,17 @@ export const Constants = {
       payment_method: ["pix", "bank_transfer", "cash", "other"],
       payment_status: ["pending", "confirmed", "rejected"],
       pix_key_type: ["cpf", "email", "phone", "random"],
+      provider_category: [
+        "electricity",
+        "water",
+        "gas",
+        "internet",
+        "condo",
+        "sewer",
+        "insurance",
+        "other",
+      ],
+      provider_profile_status: ["draft", "active", "deprecated"],
       split_type: ["percentage", "fixed_amount"],
       statement_status: ["draft", "published"],
       user_role: ["landlord", "tenant"],

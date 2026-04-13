@@ -104,7 +104,7 @@ export type ProviderProfileStatus = 'draft' | 'active' | 'deprecated'
  * Brazil: 'cpf' (individuals), 'cnpj' (businesses)
  * Extensible for other countries.
  */
-export type TaxIdType = 'cpf' | 'cnpj' | string
+export type TaxIdType = 'cpf' | 'cnpj' | (string & {})
 
 export interface ProviderCapabilities {
   extraction: boolean

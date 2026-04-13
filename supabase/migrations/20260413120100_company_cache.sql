@@ -19,7 +19,8 @@ create table company_cache (
   updated_at timestamptz not null default now()
 );
 
-create index idx_company_cache_tax_id on company_cache(tax_id);
+create trigger set_updated_at before update on company_cache
+  for each row execute function update_updated_at();
 
 create table company_cache_history (
   id uuid primary key default gen_random_uuid(),
