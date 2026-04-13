@@ -86,7 +86,7 @@ export function CnpjIdentifyPanel() {
 
           <details>
             <summary className="cursor-pointer text-xs text-gray-400">Raw PDF text</summary>
-            <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded bg-gray-50 p-2 text-xs">
+            <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded bg-muted p-2 text-xs">
               {result.rawText}
             </pre>
           </details>

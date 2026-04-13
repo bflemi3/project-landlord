@@ -29,12 +29,4 @@ export interface EnlivBillExtraction {
   consumptionKwh: number
   amountDue: number
   linhaDigitavel: string
-  lineItems: EnlivLineItem[]
-}
-
-export interface EnlivLineItem {
-  description: string
-  quantity: string | null
-  tariff: string | null
-  value: number
 }

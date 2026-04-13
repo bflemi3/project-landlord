@@ -68,7 +68,7 @@ export function EnlivLookupPanel() {
           ))}
           <details className="mt-2">
             <summary className="cursor-pointer text-xs text-gray-400">Raw JSON</summary>
-            <pre className="mt-1 max-h-64 overflow-auto rounded bg-gray-50 p-2 text-xs">
+            <pre className="mt-1 max-h-64 overflow-auto rounded bg-muted p-2 text-xs">
               {JSON.stringify(result, null, 2)}
             </pre>
           </details>

@@ -62,30 +62,16 @@ export function EnlivUploadPanel() {
             </div>
           </div>
 
-          {result.data.lineItems.length > 0 && (
-            <div>
-              <h4 className="text-sm font-medium">Line Items</h4>
-              <div className="mt-1 space-y-1">
-                {result.data.lineItems.map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span>{item.description}</span>
-                    <span className="font-mono">R$ {item.value.toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
           <details>
             <summary className="cursor-pointer text-xs text-gray-400">Raw PDF text</summary>
-            <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded bg-gray-50 p-2 text-xs">
+            <pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap rounded bg-muted p-2 text-xs">
               {result.rawText}
             </pre>
           </details>
 
           <details>
             <summary className="cursor-pointer text-xs text-gray-400">Extracted JSON</summary>
-            <pre className="mt-1 max-h-64 overflow-auto rounded bg-gray-50 p-2 text-xs">
+            <pre className="mt-1 max-h-64 overflow-auto rounded bg-muted p-2 text-xs">
               {JSON.stringify(result.data, null, 2)}
             </pre>
           </details>

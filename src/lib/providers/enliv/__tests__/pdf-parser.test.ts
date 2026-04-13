@@ -72,27 +72,4 @@ describe('parseEnlivBillText', () => {
     )
   })
 
-  it('extracts line items', () => {
-    const result = parseEnlivBillText(sampleText)
-    expect(result.lineItems).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          description: 'Tarifa com Impostos e Bandeiras',
-          value: 223.15,
-        }),
-        expect.objectContaining({
-          description: 'Iluminação Pública',
-          value: 13.62,
-        }),
-        expect.objectContaining({
-          description: 'Demais Encargos',
-          value: 0.0,
-        }),
-        expect.objectContaining({
-          description: 'Ajuste Desconto',
-          value: 17.23,
-        }),
-      ]),
-    )
-  })
 })

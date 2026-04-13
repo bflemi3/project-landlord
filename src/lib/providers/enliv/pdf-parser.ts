@@ -1,4 +1,4 @@
-import type { EnlivBillExtraction, EnlivLineItem } from './types'
+import type { EnlivBillExtraction } from './types'
 
 /**
  * Parse raw text extracted from an Enliv electricity bill PDF.
@@ -25,8 +25,6 @@ export function parseEnlivBillText(text: string): EnlivBillExtraction {
 
   const linhaDigitavel = extractField(text, /(\d{5}\.\d{5}\s+\d{5}\.\d{6}\s+\d{5}\.\d{6}\s+\d\s+\d{14})/) ?? ''
 
-  const lineItems = extractLineItems(text)
-
   return {
     providerName: 'Enliv',
     providerCnpj,
@@ -40,7 +38,6 @@ export function parseEnlivBillText(text: string): EnlivBillExtraction {
     consumptionKwh,
     amountDue,
     linhaDigitavel,
-    lineItems,
   }
 }
 
@@ -61,53 +58,3 @@ function parseBRL(value: string): number {
   return parseFloat(normalized)
 }
 
-function extractLineItems(text: string): EnlivLineItem[] {
-  const items: EnlivLineItem[] = []
-
-  // Tarifa com Impostos e Bandeiras — spans two lines, has qty + tariff + value
-  const tarifaMatch = text.match(
-    /Tarifa com Impostos\s*\ne Bandeiras\s+([\d.,]+)\s*kWh\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)/,
-  )
-  if (tarifaMatch) {
-    items.push({
-      description: 'Tarifa com Impostos e Bandeiras',
-      quantity: `${tarifaMatch[1]} kWh`,
-      tariff: `R$ ${tarifaMatch[2]}`,
-      value: parseBRL(tarifaMatch[3]),
-    })
-  }
-
-  // Simple line items: description R$ value
-  const simpleItems = [
-    { pattern: /Iluminação Pública\s+R\$\s*([\d.,]+)/, description: 'Iluminação Pública' },
-    { pattern: /Demais Encargos\s+R\$\s*([\d.,]+)/, description: 'Demais Encargos' },
-    { pattern: /Ajuste Desconto\s+R\$\s*([\d.,]+)/, description: 'Ajuste Desconto' },
-  ]
-
-  for (const { pattern, description } of simpleItems) {
-    const match = text.match(pattern)
-    if (match) {
-      items.push({
-        description,
-        quantity: null,
-        tariff: null,
-        value: parseBRL(match[1]),
-      })
-    }
-  }
-
-  // Desconto ENLIV sobre Energia Limpa — spans two lines, has qty + tariff + value
-  const descontoMatch = text.match(
-    /Desconto ENLIV\s*\nsobre Energia Limpa\s+(-?[\d.,]+)\s*kWh\s+R\$\s*([\d.,]+)\s+R\$\s*([\d.,]+)/,
-  )
-  if (descontoMatch) {
-    items.push({
-      description: 'Desconto ENLIV sobre Energia Limpa',
-      quantity: `${descontoMatch[1]} kWh`,
-      tariff: `R$ ${descontoMatch[2]}`,
-      value: parseBRL(descontoMatch[3]),
-    })
-  }
-
-  return items
-}

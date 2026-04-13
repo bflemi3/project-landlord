@@ -1,8 +1,13 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { PluggyConnect } from 'react-pluggy-connect'
+import dynamic from 'next/dynamic'
 import { fetchPluggyTransactions } from '@/app/actions/phase0/pluggy-transactions'
+
+const PluggyConnect = dynamic(
+  () => import('react-pluggy-connect').then((mod) => mod.PluggyConnect),
+  { ssr: false },
+)
 
 type ConnectedItem = {
   itemId: string
@@ -119,7 +124,7 @@ export function PluggyConnectPanel() {
             <code className="text-xs">{connectedItem.itemId}</code>
           </div>
 
-          <div className="rounded bg-gray-50 p-3 text-sm">
+          <div className="rounded bg-muted p-3 text-sm">
             <div className="font-medium">
               {connectedItem.account.name} ({connectedItem.account.type})
             </div>
@@ -152,7 +157,7 @@ export function PluggyConnectPanel() {
 
           <details>
             <summary className="cursor-pointer text-xs text-gray-400">Raw transaction data</summary>
-            <pre className="mt-1 max-h-64 overflow-auto rounded bg-gray-50 p-2 text-xs">
+            <pre className="mt-1 max-h-64 overflow-auto rounded bg-muted p-2 text-xs">
               {JSON.stringify(connectedItem, null, 2)}
             </pre>
           </details>
