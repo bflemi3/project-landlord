@@ -162,7 +162,7 @@ provider_requests
   source              text not null       -- 'expense_charge_setup', 'engineer', etc.
   requested_by        uuid not null references auth.users(id)
   property_id         uuid                -- optional, null if not tied to a property
-  bill_file_id        text not null       -- Supabase Storage reference
+  test_bill_id        uuid not null references provider_test_bills(id)
   provider_id         text                -- null until provider created, then linked
   notes               text                -- engineering notes
   created_at          timestamptz
@@ -348,10 +348,21 @@ No auth needed — uses same Supabase credentials as the app via env vars.
 Stored per provider. Each test case is a real bill with human-verified expected values.
 
 ```
-test_cases
+provider_test_bills
   id                  uuid primary key
-  provider_id         text references providers(id)
-  bill_file_id        text not null         -- Supabase Storage reference
+  profile_id          uuid references provider_invoice_profiles(id)  -- null before profile exists
+  storage_path        text not null
+  file_name           text not null
+  mime_type           text not null
+  file_size_bytes     integer
+  uploaded_by         uuid references auth.users(id)  -- null for service role uploads
+  source              text not null         -- 'provider_request', 'playground', 'production_correction'
+  created_at          timestamptz
+
+extraction_test_cases
+  id                  uuid primary key
+  profile_id          uuid references provider_invoice_profiles(id)
+  test_bill_id        uuid not null references provider_test_bills(id)
   description         text                  -- 'March 2026 bill', 'Bill with overdue penalty'
   expected_fields     jsonb not null         -- human-verified expected extraction values
   competencies_tested text[] not null        -- ['identification', 'extraction', 'validation']
@@ -409,7 +420,7 @@ user_corrections
   extracted_value     text
   corrected_value     text
   corrected_by        uuid references auth.users(id)
-  bill_file_id        text
+  test_bill_id        uuid references provider_test_bills(id)
   created_at          timestamptz
 ```
 

@@ -16,7 +16,7 @@ This plan has been split into four sub-plans for efficient execution:
 ## Full Plan Series
 
 - **Plan 1 (this):** Foundation — database, types, utilities, provider system
-- **Plan 2:** Test runner — test cases, accuracy measurement, CI, API contract tests
+- **Plan 2:** Test runner — test cases, accuracy measurement, field comparison, report formatting (CI script shelved — add when needed)
 - **Plan 3:** Playground UI — engineer auth, provider lab, accuracy dashboard
 - **Plan 4:** Custom MCP — Claude Code interface
 - **Plan 5:** Production integration — provider requests, user corrections, notifications, per-provider trust levels (new providers require review, trusted providers auto-populate), user can always correct regardless of trust level, corrections on trusted providers are high-signal alerts to engineering
