@@ -490,20 +490,24 @@ Create `src/lib/billing-intelligence/providers/enliv-campeche/parser.ts`:
 ```typescript
 import type { ExtractionResult } from '../../types'
 import { normalizeDate, normalizeMonth, parseBRL, toMinorUnits, normalizeBarcode } from '../../normalize'
+import { buildExtractionConfidence } from '../../confidence'
 
 // Placeholder — will be replaced with the real provider_invoice_profiles.id
 // when Enliv Campeche is created through the engineering playground
 const PROFILE_ID = 'a1b2c3d4-0002-0002-0002-000000000001'
 
 export function parseEnlivBillText(text: string): ExtractionResult | null {
-  const providerCnpj = extractField(text, /CNPJ:\s*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/)
-  if (!providerCnpj) return null
+  const providerTaxId = extractField(text, /CNPJ:\s*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/)
+  if (!providerTaxId) return null
 
   const customerName = extractField(text, /Cliente:\s*\n(.+)/) ?? ''
-  const customerCpf = extractField(text, /CNPJ\/CPF:\s*\n([\d.\-\/]+)/) ?? ''
+  const customerTaxId = extractField(text, /CNPJ\/CPF:\s*\n([\d.\-\/]+)/) ?? ''
   const installationNumber = extractField(text, /Número da Instalação:\s*\n(\d+)/) ?? ''
   const referenceMonth = extractField(text, /Mês de Referência:\s*\n(\S+)/) ?? ''
   const dueDate = extractField(text, /Vencimento:\s*\n(\d{2}\/\d{2}\/\d{4})/) ?? ''
+
+  const consumptionMatch = text.match(/Consumo Total do Mês:\s*(\d+)\s*kWh/)
+  const consumptionKwh = consumptionMatch ? parseInt(consumptionMatch[1], 10) : 0
 
   const amountMatch = text.match(/Valor a pagar:\s*\nR\$\s*([\d.,]+)/)
   const amountBrl = amountMatch ? parseBRL(amountMatch[1]) : 0
@@ -512,24 +516,35 @@ export function parseEnlivBillText(text: string): ExtractionResult | null {
     text, /(\d{5}\.\d{5}\s+\d{5}\.\d{6}\s+\d{5}\.\d{6}\s+\d\s+\d{14})/,
   ) ?? ''
 
-  const cleanDoc = customerCpf.replace(/[.\-/]/g, '')
-  const documentType = cleanDoc.length === 14 ? 'cnpj' as const : 'cpf' as const
+  const cleanDoc = customerTaxId.replace(/[.\-/]/g, '')
+  const taxIdType = cleanDoc.length === 14 ? 'cnpj' as const : 'cpf' as const
 
-  const expectedFields = [customerName, installationNumber, referenceMonth, dueDate, amountMatch, linhaDigitavel]
-  const foundCount = expectedFields.filter(Boolean).length
-  const completeness = foundCount / expectedFields.length
+  const confidence = buildExtractionConfidence({
+    sourceMethod: 'pdf',
+    fields: {
+      customerName: { found: !!customerName },
+      customerTaxId: { found: !!customerTaxId },
+      accountNumber: { found: !!installationNumber },
+      referenceMonth: { found: !!referenceMonth },
+      dueDate: { found: !!dueDate },
+      amountDue: { found: !!amountMatch },
+      linhaDigitavel: { found: !!linhaDigitavel },
+      consumption: { found: !!consumptionMatch },
+    },
+  })
 
   return {
     provider: {
       profileId: PROFILE_ID,
       companyName: 'Enliv',
-      cnpj: providerCnpj.replace(/[.\-/]/g, ''),
+      taxId: providerTaxId.replace(/[.\-/]/g, ''),
       category: 'electricity',
     },
     customer: {
       name: customerName,
-      document: customerCpf,
-      documentType,
+      taxId: customerTaxId,
+      taxIdType,
+      countryCode: 'BR',
       accountNumber: installationNumber,
     },
     billing: {
@@ -538,26 +553,11 @@ export function parseEnlivBillText(text: string): ExtractionResult | null {
       amountDue: toMinorUnits(amountBrl),
       currency: 'BRL',
     },
+    consumption: consumptionKwh > 0 ? { value: consumptionKwh, unit: 'kWh' } : undefined,
     payment: {
       linhaDigitavel: normalizeBarcode(linhaDigitavel),
     },
-    confidence: {
-      overall: 0.75 * completeness,
-      fields: {
-        customerName: customerName ? 1 : 0,
-        accountNumber: installationNumber ? 1 : 0,
-        referenceMonth: referenceMonth ? 1 : 0,
-        dueDate: dueDate ? 1 : 0,
-        amountDue: amountMatch ? 1 : 0,
-        linhaDigitavel: linhaDigitavel ? 1 : 0,
-      },
-      factors: {
-        sourceMethod: 0.75,
-        validationBonus: 0,
-        fieldCompleteness: completeness >= 1 ? 0.05 : 0,
-        mathConsistency: 0,
-      },
-    },
+    confidence,
     rawSource: 'pdf',
   }
 }
@@ -625,7 +625,7 @@ export async function validateEnlivExtraction(
   extraction: ExtractionResult,
 ): Promise<ValidationResult | null> {
   try {
-    const apiData = await fetchEnlivDebitos(extraction.customer.document)
+    const apiData = await fetchEnlivDebitos(extraction.customer.taxId)
     const discrepancies: ValidationResult['discrepancies'] = []
 
     const extractedBarcode = normalizeBarcode(extraction.payment.linhaDigitavel ?? '')
@@ -777,15 +777,16 @@ describe('parseEnlivBillText', () => {
     const result = parseEnlivBillText(sampleText)
     expect(result).not.toBeNull()
     expect(result!.provider.profileId).toBe('a1b2c3d4-0002-0002-0002-000000000001')
-    expect(result!.provider.cnpj).toBe('49449868000162')
+    expect(result!.provider.taxId).toBe('49449868000162')
     expect(result!.provider.category).toBe('electricity')
   })
 
   it('extracts customer info', () => {
     const result = parseEnlivBillText(sampleText)!
     expect(result.customer.name).toBe('Alex Amorim Anton')
-    expect(result.customer.document).toBe('040.032.329-09')
-    expect(result.customer.documentType).toBe('cpf')
+    expect(result.customer.taxId).toBe('040.032.329-09')
+    expect(result.customer.taxIdType).toBe('cpf')
+    expect(result.customer.countryCode).toBe('BR')
     expect(result.customer.accountNumber).toBe('59069412')
   })
 
@@ -797,14 +798,23 @@ describe('parseEnlivBillText', () => {
     expect(result.billing.currency).toBe('BRL')
   })
 
+  it('extracts consumption', () => {
+    const result = parseEnlivBillText(sampleText)!
+    expect(result.consumption).toEqual({ value: 269, unit: 'kWh' })
+  })
+
   it('normalizes barcode', () => {
     const result = parseEnlivBillText(sampleText)!
     expect(result.payment.linhaDigitavel).toBe('74891160090666030730432263871033514260000021847')
   })
 
-  it('computes confidence', () => {
+  it('uses buildExtractionConfidence for uniform scoring', () => {
     const result = parseEnlivBillText(sampleText)!
-    expect(result.confidence.overall).toBeGreaterThan(0.7)
+    expect(result.confidence.source.method).toBe('pdf')
+    expect(result.confidence.source.methodScore).toBe(0.80)
+    expect(result.confidence.fields.amountDue.extraction).toBe(0.80)
+    expect(result.confidence.fields.amountDue.status).toBe('needs-review')
+    expect(result.confidence.summary.totalFields).toBe(8)
     expect(result.rawSource).toBe('pdf')
   })
 
