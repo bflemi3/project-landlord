@@ -54,7 +54,7 @@ src/lib/hooks/eng/
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createEngBrowserClient } from '@/lib/supabase/eng-client'
 
 export interface SystemThresholds {
   minAccuracy: number
@@ -72,7 +72,7 @@ export function useSystemThresholds() {
 
   const fetch = useCallback(async () => {
     setLoading(true)
-    const supabase = createClient()
+    const supabase = createEngBrowserClient()
     const { data } = await supabase.from('system_thresholds').select('key, value')
     if (data) {
       const map = Object.fromEntries(data.map((d) => [d.key, Number(d.value)]))
@@ -86,7 +86,7 @@ export function useSystemThresholds() {
   }, [])
 
   const update = useCallback(async (key: string, value: number, reason: string) => {
-    const supabase = createClient()
+    const supabase = createEngBrowserClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     // Get old value
@@ -144,7 +144,7 @@ git commit -m "feat(eng): add system thresholds hook"
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { createEngBrowserClient } from '@/lib/supabase/eng-client'
 
 export interface AccuracyProviderRow {
   id: string
@@ -179,7 +179,7 @@ export function useAccuracyDashboard() {
 
   const fetch = useCallback(async () => {
     setLoading(true)
-    const supabase = createClient()
+    const supabase = createEngBrowserClient()
 
     const { data: providerData } = await supabase
       .from('providers')

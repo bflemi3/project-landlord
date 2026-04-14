@@ -4,378 +4,107 @@
 
 **Goal:** Build all provider-related pages including the eng layout with sidebar, provider registry, provider/profile creation, provider detail, and all profile tabs (overview, test cases, pipeline).
 
-**Architecture:** Next.js App Router nested routes under `/eng/` with a shared sidebar layout. Server components for initial data fetching, client components for interactivity. Uses the eng Supabase client (from Plan 3a-1) for all data access. Shared components from Plan 3a-2 are imported from `@/components/eng/`.
+**Architecture:** Next.js App Router nested routes under `/eng/`. Follows the codebase's established data layer pattern: `src/data/eng/<domain>/shared.ts` (types + fetch functions + query keys), `server.ts` (React.cache wrappers), `client.ts` (React Query hooks via `createEngSuspenseHook`), and `actions/` (server actions with eng server client). Layouts are server components with zero async. Client components with `useSuspenseQuery` use `HydrationBoundary` with server-prefetched data. Auth is handled by middleware (Plan 3a-1) — the layout does NOT check auth.
 
-**Tech Stack:** Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui, Recharts
+**Tech Stack:** Next.js App Router, React, TypeScript, Tailwind CSS, shadcn/ui, Recharts, React Query
 
 **Part of:** Playground UI (Plan 3a)
 **Depends on:** Plans 3a-1 (database & infrastructure), 3a-2 (shared components)
 **Blocks:** Plan 3a-6 (code review)
+
+**Frontend patterns:** This plan MUST follow `frontend-patterns` skill. Key rules:
+- Data fetching in `src/data/eng/` using `createEngSuspenseHook` factory
+- Server components for data fetching, client components for interactivity
+- Layouts have ZERO async — no `await`, no `createClient()`, no DB queries
+- `useSuspenseQuery` client components need `HydrationBoundary` server wrappers
+- Component body ordering: refs → context → router → state → derived → queries → effects → callbacks → render helpers → return
+- Every route gets `loading.tsx` returning `<PageLoader />`
+- Pages wrap content in `<FadeIn className="h-full">`
+- No React context for data — use React Query
 
 ---
 
 ## File Structure
 
 ```
-src/app/eng/
-  layout.tsx                                          # Sidebar nav + eng context provider
-  page.tsx                                            # Redirect to /eng/providers
+src/data/eng/
   providers/
-    page.tsx                                          # Provider registry
+    shared.ts                      # Types, query keys, fetch functions for providers + profiles
+    server.ts                      # React.cache() server fetchers
+    client.ts                      # React Query hooks via createEngSuspenseHook
+    actions/
+      create-provider.ts           # Server action: create provider
+      update-provider.ts           # Server action: update provider
+      create-profile.ts            # Server action: create profile
+      update-profile.ts            # Server action: update profile + audit log
+      run-tests.ts                 # Server action: run test suite
+      create-test-case.ts          # Server action: create test case
+      update-test-case.ts          # Server action: update test case
+      delete-test-case.ts          # Server action: delete test case
+  badges/
+    shared.ts                      # Sidebar badge count queries
+    client.ts                      # React Query hook for badge counts
+
+src/app/eng/
+  layout.tsx                       # Server component: sidebar + QueryProvider (NO async)
+  loading.tsx                      # PageLoader
+  page.tsx                         # Redirect to /eng/providers
+  providers/
+    page.tsx                       # Server component: prefetch + HydrationBoundary
+    loading.tsx
     new/
-      page.tsx                                        # Create provider form
+      page.tsx                     # Provider creation form
+      loading.tsx
     [providerId]/
-      page.tsx                                        # Provider detail
+      page.tsx                     # Server component: prefetch provider detail
+      loading.tsx
       new-profile/
-        page.tsx                                      # Create profile form
+        page.tsx                   # Profile creation form
+        loading.tsx
       [profileId]/
-        layout.tsx                                    # Profile tabs layout
+        layout.tsx                 # Server component: profile tabs (NO async)
         overview/
-          page.tsx                                    # Profile overview tab
+          page.tsx                 # Server component: prefetch profile + HydrationBoundary
+          loading.tsx
         test-cases/
-          page.tsx                                    # Test cases list + run tests
+          page.tsx                 # Server component: prefetch test cases
+          loading.tsx
           [caseId]/
-            page.tsx                                  # Individual test case detail
+            page.tsx               # Server component: prefetch test case detail
+            loading.tsx
         pipeline/
-          page.tsx                                    # Ad-hoc pipeline testing
+          page.tsx                 # Pipeline test lab
+          loading.tsx
 
 src/components/eng/
-  sidebar.tsx                                         # Sidebar navigation
-  eng-provider.tsx                                    # React context for eng user + sidebar badges
-  provider-registry-table.tsx                         # Client component: provider list table
-  provider-form.tsx                                   # Client component: create/edit provider
-  profile-form.tsx                                    # Client component: create profile
-  profile-tabs.tsx                                    # Tab navigation for profile detail
-  test-case-list.tsx                                  # Client component: test cases table
-  test-case-create.tsx                                # Client component: test case creation flow
-  pipeline-section.tsx                                # Client component: one pipeline section
-  flag-for-fix-modal.tsx                              # Modal: create fix request from failure
-
-src/lib/hooks/eng/
-  use-providers.ts                                    # Hook: list providers with accuracy
-  use-provider-detail.ts                              # Hook: single provider with profiles
-  use-profile-detail.ts                               # Hook: single profile with test data
-  use-test-cases.ts                                   # Hook: test cases for a profile
-  use-test-case-detail.ts                             # Hook: single test case with results
-  use-profile-mutations.ts                            # Hook: create/update profiles, run tests
-  use-provider-mutations.ts                           # Hook: create/update providers
-
-src/app/api/eng/
-  providers/
-    route.ts                                          # POST create provider
-  providers/[providerId]/
-    route.ts                                          # PATCH update provider
-  profiles/
-    route.ts                                          # POST create profile
-  profiles/[profileId]/
-    route.ts                                          # PATCH update profile
-  profiles/[profileId]/run-tests/
-    route.ts                                          # POST run test suite
-  profiles/[profileId]/test-cases/
-    route.ts                                          # POST create test case
-  profiles/[profileId]/test-cases/[caseId]/
-    route.ts                                          # PATCH/DELETE test case
-  fix-requests/
-    route.ts                                          # POST create fix request
+  sidebar.tsx                      # Client component: nav + badge counts via React Query
+  provider-registry-table.tsx      # Client component: provider list
+  provider-detail-client.tsx       # Client component: provider detail
+  provider-form.tsx                # Client component: create provider form
+  profile-form.tsx                 # Client component: create profile form
+  profile-tabs.tsx                 # Client component: tab navigation
+  profile-overview-client.tsx      # Client component: profile overview tab
+  test-case-list-client.tsx        # Client component: test cases table
+  test-case-detail-client.tsx      # Client component: test case detail
+  pipeline-client.tsx              # Client component: pipeline test lab
+  pipeline-section.tsx             # Client component: one pipeline section
+  flag-for-fix-modal.tsx           # Client component: create fix request modal
 ```
 
 ---
 
-### Task 1: Eng Context Provider
+### Task 1: Provider Data Layer — shared.ts
 
 **Files:**
-- Create: `src/components/eng/eng-provider.tsx`
+- Create: `src/data/eng/providers/shared.ts`
 
-The context provides the current engineer's user info and sidebar badge counts to all eng pages.
-
-- [ ] **Step 1: Create the eng context provider**
+- [ ] **Step 1: Create provider types, query keys, and fetch functions**
 
 ```typescript
-// src/components/eng/eng-provider.tsx
-'use client'
+// src/data/eng/providers/shared.ts
+import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import { createClient } from '@/lib/supabase/client'
-
-interface EngContextValue {
-  userId: string
-  email: string
-  pendingRequestsCount: number
-  openFixesCount: number
-  failingProfilesCount: number
-  refreshBadges: () => Promise<void>
-}
-
-const EngContext = createContext<EngContextValue | null>(null)
-
-export function useEngContext(): EngContextValue {
-  const ctx = useContext(EngContext)
-  if (!ctx) throw new Error('useEngContext must be used within EngProvider')
-  return ctx
-}
-
-export function EngProvider({
-  children,
-  userId,
-  email,
-}: {
-  children: ReactNode
-  userId: string
-  email: string
-}) {
-  const [pendingRequestsCount, setPendingRequests] = useState(0)
-  const [openFixesCount, setOpenFixes] = useState(0)
-  const [failingProfilesCount, setFailingProfiles] = useState(0)
-
-  const refreshBadges = async () => {
-    const supabase = createClient()
-
-    const [reqRes, fixRes, failRes] = await Promise.all([
-      supabase
-        .from('provider_requests')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending'),
-      supabase
-        .from('test_fix_requests')
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'open'),
-      supabase.rpc('count_failing_profiles'),
-    ])
-
-    setPendingRequests(reqRes.count ?? 0)
-    setOpenFixes(fixRes.count ?? 0)
-    setFailingProfiles(typeof failRes.data === 'number' ? failRes.data : 0)
-  }
-
-  useEffect(() => {
-    refreshBadges()
-  }, [])
-
-  return (
-    <EngContext.Provider
-      value={{
-        userId,
-        email,
-        pendingRequestsCount,
-        openFixesCount,
-        failingProfilesCount,
-        refreshBadges,
-      }}
-    >
-      {children}
-    </EngContext.Provider>
-  )
-}
-```
-
-Note: The `count_failing_profiles` RPC may be added in a migration or replaced with a client-side query. For the initial implementation, if the RPC doesn't exist, use a direct query:
-
-```typescript
-// Alternative to RPC — query latest test run per active profile
-const { data: failingData } = await supabase
-  .from('test_runs')
-  .select('profile_id, passed')
-  .order('created_at', { ascending: false })
-// Group by profile_id, take latest, count where passed = false
-// This is simpler done server-side — consider an API route
-```
-
-- [ ] **Step 2: Commit**
-
-```bash
-git add src/components/eng/eng-provider.tsx
-git commit -m "feat(eng): add EngProvider context with sidebar badge counts"
-```
-
----
-
-### Task 2: Sidebar Navigation
-
-**Files:**
-- Create: `src/components/eng/sidebar.tsx`
-
-- [ ] **Step 1: Create the sidebar component**
-
-```typescript
-// src/components/eng/sidebar.tsx
-'use client'
-
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import {
-  Building2,
-  Inbox,
-  Wrench,
-  BarChart3,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
-import { useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { useEngContext } from './eng-provider'
-
-const navItems = [
-  { label: 'Providers', href: '/eng/providers', icon: Building2, badgeKey: null },
-  { label: 'Requests', href: '/eng/requests', icon: Inbox, badgeKey: 'pendingRequestsCount' as const },
-  { label: 'Fixes', href: '/eng/fixes', icon: Wrench, badgeKey: 'openFixesCount' as const },
-  { label: 'Accuracy', href: '/eng/accuracy', icon: BarChart3, badgeKey: 'failingProfilesCount' as const },
-  { label: 'Discovery', href: '/eng/discovery', icon: Search, badgeKey: null },
-]
-
-export function Sidebar() {
-  const pathname = usePathname()
-  const ctx = useEngContext()
-  const [collapsed, setCollapsed] = useState(false)
-
-  return (
-    <aside
-      className={`flex flex-col border-r bg-muted/30 transition-all ${
-        collapsed ? 'w-16' : 'w-56'
-      }`}
-    >
-      <div className="flex items-center justify-between border-b px-4 py-3">
-        {!collapsed && (
-          <span className="text-sm font-semibold text-muted-foreground">
-            Engineering
-          </span>
-        )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="rounded p-1 hover:bg-muted"
-        >
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </button>
-      </div>
-
-      <nav className="flex flex-1 flex-col gap-1 p-2">
-        {navItems.map((item) => {
-          const isActive =
-            pathname === item.href || pathname.startsWith(item.href + '/')
-          const Icon = item.icon
-          const badgeCount = item.badgeKey ? ctx[item.badgeKey] : 0
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
-                isActive
-                  ? 'bg-primary/10 text-primary font-medium'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-              }`}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              {!collapsed && (
-                <>
-                  <span className="flex-1">{item.label}</span>
-                  {badgeCount > 0 && (
-                    <Badge variant="secondary" className="h-5 min-w-5 justify-center px-1.5 text-xs">
-                      {badgeCount}
-                    </Badge>
-                  )}
-                </>
-              )}
-            </Link>
-          )
-        })}
-      </nav>
-    </aside>
-  )
-}
-```
-
-- [ ] **Step 2: Commit**
-
-```bash
-git add src/components/eng/sidebar.tsx
-git commit -m "feat(eng): add sidebar navigation with badge counts"
-```
-
----
-
-### Task 3: Eng Layout and Redirect Page
-
-**Files:**
-- Create: `src/app/eng/layout.tsx`
-- Create: `src/app/eng/page.tsx`
-
-- [ ] **Step 1: Create the eng layout**
-
-```typescript
-// src/app/eng/layout.tsx
-import { redirect } from 'next/navigation'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
-import { EngProvider } from '@/components/eng/eng-provider'
-import { Sidebar } from '@/components/eng/sidebar'
-
-export default async function EngLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) redirect('/login')
-
-  // Check engineer allowlist
-  const { data: allowed } = await supabase
-    .from('engineer_allowlist')
-    .select('id')
-    .eq('user_id', user.id)
-    .single()
-
-  if (!allowed) redirect('/app')
-
-  return (
-    <EngProvider userId={user.id} email={user.email ?? ''}>
-      <div className="flex h-screen">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto">
-          {children}
-        </main>
-      </div>
-    </EngProvider>
-  )
-}
-```
-
-- [ ] **Step 2: Create the redirect page**
-
-```typescript
-// src/app/eng/page.tsx
-import { redirect } from 'next/navigation'
-
-export default function EngPage() {
-  redirect('/eng/providers')
-}
-```
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add src/app/eng/layout.tsx src/app/eng/page.tsx
-git commit -m "feat(eng): add eng layout with sidebar and redirect"
-```
-
----
-
-### Task 4: Provider Data Hooks
-
-**Files:**
-- Create: `src/lib/hooks/eng/use-providers.ts`
-- Create: `src/lib/hooks/eng/use-provider-detail.ts`
-- Create: `src/lib/hooks/eng/use-provider-mutations.ts`
-
-- [ ] **Step 1: Create the providers list hook**
-
-```typescript
-// src/lib/hooks/eng/use-providers.ts
-'use client'
-
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
+// ─── Types ──────────────────────────────────────────────────────────
 
 export interface ProviderListItem {
   id: string
@@ -385,100 +114,10 @@ export interface ProviderListItem {
   countryCode: string
   profileCount: number
   categories: string[]
-  accuracy: number | null
+  weightedAccuracy: number | null
   lastTested: string | null
   derivedStatus: 'active' | 'draft' | 'deprecated'
 }
-
-export function useProviders() {
-  const [providers, setProviders] = useState<ProviderListItem[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const fetch = useCallback(async () => {
-    setLoading(true)
-    const supabase = createClient()
-
-    // Fetch providers with their profiles and latest test runs
-    const { data: providerData } = await supabase
-      .from('providers')
-      .select(`
-        id, name, display_name, tax_id, country_code,
-        provider_invoice_profiles (
-          id, category, status,
-          test_runs (
-            accuracy, passed, created_at
-          )
-        )
-      `)
-      .order('name')
-
-    if (!providerData) {
-      setProviders([])
-      setLoading(false)
-      return
-    }
-
-    const items: ProviderListItem[] = providerData.map((p) => {
-      const profiles = p.provider_invoice_profiles ?? []
-      const categories = [...new Set(profiles.map((pr: any) => pr.category).filter(Boolean))]
-
-      // Derive status from profiles
-      const hasActive = profiles.some((pr: any) => pr.status === 'active')
-      const allDeprecated = profiles.length > 0 && profiles.every((pr: any) => pr.status === 'deprecated')
-      const derivedStatus = hasActive ? 'active' : allDeprecated ? 'deprecated' : 'draft'
-
-      // Compute weighted accuracy across profiles
-      let totalWeight = 0
-      let weightedSum = 0
-      let lastTested: string | null = null
-
-      for (const profile of profiles) {
-        const runs = (profile as any).test_runs ?? []
-        if (runs.length === 0) continue
-        // Latest run
-        const latest = runs.sort((a: any, b: any) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        )[0]
-        const weight = runs.length // Weight by test case count approximation
-        totalWeight += weight
-        weightedSum += (latest.accuracy ?? 0) * weight
-        if (!lastTested || new Date(latest.created_at) > new Date(lastTested)) {
-          lastTested = latest.created_at
-        }
-      }
-
-      return {
-        id: p.id,
-        name: p.name,
-        displayName: p.display_name,
-        taxId: p.tax_id,
-        countryCode: p.country_code,
-        profileCount: profiles.length,
-        categories,
-        accuracy: totalWeight > 0 ? weightedSum / totalWeight : null,
-        lastTested,
-        derivedStatus,
-      }
-    })
-
-    setProviders(items)
-    setLoading(false)
-  }, [])
-
-  useEffect(() => { fetch() }, [fetch])
-
-  return { providers, loading, refetch: fetch }
-}
-```
-
-- [ ] **Step 2: Create the provider detail hook**
-
-```typescript
-// src/lib/hooks/eng/use-provider-detail.ts
-'use client'
-
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 
 export interface ProfileListItem {
   id: string
@@ -516,265 +155,6 @@ export interface ProviderDetail {
   openFixCount: number
 }
 
-export function useProviderDetail(providerId: string) {
-  const [provider, setProvider] = useState<ProviderDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetch = useCallback(async () => {
-    setLoading(true)
-    const supabase = createClient()
-
-    const { data } = await supabase
-      .from('providers')
-      .select(`
-        *,
-        company_cache (*),
-        provider_invoice_profiles (
-          id, name, region, category, status, capabilities,
-          test_cases (id),
-          test_runs (accuracy, passed, created_at),
-          test_fix_requests (id, status)
-        )
-      `)
-      .eq('id', providerId)
-      .single()
-
-    if (!data) {
-      setProvider(null)
-      setLoading(false)
-      return
-    }
-
-    const profiles: ProfileListItem[] = (data.provider_invoice_profiles ?? []).map((p: any) => {
-      const runs = p.test_runs ?? []
-      const latest = runs.sort((a: any, b: any) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-      )[0]
-      const openFixes = (p.test_fix_requests ?? []).filter((f: any) => f.status === 'open')
-
-      return {
-        id: p.id,
-        name: p.name,
-        region: p.region,
-        category: p.category,
-        status: p.status,
-        capabilities: p.capabilities ?? {},
-        accuracy: latest?.accuracy ?? null,
-        testCaseCount: (p.test_cases ?? []).length,
-        lastTested: latest?.created_at ?? null,
-        openFixCount: openFixes.length,
-      }
-    })
-
-    const totalOpenFixes = profiles.reduce((sum, p) => sum + p.openFixCount, 0)
-
-    const cc = data.company_cache
-    setProvider({
-      id: data.id,
-      name: data.name,
-      displayName: data.display_name,
-      taxId: data.tax_id,
-      countryCode: data.country_code,
-      phone: data.phone,
-      website: data.website,
-      logoUrl: data.logo_url,
-      companyCache: cc ? {
-        legalName: cc.legal_name,
-        tradeName: cc.trade_name,
-        activityCode: cc.activity_code,
-        activityDescription: cc.activity_description,
-        city: cc.city,
-        state: cc.state,
-        source: cc.source,
-        fetchedAt: cc.fetched_at,
-      } : null,
-      profiles,
-      openFixCount: totalOpenFixes,
-    })
-    setLoading(false)
-  }, [providerId])
-
-  useEffect(() => { fetch() }, [fetch])
-
-  return { provider, loading, refetch: fetch }
-}
-```
-
-- [ ] **Step 3: Create provider mutations hook**
-
-```typescript
-// src/lib/hooks/eng/use-provider-mutations.ts
-'use client'
-
-import { useState } from 'react'
-
-export function useProviderMutations() {
-  const [loading, setLoading] = useState(false)
-
-  const createProvider = async (data: {
-    name: string
-    displayName: string
-    taxId: string | null
-    countryCode: string
-    phone: string | null
-    website: string | null
-  }) => {
-    setLoading(true)
-    const res = await fetch('/api/eng/providers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    setLoading(false)
-    if (!res.ok) throw new Error('Failed to create provider')
-    return res.json()
-  }
-
-  const updateProvider = async (
-    providerId: string,
-    data: Partial<{
-      name: string
-      displayName: string
-      phone: string | null
-      website: string | null
-    }>,
-  ) => {
-    setLoading(true)
-    const res = await fetch(`/api/eng/providers/${providerId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    setLoading(false)
-    if (!res.ok) throw new Error('Failed to update provider')
-    return res.json()
-  }
-
-  return { createProvider, updateProvider, loading }
-}
-```
-
-- [ ] **Step 4: Commit**
-
-```bash
-git add src/lib/hooks/eng/use-providers.ts src/lib/hooks/eng/use-provider-detail.ts src/lib/hooks/eng/use-provider-mutations.ts
-git commit -m "feat(eng): add provider data hooks"
-```
-
----
-
-### Task 5: Provider API Routes
-
-**Files:**
-- Create: `src/app/api/eng/providers/route.ts`
-- Create: `src/app/api/eng/providers/[providerId]/route.ts`
-
-- [ ] **Step 1: Create provider POST route**
-
-```typescript
-// src/app/api/eng/providers/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
-
-export async function POST(request: NextRequest) {
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await request.json()
-  const { name, displayName, taxId, countryCode, phone, website } = body
-
-  // Look up company cache if tax ID provided
-  let companyCacheId: string | null = null
-  if (taxId) {
-    const { data: cached } = await supabase
-      .from('company_cache')
-      .select('id')
-      .eq('tax_id', taxId.replace(/[.\-/]/g, ''))
-      .single()
-    companyCacheId = cached?.id ?? null
-  }
-
-  const { data, error } = await supabase
-    .from('providers')
-    .insert({
-      name,
-      display_name: displayName,
-      tax_id: taxId,
-      country_code: countryCode ?? 'BR',
-      phone,
-      website,
-      company_cache_id: companyCacheId,
-    })
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data, { status: 201 })
-}
-```
-
-- [ ] **Step 2: Create provider PATCH route**
-
-```typescript
-// src/app/api/eng/providers/[providerId]/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
-
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ providerId: string }> },
-) {
-  const { providerId } = await params
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await request.json()
-  const updates: Record<string, any> = {}
-  if (body.name !== undefined) updates.name = body.name
-  if (body.displayName !== undefined) updates.display_name = body.displayName
-  if (body.phone !== undefined) updates.phone = body.phone
-  if (body.website !== undefined) updates.website = body.website
-
-  const { data, error } = await supabase
-    .from('providers')
-    .update(updates)
-    .eq('id', providerId)
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data)
-}
-```
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add src/app/api/eng/providers/route.ts src/app/api/eng/providers/\[providerId\]/route.ts
-git commit -m "feat(eng): add provider API routes"
-```
-
----
-
-### Task 6: Profile Data Hooks and API Routes
-
-**Files:**
-- Create: `src/lib/hooks/eng/use-profile-detail.ts`
-- Create: `src/lib/hooks/eng/use-profile-mutations.ts`
-- Create: `src/app/api/eng/profiles/route.ts`
-- Create: `src/app/api/eng/profiles/[profileId]/route.ts`
-
-- [ ] **Step 1: Create profile detail hook**
-
-```typescript
-// src/lib/hooks/eng/use-profile-detail.ts
-'use client'
-
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-
 export interface ProfileDetail {
   id: string
   providerId: string
@@ -793,219 +173,702 @@ export interface ProfileDetail {
   latestRunPassed: boolean | null
 }
 
-export function useProfileDetail(profileId: string) {
-  const [profile, setProfile] = useState<ProfileDetail | null>(null)
-  const [loading, setLoading] = useState(true)
+export interface TestCaseListItem {
+  id: string
+  profileId: string
+  competency: string
+  description: string | null
+  testBillId: string | null
+  createdBy: string
+  createdAt: string
+  openFixCount: number
+}
 
-  const fetch = useCallback(async () => {
-    setLoading(true)
-    const supabase = createClient()
+export interface TestCaseDetail {
+  id: string
+  profileId: string
+  competency: string
+  description: string | null
+  testBillId: string | null
+  sourceData: Record<string, any> | null
+  expectedFields: Record<string, any>
+  createdBy: string
+  createdAt: string
+  fixRequests: Array<{
+    id: string
+    status: string
+    engineerNotes: string
+    createdAt: string
+  }>
+}
 
-    const { data } = await supabase
-      .from('provider_invoice_profiles')
-      .select(`
-        *,
-        test_cases (id),
-        test_runs (accuracy, passed, created_at),
-        test_fix_requests (id, status)
-      `)
-      .eq('id', profileId)
-      .single()
+// ─── Query Keys ─────────────────────────────────────────────────────
 
-    if (!data) {
-      setProfile(null)
-      setLoading(false)
-      return
+export const providersQueryKey = () => ['eng', 'providers'] as const
+export const providerDetailQueryKey = (id: string) => ['eng', 'provider', id] as const
+export const profileDetailQueryKey = (id: string) => ['eng', 'profile', id] as const
+export const testCasesQueryKey = (profileId: string) => ['eng', 'test-cases', profileId] as const
+export const testCaseDetailQueryKey = (id: string) => ['eng', 'test-case', id] as const
+
+// ─── Fetch Functions ────────────────────────────────────────────────
+
+export async function fetchProviders(supabase: TypedSupabaseClient): Promise<ProviderListItem[]> {
+  const { data, error } = await supabase
+    .from('providers')
+    .select(`
+      id, name, display_name, tax_id, country_code,
+      provider_invoice_profiles (
+        id, category, status,
+        test_runs ( accuracy, passed, created_at )
+      )
+    `)
+    .order('name')
+
+  if (error) throw new Error(`Failed to fetch providers: ${error.message}`)
+  if (!data) return []
+
+  return data.map((p) => {
+    const profiles = (p.provider_invoice_profiles ?? []) as any[]
+    const categories = [...new Set(profiles.map((pr) => pr.category).filter(Boolean))]
+    const hasActive = profiles.some((pr) => pr.status === 'active')
+    const allDeprecated = profiles.length > 0 && profiles.every((pr) => pr.status === 'deprecated')
+
+    let totalWeight = 0
+    let weightedSum = 0
+    let lastTested: string | null = null
+
+    for (const profile of profiles) {
+      const runs = (profile.test_runs ?? []).sort(
+        (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+      )
+      if (runs.length === 0) continue
+      const latest = runs[0]
+      const weight = runs.length
+      totalWeight += weight
+      weightedSum += (Number(latest.accuracy) ?? 0) * weight
+      if (!lastTested || new Date(latest.created_at) > new Date(lastTested)) {
+        lastTested = latest.created_at
+      }
     }
 
-    const runs = (data.test_runs ?? []).sort((a: any, b: any) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    return {
+      id: p.id,
+      name: p.name,
+      displayName: p.display_name,
+      taxId: p.tax_id,
+      countryCode: p.country_code,
+      profileCount: profiles.length,
+      categories,
+      weightedAccuracy: totalWeight > 0 ? weightedSum / totalWeight : null,
+      lastTested,
+      derivedStatus: hasActive ? 'active' : allDeprecated ? 'deprecated' : 'draft',
+    }
+  })
+}
+
+export async function fetchProviderDetail(
+  supabase: TypedSupabaseClient,
+  providerId: string,
+): Promise<ProviderDetail> {
+  const { data, error } = await supabase
+    .from('providers')
+    .select(`
+      *,
+      company_cache (*),
+      provider_invoice_profiles (
+        id, name, region, category, status, capabilities,
+        test_cases ( id ),
+        test_runs ( accuracy, passed, created_at ),
+        test_fix_requests ( id, status )
+      )
+    `)
+    .eq('id', providerId)
+    .single()
+
+  if (error || !data) throw new Error('Provider not found')
+
+  const profiles: ProfileListItem[] = ((data.provider_invoice_profiles ?? []) as any[]).map((p) => {
+    const runs = (p.test_runs ?? []).sort(
+      (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
     )
     const latest = runs[0]
-    const openFixes = (data.test_fix_requests ?? []).filter((f: any) => f.status === 'open')
+    const openFixes = (p.test_fix_requests ?? []).filter((f: any) => f.status === 'open')
 
-    setProfile({
-      id: data.id,
-      providerId: data.provider_id,
-      name: data.name,
-      region: data.region,
-      category: data.category,
-      status: data.status,
-      capabilities: data.capabilities ?? {},
-      aiNotes: data.ai_notes,
-      minAccuracy: Number(data.min_accuracy),
-      autoAcceptThreshold: Number(data.auto_accept_threshold),
-      reviewThreshold: Number(data.review_threshold),
-      testCaseCount: (data.test_cases ?? []).length,
+    return {
+      id: p.id,
+      name: p.name,
+      region: p.region,
+      category: p.category,
+      status: p.status,
+      capabilities: p.capabilities ?? {},
+      accuracy: latest ? Number(latest.accuracy) : null,
+      testCaseCount: (p.test_cases ?? []).length,
+      lastTested: latest?.created_at ?? null,
       openFixCount: openFixes.length,
-      latestAccuracy: latest ? Number(latest.accuracy) : null,
-      latestRunPassed: latest?.passed ?? null,
-    })
-    setLoading(false)
-  }, [profileId])
+    }
+  })
 
-  useEffect(() => { fetch() }, [fetch])
+  const cc = (data as any).company_cache
+  return {
+    id: data.id,
+    name: data.name,
+    displayName: data.display_name,
+    taxId: data.tax_id,
+    countryCode: data.country_code,
+    phone: data.phone,
+    website: data.website,
+    logoUrl: data.logo_url,
+    companyCache: cc
+      ? {
+          legalName: cc.legal_name,
+          tradeName: cc.trade_name,
+          activityCode: cc.activity_code,
+          activityDescription: cc.activity_description,
+          city: cc.city,
+          state: cc.state,
+          source: cc.source,
+          fetchedAt: cc.fetched_at,
+        }
+      : null,
+    profiles,
+    openFixCount: profiles.reduce((sum, p) => sum + p.openFixCount, 0),
+  }
+}
 
-  return { profile, loading, refetch: fetch }
+export async function fetchProfileDetail(
+  supabase: TypedSupabaseClient,
+  profileId: string,
+): Promise<ProfileDetail> {
+  const { data, error } = await supabase
+    .from('provider_invoice_profiles')
+    .select(`
+      *,
+      test_cases ( id ),
+      test_runs ( accuracy, passed, created_at ),
+      test_fix_requests ( id, status )
+    `)
+    .eq('id', profileId)
+    .single()
+
+  if (error || !data) throw new Error('Profile not found')
+
+  const runs = ((data as any).test_runs ?? []).sort(
+    (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+  )
+  const latest = runs[0]
+  const openFixes = ((data as any).test_fix_requests ?? []).filter((f: any) => f.status === 'open')
+
+  return {
+    id: data.id,
+    providerId: data.provider_id,
+    name: data.name,
+    region: data.region,
+    category: data.category,
+    status: data.status,
+    capabilities: data.capabilities as Record<string, any>,
+    aiNotes: data.ai_notes,
+    minAccuracy: Number(data.min_accuracy),
+    autoAcceptThreshold: Number(data.auto_accept_threshold),
+    reviewThreshold: Number(data.review_threshold),
+    testCaseCount: ((data as any).test_cases ?? []).length,
+    openFixCount: openFixes.length,
+    latestAccuracy: latest ? Number(latest.accuracy) : null,
+    latestRunPassed: latest?.passed ?? null,
+  }
+}
+
+export async function fetchTestCases(
+  supabase: TypedSupabaseClient,
+  profileId: string,
+): Promise<TestCaseListItem[]> {
+  const { data, error } = await supabase
+    .from('test_cases')
+    .select(`
+      id, profile_id, competency, description, test_bill_id,
+      created_by, created_at,
+      test_fix_requests ( id, status )
+    `)
+    .eq('profile_id', profileId)
+    .order('created_at', { ascending: false })
+
+  if (error) throw new Error(`Failed to fetch test cases: ${error.message}`)
+
+  return (data ?? []).map((tc: any) => ({
+    id: tc.id,
+    profileId: tc.profile_id,
+    competency: tc.competency,
+    description: tc.description,
+    testBillId: tc.test_bill_id,
+    createdBy: tc.created_by,
+    createdAt: tc.created_at,
+    openFixCount: (tc.test_fix_requests ?? []).filter((f: any) => f.status === 'open').length,
+  }))
+}
+
+export async function fetchTestCaseDetail(
+  supabase: TypedSupabaseClient,
+  caseId: string,
+): Promise<TestCaseDetail> {
+  const { data, error } = await supabase
+    .from('test_cases')
+    .select(`
+      *,
+      test_fix_requests ( id, status, engineer_notes, created_at )
+    `)
+    .eq('id', caseId)
+    .single()
+
+  if (error || !data) throw new Error('Test case not found')
+
+  return {
+    id: data.id,
+    profileId: data.profile_id,
+    competency: data.competency,
+    description: data.description,
+    testBillId: data.test_bill_id,
+    sourceData: data.source_data as Record<string, any> | null,
+    expectedFields: data.expected_fields as Record<string, any>,
+    createdBy: data.created_by,
+    createdAt: data.created_at,
+    fixRequests: ((data as any).test_fix_requests ?? []).map((f: any) => ({
+      id: f.id,
+      status: f.status,
+      engineerNotes: f.engineer_notes,
+      createdAt: f.created_at,
+    })),
+  }
 }
 ```
 
-- [ ] **Step 2: Create profile mutations hook**
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/data/eng/providers/shared.ts
+git commit -m "feat(eng): add provider data layer types, query keys, and fetch functions"
+```
+
+---
+
+### Task 2: Provider Data Layer — server.ts
+
+**Files:**
+- Create: `src/data/eng/providers/server.ts`
+
+- [ ] **Step 1: Create server fetchers with React.cache()**
 
 ```typescript
-// src/lib/hooks/eng/use-profile-mutations.ts
+// src/data/eng/providers/server.ts
+import { cache } from 'react'
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import {
+  fetchProviders,
+  fetchProviderDetail,
+  fetchProfileDetail,
+  fetchTestCases,
+  fetchTestCaseDetail,
+} from './shared'
+import type {
+  ProviderListItem,
+  ProviderDetail,
+  ProfileDetail,
+  TestCaseListItem,
+  TestCaseDetail,
+} from './shared'
+
+export const getProviders = cache(async (): Promise<ProviderListItem[]> => {
+  const supabase = await createEngServerClient()
+  return fetchProviders(supabase)
+})
+
+export const getProviderDetail = cache(async (providerId: string): Promise<ProviderDetail> => {
+  const supabase = await createEngServerClient()
+  return fetchProviderDetail(supabase, providerId)
+})
+
+export const getProfileDetail = cache(async (profileId: string): Promise<ProfileDetail> => {
+  const supabase = await createEngServerClient()
+  return fetchProfileDetail(supabase, profileId)
+})
+
+export const getTestCases = cache(async (profileId: string): Promise<TestCaseListItem[]> => {
+  const supabase = await createEngServerClient()
+  return fetchTestCases(supabase, profileId)
+})
+
+export const getTestCaseDetail = cache(async (caseId: string): Promise<TestCaseDetail> => {
+  const supabase = await createEngServerClient()
+  return fetchTestCaseDetail(supabase, caseId)
+})
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/data/eng/providers/server.ts
+git commit -m "feat(eng): add provider server fetchers with React.cache()"
+```
+
+---
+
+### Task 3: Provider Data Layer — client.ts
+
+**Files:**
+- Create: `src/data/eng/providers/client.ts`
+
+- [ ] **Step 1: Create React Query hooks**
+
+```typescript
+// src/data/eng/providers/client.ts
 'use client'
 
-import { useState } from 'react'
+import { createEngSuspenseHook } from '../shared/create-eng-hook'
+import {
+  fetchProviders,
+  fetchProviderDetail,
+  fetchProfileDetail,
+  fetchTestCases,
+  fetchTestCaseDetail,
+  providersQueryKey,
+  providerDetailQueryKey,
+  profileDetailQueryKey,
+  testCasesQueryKey,
+  testCaseDetailQueryKey,
+} from './shared'
+import type {
+  ProviderListItem,
+  ProviderDetail,
+  ProfileDetail,
+  TestCaseListItem,
+  TestCaseDetail,
+} from './shared'
 
-export function useProfileMutations() {
-  const [loading, setLoading] = useState(false)
+export const useProviders = createEngSuspenseHook<ProviderListItem[], []>(
+  providersQueryKey,
+  fetchProviders,
+)
 
-  const createProfile = async (data: {
-    providerId: string
-    name: string
-    region: string | null
-    category: string
-    aiNotes: string | null
-    minAccuracy: number
-    autoAcceptThreshold: number
-    reviewThreshold: number
-  }) => {
-    setLoading(true)
-    const res = await fetch('/api/eng/profiles', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    })
-    setLoading(false)
-    if (!res.ok) throw new Error('Failed to create profile')
-    return res.json()
+export const useProviderDetail = createEngSuspenseHook<ProviderDetail, [string]>(
+  providerDetailQueryKey,
+  fetchProviderDetail,
+)
+
+export const useProfileDetail = createEngSuspenseHook<ProfileDetail, [string]>(
+  profileDetailQueryKey,
+  fetchProfileDetail,
+)
+
+export const useTestCases = createEngSuspenseHook<TestCaseListItem[], [string]>(
+  testCasesQueryKey,
+  fetchTestCases,
+)
+
+export const useTestCaseDetail = createEngSuspenseHook<TestCaseDetail, [string]>(
+  testCaseDetailQueryKey,
+  fetchTestCaseDetail,
+)
+
+export type {
+  ProviderListItem,
+  ProviderDetail,
+  ProfileDetail,
+  TestCaseListItem,
+  TestCaseDetail,
+} from './shared'
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/data/eng/providers/client.ts
+git commit -m "feat(eng): add provider React Query hooks via createEngSuspenseHook"
+```
+
+---
+
+### Task 4: Sidebar Badge Data Layer
+
+**Files:**
+- Create: `src/data/eng/badges/shared.ts`
+- Create: `src/data/eng/badges/client.ts`
+
+- [ ] **Step 1: Create badge count types and fetch**
+
+```typescript
+// src/data/eng/badges/shared.ts
+import type { TypedSupabaseClient } from '@/lib/supabase/types'
+
+export interface BadgeCounts {
+  pendingRequests: number
+  openFixes: number
+  failingProfiles: number
+}
+
+export const badgeCountsQueryKey = () => ['eng', 'badge-counts'] as const
+
+export async function fetchBadgeCounts(supabase: TypedSupabaseClient): Promise<BadgeCounts> {
+  const [reqRes, fixRes] = await Promise.all([
+    supabase
+      .from('provider_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
+    supabase
+      .from('test_fix_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'open'),
+  ])
+
+  // For failing profiles: get latest test run per active profile
+  const { data: runs } = await supabase
+    .from('test_runs')
+    .select('profile_id, passed, created_at')
+    .order('created_at', { ascending: false })
+
+  // Group by profile_id, take latest, count where passed = false
+  const latestByProfile = new Map<string, boolean>()
+  for (const run of runs ?? []) {
+    if (!latestByProfile.has(run.profile_id)) {
+      latestByProfile.set(run.profile_id, run.passed)
+    }
   }
+  const failingProfiles = [...latestByProfile.values()].filter((passed) => !passed).length
 
-  const updateProfile = async (
-    profileId: string,
-    data: Partial<{
-      name: string
-      region: string | null
-      category: string
-      status: string
-      aiNotes: string | null
-      minAccuracy: number
-      autoAcceptThreshold: number
-      reviewThreshold: number
-    }>,
-    reason?: string,
-  ) => {
-    setLoading(true)
-    const res = await fetch(`/api/eng/profiles/${profileId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...data, reason }),
-    })
-    setLoading(false)
-    if (!res.ok) throw new Error('Failed to update profile')
-    return res.json()
+  return {
+    pendingRequests: reqRes.count ?? 0,
+    openFixes: fixRes.count ?? 0,
+    failingProfiles,
   }
-
-  const runTests = async (profileId: string) => {
-    setLoading(true)
-    const res = await fetch(`/api/eng/profiles/${profileId}/run-tests`, {
-      method: 'POST',
-    })
-    setLoading(false)
-    if (!res.ok) throw new Error('Failed to run tests')
-    return res.json()
-  }
-
-  return { createProfile, updateProfile, runTests, loading }
 }
 ```
 
-- [ ] **Step 3: Create profile API routes**
+```typescript
+// src/data/eng/badges/client.ts
+'use client'
+
+import { createEngSuspenseHook } from '../shared/create-eng-hook'
+import { fetchBadgeCounts, badgeCountsQueryKey } from './shared'
+import type { BadgeCounts } from './shared'
+
+export const useBadgeCounts = createEngSuspenseHook<BadgeCounts, []>(
+  badgeCountsQueryKey,
+  fetchBadgeCounts,
+)
+
+export type { BadgeCounts } from './shared'
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/data/eng/badges/shared.ts src/data/eng/badges/client.ts
+git commit -m "feat(eng): add sidebar badge counts data layer"
+```
+
+---
+
+### Task 5: Provider Server Actions
+
+**Files:**
+- Create: `src/data/eng/providers/actions/create-provider.ts`
+- Create: `src/data/eng/providers/actions/update-provider.ts`
+- Create: `src/data/eng/providers/actions/create-profile.ts`
+- Create: `src/data/eng/providers/actions/update-profile.ts`
+
+- [ ] **Step 1: Create provider server actions**
 
 ```typescript
-// src/app/api/eng/profiles/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+// src/data/eng/providers/actions/create-provider.ts
+'use server'
+
 import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
 
-export async function POST(request: NextRequest) {
+export interface CreateProviderState {
+  success: boolean
+  providerId?: string
+  errors?: { general?: string }
+}
+
+export async function createProvider(
+  _prevState: CreateProviderState,
+  formData: FormData,
+): Promise<CreateProviderState> {
   const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
+  const name = formData.get('name') as string
+  const displayName = formData.get('displayName') as string
+  const taxId = formData.get('taxId') as string | null
+  const countryCode = (formData.get('countryCode') as string) || 'BR'
+  const phone = formData.get('phone') as string | null
+  const website = formData.get('website') as string | null
 
-  // Fetch system defaults if thresholds not provided
-  let minAccuracy = body.minAccuracy
-  let autoAcceptThreshold = body.autoAcceptThreshold
-  let reviewThreshold = body.reviewThreshold
+  if (!name) return { success: false, errors: { general: 'Name is required' } }
 
-  if (minAccuracy === undefined || autoAcceptThreshold === undefined || reviewThreshold === undefined) {
-    const { data: defaults } = await supabase
-      .from('system_thresholds')
-      .select('key, value')
-    const dmap = Object.fromEntries((defaults ?? []).map((d: any) => [d.key, Number(d.value)]))
-    minAccuracy ??= dmap.min_accuracy ?? 0.95
-    autoAcceptThreshold ??= dmap.auto_accept ?? 0.90
-    reviewThreshold ??= dmap.review ?? 0.50
+  // Link to company_cache if tax ID provided
+  let companyCacheId: string | null = null
+  if (taxId) {
+    const cleanTaxId = taxId.replace(/[.\-/]/g, '')
+    const { data: cached } = await supabase
+      .from('company_cache')
+      .select('id')
+      .eq('tax_id', cleanTaxId)
+      .single()
+    companyCacheId = cached?.id ?? null
   }
+
+  const { data, error } = await supabase
+    .from('providers')
+    .insert({
+      name,
+      display_name: displayName || name,
+      tax_id: taxId?.replace(/[.\-/]/g, '') ?? null,
+      country_code: countryCode,
+      phone: phone || null,
+      website: website || null,
+      company_cache_id: companyCacheId,
+    })
+    .select('id')
+    .single()
+
+  if (error) return { success: false, errors: { general: error.message } }
+
+  revalidatePath('/eng/providers')
+  return { success: true, providerId: data.id }
+}
+```
+
+```typescript
+// src/data/eng/providers/actions/update-provider.ts
+'use server'
+
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
+
+export async function updateProvider(
+  providerId: string,
+  updates: {
+    name?: string
+    displayName?: string
+    phone?: string | null
+    website?: string | null
+  },
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createEngServerClient()
+
+  const dbUpdates: Record<string, any> = {}
+  if (updates.name !== undefined) dbUpdates.name = updates.name
+  if (updates.displayName !== undefined) dbUpdates.display_name = updates.displayName
+  if (updates.phone !== undefined) dbUpdates.phone = updates.phone
+  if (updates.website !== undefined) dbUpdates.website = updates.website
+
+  const { error } = await supabase
+    .from('providers')
+    .update(dbUpdates)
+    .eq('id', providerId)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath(`/eng/providers/${providerId}`)
+  return { success: true }
+}
+```
+
+```typescript
+// src/data/eng/providers/actions/create-profile.ts
+'use server'
+
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
+
+export interface CreateProfileState {
+  success: boolean
+  profileId?: string
+  errors?: { general?: string }
+}
+
+export async function createProfile(
+  _prevState: CreateProfileState,
+  formData: FormData,
+): Promise<CreateProfileState> {
+  const supabase = await createEngServerClient()
+
+  const providerId = formData.get('providerId') as string
+  const name = formData.get('name') as string
+  const region = formData.get('region') as string | null
+  const category = formData.get('category') as string
+  const aiNotes = formData.get('aiNotes') as string | null
+  const minAccuracy = Number(formData.get('minAccuracy') || 0.95)
+  const autoAcceptThreshold = Number(formData.get('autoAcceptThreshold') || 0.90)
+  const reviewThreshold = Number(formData.get('reviewThreshold') || 0.50)
+
+  if (!name) return { success: false, errors: { general: 'Display name is required' } }
+  if (!providerId) return { success: false, errors: { general: 'Provider ID is required' } }
 
   const { data, error } = await supabase
     .from('provider_invoice_profiles')
     .insert({
-      provider_id: body.providerId,
-      name: body.name,
-      region: body.region,
-      category: body.category,
-      ai_notes: body.aiNotes,
+      provider_id: providerId,
+      name,
+      region: region || null,
+      category,
+      ai_notes: aiNotes || null,
       min_accuracy: minAccuracy,
       auto_accept_threshold: autoAcceptThreshold,
       review_threshold: reviewThreshold,
       status: 'draft',
       capabilities: { extraction: true },
+      parser_strategy: 'custom',
+      extraction_config: {},
+      validation_config: {},
     })
-    .select()
+    .select('id')
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data, { status: 201 })
+  if (error) return { success: false, errors: { general: error.message } }
+
+  revalidatePath(`/eng/providers/${providerId}`)
+  return { success: true, profileId: data.id }
 }
 ```
 
 ```typescript
-// src/app/api/eng/profiles/[profileId]/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
+// src/data/eng/providers/actions/update-profile.ts
+'use server'
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ profileId: string }> },
-) {
-  const { profileId } = await params
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
+
+export async function updateProfile(
+  profileId: string,
+  updates: {
+    name?: string
+    region?: string | null
+    category?: string
+    status?: string
+    aiNotes?: string | null
+    minAccuracy?: number
+    autoAcceptThreshold?: number
+    reviewThreshold?: number
+  },
+  reason?: string,
+): Promise<{ success: boolean; error?: string }> {
   const supabase = await createEngServerClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const body = await request.json()
-  const { reason, ...fields } = body
-
-  // Build updates, converting camelCase to snake_case
-  const updates: Record<string, any> = {}
-  if (fields.name !== undefined) updates.name = fields.name
-  if (fields.region !== undefined) updates.region = fields.region
-  if (fields.category !== undefined) updates.category = fields.category
-  if (fields.status !== undefined) updates.status = fields.status
-  if (fields.aiNotes !== undefined) updates.ai_notes = fields.aiNotes
-  if (fields.minAccuracy !== undefined) updates.min_accuracy = fields.minAccuracy
-  if (fields.autoAcceptThreshold !== undefined) updates.auto_accept_threshold = fields.autoAcceptThreshold
-  if (fields.reviewThreshold !== undefined) updates.review_threshold = fields.reviewThreshold
+  const dbUpdates: Record<string, any> = {}
+  if (updates.name !== undefined) dbUpdates.name = updates.name
+  if (updates.region !== undefined) dbUpdates.region = updates.region
+  if (updates.category !== undefined) dbUpdates.category = updates.category
+  if (updates.status !== undefined) dbUpdates.status = updates.status
+  if (updates.aiNotes !== undefined) dbUpdates.ai_notes = updates.aiNotes
+  if (updates.minAccuracy !== undefined) dbUpdates.min_accuracy = updates.minAccuracy
+  if (updates.autoAcceptThreshold !== undefined) dbUpdates.auto_accept_threshold = updates.autoAcceptThreshold
+  if (updates.reviewThreshold !== undefined) dbUpdates.review_threshold = updates.reviewThreshold
 
   // Log threshold changes to audit_log
-  const thresholdFields = ['minAccuracy', 'autoAcceptThreshold', 'reviewThreshold']
-  const thresholdChanges = thresholdFields.filter((f) => fields[f] !== undefined)
+  const thresholdKeys = ['minAccuracy', 'autoAcceptThreshold', 'reviewThreshold'] as const
+  const thresholdChanges = thresholdKeys.filter((k) => updates[k] !== undefined)
 
-  if (thresholdChanges.length > 0 && reason) {
-    // Fetch current values for old_value
+  if (thresholdChanges.length > 0 && reason && user) {
     const { data: current } = await supabase
       .from('provider_invoice_profiles')
       .select('min_accuracy, auto_accept_threshold, review_threshold')
@@ -1013,16 +876,19 @@ export async function PATCH(
       .single()
 
     if (current) {
+      const snakeMap: Record<string, string> = {
+        minAccuracy: 'min_accuracy',
+        autoAcceptThreshold: 'auto_accept_threshold',
+        reviewThreshold: 'review_threshold',
+      }
       for (const field of thresholdChanges) {
-        const snakeField = field === 'minAccuracy' ? 'min_accuracy'
-          : field === 'autoAcceptThreshold' ? 'auto_accept_threshold'
-          : 'review_threshold'
+        const snake = snakeMap[field]
         await supabase.from('audit_log').insert({
           entity_type: 'profile',
           entity_id: profileId,
           action: 'threshold_updated',
-          old_value: { field: snakeField, value: current[snakeField as keyof typeof current] },
-          new_value: { field: snakeField, value: fields[field], reason },
+          old_value: { field: snake, value: current[snake as keyof typeof current] },
+          new_value: { field: snake, value: updates[field], reason },
           changed_by: user.id,
         })
       }
@@ -1030,53 +896,368 @@ export async function PATCH(
   }
 
   // Log status changes
-  if (fields.status !== undefined) {
+  if (updates.status !== undefined && user) {
     const { data: current } = await supabase
       .from('provider_invoice_profiles')
       .select('status')
       .eq('id', profileId)
       .single()
 
-    if (current && current.status !== fields.status) {
+    if (current && current.status !== updates.status) {
       await supabase.from('audit_log').insert({
         entity_type: 'profile',
         entity_id: profileId,
         action: 'status_change',
         old_value: { status: current.status },
-        new_value: { status: fields.status },
+        new_value: { status: updates.status },
         changed_by: user.id,
       })
     }
   }
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from('provider_invoice_profiles')
-    .update(updates)
+    .update(dbUpdates)
     .eq('id', profileId)
-    .select()
+
+  if (error) return { success: false, error: error.message }
+
+  // Get provider_id for revalidation path
+  const { data: profile } = await supabase
+    .from('provider_invoice_profiles')
+    .select('provider_id')
+    .eq('id', profileId)
     .single()
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data)
+  if (profile) {
+    revalidatePath(`/eng/providers/${profile.provider_id}/${profileId}`)
+  }
+  return { success: true }
 }
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/data/eng/providers/actions/
+git commit -m "feat(eng): add provider and profile server actions"
+```
+
+---
+
+### Task 6: Test Case Server Actions
+
+**Files:**
+- Create: `src/data/eng/providers/actions/create-test-case.ts`
+- Create: `src/data/eng/providers/actions/update-test-case.ts`
+- Create: `src/data/eng/providers/actions/delete-test-case.ts`
+- Create: `src/data/eng/providers/actions/create-fix-request.ts`
+
+- [ ] **Step 1: Create test case and fix request actions**
+
+```typescript
+// src/data/eng/providers/actions/create-test-case.ts
+'use server'
+
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
+
+export async function createTestCase(data: {
+  profileId: string
+  competency: string
+  description: string | null
+  testBillId: string | null
+  sourceData: Record<string, any> | null
+  expectedFields: Record<string, any>
+}): Promise<{ success: boolean; id?: string; error?: string }> {
+  const supabase = await createEngServerClient()
+
+  const { data: result, error } = await supabase
+    .from('test_cases')
+    .insert({
+      profile_id: data.profileId,
+      competency: data.competency,
+      description: data.description,
+      test_bill_id: data.testBillId,
+      source_data: data.sourceData,
+      expected_fields: data.expectedFields,
+      created_by: 'engineer',
+    })
+    .select('id')
+    .single()
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath(`/eng`)
+  return { success: true, id: result.id }
+}
+```
+
+```typescript
+// src/data/eng/providers/actions/update-test-case.ts
+'use server'
+
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
+
+export async function updateTestCase(
+  caseId: string,
+  updates: {
+    description?: string
+    expectedFields?: Record<string, any>
+    sourceData?: Record<string, any> | null
+  },
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createEngServerClient()
+
+  const dbUpdates: Record<string, any> = {}
+  if (updates.description !== undefined) dbUpdates.description = updates.description
+  if (updates.expectedFields !== undefined) dbUpdates.expected_fields = updates.expectedFields
+  if (updates.sourceData !== undefined) dbUpdates.source_data = updates.sourceData
+
+  const { error } = await supabase
+    .from('test_cases')
+    .update(dbUpdates)
+    .eq('id', caseId)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/eng')
+  return { success: true }
+}
+```
+
+```typescript
+// src/data/eng/providers/actions/delete-test-case.ts
+'use server'
+
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
+
+export async function deleteTestCase(
+  caseId: string,
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createEngServerClient()
+
+  const { error } = await supabase
+    .from('test_cases')
+    .delete()
+    .eq('id', caseId)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/eng')
+  return { success: true }
+}
+```
+
+```typescript
+// src/data/eng/providers/actions/create-fix-request.ts
+'use server'
+
+import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { revalidatePath } from 'next/cache'
+
+export async function createFixRequest(data: {
+  profileId: string
+  competency: string
+  testCaseId?: string
+  testRunId?: string
+  providerRequestId?: string
+  sourceData?: Record<string, any>
+  actualResult: Record<string, any>
+  expectedResult?: Record<string, any>
+  rawExternal?: Record<string, any>
+  engineerNotes: string
+}): Promise<{ success: boolean; id?: string; error?: string }> {
+  const supabase = await createEngServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user) return { success: false, error: 'Not authenticated' }
+
+  const { data: result, error } = await supabase
+    .from('test_fix_requests')
+    .insert({
+      profile_id: data.profileId,
+      test_case_id: data.testCaseId ?? null,
+      test_run_id: data.testRunId ?? null,
+      provider_request_id: data.providerRequestId ?? null,
+      competency: data.competency,
+      source_data: data.sourceData ?? null,
+      actual_result: data.actualResult,
+      expected_result: data.expectedResult ?? null,
+      raw_external: data.rawExternal ?? null,
+      engineer_notes: data.engineerNotes,
+      status: 'open',
+      created_by: user.id,
+    })
+    .select('id')
+    .single()
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/eng/fixes')
+  return { success: true, id: result.id }
+}
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/data/eng/providers/actions/
+git commit -m "feat(eng): add test case CRUD and fix request server actions"
+```
+
+---
+
+### Task 7: Eng Layout and Sidebar
+
+**Files:**
+- Create: `src/components/eng/sidebar.tsx`
+- Create: `src/app/eng/layout.tsx`
+- Create: `src/app/eng/loading.tsx`
+- Create: `src/app/eng/page.tsx`
+
+The layout is a server component with ZERO async. Auth is handled by middleware. The sidebar is a client component that uses React Query for badge counts.
+
+- [ ] **Step 1: Create the sidebar client component**
+
+```typescript
+// src/components/eng/sidebar.tsx
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useState } from 'react'
+import {
+  Building2,
+  Inbox,
+  Wrench,
+  BarChart3,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { useBadgeCounts } from '@/data/eng/badges/client'
+
+const navItems = [
+  { label: 'Providers', href: '/eng/providers', icon: Building2, badgeKey: null },
+  { label: 'Requests', href: '/eng/requests', icon: Inbox, badgeKey: 'pendingRequests' as const },
+  { label: 'Fixes', href: '/eng/fixes', icon: Wrench, badgeKey: 'openFixes' as const },
+  { label: 'Accuracy', href: '/eng/accuracy', icon: BarChart3, badgeKey: 'failingProfiles' as const },
+  { label: 'Discovery', href: '/eng/discovery', icon: Search, badgeKey: null },
+]
+
+export function Sidebar() {
+  const pathname = usePathname()
+  const [collapsed, setCollapsed] = useState(false)
+  const { data: badges } = useBadgeCounts()
+
+  return (
+    <aside
+      className={`flex flex-col border-r bg-muted/30 transition-all ${
+        collapsed ? 'w-16' : 'w-56'
+      }`}
+    >
+      <div className="flex items-center justify-between border-b px-4 py-3">
+        {!collapsed && (
+          <span className="text-sm font-semibold text-muted-foreground">Engineering</span>
+        )}
+        <button onClick={() => setCollapsed(!collapsed)} className="rounded p-1 hover:bg-muted">
+          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+        </button>
+      </div>
+
+      <nav className="flex flex-1 flex-col gap-1 p-2">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+          const Icon = item.icon
+          const badgeCount = item.badgeKey ? badges[item.badgeKey] : 0
+
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                isActive
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+              }`}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {!collapsed && (
+                <>
+                  <span className="flex-1">{item.label}</span>
+                  {badgeCount > 0 && (
+                    <Badge variant="secondary" className="h-5 min-w-5 justify-center px-1.5 text-xs">
+                      {badgeCount}
+                    </Badge>
+                  )}
+                </>
+              )}
+            </Link>
+          )
+        })}
+      </nav>
+    </aside>
+  )
+}
+```
+
+- [ ] **Step 2: Create the eng layout (server component, NO async)**
+
+```typescript
+// src/app/eng/layout.tsx
+import { Sidebar } from '@/components/eng/sidebar'
+import { QueryProvider } from '@/components/query-provider'
+import { Suspense } from 'react'
+
+export default function EngLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <QueryProvider>
+      <div className="flex h-screen">
+        <Suspense fallback={<div className="w-56 border-r bg-muted/30" />}>
+          <Sidebar />
+        </Suspense>
+        <main className="flex-1 overflow-y-auto">{children}</main>
+      </div>
+    </QueryProvider>
+  )
+}
+```
+
+- [ ] **Step 3: Create loading.tsx and redirect page**
+
+```typescript
+// src/app/eng/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
+```
+
+```typescript
+// src/app/eng/page.tsx
+import { redirect } from 'next/navigation'
+export default function EngPage() { redirect('/eng/providers') }
 ```
 
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/lib/hooks/eng/use-profile-detail.ts src/lib/hooks/eng/use-profile-mutations.ts src/app/api/eng/profiles/route.ts src/app/api/eng/profiles/\[profileId\]/route.ts
-git commit -m "feat(eng): add profile data hooks and API routes"
+git add src/components/eng/sidebar.tsx src/app/eng/layout.tsx src/app/eng/loading.tsx src/app/eng/page.tsx
+git commit -m "feat(eng): add eng layout with sidebar and React Query badge counts"
 ```
 
 ---
 
-### Task 7: Provider Registry Page
+### Task 8: Provider Registry Page
 
 **Files:**
 - Create: `src/components/eng/provider-registry-table.tsx`
 - Create: `src/app/eng/providers/page.tsx`
+- Create: `src/app/eng/providers/loading.tsx`
 
-- [ ] **Step 1: Create the registry table component**
+- [ ] **Step 1: Create the registry table client component**
 
 ```typescript
 // src/components/eng/provider-registry-table.tsx
@@ -1088,36 +1269,31 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { ThresholdBadge } from '@/components/eng/threshold-badge'
 import { Sparkline } from '@/components/eng/sparkline'
-import { useProviders, type ProviderListItem } from '@/lib/hooks/eng/use-providers'
-
-const statusOrder = { active: 0, draft: 1, deprecated: 2 }
+import { useProviders, type ProviderListItem } from '@/data/eng/providers/client'
 
 export function ProviderRegistryTable() {
-  const { providers, loading } = useProviders()
   const router = useRouter()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const { data: providers } = useProviders()
 
   const filtered = providers
     .filter((p) => {
-      if (search) {
-        const q = search.toLowerCase()
-        const matchesName = (p.displayName ?? p.name).toLowerCase().includes(q)
-        const matchesTaxId = p.taxId?.includes(q)
-        return matchesName || matchesTaxId
-      }
-      return true
+      if (!search) return true
+      const q = search.toLowerCase()
+      return (
+        (p.displayName ?? p.name).toLowerCase().includes(q) ||
+        p.taxId?.includes(q)
+      )
     })
     .filter((p) => !statusFilter || p.derivedStatus === statusFilter)
     .sort((a, b) => {
-      // Failing first, then near-threshold, then healthy
-      const aScore = a.accuracy === null ? 1 : a.accuracy < 0.95 ? 0 : 2
-      const bScore = b.accuracy === null ? 1 : b.accuracy < 0.95 ? 0 : 2
-      if (aScore !== bScore) return aScore - bScore
-      return (a.accuracy ?? 0) - (b.accuracy ?? 0)
+      // Failing first, near-threshold, healthy
+      const score = (v: number | null) => (v === null ? 1 : v < 0.95 ? 0 : 2)
+      const diff = score(a.weightedAccuracy) - score(b.weightedAccuracy)
+      if (diff !== 0) return diff
+      return (a.weightedAccuracy ?? 0) - (b.weightedAccuracy ?? 0)
     })
-
-  if (loading) return <div className="p-8 text-muted-foreground">Loading providers...</div>
 
   return (
     <div className="space-y-4">
@@ -1140,145 +1316,165 @@ export function ProviderRegistryTable() {
         </select>
       </div>
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left text-muted-foreground">
-            <th className="pb-2 font-medium">Provider</th>
-            <th className="pb-2 font-medium">Tax ID</th>
-            <th className="pb-2 font-medium">Profiles</th>
-            <th className="pb-2 font-medium">Categories</th>
-            <th className="pb-2 font-medium">Accuracy</th>
-            <th className="pb-2 font-medium">Last Tested</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((p) => (
-            <tr
-              key={p.id}
-              className="border-b cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => router.push(`/eng/providers/${p.id}`)}
-            >
-              <td className="py-3 font-medium">{p.displayName ?? p.name}</td>
-              <td className="py-3 text-muted-foreground font-mono text-xs">
-                {p.taxId ?? '—'}
-              </td>
-              <td className="py-3">{p.profileCount}</td>
-              <td className="py-3">
-                <div className="flex gap-1 flex-wrap">
-                  {p.categories.map((c) => (
-                    <Badge key={c} variant="outline" className="text-xs">{c}</Badge>
-                  ))}
-                </div>
-              </td>
-              <td className="py-3">
-                {p.accuracy !== null ? (
-                  <div className="flex items-center gap-2">
-                    <ThresholdBadge value={p.accuracy} threshold={0.95} format="percent" />
-                    <Sparkline data={[]} threshold={0.95} />
+      <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left text-muted-foreground bg-muted/30">
+              <th className="px-4 py-3 font-medium">Provider</th>
+              <th className="px-4 py-3 font-medium">Tax ID</th>
+              <th className="px-4 py-3 font-medium">Profiles</th>
+              <th className="px-4 py-3 font-medium">Categories</th>
+              <th className="px-4 py-3 font-medium">Accuracy</th>
+              <th className="px-4 py-3 font-medium">Last Tested</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {filtered.map((p) => (
+              <tr
+                key={p.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => router.push(`/eng/providers/${p.id}`)}
+              >
+                <td className="px-4 py-3 font-medium">{p.displayName ?? p.name}</td>
+                <td className="px-4 py-3 text-muted-foreground font-mono text-xs">{p.taxId ?? '—'}</td>
+                <td className="px-4 py-3">{p.profileCount}</td>
+                <td className="px-4 py-3">
+                  <div className="flex gap-1 flex-wrap">
+                    {p.categories.map((c) => (
+                      <Badge key={c} variant="outline" className="text-xs">{c}</Badge>
+                    ))}
                   </div>
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )}
-              </td>
-              <td className="py-3 text-muted-foreground">
-                {p.lastTested
-                  ? new Date(p.lastTested).toLocaleDateString()
-                  : '—'}
-              </td>
-            </tr>
-          ))}
-          {filtered.length === 0 && (
-            <tr>
-              <td colSpan={6} className="py-8 text-center text-muted-foreground">
-                No providers found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
+                </td>
+                <td className="px-4 py-3">
+                  {p.weightedAccuracy !== null ? (
+                    <div className="flex items-center gap-2">
+                      <ThresholdBadge value={p.weightedAccuracy} threshold={0.95} format="percent" />
+                      <Sparkline data={[]} threshold={0.95} />
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {p.lastTested ? new Date(p.lastTested).toLocaleDateString() : '—'}
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">
+                  No providers found
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
 ```
 
-- [ ] **Step 2: Create the registry page**
+- [ ] **Step 2: Create the registry server page with HydrationBoundary**
 
 ```typescript
 // src/app/eng/providers/page.tsx
-import Link from 'next/link'
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+import { getProviders } from '@/data/eng/providers/server'
+import { providersQueryKey } from '@/data/eng/providers/shared'
+import { ProviderRegistryTable } from '@/components/eng/provider-registry-table'
+import { FadeIn } from '@/components/fade-in'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
-import { ProviderRegistryTable } from '@/components/eng/provider-registry-table'
+import Link from 'next/link'
 
-export default function ProvidersPage() {
+export default async function ProvidersPage() {
+  const queryClient = new QueryClient()
+  const providers = await getProviders()
+  queryClient.setQueryData(providersQueryKey(), providers)
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Providers</h1>
-        <Link href="/eng/providers/new">
-          <Button>
-            <Plus className="h-4 w-4" />
-            New Provider
-          </Button>
-        </Link>
+    <FadeIn className="h-full">
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Providers</h1>
+          <Link href="/eng/providers/new">
+            <Button><Plus className="h-4 w-4" /> New Provider</Button>
+          </Link>
+        </div>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <ProviderRegistryTable />
+        </HydrationBoundary>
       </div>
-      <ProviderRegistryTable />
-    </div>
+    </FadeIn>
   )
 }
+```
+
+```typescript
+// src/app/eng/providers/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/components/eng/provider-registry-table.tsx src/app/eng/providers/page.tsx
-git commit -m "feat(eng): add provider registry page with table"
+git add src/components/eng/provider-registry-table.tsx src/app/eng/providers/page.tsx src/app/eng/providers/loading.tsx
+git commit -m "feat(eng): add provider registry page with HydrationBoundary"
 ```
 
 ---
 
-### Task 8: Provider Creation Page
+### Task 9: Provider Creation Page
 
 **Files:**
 - Create: `src/components/eng/provider-form.tsx`
 - Create: `src/app/eng/providers/new/page.tsx`
+- Create: `src/app/eng/providers/new/loading.tsx`
 
-- [ ] **Step 1: Create the provider form component**
+- [ ] **Step 1: Create the provider form client component**
 
 ```typescript
 // src/components/eng/provider-form.tsx
 'use client'
 
-import { useState } from 'react'
+import { useActionState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { useProviderMutations } from '@/lib/hooks/eng/use-provider-mutations'
-import { lookupCnpj } from '@/lib/billing-intelligence/identification/cnpj-lookup'
+import { createProvider, type CreateProviderState } from '@/data/eng/providers/actions/create-provider'
 
 export function ProviderForm() {
   const router = useRouter()
-  const { createProvider, loading } = useProviderMutations()
-
-  const [taxId, setTaxId] = useState('')
   const [lookupDone, setLookupDone] = useState(false)
   const [lookingUp, setLookingUp] = useState(false)
-  const [name, setName] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [countryCode, setCountryCode] = useState('BR')
-  const [phone, setPhone] = useState('')
-  const [website, setWebsite] = useState('')
+  const [taxId, setTaxId] = useState('')
+  const [prefilled, setPrefilled] = useState<{ name: string; displayName: string } | null>(null)
+
+  const [state, formAction, isPending] = useActionState<CreateProviderState, FormData>(
+    createProvider,
+    { success: false },
+  )
+
+  useEffect(() => {
+    if (state.success && state.providerId) {
+      router.push(`/eng/providers/${state.providerId}`)
+    }
+  }, [state, router])
 
   const handleLookup = async () => {
     if (!taxId.trim()) return
     setLookingUp(true)
     try {
-      const result = await lookupCnpj(taxId.replace(/[.\-/]/g, ''))
-      if (result) {
-        setName(result.companyName)
-        setDisplayName(result.companyName)
+      // Use the CNPJ lookup API
+      const res = await fetch(`/api/eng/cnpj-lookup?taxId=${encodeURIComponent(taxId)}`)
+      if (res.ok) {
+        const data = await res.json()
+        setPrefilled({ name: data.companyName, displayName: data.companyName })
       }
       setLookupDone(true)
     } catch {
@@ -1287,109 +1483,112 @@ export function ProviderForm() {
     setLookingUp(false)
   }
 
-  const handleSubmit = async () => {
-    const result = await createProvider({
-      name,
-      displayName,
-      taxId: taxId.replace(/[.\-/]/g, '') || null,
-      countryCode,
-      phone: phone || null,
-      website: website || null,
-    })
-    router.push(`/eng/providers/${result.id}`)
-  }
-
   const fieldsDisabled = !lookupDone
 
   return (
-    <Card className="max-w-lg p-6 space-y-4">
-      <div className="space-y-2">
-        <Label>Tax ID</Label>
-        <div className="flex gap-2">
-          <Input
-            placeholder="Enter tax ID (e.g., CNPJ)"
-            value={taxId}
-            onChange={(e) => setTaxId(e.target.value)}
-          />
-          <Button onClick={handleLookup} disabled={lookingUp || !taxId.trim()} variant="secondary">
-            {lookingUp ? 'Looking up...' : 'Lookup'}
-          </Button>
+    <Card className="max-w-lg p-6">
+      <form action={formAction} className="space-y-4">
+        <div className="space-y-2">
+          <Label>Tax ID</Label>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter tax ID (e.g., CNPJ)"
+              value={taxId}
+              onChange={(e) => setTaxId(e.target.value)}
+            />
+            <input type="hidden" name="taxId" value={taxId} />
+            <Button type="button" onClick={handleLookup} disabled={lookingUp || !taxId.trim()} variant="secondary">
+              {lookingUp ? 'Looking up...' : 'Lookup'}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label>Name</Label>
-        <Input value={name} onChange={(e) => setName(e.target.value)} disabled={fieldsDisabled} />
-      </div>
+        <fieldset disabled={fieldsDisabled || isPending} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Name</Label>
+            <Input name="name" defaultValue={prefilled?.name ?? ''} />
+          </div>
+          <div className="space-y-2">
+            <Label>Display Name</Label>
+            <Input name="displayName" defaultValue={prefilled?.displayName ?? ''} />
+          </div>
+          <div className="space-y-2">
+            <Label>Country Code</Label>
+            <Input name="countryCode" defaultValue="BR" />
+          </div>
+          <div className="space-y-2">
+            <Label>Phone</Label>
+            <Input name="phone" />
+          </div>
+          <div className="space-y-2">
+            <Label>Website</Label>
+            <Input name="website" />
+          </div>
 
-      <div className="space-y-2">
-        <Label>Display Name</Label>
-        <Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} disabled={fieldsDisabled} />
-      </div>
+          {state.errors?.general && (
+            <p className="text-sm text-destructive">{state.errors.general}</p>
+          )}
 
-      <div className="space-y-2">
-        <Label>Country Code</Label>
-        <Input value={countryCode} onChange={(e) => setCountryCode(e.target.value)} disabled={fieldsDisabled} />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Phone</Label>
-        <Input value={phone} onChange={(e) => setPhone(e.target.value)} disabled={fieldsDisabled} />
-      </div>
-
-      <div className="space-y-2">
-        <Label>Website</Label>
-        <Input value={website} onChange={(e) => setWebsite(e.target.value)} disabled={fieldsDisabled} />
-      </div>
-
-      <Button onClick={handleSubmit} disabled={loading || fieldsDisabled || !name} className="w-full">
-        {loading ? 'Creating...' : 'Create Provider'}
-      </Button>
+          <Button type="submit" loading={isPending} className="w-full">
+            Create Provider
+          </Button>
+        </fieldset>
+      </form>
     </Card>
   )
 }
 ```
 
-- [ ] **Step 2: Create the page**
+- [ ] **Step 2: Create the page and loading**
 
 ```typescript
 // src/app/eng/providers/new/page.tsx
+import { FadeIn } from '@/components/fade-in'
 import { ProviderForm } from '@/components/eng/provider-form'
 
 export default function NewProviderPage() {
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">New Provider</h1>
-      <p className="text-muted-foreground">
-        Enter a tax ID to look up company information, or upload a bill to extract it.
-      </p>
-      <ProviderForm />
-    </div>
+    <FadeIn className="h-full">
+      <div className="p-6 space-y-6">
+        <h1 className="text-2xl font-semibold">New Provider</h1>
+        <p className="text-muted-foreground">
+          Enter a tax ID to look up company information, or upload a bill to extract it.
+        </p>
+        <ProviderForm />
+      </div>
+    </FadeIn>
   )
 }
+```
+
+```typescript
+// src/app/eng/providers/new/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/components/eng/provider-form.tsx src/app/eng/providers/new/page.tsx
-git commit -m "feat(eng): add provider creation page with tax ID lookup"
+git add src/components/eng/provider-form.tsx src/app/eng/providers/new/page.tsx src/app/eng/providers/new/loading.tsx
+git commit -m "feat(eng): add provider creation page with useActionState"
 ```
 
 ---
 
-### Task 9: Provider Detail Page
+### Task 10: Provider Detail Page
 
 **Files:**
+- Create: `src/components/eng/provider-detail-client.tsx`
 - Create: `src/app/eng/providers/[providerId]/page.tsx`
+- Create: `src/app/eng/providers/[providerId]/loading.tsx`
 
-- [ ] **Step 1: Create the provider detail page**
+- [ ] **Step 1: Create the provider detail client component**
 
 ```typescript
-// src/app/eng/providers/[providerId]/page.tsx
+// src/components/eng/provider-detail-client.tsx
 'use client'
 
-import { use } from 'react'
 import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
@@ -1397,30 +1596,21 @@ import { Button } from '@/components/ui/button'
 import { ThresholdBadge } from '@/components/eng/threshold-badge'
 import { Sparkline } from '@/components/eng/sparkline'
 import { EmptyState } from '@/components/eng/empty-state'
-import { useProviderDetail } from '@/lib/hooks/eng/use-provider-detail'
+import { useProviderDetail } from '@/data/eng/providers/client'
 import { Plus, Building2, Wrench } from 'lucide-react'
 import Link from 'next/link'
 
-export default function ProviderDetailPage({
-  params,
-}: {
-  params: Promise<{ providerId: string }>
-}) {
-  const { providerId } = use(params)
-  const { provider, loading } = useProviderDetail(providerId)
+export function ProviderDetailClient({ providerId }: { providerId: string }) {
   const router = useRouter()
-
-  if (loading) return <div className="p-6 text-muted-foreground">Loading...</div>
-  if (!provider) return <div className="p-6">Provider not found</div>
+  const { data: provider } = useProviderDetail(providerId)
 
   const hasActive = provider.profiles.some((p) => p.status === 'active')
   const allDeprecated = provider.profiles.length > 0 && provider.profiles.every((p) => p.status === 'deprecated')
   const derivedStatus = hasActive ? 'active' : allDeprecated ? 'deprecated' : 'draft'
-
   const categories = [...new Set(provider.profiles.map((p) => p.category).filter(Boolean))]
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -1430,11 +1620,9 @@ export default function ProviderDetailPage({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant={derivedStatus === 'active' ? 'default' : 'secondary'}>
-            {derivedStatus}
-          </Badge>
+          <Badge variant={derivedStatus === 'active' ? 'default' : 'secondary'}>{derivedStatus}</Badge>
           {provider.openFixCount > 0 && (
-            <Link href={`/eng/fixes?provider=${providerId}`}>
+            <Link href="/eng/fixes">
               <Badge variant="destructive" className="gap-1">
                 <Wrench className="h-3 w-3" />
                 {provider.openFixCount} open {provider.openFixCount === 1 ? 'fix' : 'fixes'}
@@ -1471,7 +1659,6 @@ export default function ProviderDetailPage({
               <div>Activity: {provider.companyCache.activityDescription ?? '—'}</div>
               <div>Location: {provider.companyCache.city}, {provider.companyCache.state}</div>
               <div>Source: {provider.companyCache.source}</div>
-              <div>Fetched: {provider.companyCache.fetchedAt ? new Date(provider.companyCache.fetchedAt).toLocaleDateString() : '—'}</div>
             </div>
           </details>
         )}
@@ -1482,10 +1669,7 @@ export default function ProviderDetailPage({
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-medium">Profiles</h2>
           <Link href={`/eng/providers/${providerId}/new-profile`}>
-            <Button size="sm">
-              <Plus className="h-4 w-4" />
-              New Profile
-            </Button>
+            <Button size="sm"><Plus className="h-4 w-4" /> New Profile</Button>
           </Link>
         </div>
 
@@ -1497,59 +1681,55 @@ export default function ProviderDetailPage({
             action={{ label: 'New Profile', href: `/eng/providers/${providerId}/new-profile` }}
           />
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b text-left text-muted-foreground">
-                <th className="pb-2 font-medium">Profile</th>
-                <th className="pb-2 font-medium">Region</th>
-                <th className="pb-2 font-medium">Category</th>
-                <th className="pb-2 font-medium">Status</th>
-                <th className="pb-2 font-medium">Capabilities</th>
-                <th className="pb-2 font-medium">Accuracy</th>
-                <th className="pb-2 font-medium">Tests</th>
-                <th className="pb-2 font-medium">Last Tested</th>
-              </tr>
-            </thead>
-            <tbody>
-              {provider.profiles.map((p) => (
-                <tr
-                  key={p.id}
-                  className="border-b cursor-pointer hover:bg-muted/50 transition-colors"
-                  onClick={() => router.push(`/eng/providers/${providerId}/${p.id}/overview`)}
-                >
-                  <td className="py-3 font-medium">{p.name}</td>
-                  <td className="py-3 text-muted-foreground">{p.region ?? '—'}</td>
-                  <td className="py-3">
-                    {p.category ? <Badge variant="outline" className="text-xs">{p.category}</Badge> : '—'}
-                  </td>
-                  <td className="py-3">
-                    <Badge variant={p.status === 'active' ? 'default' : 'secondary'} className="text-xs">
-                      {p.status}
-                    </Badge>
-                  </td>
-                  <td className="py-3">
-                    <div className="flex gap-1">
-                      {p.capabilities.extraction && <Badge variant="outline" className="text-xs">extraction</Badge>}
-                      {p.capabilities.validation && <Badge variant="outline" className="text-xs">validation</Badge>}
-                      {p.capabilities.paymentStatus && <Badge variant="outline" className="text-xs">payment</Badge>}
-                    </div>
-                  </td>
-                  <td className="py-3">
-                    {p.accuracy !== null ? (
-                      <div className="flex items-center gap-2">
-                        <ThresholdBadge value={p.accuracy} threshold={0.95} format="percent" />
-                        <Sparkline data={[]} threshold={0.95} />
-                      </div>
-                    ) : '—'}
-                  </td>
-                  <td className="py-3">{p.testCaseCount}</td>
-                  <td className="py-3 text-muted-foreground">
-                    {p.lastTested ? new Date(p.lastTested).toLocaleDateString() : '—'}
-                  </td>
+          <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b text-left text-muted-foreground bg-muted/30">
+                  <th className="px-4 py-3 font-medium">Profile</th>
+                  <th className="px-4 py-3 font-medium">Region</th>
+                  <th className="px-4 py-3 font-medium">Category</th>
+                  <th className="px-4 py-3 font-medium">Status</th>
+                  <th className="px-4 py-3 font-medium">Capabilities</th>
+                  <th className="px-4 py-3 font-medium">Accuracy</th>
+                  <th className="px-4 py-3 font-medium">Tests</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y">
+                {provider.profiles.map((p) => (
+                  <tr
+                    key={p.id}
+                    className="cursor-pointer hover:bg-muted/50 transition-colors"
+                    onClick={() => router.push(`/eng/providers/${providerId}/${p.id}/overview`)}
+                  >
+                    <td className="px-4 py-3 font-medium">{p.name}</td>
+                    <td className="px-4 py-3 text-muted-foreground">{p.region ?? '—'}</td>
+                    <td className="px-4 py-3">
+                      {p.category ? <Badge variant="outline" className="text-xs">{p.category}</Badge> : '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge variant={p.status === 'active' ? 'default' : 'secondary'} className="text-xs">{p.status}</Badge>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-1">
+                        {p.capabilities.extraction && <Badge variant="outline" className="text-xs">extraction</Badge>}
+                        {p.capabilities.validation && <Badge variant="outline" className="text-xs">validation</Badge>}
+                        {p.capabilities.paymentStatus && <Badge variant="outline" className="text-xs">payment</Badge>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      {p.accuracy !== null ? (
+                        <div className="flex items-center gap-2">
+                          <ThresholdBadge value={p.accuracy} threshold={0.95} format="percent" />
+                          <Sparkline data={[]} threshold={0.95} />
+                        </div>
+                      ) : '—'}
+                    </td>
+                    <td className="px-4 py-3">{p.testCaseCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
@@ -1557,20 +1737,59 @@ export default function ProviderDetailPage({
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Create the server page with HydrationBoundary**
+
+```typescript
+// src/app/eng/providers/[providerId]/page.tsx
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+import { getProviderDetail } from '@/data/eng/providers/server'
+import { providerDetailQueryKey } from '@/data/eng/providers/shared'
+import { ProviderDetailClient } from '@/components/eng/provider-detail-client'
+import { FadeIn } from '@/components/fade-in'
+
+export default async function ProviderDetailPage({
+  params,
+}: {
+  params: Promise<{ providerId: string }>
+}) {
+  const { providerId } = await params
+  const queryClient = new QueryClient()
+  const provider = await getProviderDetail(providerId)
+  queryClient.setQueryData(providerDetailQueryKey(providerId), provider)
+
+  return (
+    <FadeIn className="h-full">
+      <div className="p-6">
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <ProviderDetailClient providerId={providerId} />
+        </HydrationBoundary>
+      </div>
+    </FadeIn>
+  )
+}
+```
+
+```typescript
+// src/app/eng/providers/[providerId]/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
+```
+
+- [ ] **Step 3: Commit**
 
 ```bash
-git add src/app/eng/providers/\[providerId\]/page.tsx
-git commit -m "feat(eng): add provider detail page with profiles table"
+git add src/components/eng/provider-detail-client.tsx src/app/eng/providers/\[providerId\]/page.tsx src/app/eng/providers/\[providerId\]/loading.tsx
+git commit -m "feat(eng): add provider detail page with HydrationBoundary"
 ```
 
 ---
 
-### Task 10: Profile Creation Page
+### Task 11: Profile Creation Page
 
 **Files:**
 - Create: `src/components/eng/profile-form.tsx`
 - Create: `src/app/eng/providers/[providerId]/new-profile/page.tsx`
+- Create: `src/app/eng/providers/[providerId]/new-profile/loading.tsx`
 
 - [ ] **Step 1: Create the profile form**
 
@@ -1578,167 +1797,144 @@ git commit -m "feat(eng): add provider detail page with profiles table"
 // src/components/eng/profile-form.tsx
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useActionState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { useProfileMutations } from '@/lib/hooks/eng/use-profile-mutations'
-import { createClient } from '@/lib/supabase/client'
+import { createProfile, type CreateProfileState } from '@/data/eng/providers/actions/create-profile'
 
-interface Props {
-  providerId: string
-}
-
-export function ProfileForm({ providerId }: Props) {
+export function ProfileForm({ providerId }: { providerId: string }) {
   const router = useRouter()
-  const { createProfile, loading } = useProfileMutations()
 
-  const [name, setName] = useState('')
-  const [region, setRegion] = useState('')
-  const [category, setCategory] = useState('electricity')
-  const [aiNotes, setAiNotes] = useState('')
-  const [minAccuracy, setMinAccuracy] = useState(0.95)
-  const [autoAccept, setAutoAccept] = useState(0.90)
-  const [review, setReview] = useState(0.50)
+  const [state, formAction, isPending] = useActionState<CreateProfileState, FormData>(
+    createProfile,
+    { success: false },
+  )
 
-  // Load system defaults
   useEffect(() => {
-    const loadDefaults = async () => {
-      const supabase = createClient()
-      const { data } = await supabase.from('system_thresholds').select('key, value')
-      if (data) {
-        const dmap = Object.fromEntries(data.map((d) => [d.key, Number(d.value)]))
-        if (dmap.min_accuracy) setMinAccuracy(dmap.min_accuracy)
-        if (dmap.auto_accept) setAutoAccept(dmap.auto_accept)
-        if (dmap.review) setReview(dmap.review)
-      }
+    if (state.success && state.profileId) {
+      router.push(`/eng/providers/${providerId}/${state.profileId}/overview`)
     }
-    loadDefaults()
-  }, [])
-
-  const handleSubmit = async () => {
-    const result = await createProfile({
-      providerId,
-      name,
-      region: region || null,
-      category,
-      aiNotes: aiNotes || null,
-      minAccuracy,
-      autoAcceptThreshold: autoAccept,
-      reviewThreshold: review,
-    })
-    router.push(`/eng/providers/${providerId}/${result.id}/overview`)
-  }
+  }, [state, router, providerId])
 
   return (
-    <Card className="max-w-lg p-6 space-y-4">
-      <div className="space-y-2">
-        <Label>Display Name</Label>
-        <Input placeholder="e.g., Enliv (Campeche)" value={name} onChange={(e) => setName(e.target.value)} />
-      </div>
+    <Card className="max-w-lg p-6">
+      <form action={formAction} className="space-y-4">
+        <input type="hidden" name="providerId" value={providerId} />
 
-      <div className="space-y-2">
-        <Label>Region</Label>
-        <Input placeholder="e.g., SC-florianopolis-campeche" value={region} onChange={(e) => setRegion(e.target.value)} />
-      </div>
+        <fieldset disabled={isPending} className="space-y-4">
+          <div className="space-y-2">
+            <Label>Display Name</Label>
+            <Input name="name" placeholder="e.g., Enliv (Campeche)" required />
+          </div>
+          <div className="space-y-2">
+            <Label>Region</Label>
+            <Input name="region" placeholder="e.g., SC-florianopolis-campeche" />
+          </div>
+          <div className="space-y-2">
+            <Label>Category</Label>
+            <select name="category" className="w-full rounded-md border px-3 py-2 text-sm" defaultValue="electricity">
+              <option value="electricity">Electricity</option>
+              <option value="water">Water</option>
+              <option value="gas">Gas</option>
+              <option value="internet">Internet</option>
+              <option value="condo">Condo</option>
+              <option value="sewer">Sewer</option>
+              <option value="insurance">Insurance</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label>Notes for AI</Label>
+            <textarea
+              name="aiNotes"
+              className="w-full rounded-md border px-3 py-2 text-sm min-h-[100px]"
+              placeholder="Context for Claude: API info, scraping targets, bill format notes, vault secret references..."
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <Label className="text-xs">Min Accuracy</Label>
+              <Input type="number" name="minAccuracy" step="0.01" min="0" max="1" defaultValue="0.95" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Auto Accept</Label>
+              <Input type="number" name="autoAcceptThreshold" step="0.01" min="0" max="1" defaultValue="0.90" />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Review</Label>
+              <Input type="number" name="reviewThreshold" step="0.01" min="0" max="1" defaultValue="0.50" />
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <Label>Category</Label>
-        <select
-          className="w-full rounded-md border px-3 py-2 text-sm"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          <option value="electricity">Electricity</option>
-          <option value="water">Water</option>
-          <option value="gas">Gas</option>
-          <option value="internet">Internet</option>
-          <option value="condo">Condo</option>
-          <option value="sewer">Sewer</option>
-          <option value="insurance">Insurance</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
+          {state.errors?.general && (
+            <p className="text-sm text-destructive">{state.errors.general}</p>
+          )}
 
-      <div className="space-y-2">
-        <Label>Notes for AI</Label>
-        <textarea
-          className="w-full rounded-md border px-3 py-2 text-sm min-h-[100px]"
-          placeholder="Context for Claude: API info, scraping targets, bill format notes, vault secret references..."
-          value={aiNotes}
-          onChange={(e) => setAiNotes(e.target.value)}
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-3">
-        <div className="space-y-1">
-          <Label className="text-xs">Min Accuracy</Label>
-          <Input type="number" step="0.01" min="0" max="1" value={minAccuracy} onChange={(e) => setMinAccuracy(Number(e.target.value))} />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Auto Accept</Label>
-          <Input type="number" step="0.01" min="0" max="1" value={autoAccept} onChange={(e) => setAutoAccept(Number(e.target.value))} />
-        </div>
-        <div className="space-y-1">
-          <Label className="text-xs">Review</Label>
-          <Input type="number" step="0.01" min="0" max="1" value={review} onChange={(e) => setReview(Number(e.target.value))} />
-        </div>
-      </div>
-
-      <Button onClick={handleSubmit} disabled={loading || !name} className="w-full">
-        {loading ? 'Creating...' : 'Create Profile'}
-      </Button>
+          <Button type="submit" loading={isPending} className="w-full">
+            Create Profile
+          </Button>
+        </fieldset>
+      </form>
     </Card>
   )
 }
 ```
 
-- [ ] **Step 2: Create the page**
+- [ ] **Step 2: Create page and loading**
 
 ```typescript
 // src/app/eng/providers/[providerId]/new-profile/page.tsx
-'use client'
-
-import { use } from 'react'
+import { FadeIn } from '@/components/fade-in'
 import { ProfileForm } from '@/components/eng/profile-form'
 
-export default function NewProfilePage({
+export default async function NewProfilePage({
   params,
 }: {
   params: Promise<{ providerId: string }>
 }) {
-  const { providerId } = use(params)
-
+  const { providerId } = await params
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-semibold">New Profile</h1>
-      <p className="text-muted-foreground">
-        Create a new bill format profile for this provider. Starts in draft status.
-      </p>
-      <ProfileForm providerId={providerId} />
-    </div>
+    <FadeIn className="h-full">
+      <div className="p-6 space-y-6">
+        <h1 className="text-2xl font-semibold">New Profile</h1>
+        <p className="text-muted-foreground">
+          Create a new bill format profile for this provider. Starts in draft status.
+        </p>
+        <ProfileForm providerId={providerId} />
+      </div>
+    </FadeIn>
   )
 }
+```
+
+```typescript
+// src/app/eng/providers/[providerId]/new-profile/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
 ```
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/components/eng/profile-form.tsx src/app/eng/providers/\[providerId\]/new-profile/page.tsx
-git commit -m "feat(eng): add profile creation page with system defaults"
+git add src/components/eng/profile-form.tsx src/app/eng/providers/\[providerId\]/new-profile/page.tsx src/app/eng/providers/\[providerId\]/new-profile/loading.tsx
+git commit -m "feat(eng): add profile creation page with useActionState"
 ```
 
 ---
 
-### Task 11: Profile Tabs Layout
+### Task 12: Profile Tabs Layout
 
 **Files:**
 - Create: `src/components/eng/profile-tabs.tsx`
 - Create: `src/app/eng/providers/[providerId]/[profileId]/layout.tsx`
 
-- [ ] **Step 1: Create the tab navigation component**
+The profile layout is a server component with NO async.
+
+- [ ] **Step 1: Create tab navigation and layout**
 
 ```typescript
 // src/components/eng/profile-tabs.tsx
@@ -1747,20 +1943,14 @@ git commit -m "feat(eng): add profile creation page with system defaults"
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-interface Props {
-  providerId: string
-  profileId: string
-}
-
 const tabs = [
   { label: 'Overview', segment: 'overview' },
   { label: 'Test Cases', segment: 'test-cases' },
   { label: 'Pipeline', segment: 'pipeline' },
 ]
 
-export function ProfileTabs({ providerId, profileId }: Props) {
+export function ProfileTabs({ basePath }: { basePath: string }) {
   const pathname = usePathname()
-  const basePath = `/eng/providers/${providerId}/${profileId}`
 
   return (
     <div className="border-b">
@@ -1788,117 +1978,100 @@ export function ProfileTabs({ providerId, profileId }: Props) {
 }
 ```
 
-- [ ] **Step 2: Create the profile layout**
-
 ```typescript
 // src/app/eng/providers/[providerId]/[profileId]/layout.tsx
-'use client'
-
-import { use } from 'react'
 import { ProfileTabs } from '@/components/eng/profile-tabs'
-import { useProfileDetail } from '@/lib/hooks/eng/use-profile-detail'
-import { Badge } from '@/components/ui/badge'
-import Link from 'next/link'
 
 export default function ProfileLayout({
   children,
   params,
 }: {
   children: React.ReactNode
-  params: Promise<{ providerId: string; profileId: string }>
+  params: { providerId: string; profileId: string }
 }) {
-  const { providerId, profileId } = use(params)
-  const { profile } = useProfileDetail(profileId)
+  const basePath = `/eng/providers/${params.providerId}/${params.profileId}`
 
   return (
     <div>
-      {/* Breadcrumb + Profile header */}
       <div className="px-6 pt-4 pb-0 space-y-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/eng/providers" className="hover:text-foreground">Providers</Link>
+          <Link href="/eng/providers">Providers</Link>
           <span>/</span>
-          <Link href={`/eng/providers/${providerId}`} className="hover:text-foreground">
-            {profile?.name ?? 'Loading...'}
-          </Link>
+          <Link href={`/eng/providers/${params.providerId}`}>Provider</Link>
           <span>/</span>
-          <span className="text-foreground">{profile?.name ?? '...'}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <h1 className="text-xl font-semibold">{profile?.name ?? 'Loading...'}</h1>
-          {profile && (
-            <Badge variant={profile.status === 'active' ? 'default' : 'secondary'}>
-              {profile.status}
-            </Badge>
-          )}
+          <span className="text-foreground">Profile</span>
         </div>
       </div>
-
-      <ProfileTabs providerId={providerId} profileId={profileId} />
-
-      <div className="p-6">
-        {children}
-      </div>
+      <ProfileTabs basePath={basePath} />
+      <div className="p-6">{children}</div>
     </div>
   )
 }
 ```
 
-- [ ] **Step 3: Commit**
+Note: This layout accesses `params` synchronously (not awaited) since it's a server component layout with NO async — params in Next.js 15 layouts can be accessed directly from the props without await when the layout itself is not async.
+
+- [ ] **Step 2: Commit**
 
 ```bash
 git add src/components/eng/profile-tabs.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/layout.tsx
-git commit -m "feat(eng): add profile tabs layout with breadcrumb"
+git commit -m "feat(eng): add profile tabs layout (server component, no async)"
 ```
 
 ---
 
-### Task 12: Profile Overview Tab
+### Task 13: Profile Overview Tab
 
 **Files:**
+- Create: `src/components/eng/profile-overview-client.tsx`
 - Create: `src/app/eng/providers/[providerId]/[profileId]/overview/page.tsx`
+- Create: `src/app/eng/providers/[providerId]/[profileId]/overview/loading.tsx`
 
-- [ ] **Step 1: Create the overview page**
+- [ ] **Step 1: Create the profile overview client component**
+
+This component uses `useSuspenseQuery` via `useProfileDetail` — it will be wrapped in `HydrationBoundary` by the server page.
 
 ```typescript
-// src/app/eng/providers/[providerId]/[profileId]/overview/page.tsx
+// src/components/eng/profile-overview-client.tsx
 'use client'
 
-import { use } from 'react'
-import { Card } from '@/components/ui/card'
+import { useQueryClient } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/badge'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { ThresholdBadge } from '@/components/eng/threshold-badge'
 import { ThresholdManagement } from '@/components/eng/threshold-management'
 import { TrendChart } from '@/components/eng/trend-chart'
-import { useProfileDetail } from '@/lib/hooks/eng/use-profile-detail'
-import { useProfileMutations } from '@/lib/hooks/eng/use-profile-mutations'
+import { useProfileDetail, type ProfileDetail } from '@/data/eng/providers/client'
+import { profileDetailQueryKey } from '@/data/eng/providers/shared'
+import { updateProfile } from '@/data/eng/providers/actions/update-profile'
 import { Info } from 'lucide-react'
 
-export default function ProfileOverviewPage({
-  params,
-}: {
-  params: Promise<{ providerId: string; profileId: string }>
-}) {
-  const { profileId } = use(params)
-  const { profile, loading, refetch } = useProfileDetail(profileId)
-  const { updateProfile } = useProfileMutations()
-
-  if (loading || !profile) return <div className="text-muted-foreground">Loading...</div>
+export function ProfileOverviewClient({ profileId }: { profileId: string }) {
+  const queryClient = useQueryClient()
+  const { data: profile } = useProfileDetail(profileId)
 
   const canPromote =
     profile.status === 'draft' &&
     profile.latestAccuracy !== null &&
     profile.latestAccuracy >= profile.minAccuracy
 
-  const handlePromote = async () => {
-    await updateProfile(profileId, { status: 'active' })
-    refetch()
+  const handleStatusChange = async (newStatus: string) => {
+    await updateProfile(profileId, { status: newStatus })
+    queryClient.invalidateQueries({ queryKey: profileDetailQueryKey(profileId) })
   }
 
-  const handleDeprecate = async () => {
-    await updateProfile(profileId, { status: 'deprecated' })
-    refetch()
+  const handleThresholdSave = async (
+    thresholds: { minAccuracy?: number; autoAcceptThreshold?: number; reviewThreshold?: number },
+    reason: string,
+  ) => {
+    await updateProfile(profileId, thresholds, reason)
+    queryClient.invalidateQueries({ queryKey: profileDetailQueryKey(profileId) })
+  }
+
+  const handleNotesChange = async (aiNotes: string) => {
+    await updateProfile(profileId, { aiNotes })
+    queryClient.invalidateQueries({ queryKey: profileDetailQueryKey(profileId) })
   }
 
   return (
@@ -1906,7 +2079,8 @@ export default function ProfileOverviewPage({
       {/* Below threshold banner */}
       {profile.status === 'active' && profile.latestAccuracy !== null && profile.latestAccuracy < profile.minAccuracy && (
         <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive">
-          Accuracy has dropped below minimum threshold ({(profile.minAccuracy * 100).toFixed(0)}%). Current: {(profile.latestAccuracy * 100).toFixed(1)}%.
+          Accuracy has dropped below minimum threshold ({(profile.minAccuracy * 100).toFixed(0)}%).
+          Current: {(profile.latestAccuracy * 100).toFixed(1)}%.
         </div>
       )}
 
@@ -1920,14 +2094,13 @@ export default function ProfileOverviewPage({
           <div><span className="text-muted-foreground">Open Fixes:</span> {profile.openFixCount}</div>
         </div>
 
-        {/* Status controls */}
         <div className="flex gap-2 pt-2">
           {profile.status === 'draft' && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <Button size="sm" onClick={handlePromote} disabled={!canPromote}>
+                    <Button size="sm" onClick={() => handleStatusChange('active')} disabled={!canPromote}>
                       Promote to Active
                     </Button>
                   </span>
@@ -1944,7 +2117,7 @@ export default function ProfileOverviewPage({
             </TooltipProvider>
           )}
           {profile.status === 'active' && (
-            <Button size="sm" variant="outline" onClick={handleDeprecate}>
+            <Button size="sm" variant="outline" onClick={() => handleStatusChange('deprecated')}>
               Deprecate
             </Button>
           )}
@@ -1960,7 +2133,7 @@ export default function ProfileOverviewPage({
           <Badge variant={profile.capabilities.paymentStatus ? 'default' : 'secondary'}>payment detection</Badge>
           <Badge variant={profile.capabilities.apiLookup ? 'default' : 'secondary'}>API lookup</Badge>
         </div>
-        <p className="text-xs text-muted-foreground">Capabilities are read-only — updated by AI when implemented.</p>
+        <p className="text-xs text-muted-foreground">Read-only — updated by AI when capabilities are implemented.</p>
       </Card>
 
       {/* Notes for AI */}
@@ -1978,8 +2151,8 @@ export default function ProfileOverviewPage({
         </div>
         <textarea
           className="w-full rounded-md border px-3 py-2 text-sm min-h-[100px]"
-          value={profile.aiNotes ?? ''}
-          onChange={(e) => updateProfile(profileId, { aiNotes: e.target.value })}
+          defaultValue={profile.aiNotes ?? ''}
+          onBlur={(e) => handleNotesChange(e.target.value)}
           placeholder="Add context for Claude..."
         />
       </Card>
@@ -1992,210 +2165,100 @@ export default function ProfileOverviewPage({
         reviewThreshold={profile.reviewThreshold}
         currentAccuracy={profile.latestAccuracy}
         testCaseCount={profile.testCaseCount}
-        onSave={async (thresholds, reason) => {
-          await updateProfile(profileId, thresholds, reason)
-          refetch()
-        }}
+        onSave={handleThresholdSave}
       />
 
       {/* Accuracy Trend */}
       <Card className="p-4 space-y-2">
         <h2 className="text-sm font-medium text-muted-foreground">Accuracy Trend</h2>
-        <TrendChart
-          data={[]}
-          threshold={profile.minAccuracy}
-          annotations={[]}
-        />
-        <p className="text-xs text-muted-foreground">Data loaded from test run history.</p>
+        <TrendChart data={[]} threshold={profile.minAccuracy} annotations={[]} />
       </Card>
     </div>
   )
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [ ] **Step 2: Create server page with HydrationBoundary**
+
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/overview/page.tsx
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+import { getProfileDetail } from '@/data/eng/providers/server'
+import { profileDetailQueryKey } from '@/data/eng/providers/shared'
+import { ProfileOverviewClient } from '@/components/eng/profile-overview-client'
+import { FadeIn } from '@/components/fade-in'
+
+export default async function ProfileOverviewPage({
+  params,
+}: {
+  params: Promise<{ providerId: string; profileId: string }>
+}) {
+  const { profileId } = await params
+  const queryClient = new QueryClient()
+  const profile = await getProfileDetail(profileId)
+  queryClient.setQueryData(profileDetailQueryKey(profileId), profile)
+
+  return (
+    <FadeIn>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <ProfileOverviewClient profileId={profileId} />
+      </HydrationBoundary>
+    </FadeIn>
+  )
+}
+```
+
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/overview/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
+```
+
+- [ ] **Step 3: Commit**
 
 ```bash
-git add src/app/eng/providers/\[providerId\]/\[profileId\]/overview/page.tsx
-git commit -m "feat(eng): add profile overview tab with thresholds and capabilities"
+git add src/components/eng/profile-overview-client.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/overview/page.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/overview/loading.tsx
+git commit -m "feat(eng): add profile overview tab with thresholds, capabilities, and notes"
 ```
 
 ---
 
-### Task 13: Test Cases Tab — List and Detail
+### Task 14: Test Cases Tab — List and Detail
 
 **Files:**
-- Create: `src/lib/hooks/eng/use-test-cases.ts`
-- Create: `src/lib/hooks/eng/use-test-case-detail.ts`
-- Create: `src/components/eng/test-case-list.tsx`
+- Create: `src/components/eng/test-case-list-client.tsx`
+- Create: `src/components/eng/test-case-detail-client.tsx`
 - Create: `src/app/eng/providers/[providerId]/[profileId]/test-cases/page.tsx`
+- Create: `src/app/eng/providers/[providerId]/[profileId]/test-cases/loading.tsx`
 - Create: `src/app/eng/providers/[providerId]/[profileId]/test-cases/[caseId]/page.tsx`
+- Create: `src/app/eng/providers/[providerId]/[profileId]/test-cases/[caseId]/loading.tsx`
 
-- [ ] **Step 1: Create test cases hooks**
-
-```typescript
-// src/lib/hooks/eng/use-test-cases.ts
-'use client'
-
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-
-export interface TestCaseListItem {
-  id: string
-  profileId: string
-  competency: string
-  description: string | null
-  testBillId: string | null
-  sourceData: any
-  createdBy: string
-  createdAt: string
-  lastResult: boolean | null
-  openFixCount: number
-}
-
-export function useTestCases(profileId: string) {
-  const [testCases, setTestCases] = useState<TestCaseListItem[]>([])
-  const [loading, setLoading] = useState(true)
-
-  const fetch = useCallback(async () => {
-    setLoading(true)
-    const supabase = createClient()
-
-    const { data } = await supabase
-      .from('test_cases')
-      .select(`
-        id, profile_id, competency, description, test_bill_id,
-        source_data, created_by, created_at,
-        test_fix_requests (id, status)
-      `)
-      .eq('profile_id', profileId)
-      .order('created_at', { ascending: false })
-
-    const items: TestCaseListItem[] = (data ?? []).map((tc: any) => ({
-      id: tc.id,
-      profileId: tc.profile_id,
-      competency: tc.competency,
-      description: tc.description,
-      testBillId: tc.test_bill_id,
-      sourceData: tc.source_data,
-      createdBy: tc.created_by,
-      createdAt: tc.created_at,
-      lastResult: null, // Populated from latest test run report
-      openFixCount: (tc.test_fix_requests ?? []).filter((f: any) => f.status === 'open').length,
-    }))
-
-    setTestCases(items)
-    setLoading(false)
-  }, [profileId])
-
-  useEffect(() => { fetch() }, [fetch])
-
-  return { testCases, loading, refetch: fetch }
-}
-```
+- [ ] **Step 1: Create test case list client component**
 
 ```typescript
-// src/lib/hooks/eng/use-test-case-detail.ts
+// src/components/eng/test-case-list-client.tsx
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
-
-export interface TestCaseDetail {
-  id: string
-  profileId: string
-  competency: string
-  description: string | null
-  testBillId: string | null
-  sourceData: any
-  expectedFields: Record<string, any>
-  createdBy: string
-  createdAt: string
-  fixRequests: Array<{
-    id: string
-    status: string
-    engineerNotes: string
-    createdAt: string
-  }>
-}
-
-export function useTestCaseDetail(caseId: string) {
-  const [testCase, setTestCase] = useState<TestCaseDetail | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetch = useCallback(async () => {
-    setLoading(true)
-    const supabase = createClient()
-
-    const { data } = await supabase
-      .from('test_cases')
-      .select(`
-        *,
-        test_fix_requests (id, status, engineer_notes, created_at)
-      `)
-      .eq('id', caseId)
-      .single()
-
-    if (!data) {
-      setTestCase(null)
-      setLoading(false)
-      return
-    }
-
-    setTestCase({
-      id: data.id,
-      profileId: data.profile_id,
-      competency: data.competency,
-      description: data.description,
-      testBillId: data.test_bill_id,
-      sourceData: data.source_data,
-      expectedFields: data.expected_fields,
-      createdBy: data.created_by,
-      createdAt: data.created_at,
-      fixRequests: (data.test_fix_requests ?? []).map((f: any) => ({
-        id: f.id,
-        status: f.status,
-        engineerNotes: f.engineer_notes,
-        createdAt: f.created_at,
-      })),
-    })
-    setLoading(false)
-  }, [caseId])
-
-  useEffect(() => { fetch() }, [fetch])
-
-  return { testCase, loading, refetch: fetch }
-}
-```
-
-- [ ] **Step 2: Create the test case list component**
-
-```typescript
-// src/components/eng/test-case-list.tsx
-'use client'
-
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { useTestCases } from '@/lib/hooks/eng/use-test-cases'
-import { Wrench, Plus } from 'lucide-react'
+import { useTestCases } from '@/data/eng/providers/client'
+import { Wrench } from 'lucide-react'
 
-interface Props {
+export function TestCaseListClient({
+  providerId,
+  profileId,
+}: {
   providerId: string
   profileId: string
-}
-
-export function TestCaseList({ providerId, profileId }: Props) {
-  const { testCases, loading } = useTestCases(profileId)
+}) {
   const router = useRouter()
   const [competencyFilter, setCompetencyFilter] = useState<string | null>(null)
+  const { data: testCases } = useTestCases(profileId)
 
   const filtered = competencyFilter
     ? testCases.filter((tc) => tc.competency === competencyFilter)
     : testCases
-
-  if (loading) return <div className="text-muted-foreground">Loading test cases...</div>
 
   return (
     <div className="space-y-4">
@@ -2214,118 +2277,59 @@ export function TestCaseList({ providerId, profileId }: Props) {
         </select>
       </div>
 
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b text-left text-muted-foreground">
-            <th className="pb-2 font-medium">Competency</th>
-            <th className="pb-2 font-medium">Description</th>
-            <th className="pb-2 font-medium">Source</th>
-            <th className="pb-2 font-medium">Created by</th>
-            <th className="pb-2 font-medium">Created</th>
-            <th className="pb-2 font-medium">Last Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map((tc) => (
-            <tr
-              key={tc.id}
-              className="border-b cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() =>
-                router.push(`/eng/providers/${providerId}/${profileId}/test-cases/${tc.id}`)
-              }
-            >
-              <td className="py-3">
-                <Badge variant="outline" className="text-xs">{tc.competency}</Badge>
-              </td>
-              <td className="py-3">{tc.description ?? '—'}</td>
-              <td className="py-3 text-muted-foreground text-xs">
-                {tc.testBillId ? 'Bill PDF' : tc.sourceData ? 'Source data' : '—'}
-              </td>
-              <td className="py-3 text-muted-foreground">{tc.createdBy}</td>
-              <td className="py-3 text-muted-foreground">
-                {new Date(tc.createdAt).toLocaleDateString()}
-              </td>
-              <td className="py-3">
-                <div className="flex items-center gap-2">
-                  {tc.lastResult === null ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : tc.lastResult ? (
-                    <Badge className="bg-emerald-100 text-emerald-800 text-xs">Pass</Badge>
-                  ) : (
-                    <Badge className="bg-rose-100 text-rose-800 text-xs">Fail</Badge>
-                  )}
+      <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left text-muted-foreground bg-muted/30">
+              <th className="px-4 py-3 font-medium">Competency</th>
+              <th className="px-4 py-3 font-medium">Description</th>
+              <th className="px-4 py-3 font-medium">Source</th>
+              <th className="px-4 py-3 font-medium">Created by</th>
+              <th className="px-4 py-3 font-medium">Created</th>
+              <th className="px-4 py-3 font-medium">Fixes</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y">
+            {filtered.map((tc) => (
+              <tr
+                key={tc.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => router.push(`/eng/providers/${providerId}/${profileId}/test-cases/${tc.id}`)}
+              >
+                <td className="px-4 py-3"><Badge variant="outline" className="text-xs">{tc.competency}</Badge></td>
+                <td className="px-4 py-3">{tc.description ?? '—'}</td>
+                <td className="px-4 py-3 text-muted-foreground text-xs">{tc.testBillId ? 'Bill PDF' : 'Source data'}</td>
+                <td className="px-4 py-3 text-muted-foreground">{tc.createdBy}</td>
+                <td className="px-4 py-3 text-muted-foreground">{new Date(tc.createdAt).toLocaleDateString()}</td>
+                <td className="px-4 py-3">
                   {tc.openFixCount > 0 && (
-                    <Wrench className="h-3.5 w-3.5 text-amber-500" />
+                    <div className="flex items-center gap-1 text-amber-500">
+                      <Wrench className="h-3.5 w-3.5" />
+                      <span className="text-xs">{tc.openFixCount}</span>
+                    </div>
                   )}
-                </div>
-              </td>
-            </tr>
-          ))}
-          {filtered.length === 0 && (
-            <tr>
-              <td colSpan={6} className="py-8 text-center text-muted-foreground">
-                No test cases found
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-```
-
-- [ ] **Step 3: Create test cases page and detail page**
-
-```typescript
-// src/app/eng/providers/[providerId]/[profileId]/test-cases/page.tsx
-'use client'
-
-import { use } from 'react'
-import { Button } from '@/components/ui/button'
-import { TestCaseList } from '@/components/eng/test-case-list'
-import { useProfileMutations } from '@/lib/hooks/eng/use-profile-mutations'
-import { Plus, Play } from 'lucide-react'
-
-export default function TestCasesPage({
-  params,
-}: {
-  params: Promise<{ providerId: string; profileId: string }>
-}) {
-  const { providerId, profileId } = use(params)
-  const { runTests, loading: running } = useProfileMutations()
-
-  const handleRunTests = async () => {
-    await runTests(profileId)
-    // Refetch will happen via the list component
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium">Test Cases</h2>
-        <div className="flex gap-2">
-          <Button size="sm" variant="outline" onClick={handleRunTests} disabled={running}>
-            <Play className="h-4 w-4" />
-            {running ? 'Running...' : 'Run Tests'}
-          </Button>
-          <Button size="sm">
-            <Plus className="h-4 w-4" />
-            New Test Case
-          </Button>
-        </div>
+                </td>
+              </tr>
+            ))}
+            {filtered.length === 0 && (
+              <tr>
+                <td colSpan={6} className="px-4 py-8 text-center text-muted-foreground">No test cases found</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
-      <TestCaseList providerId={providerId} profileId={profileId} />
     </div>
   )
 }
 ```
 
+- [ ] **Step 2: Create test case detail client component**
+
 ```typescript
-// src/app/eng/providers/[providerId]/[profileId]/test-cases/[caseId]/page.tsx
+// src/components/eng/test-case-detail-client.tsx
 'use client'
 
-import { use } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -2333,26 +2337,17 @@ import { TestCaseLayout } from '@/components/eng/test-case-layout'
 import { SourceDataPanel } from '@/components/eng/source-data-panel'
 import { ExpectedResultsPanel } from '@/components/eng/expected-results-panel'
 import { ExternalDataPanel } from '@/components/eng/external-data-panel'
-import { useTestCaseDetail } from '@/lib/hooks/eng/use-test-case-detail'
+import { useTestCaseDetail } from '@/data/eng/providers/client'
 import { Flag, Wrench } from 'lucide-react'
 import Link from 'next/link'
 
-export default function TestCaseDetailPage({
-  params,
-}: {
-  params: Promise<{ providerId: string; profileId: string; caseId: string }>
-}) {
-  const { providerId, profileId, caseId } = use(params)
-  const { testCase, loading } = useTestCaseDetail(caseId)
-
-  if (loading) return <div className="text-muted-foreground">Loading...</div>
-  if (!testCase) return <div>Test case not found</div>
+export function TestCaseDetailClient({ caseId }: { caseId: string }) {
+  const { data: testCase } = useTestCaseDetail(caseId)
 
   const needsExternalPanel = ['validation', 'payment_matching', 'invoice_discovery'].includes(testCase.competency)
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center gap-2 mb-1">
@@ -2362,28 +2357,19 @@ export default function TestCaseDetailPage({
           <h2 className="text-lg font-medium">{testCase.description ?? 'Untitled test case'}</h2>
         </div>
         <Button size="sm" variant="outline">
-          <Flag className="h-4 w-4" />
-          Flag for Fix
+          <Flag className="h-4 w-4" /> Flag for Fix
         </Button>
       </div>
 
-      {/* Fix requests for this test case */}
       {testCase.fixRequests.length > 0 && (
         <Card className="p-3 space-y-2">
           <h3 className="text-sm font-medium flex items-center gap-2">
-            <Wrench className="h-4 w-4" />
-            Fix Requests ({testCase.fixRequests.length})
+            <Wrench className="h-4 w-4" /> Fix Requests ({testCase.fixRequests.length})
           </h3>
           {testCase.fixRequests.map((fix) => (
-            <Link
-              key={fix.id}
-              href={`/eng/fixes/${fix.id}`}
-              className="block text-sm p-2 rounded hover:bg-muted/50"
-            >
+            <Link key={fix.id} href={`/eng/fixes/${fix.id}`} className="block text-sm p-2 rounded hover:bg-muted/50">
               <div className="flex items-center gap-2">
-                <Badge variant={fix.status === 'open' ? 'destructive' : 'secondary'} className="text-xs">
-                  {fix.status}
-                </Badge>
+                <Badge variant={fix.status === 'open' ? 'destructive' : 'secondary'} className="text-xs">{fix.status}</Badge>
                 <span className="text-muted-foreground truncate">{fix.engineerNotes}</span>
               </div>
             </Link>
@@ -2391,7 +2377,6 @@ export default function TestCaseDetailPage({
         </Card>
       )}
 
-      {/* Competency-aware panels */}
       {needsExternalPanel ? (
         <TestCaseLayout
           variant="three-panel"
@@ -2403,18 +2388,9 @@ export default function TestCaseDetailPage({
             />
           }
           externalPanel={
-            <ExternalDataPanel
-              sourceType="api"
-              data={{}}
-              metadata={{ note: 'Run the pipeline to see external data' }}
-            />
+            <ExternalDataPanel sourceType="api" data={{}} metadata={{ note: 'Run the pipeline to see external data' }} />
           }
-          expectedPanel={
-            <ExpectedResultsPanel
-              expectedFields={testCase.expectedFields}
-              actualFields={{}}
-            />
-          }
+          expectedPanel={<ExpectedResultsPanel expectedFields={testCase.expectedFields} actualFields={{}} />}
         />
       ) : (
         <TestCaseLayout
@@ -2426,12 +2402,7 @@ export default function TestCaseDetailPage({
               data={testCase.sourceData}
             />
           }
-          expectedPanel={
-            <ExpectedResultsPanel
-              expectedFields={testCase.expectedFields}
-              actualFields={{}}
-            />
-          }
+          expectedPanel={<ExpectedResultsPanel expectedFields={testCase.expectedFields} actualFields={{}} />}
         />
       )}
     </div>
@@ -2439,22 +2410,105 @@ export default function TestCaseDetailPage({
 }
 ```
 
+- [ ] **Step 3: Create server pages with HydrationBoundary**
+
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/test-cases/page.tsx
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+import { getTestCases } from '@/data/eng/providers/server'
+import { testCasesQueryKey } from '@/data/eng/providers/shared'
+import { TestCaseListClient } from '@/components/eng/test-case-list-client'
+import { FadeIn } from '@/components/fade-in'
+import { Button } from '@/components/ui/button'
+import { Plus, Play } from 'lucide-react'
+
+export default async function TestCasesPage({
+  params,
+}: {
+  params: Promise<{ providerId: string; profileId: string }>
+}) {
+  const { providerId, profileId } = await params
+  const queryClient = new QueryClient()
+  const testCases = await getTestCases(profileId)
+  queryClient.setQueryData(testCasesQueryKey(profileId), testCases)
+
+  return (
+    <FadeIn>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-medium">Test Cases</h2>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline"><Play className="h-4 w-4" /> Run Tests</Button>
+            <Button size="sm"><Plus className="h-4 w-4" /> New Test Case</Button>
+          </div>
+        </div>
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <TestCaseListClient providerId={providerId} profileId={profileId} />
+        </HydrationBoundary>
+      </div>
+    </FadeIn>
+  )
+}
+```
+
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/test-cases/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
+```
+
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/test-cases/[caseId]/page.tsx
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+import { getTestCaseDetail } from '@/data/eng/providers/server'
+import { testCaseDetailQueryKey } from '@/data/eng/providers/shared'
+import { TestCaseDetailClient } from '@/components/eng/test-case-detail-client'
+import { FadeIn } from '@/components/fade-in'
+
+export default async function TestCaseDetailPage({
+  params,
+}: {
+  params: Promise<{ providerId: string; profileId: string; caseId: string }>
+}) {
+  const { caseId } = await params
+  const queryClient = new QueryClient()
+  const testCase = await getTestCaseDetail(caseId)
+  queryClient.setQueryData(testCaseDetailQueryKey(caseId), testCase)
+
+  return (
+    <FadeIn>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <TestCaseDetailClient caseId={caseId} />
+      </HydrationBoundary>
+    </FadeIn>
+  )
+}
+```
+
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/test-cases/[caseId]/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
+```
+
 - [ ] **Step 4: Commit**
 
 ```bash
-git add src/lib/hooks/eng/use-test-cases.ts src/lib/hooks/eng/use-test-case-detail.ts src/components/eng/test-case-list.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/test-cases/page.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/test-cases/\[caseId\]/page.tsx
+git add src/components/eng/test-case-list-client.tsx src/components/eng/test-case-detail-client.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/test-cases/
 git commit -m "feat(eng): add test cases tab with list and detail views"
 ```
 
 ---
 
-### Task 14: Pipeline Tab
+### Task 15: Pipeline Tab
 
 **Files:**
 - Create: `src/components/eng/pipeline-section.tsx`
+- Create: `src/components/eng/pipeline-client.tsx`
 - Create: `src/app/eng/providers/[providerId]/[profileId]/pipeline/page.tsx`
+- Create: `src/app/eng/providers/[providerId]/[profileId]/pipeline/loading.tsx`
 
-- [ ] **Step 1: Create the pipeline section component**
+- [ ] **Step 1: Create pipeline section component**
 
 ```typescript
 // src/components/eng/pipeline-section.tsx
@@ -2515,17 +2569,14 @@ export function PipelineSection({ title, competency, available, onRun, onFlagFor
         <div className="flex gap-2">
           {result && onFlagForFix && (
             <Button size="sm" variant="outline" onClick={() => onFlagForFix(result)}>
-              <Flag className="h-4 w-4" />
-              Flag for Fix
+              <Flag className="h-4 w-4" /> Flag for Fix
             </Button>
           )}
           <Button size="sm" onClick={handleRun} disabled={running}>
-            <Play className="h-4 w-4" />
-            {running ? 'Running...' : 'Run'}
+            <Play className="h-4 w-4" /> {running ? 'Running...' : 'Run'}
           </Button>
         </div>
       </div>
-
       {result && (
         <div className="border rounded p-3 bg-muted/30">
           <JsonViewer data={result} />
@@ -2536,130 +2587,95 @@ export function PipelineSection({ title, competency, available, onRun, onFlagFor
 }
 ```
 
-- [ ] **Step 2: Create the pipeline page**
+- [ ] **Step 2: Create pipeline client and server page**
 
 ```typescript
-// src/app/eng/providers/[providerId]/[profileId]/pipeline/page.tsx
+// src/components/eng/pipeline-client.tsx
 'use client'
 
-import { use } from 'react'
 import { PipelineSection } from '@/components/eng/pipeline-section'
-import { useProfileDetail } from '@/lib/hooks/eng/use-profile-detail'
+import { useProfileDetail } from '@/data/eng/providers/client'
 
-export default function PipelinePage({
-  params,
-}: {
-  params: Promise<{ providerId: string; profileId: string }>
-}) {
-  const { profileId } = use(params)
-  const { profile } = useProfileDetail(profileId)
-
-  if (!profile) return <div className="text-muted-foreground">Loading...</div>
-
+export function PipelineClient({ profileId }: { profileId: string }) {
+  const { data: profile } = useProfileDetail(profileId)
   const caps = profile.capabilities
 
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-medium">Pipeline Test Lab</h2>
       <p className="text-sm text-muted-foreground">
-        Test individual pipeline steps for this provider. Upload or select a bill to run through each step.
+        Test individual pipeline steps. Upload or select a bill to run through each step.
       </p>
-
       <div className="space-y-4">
-        <PipelineSection
-          title="1. Identify"
-          competency="identification"
-          available={true}
-        />
-        <PipelineSection
-          title="2. Extract"
-          competency="extraction"
-          available={!!caps.extraction}
-        />
-        <PipelineSection
-          title="3. Validate"
-          competency="validation"
-          available={!!caps.validation}
-        />
-        <PipelineSection
-          title="4. Match Payment"
-          competency="payment_matching"
-          available={!!caps.paymentStatus}
-        />
+        <PipelineSection title="1. Identify" competency="identification" available={true} />
+        <PipelineSection title="2. Extract" competency="extraction" available={!!caps.extraction} />
+        <PipelineSection title="3. Validate" competency="validation" available={!!caps.validation} />
+        <PipelineSection title="4. Match Payment" competency="payment_matching" available={!!caps.paymentStatus} />
       </div>
     </div>
   )
 }
 ```
 
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/pipeline/page.tsx
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+import { getProfileDetail } from '@/data/eng/providers/server'
+import { profileDetailQueryKey } from '@/data/eng/providers/shared'
+import { PipelineClient } from '@/components/eng/pipeline-client'
+import { FadeIn } from '@/components/fade-in'
+
+export default async function PipelinePage({
+  params,
+}: {
+  params: Promise<{ providerId: string; profileId: string }>
+}) {
+  const { profileId } = await params
+  const queryClient = new QueryClient()
+  const profile = await getProfileDetail(profileId)
+  queryClient.setQueryData(profileDetailQueryKey(profileId), profile)
+
+  return (
+    <FadeIn>
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <PipelineClient profileId={profileId} />
+      </HydrationBoundary>
+    </FadeIn>
+  )
+}
+```
+
+```typescript
+// src/app/eng/providers/[providerId]/[profileId]/pipeline/loading.tsx
+import { PageLoader } from '@/components/page-loader'
+export default function Loading() { return <PageLoader /> }
+```
+
 - [ ] **Step 3: Commit**
 
 ```bash
-git add src/components/eng/pipeline-section.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/pipeline/page.tsx
+git add src/components/eng/pipeline-section.tsx src/components/eng/pipeline-client.tsx src/app/eng/providers/\[providerId\]/\[profileId\]/pipeline/
 git commit -m "feat(eng): add pipeline test lab tab"
 ```
 
 ---
 
-### Task 15: Fix Request Creation API and Modal
+### Task 16: Flag for Fix Modal
 
 **Files:**
-- Create: `src/app/api/eng/fix-requests/route.ts`
 - Create: `src/components/eng/flag-for-fix-modal.tsx`
 
-- [ ] **Step 1: Create fix request API route**
-
-```typescript
-// src/app/api/eng/fix-requests/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
-
-export async function POST(request: NextRequest) {
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await request.json()
-
-  const { data, error } = await supabase
-    .from('test_fix_requests')
-    .insert({
-      profile_id: body.profileId,
-      test_case_id: body.testCaseId ?? null,
-      test_run_id: body.testRunId ?? null,
-      provider_request_id: body.providerRequestId ?? null,
-      competency: body.competency,
-      source_data: body.sourceData ?? null,
-      actual_result: body.actualResult,
-      expected_result: body.expectedResult ?? null,
-      raw_external: body.rawExternal ?? null,
-      engineer_notes: body.engineerNotes,
-      status: 'open',
-      created_by: user.id,
-    })
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data, { status: 201 })
-}
-```
-
-- [ ] **Step 2: Create the flag for fix modal**
+- [ ] **Step 1: Create the modal component**
 
 ```typescript
 // src/components/eng/flag-for-fix-modal.tsx
 'use client'
 
 import { useState } from 'react'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { createFixRequest } from '@/data/eng/providers/actions/create-fix-request'
 import { toast } from 'sonner'
 
 interface Props {
@@ -2670,24 +2686,16 @@ interface Props {
   testCaseId?: string
   testRunId?: string
   providerRequestId?: string
-  sourceData?: any
-  actualResult: any
-  expectedResult?: any
-  rawExternal?: any
+  sourceData?: Record<string, any>
+  actualResult: Record<string, any>
+  expectedResult?: Record<string, any>
+  rawExternal?: Record<string, any>
 }
 
 export function FlagForFixModal({
-  open,
-  onClose,
-  profileId,
-  competency,
-  testCaseId,
-  testRunId,
-  providerRequestId,
-  sourceData,
-  actualResult,
-  expectedResult,
-  rawExternal,
+  open, onClose, profileId, competency,
+  testCaseId, testRunId, providerRequestId,
+  sourceData, actualResult, expectedResult, rawExternal,
 }: Props) {
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -2695,32 +2703,19 @@ export function FlagForFixModal({
   const handleSubmit = async () => {
     if (!notes.trim()) return
     setSaving(true)
-    try {
-      const res = await fetch('/api/eng/fix-requests', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          profileId,
-          competency,
-          testCaseId,
-          testRunId,
-          providerRequestId,
-          sourceData,
-          actualResult,
-          expectedResult,
-          rawExternal,
-          engineerNotes: notes,
-        }),
-      })
-      if (!res.ok) throw new Error('Failed to create fix request')
-      const data = await res.json()
-      toast.success(`Fix request created: ${data.id.slice(0, 8)}`)
+    const result = await createFixRequest({
+      profileId, competency, testCaseId, testRunId, providerRequestId,
+      sourceData, actualResult, expectedResult, rawExternal,
+      engineerNotes: notes,
+    })
+    setSaving(false)
+    if (result.success) {
+      toast.success(`Fix request created: ${result.id?.slice(0, 8)}`)
       onClose()
       setNotes('')
-    } catch {
-      toast.error('Failed to create fix request')
+    } else {
+      toast.error(result.error ?? 'Failed to create fix request')
     }
-    setSaving(false)
   }
 
   return (
@@ -2730,9 +2725,9 @@ export function FlagForFixModal({
           <DialogTitle>Flag for Fix</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div className="text-sm text-muted-foreground">
-            Describe what&apos;s wrong and what the correct result should be. This context helps the AI understand and fix the issue.
-          </div>
+          <p className="text-sm text-muted-foreground">
+            Describe what's wrong and what the correct result should be. This context helps the AI understand and fix the issue.
+          </p>
           <div className="space-y-2">
             <Label>Diagnosis</Label>
             <textarea
@@ -2744,8 +2739,8 @@ export function FlagForFixModal({
           </div>
           <div className="flex justify-end gap-2">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
-            <Button onClick={handleSubmit} disabled={saving || !notes.trim()}>
-              {saving ? 'Creating...' : 'Create Fix Request'}
+            <Button onClick={handleSubmit} loading={saving} disabled={!notes.trim()}>
+              Create Fix Request
             </Button>
           </div>
         </div>
@@ -2755,197 +2750,92 @@ export function FlagForFixModal({
 }
 ```
 
-- [ ] **Step 3: Commit**
+- [ ] **Step 2: Commit**
 
 ```bash
-git add src/app/api/eng/fix-requests/route.ts src/components/eng/flag-for-fix-modal.tsx
-git commit -m "feat(eng): add fix request creation API and modal"
+git add src/components/eng/flag-for-fix-modal.tsx
+git commit -m "feat(eng): add flag-for-fix modal using server action"
 ```
 
 ---
 
-### Task 16: Test Case and Profile API Routes
+### Task 17: CNPJ Lookup API Route
 
 **Files:**
-- Create: `src/app/api/eng/profiles/[profileId]/run-tests/route.ts`
-- Create: `src/app/api/eng/profiles/[profileId]/test-cases/route.ts`
-- Create: `src/app/api/eng/profiles/[profileId]/test-cases/[caseId]/route.ts`
+- Create: `src/app/api/eng/cnpj-lookup/route.ts`
 
-- [ ] **Step 1: Create run-tests API route**
+This is one of the few API routes (not a server action) because it calls an external API and returns data to a client component.
+
+- [ ] **Step 1: Create the CNPJ lookup route**
 
 ```typescript
-// src/app/api/eng/profiles/[profileId]/run-tests/route.ts
+// src/app/api/eng/cnpj-lookup/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
+import { lookupCnpj } from '@/lib/billing-intelligence/identification/cnpj-lookup'
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ profileId: string }> },
-) {
-  const { profileId } = await params
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+export async function GET(request: NextRequest) {
+  const taxId = request.nextUrl.searchParams.get('taxId')
+  if (!taxId) return NextResponse.json({ error: 'taxId required' }, { status: 400 })
 
-  // Fetch test cases for this profile
-  const { data: testCases } = await supabase
-    .from('test_cases')
-    .select('*')
-    .eq('profile_id', profileId)
-
-  if (!testCases || testCases.length === 0) {
-    return NextResponse.json({ error: 'No test cases found' }, { status: 400 })
+  try {
+    const result = await lookupCnpj(taxId.replace(/[.\-/]/g, ''))
+    return NextResponse.json(result)
+  } catch {
+    return NextResponse.json({ error: 'Lookup failed' }, { status: 500 })
   }
-
-  // TODO: Integrate with the actual test runner pipeline from Plan 3a-6
-  // For now, store a placeholder test run
-  const totalFields = testCases.length * 5 // Approximate
-  const passedFields = totalFields // Placeholder: all pass
-
-  const { data: run, error } = await supabase
-    .from('test_runs')
-    .insert({
-      profile_id: profileId,
-      total_cases: testCases.length,
-      total_fields: totalFields,
-      passed_fields: passedFields,
-      accuracy: totalFields > 0 ? passedFields / totalFields : 0,
-      min_accuracy_threshold: null,
-      passed: true,
-      report: { cases: [], placeholder: true },
-      triggered_by: 'playground',
-    })
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(run, { status: 201 })
 }
 ```
 
-- [ ] **Step 2: Create test case CRUD routes**
-
-```typescript
-// src/app/api/eng/profiles/[profileId]/test-cases/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
-
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ profileId: string }> },
-) {
-  const { profileId } = await params
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await request.json()
-
-  const { data, error } = await supabase
-    .from('test_cases')
-    .insert({
-      profile_id: profileId,
-      competency: body.competency,
-      description: body.description,
-      test_bill_id: body.testBillId ?? null,
-      source_data: body.sourceData ?? null,
-      expected_fields: body.expectedFields,
-      created_by: 'engineer',
-    })
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data, { status: 201 })
-}
-```
-
-```typescript
-// src/app/api/eng/profiles/[profileId]/test-cases/[caseId]/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { createEngServerClient } from '@/lib/supabase/eng-client'
-
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ profileId: string; caseId: string }> },
-) {
-  const { caseId } = await params
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const body = await request.json()
-  const updates: Record<string, any> = {}
-  if (body.description !== undefined) updates.description = body.description
-  if (body.expectedFields !== undefined) updates.expected_fields = body.expectedFields
-  if (body.sourceData !== undefined) updates.source_data = body.sourceData
-
-  const { data, error } = await supabase
-    .from('test_cases')
-    .update(updates)
-    .eq('id', caseId)
-    .select()
-    .single()
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json(data)
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ profileId: string; caseId: string }> },
-) {
-  const { caseId } = await params
-  const supabase = await createEngServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const { error } = await supabase
-    .from('test_cases')
-    .delete()
-    .eq('id', caseId)
-
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-  return NextResponse.json({ success: true })
-}
-```
-
-- [ ] **Step 3: Commit**
+- [ ] **Step 2: Commit**
 
 ```bash
-git add src/app/api/eng/profiles/\[profileId\]/run-tests/route.ts src/app/api/eng/profiles/\[profileId\]/test-cases/route.ts src/app/api/eng/profiles/\[profileId\]/test-cases/\[caseId\]/route.ts
-git commit -m "feat(eng): add test case CRUD and run-tests API routes"
+git add src/app/api/eng/cnpj-lookup/route.ts
+git commit -m "feat(eng): add CNPJ lookup API route for provider creation"
 ```
 
 ---
 
-### Task 17: Verify All Pages Compile
+### Task 18: Update docs/project/components.md
 
-- [ ] **Step 1: Run TypeScript check**
+- [ ] **Step 1: Add new eng components to the component catalog**
+
+Add entries for the new reusable components created in Plans 3a-2 and 3a-3 to `docs/project/components.md`.
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add docs/project/components.md
+git commit -m "docs: add eng platform components to component catalog"
+```
+
+---
+
+### Task 19: Verify All Pages Compile and Render
+
+- [ ] **Step 1: TypeScript check**
 
 ```bash
 npx tsc --noEmit
 ```
 
-Expected: No type errors related to eng pages. Fix any import or type issues.
-
-- [ ] **Step 2: Run dev server and manually check routes**
+- [ ] **Step 2: Run dev server and check routes**
 
 ```bash
 npm run dev
 ```
 
-Visit:
-- `/eng/providers` — should show registry table
-- `/eng/providers/new` — should show creation form
-- `/eng/providers/[id]` — should show detail (with a real provider ID)
-- `/eng/providers/[id]/[profileId]/overview` — should show overview tab
-- `/eng/providers/[id]/[profileId]/test-cases` — should show test cases list
-- `/eng/providers/[id]/[profileId]/pipeline` — should show pipeline sections
+Visit each route and verify it renders:
+- `/eng/providers` — registry with table
+- `/eng/providers/new` — creation form with disabled fields
+- `/eng/providers/[id]` — detail with profiles
+- `/eng/providers/[id]/new-profile` — profile creation
+- `/eng/providers/[id]/[profileId]/overview` — overview tab
+- `/eng/providers/[id]/[profileId]/test-cases` — test cases list
+- `/eng/providers/[id]/[profileId]/pipeline` — pipeline sections
 
-- [ ] **Step 3: Commit any fixes**
+- [ ] **Step 3: Commit fixes**
 
 ```bash
 git add -A
-git commit -m "fix(eng): resolve compilation issues in provider pages"
+git commit -m "fix(eng): resolve compilation and rendering issues"
 ```

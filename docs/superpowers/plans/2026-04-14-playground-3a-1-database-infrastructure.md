@@ -1070,7 +1070,10 @@ testBillId nullable, add sourceData and billText to LoadedTestCase."
 - [ ] **Step 1: Create the eng client factory**
 
 ```typescript
+// src/lib/supabase/eng-client.ts
+import { createBrowserClient, createServerClient } from '@supabase/ssr'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
 import type { Database } from '@/lib/types/database'
 
 /**
@@ -1100,23 +1103,40 @@ function getEngServiceRoleKey(): string {
 }
 
 /**
- * Create an eng Supabase client with the anon key.
- * Used for user-authenticated operations in /eng/ routes.
+ * Create an eng Supabase browser client.
+ * Used in client components and hooks for user-authenticated operations.
  */
-export function createEngClient() {
-  return createSupabaseClient<Database>(getEngUrl(), getEngAnonKey())
+export function createEngBrowserClient() {
+  return createBrowserClient<Database>(getEngUrl(), getEngAnonKey())
 }
 
 /**
- * Create an eng Supabase client with the service role key.
- * Bypasses RLS — used for middleware auth checks and server-side operations.
+ * Create an eng Supabase server client.
+ * Used in server components and API routes for user-authenticated operations.
+ * Reads auth cookies from the request.
+ */
+export async function createEngServerClient() {
+  const cookieStore = await cookies()
+  return createServerClient<Database>(getEngUrl(), getEngAnonKey(), {
+    cookies: {
+      getAll() { return cookieStore.getAll() },
+      setAll(cookiesToSet) {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options))
+        } catch { /* Server Component — safe to ignore */ }
+      },
+    },
+  })
+}
+
+/**
+ * Create an eng Supabase service role client.
+ * Bypasses RLS — used for middleware auth checks and background operations.
  */
 export function createEngServiceClient() {
   return createSupabaseClient<Database>(getEngUrl(), getEngServiceRoleKey(), {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+    auth: { autoRefreshToken: false, persistSession: false },
   })
 }
 
@@ -1217,7 +1237,64 @@ Unauthenticated → sign-in, not on allowlist → /app redirect."
 
 ---
 
-### Task 13: Install Recharts Dependency
+### Task 13: Eng Data Layer Foundation
+
+**Files:**
+- Create: `src/data/eng/shared/supabase.ts`
+- Create: `src/data/eng/shared/create-eng-hook.ts`
+
+The eng platform follows the same data layer pattern as the rest of the app (`src/data/<domain>/shared.ts`, `server.ts`, `client.ts`, `actions/`) but uses the eng Supabase clients for production data access. This task creates the shared foundation.
+
+- [ ] **Step 1: Create eng Supabase re-exports**
+
+```typescript
+// src/data/eng/shared/supabase.ts
+export { createEngServerClient } from '@/lib/supabase/eng-client'
+export { createEngBrowserClient } from '@/lib/supabase/eng-client'
+export type { TypedSupabaseClient } from '@/lib/supabase/types'
+```
+
+- [ ] **Step 2: Create eng suspense hook factory**
+
+```typescript
+// src/data/eng/shared/create-eng-hook.ts
+'use client'
+
+import { useSuspenseQuery } from '@tanstack/react-query'
+import type { TypedSupabaseClient } from '@/lib/supabase/types'
+import { createEngBrowserClient } from '@/lib/supabase/eng-client'
+
+/**
+ * Factory for creating React Query suspense hooks that use the eng Supabase client.
+ * Mirrors src/data/shared/create-hook.ts but uses createEngBrowserClient
+ * so queries hit production Supabase when SUPABASE_PROD_* env vars are set.
+ */
+export function createEngSuspenseHook<TData, TArgs extends unknown[]>(
+  keyFn: (...args: TArgs) => readonly unknown[],
+  fetchFn: (supabase: TypedSupabaseClient, ...args: TArgs) => Promise<TData>,
+) {
+  return (...args: TArgs) => {
+    return useSuspenseQuery({
+      queryKey: keyFn(...args),
+      queryFn: () => fetchFn(createEngBrowserClient(), ...args),
+    })
+  }
+}
+```
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add src/data/eng/shared/supabase.ts src/data/eng/shared/create-eng-hook.ts
+git commit -m "feat: add eng data layer foundation with createEngSuspenseHook
+
+Mirrors the existing data layer pattern but uses the eng Supabase client
+for production data access. All eng domain data hooks will use this factory."
+```
+
+---
+
+### Task 14: Install Recharts Dependency
 
 **Files:**
 - Modify: `package.json`
@@ -1247,7 +1324,7 @@ git commit -m "chore: install recharts for playground trend charts and sparkline
 
 ---
 
-### Task 14: Full Verification
+### Task 15: Full Verification
 
 - [ ] **Step 1: Run all migrations from scratch to verify ordering**
 
