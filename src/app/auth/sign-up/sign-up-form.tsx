@@ -197,8 +197,8 @@ export default function SignUpForm({
         <InfoBox>
           <InfoBoxContent>
             <p>{t('checkEmailSignup', { email })}</p>
-            <p className="mt-3">{t('checkEmailAutoVerify')}</p>
-            <p className="mt-3 text-xs opacity-60">{t('checkEmailSpam')}</p>
+            <p className="mt-5">{t('checkEmailAutoVerify')}</p>
+            <p className="mt-5 text-xs opacity-60">{t('checkEmailSpam')}</p>
           </InfoBoxContent>
         </InfoBox>
 
