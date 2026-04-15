@@ -20,11 +20,11 @@ import {
 import { Separator } from '@/components/ui/separator'
 
 const NAV_ITEMS = [
-  { href: '/eng/providers', label: 'Providers', icon: Building2 },
-  { href: '/eng/requests', label: 'Requests', icon: Inbox },
-  { href: '/eng/fixes', label: 'Fixes', icon: Wrench },
-  { href: '/eng/accuracy', label: 'Accuracy', icon: BarChart3 },
-  { href: '/eng/discovery', label: 'Discovery', icon: Search },
+  { href: '/eng/providers', label: 'Providers', icon: Building2, hasBadge: false },
+  { href: '/eng/requests', label: 'Requests', icon: Inbox, hasBadge: true },
+  { href: '/eng/fixes', label: 'Fixes', icon: Wrench, hasBadge: true },
+  { href: '/eng/accuracy', label: 'Accuracy', icon: BarChart3, hasBadge: true },
+  { href: '/eng/discovery', label: 'Discovery', icon: Search, hasBadge: false },
 ] as const
 
 export default function EngLayout({ children }: { children: React.ReactNode }) {
@@ -43,7 +43,7 @@ export default function EngLayout({ children }: { children: React.ReactNode }) {
           <SidebarGroup>
             <SidebarGroupLabel>Platform</SidebarGroupLabel>
             <SidebarMenu>
-              {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+              {NAV_ITEMS.map(({ href, label, icon: Icon, hasBadge }) => (
                 <SidebarMenuItem key={href}>
                   <SidebarMenuButton
                     render={<Link href={href} />}
@@ -53,7 +53,7 @@ export default function EngLayout({ children }: { children: React.ReactNode }) {
                     <Icon />
                     <span>{label}</span>
                   </SidebarMenuButton>
-                  <SidebarMenuBadge>0</SidebarMenuBadge>
+                  {hasBadge && <SidebarMenuBadge>0</SidebarMenuBadge>}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
