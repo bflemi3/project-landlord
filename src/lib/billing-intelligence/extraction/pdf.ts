@@ -15,8 +15,11 @@ export async function extractTextFromPdf(buffer: ArrayBuffer): Promise<string> {
 
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
 
-  // Disable worker — not available in serverless Lambda
-  pdfjsLib.GlobalWorkerOptions.workerSrc = ''
+  // Point workerSrc to the actual worker file path.
+  // In serverless, isNodeJS detection auto-disables the worker,
+  // but workerSrc must still be set to avoid the "No workerSrc" error.
+  const workerPath = require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs')
+  pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath
 
   const doc = await pdfjsLib.getDocument({
     data: new Uint8Array(buffer),
