@@ -1,19 +1,20 @@
 import { describe, it, expect, vi } from 'vitest'
 import { extractTextFromPdf } from '../pdf'
 
-// Mock pdf-parse since we can't load real PDFs in unit tests
-vi.mock('pdf-parse', () => ({
-  PDFParse: class {
-    constructor(_data: Uint8Array) {}
-    async getText() {
-      return {
-        pages: [
-          { text: 'Page 1 content' },
-          { text: 'Page 2 content' },
-        ],
-      }
-    }
-  },
+// Mock pdfjs-dist since we can't load real PDFs in unit tests
+vi.mock('pdfjs-dist/legacy/build/pdf.mjs', () => ({
+  getDocument: () => ({
+    promise: Promise.resolve({
+      numPages: 2,
+      getPage: (num: number) => Promise.resolve({
+        getTextContent: () => Promise.resolve({
+          items: [
+            { str: `Page ${num} content` },
+          ],
+        }),
+      }),
+    }),
+  }),
 }))
 
 describe('extractTextFromPdf', () => {

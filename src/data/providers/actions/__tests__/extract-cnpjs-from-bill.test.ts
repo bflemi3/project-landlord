@@ -71,6 +71,6 @@ describe('extractCnpjsFromBill', () => {
     const result = await extractCnpjsFromBill(createFormDataWithFile(file))
 
     expect(result.success).toBe(false)
-    expect(result.message).toContain('Failed to read PDF')
+    expect(result.message).toContain('PDF extraction failed')
   })
 })

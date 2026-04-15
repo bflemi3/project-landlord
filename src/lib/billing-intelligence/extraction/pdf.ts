@@ -1,19 +1,32 @@
-import { PDFParse } from 'pdf-parse'
-
 /**
  * Extract raw text from a PDF buffer.
+ * Uses pdfjs-dist directly with a DOMMatrix polyfill for serverless environments.
  * Returns concatenated text from all pages.
- * Provider parsers receive text, not PDF buffers.
  */
 export async function extractTextFromPdf(buffer: ArrayBuffer): Promise<string> {
-  const uint8 = new Uint8Array(buffer)
-  const parser = new PDFParse({
-    data: uint8,
-    useSystemFonts: true,
-    disableFontFace: true,
-    isEvalSupported: false,
-    useWorkerFetch: false,
-  })
-  const result = await parser.getText()
-  return result.pages.map((p: { text: string }) => p.text).join('\n')
+  // Polyfill DOMMatrix for serverless (Vercel Lambda) where it doesn't exist
+  if (typeof globalThis.DOMMatrix === 'undefined') {
+    // pdfjs-dist only needs a minimal DOMMatrix for text extraction
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    globalThis.DOMMatrix = class DOMMatrix {
+      constructor() { return Object.create(DOMMatrix.prototype) }
+    } as any
+  }
+
+  const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
+
+  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise
+  const pages: string[] = []
+
+  for (let i = 1; i <= doc.numPages; i++) {
+    const page = await doc.getPage(i)
+    const content = await page.getTextContent()
+    const text = content.items
+      .filter((item): item is { str: string } => 'str' in item)
+      .map((item) => item.str)
+      .join('')
+    pages.push(text)
+  }
+
+  return pages.join('\n')
 }
