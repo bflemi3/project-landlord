@@ -46,6 +46,8 @@ export async function GET(request: Request) {
       if (pendingInviteCode) {
         const inviteCode = decodeURIComponent(pendingInviteCode)
         await redeemInviteByCodeCore(supabase, data.session.user.id, inviteCode)
+        // Refresh session so the new JWT includes updated app_metadata
+        await supabase.auth.refreshSession()
 
         // Clear the cookie
         const response = NextResponse.redirect(buildUrl(next))
@@ -62,6 +64,8 @@ export async function GET(request: Request) {
         const inviteCode = data.session.user.user_metadata?.invite_code as string | undefined
         if (inviteCode) {
           await redeemInviteByCodeCore(supabase, data.session.user.id, inviteCode)
+          // Refresh session so the new JWT includes updated app_metadata
+          await supabase.auth.refreshSession()
         }
         return NextResponse.redirect(buildUrl('/auth/verified'))
       }
