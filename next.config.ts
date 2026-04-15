@@ -26,7 +26,6 @@ const releaseNotes = parseReleaseNotes(appVersion)
 
 const nextConfig: NextConfig = {
   devIndicators: false,
-  serverExternalPackages: ['pdfjs-dist'],
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
     NEXT_PUBLIC_RELEASE_NOTES: releaseNotes,
