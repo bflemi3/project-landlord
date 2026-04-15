@@ -11,7 +11,7 @@
 
 The engineering playground is the command center for building and maintaining near-100% accuracy on automated billing intelligence — the core product competency. Every bill that enters the system needs to be correctly identified, extracted, validated, and eventually paid/matched. The playground is where that accuracy gets built, measured, and continuously improved through a feedback loop between users and engineers.
 
-The playground is designed for engineer + AI (Claude) collaboration. Engineers start the process of adding or modifying providers. Claude (via MCP in Plan 4) is the primary builder. In the future, incoming change requests from the application could automatically kick off AI agents that update and improve accuracy proactively, waiting for engineers to verify and validate their completed work.
+The playground is designed for engineer + AI (Claude) collaboration. Engineers start the process of adding or modifying providers. Claude (via MCP tools, developed incrementally alongside the UI) is the primary builder. In the future, incoming change requests from the application could automatically kick off AI agents that update and improve accuracy proactively, waiting for engineers to verify and validate their completed work.
 
 **Desktop only.** No mobile support needed — engineers access through desktop browsers.
 
@@ -21,18 +21,20 @@ The playground is designed for engineer + AI (Claude) collaboration. Engineers s
 
 **Approach:** Nested route group with shared layout (Next.js App Router). Each section is its own route under `/eng/`. The shared layout renders a fixed left sidebar. URLs are deep-linkable — engineers can share links in Slack or Linear issues.
 
-**Engineer auth:** Middleware gates all `/eng/*` routes. Checks Supabase session + `engineer_allowlist` table (via production Supabase client). Not on allowlist → redirect to `/app`. Not authenticated → redirect to login.
+**Engineer auth:** Middleware gates all `/eng/*` routes. Checks Supabase session + `engineer_allowlist` table (via service role client). Not on allowlist → redirect to `/app`. Not authenticated → redirect to login.
 
-**Dual Supabase client pattern:** The eng platform connects to production Supabase, even during local development. Production is the source of truth for all provider, test case, and accuracy data. The rest of the app continues to use local Supabase during development.
+**Supabase client model:** The playground UI uses the standard Supabase client — the same one the rest of the app uses. No dual-client pattern, no separate eng client factory. In local development, the UI hits local Supabase with seed data. In production, the standard env vars point to production Supabase naturally. Auth and data always go through the same Supabase instance.
 
-- **Production env vars:** `SUPABASE_PROD_URL`, `SUPABASE_PROD_ANON_KEY`, `SUPABASE_PROD_SERVICE_ROLE_KEY` (all optional)
-- **Eng client factory:** `src/lib/supabase/eng-client.ts` — creates Supabase clients using production env vars if set, otherwise falls back to the standard `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`. Used by all `/eng/` routes and `/api/eng/` API routes.
-- **Middleware:** `/eng/*` route auth checks use the eng client to query `engineer_allowlist`. All other routes use the existing local client.
-- **In production deployment:** Prod env vars are not set → eng client falls back to standard vars → both paths hit the same instance. No extra configuration needed.
-- **In local development (default):** Prod env vars not set → eng platform uses local Supabase, same as the rest of the app. Fully local, everything works.
-- **In local development (against production):** Set `SUPABASE_PROD_*` vars in `.env.local` → eng platform connects to production. Regular app still uses local Supabase. Claude's provider work (test cases, accuracy runs, provider records) goes against production data.
+**MCP as an incremental dependency:** Claude accesses production data through MCP tools, not the UI. MCP tools run server-side with a service role key (`SUPABASE_SERVICE_ROLE_KEY`) to read/write production Supabase. MCP tools are not a separate plan — they are dependencies pulled in by the UI deliverable that needs them, just like migrations or utility functions. Each implementation plan includes only the MCP tools required for that plan's workflow. MCP grows incrementally alongside the UI:
 
-Plan 4 (MCP) builds on this same pattern — MCP tools use the production Supabase client under the hood, giving Claude structured operations against production data.
+- Provider creation UI → no MCP needed (engineer-driven)
+- Profile creation UI → MCP read tools (Claude reads provider, profile, test bills from prod)
+- Test cases UI → MCP test tools (Claude runs tests against prod data, writes results back)
+- Fixes UI → MCP fix tools (Claude reads fix requests, marks resolved)
+
+This keeps MCP tools grounded in real deliverables rather than speculative infrastructure.
+
+**Production env vars for MCP:** `SUPABASE_PROD_URL` and `SUPABASE_PROD_SERVICE_ROLE_KEY` (optional). When set in `.env.local`, MCP tools connect to production Supabase while the rest of the app uses local Supabase. In production deployment, these are not set — MCP tools fall back to the standard `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`, hitting the same production instance as the UI.
 
 ---
 
@@ -816,7 +818,7 @@ Any code reading/writing `provider_threshold_history` updated to use `audit_log`
 
 ### Capabilities Update Utility
 
-Create `updateProfileCapabilities(profileId, capabilities)` — writes to the profile's `capabilities` JSONB via Supabase client. Used by Claude when building providers (programmatic, not through UI). Document the pattern in `src/lib/billing-intelligence/providers/README.md`: "After adding or removing a capability, call `updateProfileCapabilities` to update the DB." Plan 4 (MCP) replaces this with a deterministic MCP tool. Plan 6 formalizes it in the Claude skill.
+Create `updateProfileCapabilities(profileId, capabilities)` — writes to the profile's `capabilities` JSONB via Supabase client. Used by Claude when building providers (programmatic, not through UI). Document the pattern in `src/lib/billing-intelligence/providers/README.md`: "After adding or removing a capability, call `updateProfileCapabilities` to update the DB." A deterministic MCP tool for this will be introduced when the relevant UI deliverable needs it. Plan 5 formalizes it in the Claude skill.
 
 ### Test Runner — System Request Creation
 
@@ -836,7 +838,7 @@ The test runner from Plan 2 needs updates to support multi-competency test cases
 
 ### Provider Registry Code
 
-The in-code registry (`providers/registry.ts`) currently hardcodes provider metadata. For Plan 3, it continues to work as-is for the extraction pipeline. The playground UI reads from the DB. Alignment between code modules and DB records happens in Plan 4/5.
+The in-code registry (`providers/registry.ts`) currently hardcodes provider metadata. For Plan 3, it continues to work as-is for the extraction pipeline. The playground UI reads from the DB. Alignment between code modules and DB records happens via MCP tools (introduced incrementally as UI deliverables need them) and production integration in Plan 4.
 
 ---
 
@@ -871,7 +873,7 @@ Captured here for reference, not built:
 - **Vault management UI** — For managing provider secrets. Engineers use SQL/Supabase dashboard for now.
 - **Payment matching pipeline** — Plan 3b. Matching logic, Pluggy lab interactive testing, match accuracy tracking.
 - **Automated AI agents** — Triggered by incoming requests, proactively improve accuracy.
-- **Claude skill updates** — Plan 6. Provider development skill includes capability DB updates, proactive validation/payment detection discovery.
+- **Claude skill updates** — Plan 5. Provider development skill includes capability DB updates, proactive validation/payment detection discovery.
 - **Scheduled accuracy checks** — Cron job running full test suite periodically, creating system requests for regressions.
 
 ---
@@ -880,11 +882,10 @@ Captured here for reference, not built:
 
 - **Plan 1 (complete):** Foundation — database, types, utilities, provider system
 - **Plan 2 (complete):** Test runner — test cases, accuracy measurement, field comparison
-- **Plan 3a (this):** Playground UI — engineer auth, provider lab, accuracy dashboard, requests queue, discovery
+- **Plan 3a (this):** Playground UI + MCP — engineer auth, provider lab, accuracy dashboard, requests queue, discovery. MCP tools are developed incrementally as dependencies of each UI deliverable (not a separate plan). Each implementation plan includes the MCP tools Claude needs to participate in that feature's workflow.
 - **Plan 3b (next):** Payment matching pipeline — matching logic, Pluggy lab interactive testing, match accuracy tracking
-- **Plan 4:** Custom MCP — Claude Code interface (deterministic capability updates, request pickup). Uses the same production Supabase client pattern from Plan 3 — MCP tools connect to production data, giving Claude structured operations (runTestSuite, createTestCase, updateCapabilities, etc.) against the source of truth.
-- **Plan 5:** Production integration — provider requests from users, corrections, notifications, per-provider trust levels
-- **Plan 6:** Knowledge base updates — CLAUDE.md, rules, skills (provider development skill, capability management, confidence scoring docs)
+- **Plan 4:** Production integration — provider requests from users, corrections, notifications, per-provider trust levels
+- **Plan 5:** Knowledge base updates — CLAUDE.md, rules, skills (provider development skill, capability management, confidence scoring docs)
 
 ---
 
