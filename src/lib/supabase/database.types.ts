@@ -218,9 +218,11 @@ export type Database = {
           city: string | null
           country_code: string
           created_at: string
+          email: string | null
           fetched_at: string
           id: string
           legal_name: string | null
+          phone: string | null
           source: string
           state: string | null
           tax_id: string
@@ -233,9 +235,11 @@ export type Database = {
           city?: string | null
           country_code?: string
           created_at?: string
+          email?: string | null
           fetched_at?: string
           id?: string
           legal_name?: string | null
+          phone?: string | null
           source: string
           state?: string | null
           tax_id: string
@@ -248,9 +252,11 @@ export type Database = {
           city?: string | null
           country_code?: string
           created_at?: string
+          email?: string | null
           fetched_at?: string
           id?: string
           legal_name?: string | null
+          phone?: string | null
           source?: string
           state?: string | null
           tax_id?: string
@@ -449,6 +455,104 @@ export type Database = {
           success?: boolean
         }
         Relationships: []
+      }
+      extraction_test_cases: {
+        Row: {
+          competencies_tested: string[]
+          created_at: string
+          created_by: string
+          description: string | null
+          expected_fields: Json
+          id: string
+          profile_id: string
+          test_bill_id: string
+        }
+        Insert: {
+          competencies_tested?: string[]
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          expected_fields: Json
+          id?: string
+          profile_id: string
+          test_bill_id: string
+        }
+        Update: {
+          competencies_tested?: string[]
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          expected_fields?: Json
+          id?: string
+          profile_id?: string
+          test_bill_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extraction_test_cases_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoice_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "extraction_test_cases_test_bill_id_fkey"
+            columns: ["test_bill_id"]
+            isOneToOne: false
+            referencedRelation: "provider_test_bills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      extraction_test_runs: {
+        Row: {
+          accuracy: number
+          created_at: string
+          id: string
+          min_accuracy_threshold: number | null
+          passed: boolean
+          passed_fields: number
+          profile_id: string | null
+          report: Json
+          total_cases: number
+          total_fields: number
+          triggered_by: string
+        }
+        Insert: {
+          accuracy: number
+          created_at?: string
+          id?: string
+          min_accuracy_threshold?: number | null
+          passed: boolean
+          passed_fields: number
+          profile_id?: string | null
+          report: Json
+          total_cases: number
+          total_fields: number
+          triggered_by: string
+        }
+        Update: {
+          accuracy?: number
+          created_at?: string
+          id?: string
+          min_accuracy_threshold?: number | null
+          passed?: boolean
+          passed_fields?: number
+          profile_id?: string | null
+          report?: Json
+          total_cases?: number
+          total_fields?: number
+          triggered_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "extraction_test_runs_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoice_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       invitations: {
         Row: {
@@ -848,51 +952,60 @@ export type Database = {
       }
       provider_invoice_profiles: {
         Row: {
+          auto_accept_threshold: number
           capabilities: Json
           category: Database["public"]["Enums"]["provider_category"] | null
           created_at: string
           extraction_config: Json
           id: string
           is_active: boolean
+          min_accuracy: number
           name: string
           notes: string | null
           parser_strategy: string
           provider_id: string
           region: string | null
+          review_threshold: number
           status: Database["public"]["Enums"]["provider_profile_status"]
           updated_at: string
           validation_config: Json
           version: number
         }
         Insert: {
+          auto_accept_threshold?: number
           capabilities?: Json
           category?: Database["public"]["Enums"]["provider_category"] | null
           created_at?: string
           extraction_config?: Json
           id?: string
           is_active?: boolean
+          min_accuracy?: number
           name: string
           notes?: string | null
           parser_strategy: string
           provider_id: string
           region?: string | null
+          review_threshold?: number
           status?: Database["public"]["Enums"]["provider_profile_status"]
           updated_at?: string
           validation_config?: Json
           version?: number
         }
         Update: {
+          auto_accept_threshold?: number
           capabilities?: Json
           category?: Database["public"]["Enums"]["provider_category"] | null
           created_at?: string
           extraction_config?: Json
           id?: string
           is_active?: boolean
+          min_accuracy?: number
           name?: string
           notes?: string | null
           parser_strategy?: string
           provider_id?: string
           region?: string | null
+          review_threshold?: number
           status?: Database["public"]["Enums"]["provider_profile_status"]
           updated_at?: string
           validation_config?: Json
@@ -908,10 +1021,108 @@ export type Database = {
           },
         ]
       }
+      provider_test_bills: {
+        Row: {
+          created_at: string
+          file_name: string
+          file_size_bytes: number | null
+          id: string
+          mime_type: string
+          profile_id: string | null
+          provider_id: string | null
+          source: string
+          storage_path: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          file_name: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string
+          profile_id?: string | null
+          provider_id?: string | null
+          source: string
+          storage_path: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          file_name?: string
+          file_size_bytes?: number | null
+          id?: string
+          mime_type?: string
+          profile_id?: string | null
+          provider_id?: string | null
+          source?: string
+          storage_path?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_test_bills_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoice_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_test_bills_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      provider_threshold_history: {
+        Row: {
+          changed_by: string | null
+          created_at: string
+          id: string
+          new_value: number
+          old_value: number | null
+          profile_id: string
+          reason: string | null
+          threshold_type: string
+        }
+        Insert: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_value: number
+          old_value?: number | null
+          profile_id: string
+          reason?: string | null
+          threshold_type: string
+        }
+        Update: {
+          changed_by?: string | null
+          created_at?: string
+          id?: string
+          new_value?: number
+          old_value?: number | null
+          profile_id?: string
+          reason?: string | null
+          threshold_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_threshold_history_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoice_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       providers: {
         Row: {
+          company_cache_id: string | null
           country_code: string
           created_at: string
+          display_name: string | null
+          email: string | null
           id: string
           logo_url: string | null
           name: string
@@ -921,8 +1132,11 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          company_cache_id?: string | null
           country_code?: string
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           id?: string
           logo_url?: string | null
           name: string
@@ -932,8 +1146,11 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          company_cache_id?: string | null
           country_code?: string
           created_at?: string
+          display_name?: string | null
+          email?: string | null
           id?: string
           logo_url?: string | null
           name?: string
@@ -942,7 +1159,15 @@ export type Database = {
           updated_at?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "providers_company_cache_id_fkey"
+            columns: ["company_cache_id"]
+            isOneToOne: false
+            referencedRelation: "company_cache"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recurring_rules: {
         Row: {
@@ -1363,6 +1588,26 @@ export type Database = {
           p_street?: string
         }
         Returns: Json
+      }
+      create_provider_with_bill: {
+        Args: {
+          p_bill_file_name?: string
+          p_bill_storage_path?: string
+          p_bill_uploaded_by?: string
+          p_company_cache_id?: string
+          p_country_code?: string
+          p_display_name?: string
+          p_email?: string
+          p_name: string
+          p_phone?: string
+          p_tax_id?: string
+          p_website?: string
+        }
+        Returns: string
+      }
+      delete_provider_cascade: {
+        Args: { p_provider_id: string }
+        Returns: string[]
       }
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }

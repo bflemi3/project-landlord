@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
@@ -46,6 +47,31 @@ export async function updateSession(request: NextRequest) {
   const user = data?.claims
 
   const { pathname } = request.nextUrl
+
+  // Engineer-only gate for /eng/* routes
+  if (pathname.startsWith('/eng')) {
+    if (!user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth/sign-in'
+      return redirectWithCookies(url, supabaseResponse)
+    }
+
+    const serviceRole = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    )
+    const { data: allowlistEntry } = await serviceRole
+      .from('engineer_allowlist')
+      .select('id')
+      .eq('user_id', (user as Record<string, unknown>).sub as string)
+      .single()
+
+    if (!allowlistEntry) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/app'
+      return redirectWithCookies(url, supabaseResponse)
+    }
+  }
 
   // Unauthenticated users trying to access /app → redirect to sign-in
   if (!user && pathname.startsWith('/app')) {
