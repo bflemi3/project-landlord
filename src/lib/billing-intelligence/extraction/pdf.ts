@@ -15,7 +15,15 @@ export async function extractTextFromPdf(buffer: ArrayBuffer): Promise<string> {
 
   const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs')
 
-  const doc = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise
+  // Disable worker — not available in serverless Lambda
+  pdfjsLib.GlobalWorkerOptions.workerSrc = ''
+
+  const doc = await pdfjsLib.getDocument({
+    data: new Uint8Array(buffer),
+    useWorkerFetch: false,
+    isEvalSupported: false,
+    disableFontFace: true,
+  }).promise
   const pages: string[] = []
 
   for (let i = 1; i <= doc.numPages; i++) {
