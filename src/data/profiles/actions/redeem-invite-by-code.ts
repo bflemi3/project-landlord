@@ -1,5 +1,6 @@
 'use server'
 
+import { createClient as createServiceClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
@@ -58,6 +59,17 @@ export async function redeemInviteByCodeCore(
       .single()
     // ON CONFLICT is handled by the unique constraint — duplicate insert is a no-op
   }
+
+  // Sync has_redeemed_invite to JWT claims via raw_app_meta_data.
+  // The DB trigger chain doesn't reliably sync during the auth.users INSERT
+  // transaction, so we do it explicitly here with the service role client.
+  const serviceClient = createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
+  await serviceClient.auth.admin.updateUserById(userId, {
+    app_metadata: { has_redeemed_invite: true },
+  })
 
   return { success: true, source: invite.source }
 }
