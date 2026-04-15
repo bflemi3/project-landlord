@@ -39,6 +39,7 @@
     "checkEmail": "Verifique seu e-mail",
     "checkEmailSignup": "Enviamos um link de confirmação para {email}. Clique no link para verificar sua conta.",
     "checkEmailAutoVerify": "Assim que verificado, esta página levará você ao app automaticamente.",
+    "checkEmailExpiry": "Este link expira em 24 horas.",
     "checkEmailSpam": "Não recebeu? Verifique sua pasta de spam ou tente se cadastrar novamente.",
     "checkEmailReset": "Se existe uma conta para {email}, enviamos um link de recuperação de senha.",
     "checkEmailGoogle": "Entrou com Google? Basta usar <strong>Continuar com Google</strong> na página de login.",
