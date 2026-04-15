@@ -897,3 +897,7 @@ Captured here for reference, not built:
 - Category on providers is derived from profiles — no category column on `providers` table
 - UUIDs used in all routes (no slugs) — internal tool, engineers navigate via UI
 - `company_cache` remains separate from `providers` — raw external API data vs. curated engineering data. Linked via `company_cache_id` FK on `providers`
+
+## TODO: External Call Log Visibility
+
+The `external_call_log` table tracks all external API calls (CNPJ lookups, validation scrapes, etc.) with timing, status, and error details. The playground should surface this data somewhere — possibly in the Discovery section, as a debug tool on provider/profile detail pages, or as its own section. Needs design.

@@ -9,6 +9,8 @@ export interface CompanyInfo {
   activityDescription: string
   city: string
   state: string
+  phone: string | null
+  email: string | null
   source: 'brasilapi' | 'receitaws' | 'cache'
   /** When this data was last updated (from cache or freshly fetched) */
   lastUpdated: string         // ISO 8601 timestamp
@@ -44,6 +46,8 @@ async function lookupFromCache(taxId: string): Promise<CompanyInfo | null> {
     activityDescription: data.activity_description,
     city: data.city,
     state: data.state,
+    phone: data.phone ?? null,
+    email: data.email ?? null,
     source: 'cache',
     lastUpdated: data.updated_at,
   }
@@ -65,6 +69,8 @@ async function saveToCache(info: CompanyInfo): Promise<void> {
     activity_description: info.activityDescription,
     city: info.city,
     state: info.state,
+    phone: info.phone,
+    email: info.email,
     source: info.source,
     fetched_at: now,
     updated_at: now,
@@ -72,13 +78,13 @@ async function saveToCache(info: CompanyInfo): Promise<void> {
 
   const existing = await supabase
     .from('company_cache')
-    .select('id, legal_name, trade_name, activity_description, city, state')
+    .select('id, legal_name, trade_name, activity_description, city, state, phone, email')
     .eq('tax_id', info.cnpj)
     .single()
 
   if (existing.data) {
     // Track changes
-    const trackFields = ['legal_name', 'trade_name', 'activity_description', 'city', 'state'] as const
+    const trackFields = ['legal_name', 'trade_name', 'activity_description', 'city', 'state', 'phone', 'email'] as const
     for (const field of trackFields) {
       const oldVal = String(existing.data[field] ?? '')
       const newVal = String(dbRow[field] ?? '')
@@ -126,6 +132,8 @@ async function fetchFromBrasilApi(cnpj: string): Promise<CompanyInfo> {
     activityDescription: String(data.cnae_fiscal_descricao),
     city: String(data.municipio),
     state: String(data.uf),
+    phone: data.ddd_telefone_1 ? String(data.ddd_telefone_1) : null,
+    email: data.email ? String(data.email) : null,
     source: 'brasilapi',
     lastUpdated: new Date().toISOString(),
   }
@@ -155,6 +163,8 @@ async function fetchFromReceitaWs(cnpj: string): Promise<CompanyInfo> {
     activityDescription: atividades?.[0]?.text ?? 'Unknown',
     city: String(data.municipio),
     state: String(data.uf),
+    phone: data.telefone ? String(data.telefone) : null,
+    email: data.email ? String(data.email) : null,
     source: 'receitaws',
     lastUpdated: new Date().toISOString(),
   }

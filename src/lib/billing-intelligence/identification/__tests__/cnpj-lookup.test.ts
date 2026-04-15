@@ -52,12 +52,16 @@ describe('lookupCnpj', () => {
         cnae_fiscal_descricao: 'Distribuição de energia elétrica',
         municipio: 'CURITIBA',
         uf: 'PR',
+        ddd_telefone_1: '4133334444',
+        email: 'contato@enliv.com.br',
       }), { status: 200 }),
     )
 
     const result = await lookupCnpj('49449868000162')
     expect(result.companyName).toBe('ENLIV')
     expect(result.source).toBe('brasilapi')
+    expect(result.phone).toBe('4133334444')
+    expect(result.email).toBe('contato@enliv.com.br')
   })
 
   it('falls back to ReceitaWS when BrasilAPI fails', async () => {
@@ -70,11 +74,15 @@ describe('lookupCnpj', () => {
         atividade_principal: [{ code: '35.14-0-00', text: 'Distribuição de energia elétrica' }],
         municipio: 'CURITIBA',
         uf: 'PR',
+        telefone: '(41) 3333-4444',
+        email: 'contato@enliv.com.br',
       }), { status: 200 }))
 
     const result = await lookupCnpj('49449868000162')
     expect(result.companyName).toBe('ENLIV')
     expect(result.source).toBe('receitaws')
+    expect(result.phone).toBe('(41) 3333-4444')
+    expect(result.email).toBe('contato@enliv.com.br')
   })
 
   it('throws when all sources fail', async () => {
@@ -94,6 +102,8 @@ describe('lookupCnpj', () => {
       activity_description: 'Distribuição de energia elétrica',
       city: 'CURITIBA',
       state: 'PR',
+      phone: '4133334444',
+      email: 'contato@enliv.com.br',
       fetched_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } }]
@@ -105,6 +115,8 @@ describe('lookupCnpj', () => {
     expect(result.source).toBe('cache')
     expect(result.legalName).toBe('ENLIV ENERGIA LTDA')
     expect(result.city).toBe('CURITIBA')
+    expect(result.phone).toBe('4133334444')
+    expect(result.email).toBe('contato@enliv.com.br')
     expect(fetchSpy).not.toHaveBeenCalled() // no API calls when cache hits
   })
 

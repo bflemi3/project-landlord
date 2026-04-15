@@ -8,7 +8,7 @@ function ProviderRegistry() {
     <EmptyState
       icon={Building2}
       heading="No providers yet"
-      description="Providers are utility companies whose bills you extract data from. Add your first provider to get started."
+      description="Providers are companies whose bills are processed through the billing intelligence pipeline. Add your first provider to get started."
       action={{ label: 'Add provider', href: '/eng/providers/new' }}
     />
   )
