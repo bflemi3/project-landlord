@@ -156,13 +156,15 @@ The plan document has these sections in order: Header, Codebase Context, File St
 2. Work backward into each dependency it needs. For each dependency: write tests first (TDD), build the implementation to pass the tests, then wire it into the parent that needs it.
 3. Each task produces a small, tested, working piece that composes into the whole.
 
-Each task states: what to change, why, where, how to verify, what to commit. Describe changes in prose — no code blocks. Include `**Check:**` pointers to relevant skills/rules.
+Each task states: what to change, why, where, and how to verify. Describe changes in prose — no code blocks. Include `**Check:**` pointers to relevant skills/rules.
 
 If a task needs something that doesn't exist yet (a hook, a utility, a table), create it in the same task or the task immediately before — not in a front-loaded "infrastructure" block divorced from what uses it. Dependencies are pulled in by the deliverable, not pushed ahead of it.
 
 **TDD by default.** For tasks that produce testable logic (functions, utilities, data transformations, server actions), direct the executor to write tests first — state what the test should assert, then describe the implementation. The executor uses `superpowers:test-driven-development`. Pure scaffolding tasks (route files, dependency installs, migrations) don't need TDD.
 
-**Final Task: Verification & Code Review** — every plan ends with: (1) type check + test suite + lint, (2) dispatch `superpowers:code-reviewer` against the spec sections this plan implements, (3) address findings and re-verify.
+**Do not commit during execution.** The executor must NOT create git commits after individual tasks. All work stays uncommitted until the user has tested and approved everything. The final commit happens manually after user review.
+
+**Final Task: Verification & Code Review** — every plan ends with: (1) type check + test suite + lint, (2) dispatch `superpowers:code-reviewer` against the spec sections this plan implements, (3) address findings and re-verify. Do not commit — present results for user testing.
 
 ## Plan Quality Review
 
