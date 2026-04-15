@@ -73,6 +73,10 @@ Do not optimize prematurely for: hypothetical scale, extreme customization, comp
 - Leave the codebase cleaner than you found it
 - Avoid introducing libraries unless they clearly earn their keep
 
+### Build philosophy
+
+Start with the deliverable — the page, component, or endpoint the user will see. Build it first, even if it can't fully work yet. Then work backward into each dependency it needs: write tests for the dependency first (TDD), build it to pass the tests, then wire it into the parent. Each piece is small, tested, and composed into the whole. Never front-load infrastructure disconnected from what uses it — dependencies are pulled in by the deliverable, not pushed ahead of it.
+
 ### Before implementing changes
 
 - Does this fit the MVP scope?
