@@ -45,6 +45,7 @@ export default function NewProviderPage() {
   const [billFile, setBillFile] = useState<File | null>(null)
   const [cnpjOptions, setCnpjOptions] = useState<LookupCnpjResult[]>([])
   const [billMessage, setBillMessage] = useState<string | null>(null)
+  const [billError, setBillError] = useState<string | null>(null)
 
   // State — editable provider fields
   const [name, setName] = useState('')
@@ -120,6 +121,7 @@ export default function NewProviderPage() {
 
     setBillFile(file)
     setBillMessage(null)
+    setBillError(null)
     setBillPhase('extracting')
 
     const extractFd = new FormData()
@@ -127,7 +129,7 @@ export default function NewProviderPage() {
     const extractResult = await extractCnpjsFromBill(extractFd)
 
     if (!extractResult.success) {
-      setBillMessage(extractResult.message ?? 'Extraction failed')
+      setBillError(extractResult.message ?? 'Extraction failed')
       setBillFile(null)
       setBillPhase('idle')
       if (fileInputRef.current) fileInputRef.current.value = ''
@@ -177,6 +179,7 @@ export default function NewProviderPage() {
     setBillFile(null)
     setBillPhase('idle')
     setBillMessage(null)
+    setBillError(null)
     setCnpjOptions([])
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
@@ -270,7 +273,12 @@ export default function NewProviderPage() {
               onChange={handleBillUpload}
               className="hidden"
             />
-            {billMessage && (
+            {billError && (
+              <div className="mt-3">
+                <ErrorBox message={billError} />
+              </div>
+            )}
+            {billMessage && !billError && (
               <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
                 <Info className="size-3.5 shrink-0" />
                 {billMessage}

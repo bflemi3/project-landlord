@@ -31,8 +31,13 @@ export async function extractCnpjsFromBill(formData: FormData): Promise<ExtractC
   try {
     const buffer = await file.arrayBuffer()
     text = await extractTextFromPdf(buffer)
-  } catch {
-    return { success: false, cnpjs: [], message: 'Failed to read PDF. The file may be corrupted or password-protected.' }
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err)
+    return {
+      success: false,
+      cnpjs: [],
+      message: `PDF extraction failed: ${detail}\nFile: ${file.name} (${(file.size / 1024).toFixed(0)} KB, type: ${file.type})`,
+    }
   }
 
   const cnpjs = extractCnpjsFromText(text)

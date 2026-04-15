@@ -7,7 +7,13 @@ import { PDFParse } from 'pdf-parse'
  */
 export async function extractTextFromPdf(buffer: ArrayBuffer): Promise<string> {
   const uint8 = new Uint8Array(buffer)
-  const parser = new PDFParse(uint8)
+  const parser = new PDFParse({
+    data: uint8,
+    useSystemFonts: true,
+    disableFontFace: true,
+    isEvalSupported: false,
+    useWorkerFetch: false,
+  })
   const result = await parser.getText()
   return result.pages.map((p: { text: string }) => p.text).join('\n')
 }
