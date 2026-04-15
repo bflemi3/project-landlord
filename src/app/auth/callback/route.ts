@@ -58,6 +58,11 @@ export async function GET(request: Request) {
       }
 
       if (type === 'signup' || type === 'email') {
+        // Redeem invite code from user_metadata (set during email sign-up)
+        const inviteCode = data.session.user.user_metadata?.invite_code as string | undefined
+        if (inviteCode) {
+          await redeemInviteByCodeCore(supabase, data.session.user.id, inviteCode)
+        }
         return NextResponse.redirect(buildUrl('/auth/verified'))
       }
 
