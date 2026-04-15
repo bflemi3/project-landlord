@@ -95,8 +95,24 @@ The next plan gets written in a future session, after the previous plan is imple
 
 **Never write more than one plan at a time.** The planner proposes the breakdown, writes one plan, and stops.
 
-> "This spec is too large for a single plan. Based on the codebase, I'd break it into these separate plans, each its own plan → implement → verify cycle:
-> 1. [Plan name] — Deliverable: ...
+### What counts as a deliverable
+
+A deliverable is a working route, page, or endpoint that an engineer can load and verify in a browser or test suite. "All migrations applied" is not a deliverable. "The provider registry page loads and displays providers" is a deliverable.
+
+### Decompose by vertical slice, not horizontal layer
+
+Each plan must be a vertical slice — a working feature that includes its own route, data layer, and only the infrastructure it needs. The deliverable-first principle applies to decomposition, not just task ordering within a plan.
+
+**Never decompose by technical layer.** Don't create plans like "Plan 1: all migrations, Plan 2: all shared components, Plan 3: all pages." This front-loads infrastructure divorced from what it serves. Instead, each plan delivers a working page/feature and pulls in only the migrations, components, and utilities that specific page needs.
+
+| Wrong (horizontal layers) | Right (vertical slices) |
+|---|---|
+| Plan 1: All database migrations | Plan 1: Provider registry page (+ its migrations, client, auth) |
+| Plan 2: All shared components | Plan 2: Provider detail page (+ its components, data layer) |
+| Plan 3: All page routes | Plan 3: Accuracy dashboard (+ threshold components, trend charts) |
+
+> "This spec is too large for a single plan. Based on the codebase, I'd break it into these vertical slices, each its own plan → implement → verify cycle:
+> 1. [Plan name] — Deliverable: [a working page/feature an engineer can load and verify]
 > 2. [Plan name] — Deliverable: ...
 > 3. [Plan name] — Deliverable: ...
 > Which plan should I write first?"
@@ -170,7 +186,9 @@ After writing the plan, review it yourself before presenting to the user. This c
 
 8. **Assumption check** — Does this plan assume files exist that haven't been created yet (by a prior unimplemented plan)? If so, note the dependency explicitly.
 
-For checks 1-5 and 7-8, fix issues inline — no need to re-review. For #6 (plan too large), do not fix inline — loop back to the Scope Gate and decompose.
+9. **Vertical slice check** — Is this plan a vertical slice with a visible deliverable? Or is it a horizontal layer (all migrations, all components, all utilities) divorced from a working feature? If horizontal, loop back to the Scope Gate and re-decompose as vertical slices.
+
+For checks 1-5 and 7-8, fix issues inline — no need to re-review. For #6 (plan too large) and #9 (horizontal layer), do not fix inline — loop back to the Scope Gate and decompose.
 
 ## What This Skill Does NOT Do
 
