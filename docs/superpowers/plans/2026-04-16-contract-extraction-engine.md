@@ -100,7 +100,7 @@ src/lib/billing-intelligence/
 
 **Where:** `src/lib/billing-intelligence/types.ts` and all files found by grepping for `BillExtractionResult` — including providers, test-runner, tests, and docs.
 
-**How to verify:** Run the type checker and test suite. All existing tests pass, no type errors. Grep for the old name `BillExtractionResult` (excluding the new `BillExtractionResult` and `ContractExtractionResult`) returns zero results in source files. Then dispatch `superpowers:code-reviewer` to review the rename changes.
+**How to verify:** Run the type checker and test suite. All existing tests pass, no type errors. Grep for the old name `ExtractionResult` (the pre-rename name) returns zero bare matches in source files — only `BillExtractionResult` and `ContractExtractionResult` should appear. Then dispatch `superpowers:code-reviewer` to review the rename changes.
 
 **Check:** `testing` skill (test patterns)
 
@@ -132,6 +132,36 @@ src/lib/billing-intelligence/
 
 ---
 
+### Task 2a: Add property type enum + tighten error codes
+
+**What:** Two small, related updates to the already-built types/schema: introduce a strongly typed `property_type` enum as Postgres → generated TS → Zod, and collapse two redundant error codes so the UX layer has one clean path for "no extractable text."
+
+**Where:**
+- New migration: `supabase/migrations/YYYYMMDDHHMMSS_property_type_enum.sql`
+- Regenerated Supabase types (whatever path the project uses — check `package.json` scripts)
+- Update `src/lib/contract-extraction/types.ts` and `src/lib/contract-extraction/schema.ts`
+- Update `src/lib/contract-extraction/__tests__/schema.test.ts`
+
+**Sub-task A — Postgres enum + type regen (DB is source of truth):**
+- Migration creates `CREATE TYPE property_type AS ENUM ('apartment', 'house', 'commercial', 'other')`
+- Regenerate Supabase types via `pnpm supabase gen types --local` (do NOT use `--linked`; see the memory on this)
+- In `types.ts`, import the generated `PropertyType` (or equivalent alias from the generated enums map) and add a new field to `ContractExtractionLlmResult`: `propertyType: PropertyType | null`
+- In `schema.ts`, add the Zod field using `z.enum(['apartment', 'house', 'commercial', 'other'])` with `.nullable()` and a `.describe()` that lists the values and gives the LLM guidance on which Brazilian property descriptions map to each (apartamento/cobertura/kitnet/loft/studio → apartment; casa/sobrado → house; sala comercial/loja/galpão/escritório → commercial; anything else → other)
+- Add a compile-time assertion alongside the existing ones so the Zod enum literals and the generated TS enum stay in sync (the build fails if they drift)
+
+**Sub-task B — collapse `scanned_document` + `empty_content`:**
+- Rationale: from the user's perspective, both states are "no text could be extracted — is this a scanned document?" Two codes give the UI two i18n strings that describe the same failure.
+- Remove both codes from `ContractExtractionErrorCode` in `types.ts` and replace with a single `no_text_extractable` code. Update the error-codes table in the spec's Error Handling section separately (already in-scope for the next plan's docs pass; flag it, don't block on it).
+- Update `schema.test.ts` and any other references found by grep.
+
+**TDD:** Update `__tests__/schema.test.ts` first — add tests that the Zod schema rejects `propertyType` values outside the enum and accepts `null`. Then make the implementation pass.
+
+**How to verify:** Run the type checker and schema tests. Run `pnpm supabase migration up` locally (do NOT run `supabase db reset`). Grep for `scanned_document` and `empty_content` in source files — zero matches. Then dispatch `superpowers:code-reviewer` to review this task.
+
+**Check:** `data-modeling` (enum-as-source-of-truth), `database-migrations` (additive, non-destructive)
+
+---
+
 ### Task 3: Build text extraction for PDF + DOCX
 
 **What:** Create a unified text extraction function that accepts a file buffer, detects the format (PDF or DOCX), and returns raw text. PDF extraction reuses the existing `unpdf` pattern. DOCX extraction uses `mammoth`.
@@ -154,11 +184,10 @@ Error handling (extractText throws typed errors that extractContract in Task 7 m
 - Password-protected PDF → error (maps to `password_protected`)
 - Password-protected DOCX → error (maps to `password_protected`)
 - Null/undefined buffer → error (maps to `empty_file`)
-- File exceeding size limit → error (maps to `file_too_large`, max 10MB)
+- PDF with no extractable text layer → error (maps to `no_text_extractable`). Detection: after running `unpdf`, if the merged text (after stripping whitespace) is empty across all pages, treat as no text layer. OCR support will be added later — the text extraction layer is the right place to plug it in without changing the rest of the pipeline.
+- DOCX with no text content (valid structure, empty body) → error (maps to `no_text_extractable`). Same code as scanned PDF since the user-facing meaning is identical: "we couldn't read any text."
 
-Edge cases:
-- PDF with no extractable text (scanned image, no text layer) → returns a structured error that the extraction engine maps to `scanned_document` error code. OCR support will be added later — the text extraction layer is the right place to plug it in without changing the rest of the pipeline.
-- DOCX with no text content (valid structure, empty body) → returns empty string
+**File-size check lives in `extractContract` (Task 7), NOT in `extractText`** — buffer size is known before parsing, so the check belongs at the entry point. Do not add a file-size test to `extract-text.test.ts`.
 
 Use the real PT-BR DOCX contract as a test fixture (copy from Downloads into `__tests__/fixtures/pt-br-real.docx`). For PDF, create a simple synthetic PDF fixture or convert the DOCX.
 
@@ -201,7 +230,18 @@ Edge cases:
 
 **Test inputs:** Use inline text snippets hardcoded in the test file — representative paragraphs of legal text in each language, not full contract documents. This tests language detection in isolation as a pure function (string → language code). Full pipeline testing with real contract fixtures happens in Task 7's integration tests.
 
-**Implementation notes:** Use `franc` for trigram-based language detection — far more robust than hand-rolled keyword matching, handles overlap and ambiguity well, especially on long text like contracts (1000+ words). Map franc's ISO 639-3 codes to `SupportedLanguage`: `por` → 'pt-br', `eng` → 'en', `spa` → 'es'. Unrecognized languages, undetermined results, and edge cases (empty/short text) return `null` — the extraction engine maps this to `unsupported_language` error code. Return type is `SupportedLanguage | null`.
+**Implementation notes:** Use `franc` for trigram-based language detection — far more robust than hand-rolled keyword matching, handles overlap and ambiguity well, especially on long text like contracts (1000+ words).
+
+Mapping rules (explicit — no fallbacks, no "closest match"):
+- `por` → `'pt-br'`
+- `eng` → `'en'`
+- `spa` → `'es'`
+- Any other ISO 639-3 code → `null`
+- `franc.all()` confidence below a defined threshold (e.g., top result's score < 0.5 on the normalized scale — confirm franc's API and pick a defensible threshold) → `null`
+- Empty, null, or short text (< 30 characters of word content after whitespace/digit stripping) → `null` without calling franc
+- `und` (undetermined) → `null`
+
+Return type is `SupportedLanguage | null`. The extraction engine maps `null` to `unsupported_language` error code.
 
 **How to verify:** Run the language detection tests. Then dispatch `superpowers:code-reviewer` to review the detection logic and tests.
 
@@ -237,10 +277,34 @@ ES (4 files — 2 synthetic × 2 formats):
 - Must contain extractable: property address, rent amount + currency, contract start/end dates, at least one landlord with name + tax ID, at least one tenant with name + tax ID, at least 2 expenses
 - Must use realistic formatting, legal language, and section structure for its language/country — based on the templates researched, not invented
 - Each pair within a language must have meaningful structural variation — different date formats (DD/MM/YYYY vs written out), different ways of expressing rent (monthly value vs annual), different section ordering, different section headings
-- PDF files must be valid PDFs (use a programmatic PDF generation library or convert from DOCX)
-- DOCX files must be valid DOCX documents
+- PDF files must be valid PDFs. Generate them by converting the corresponding DOCX fixture via LibreOffice headless mode: `libreoffice --headless --convert-to pdf <fixture>.docx --outdir <dir>`. Document the exact command (and any font/locale flags needed for accented characters) in a `fixtures/README.md` so the conversion is reproducible.
+- DOCX files must be valid DOCX documents. Author them in a DOCX editor (Word, Pages, Google Docs → Download as .docx, or LibreOffice Writer) — not programmatically — so the structure (headings, tables, styled runs) resembles real-world contracts.
 
-**Expected values files:** For each fixture, create a companion `.expected.json` in the `expected/` subdirectory documenting the exact values the extraction should produce. These are used by integration tests in Task 7. Include every extractable field with the expected value (or null if intentionally absent). 7 expected files total (one per unique contract content — PDF and DOCX of the same content share one expected file).
+**If LibreOffice is not installed on the executor's machine, STOP and ask the user to install it (`brew install --cask libreoffice`) before continuing. Do not attempt to work around this with a different library — the whole point is realistic fixtures.**
+
+**Expected values files:** For each fixture, create a companion `.expected.json` in the `expected/` subdirectory documenting the expected extraction values. PDF and DOCX of the same content share one expected file (same extraction result regardless of format). 7 expected files total.
+
+Shape — each top-level key maps a field to an assertion spec. Supported assertion spec types:
+- `{ "equals": <value> }` — exact match (numbers, enum values, dates)
+- `{ "contains": <string> }` — case-insensitive substring (street names, city names — tolerates LLM casing/accent variation)
+- `{ "normalizedEquals": <string> }` — compare after stripping accents, lowercasing, collapsing whitespace
+- `{ "isNull": true }` — field must be null (use for fields intentionally absent from the contract)
+- `{ "notNull": true }` — field must be non-null (use when presence matters but exact value is variable)
+- For nested objects (address, rent), the value is itself an object of assertion specs
+
+Example — `pt-br-real.expected.json` partial shape:
+- `rent.amount` → `{ "equals": 630000 }`
+- `rent.currency` → `{ "equals": "BRL" }`
+- `rent.dueDay` → `{ "equals": 5 }`
+- `rent.includes` → `{ "equals": ["rent", "condo", "IPTU"] }`
+- `address.street` → `{ "contains": "Campeche" }`
+- `address.city` → `{ "normalizedEquals": "florianopolis" }`
+- `address.postalCode` → `{ "contains": "88063-300" }`
+- `contractDates.start` → `{ "equals": "2026-02-28" }`
+- `landlords` → a list assertion: length 2, and for each landlord an object of assertion specs (name contains, taxId equals)
+- `propertyType` → `{ "equals": "apartment" }`
+
+Task 7's integration tests load each `.expected.json` and walk it with a generic assertion helper so the fixture files, not the test code, drive the assertions.
 
 **How to verify:** All fixtures can be opened and read. Each contains the documented extractable data. The `.expected.json` files accurately reflect what's in each contract. Review the research sources and synthetic contract content for realism. Then dispatch `superpowers:code-reviewer` to review the fixtures and expected values for accuracy and realism.
 
@@ -280,10 +344,13 @@ The `generateObject` function takes a Zod schema (Task 2), a system prompt, and 
 
 **Where:**
 - Create `src/lib/contract-extraction/extract-contract.ts`
-- Install `ai` and `@ai-sdk/anthropic` dependencies
-- Add `ANTHROPIC_API_KEY` to `.env.local`
+- Install `ai` and `@ai-sdk/anthropic` dependencies (via `pnpm`, not `npm`)
 - Unit tests in `__tests__/extract-contract.test.ts`
 - Integration tests in `__tests__/extract-contract.integration.test.ts`
+
+**Required environment variables (the executor must pause and request human action if either is missing from `.env.local` — do not proceed silently):**
+- `ANTHROPIC_API_KEY` — required at runtime for `generateObject`. If missing, stop, tell the user exactly what to add, and wait for confirmation.
+- `CONTRACT_EXTRACTION_MODEL` — optional; defaults to `claude-sonnet-4-6`. If the user wants a different model (e.g., `claude-haiku-4-5-20251001` for cheaper experiments), they set this. Document both in `.env.example`. If the env var is present but empty or set to an unknown model string, stop and ask the user to confirm the value.
 
 **Implementation:**
 - `extractContract(input: ContractExtractionInput): Promise<ContractExtractionResponse>` — the public API (returns discriminated union: success with data or failure with error code)
@@ -291,8 +358,10 @@ The `generateObject` function takes a Zod schema (Task 2), a system prompt, and 
 - Uses `detectLanguage` (Task 4) to determine language
 - Selects the language-specific prompt (Task 6)
 - Calls `generateObject` from the AI SDK with the Zod schema (Task 2) and Anthropic provider
-- Model: start with Sonnet 4.6, configurable via parameter or env var
-- Combine the shared system prompt + language-specific prompt into the `system` parameter of `generateObject`. The contract text goes in `prompt`. This maximizes prompt caching — consecutive contracts in the same language get full cache hits on the instruction set, and the contract text (always unique) stays in the uncached `prompt` parameter
+- Model: read from `CONTRACT_EXTRACTION_MODEL` env var with default `claude-sonnet-4-6`. No per-call parameter override — one place, env-driven.
+- Combine the shared system prompt + language-specific prompt into the `system` parameter of `generateObject`. The contract text goes in `prompt`. This structure positions the stable instruction set for caching — system + language prompts are identical across contracts in the same language, and the contract text (always unique) stays in the uncached `prompt` parameter.
+- **Enable Anthropic prompt caching explicitly.** Vercel AI SDK passes Anthropic-specific options via `providerOptions`. Mark the system prompt as cacheable: `providerOptions: { anthropic: { cacheControl: { type: 'ephemeral' } } }` at the message level. Without this marker, no caching happens — the "prompt caching" claim is dead code. Consult `claude-api` skill for current syntax (the exact shape has moved between AI SDK versions; verify against the installed `ai` + `@ai-sdk/anthropic` versions).
+- Initial file-size check lives here (not in `extractText`): if `input.fileBuffer.byteLength > 10 * 1024 * 1024`, return `{ success: false, error: { code: 'file_too_large' } }` before any parsing.
 
 **Unit tests (fast, deterministic, no LLM calls) — `extract-contract.test.ts`:**
 
@@ -304,12 +373,11 @@ Pipeline flow (mock generateObject):
 - Bundled rent — when LLM returns an `includes` array (e.g., ["rent", "condo", "IPTU"]), it surfaces in the result
 
 Error code mapping (verify each failure returns the correct `ContractExtractionErrorCode`):
-- File exceeds 10MB → `file_too_large`
+- File exceeds 10MB → `file_too_large` (check happens in `extractContract` entry point, before any parsing)
 - Unsupported format (not PDF/DOCX) → `unsupported_format`
 - Corrupt file → `corrupt_file`
-- Scanned PDF (no text layer) → `scanned_document`
+- PDF with no text layer (scanned) OR DOCX with empty body → `no_text_extractable` (single code, collapsed in Task 2a)
 - Password protected file → `password_protected`
-- Valid file but no text content → `empty_content`
 - Empty/null/undefined input → `empty_file`
 - Unsupported language detected by franc → `unsupported_language` (returned before LLM call)
 - LLM returns `isRentalContract: false` → `not_a_contract` (extraction engine checks this field before returning the result)
@@ -354,6 +422,8 @@ Cross-cutting concerns:
 - **Bundled rent** — real contract bundles rent + condo + IPTU into one amount. Verify `includes` array is populated and the amount is the stated total (not decomposed).
 - **rawText populated** — verify the raw text is included in the result and contains the full document text (not truncated). Spot check a known phrase exists in the raw text.
 - **Currency formatting** — R$6.300,00 (PT-BR), $2,500.00 (EN), €1.200,00 or MXN (ES) → all correctly parsed to integer minor units.
+- **USD-denominated BR contract** — a Brazilian-property PT-BR contract where rent is stated in USD (valid real-world scenario for foreign tenants) should extract `currency: "USD"` and amount in USD cents. Verify extraction does not silently coerce to BRL. Add at least one synthetic fixture (or expected override) covering this case.
+- **Property type extraction** — verify the LLM returns one of the four enum values (apartment/house/commercial/other) and never a freeform string. For the real PT-BR fixture ("Sun Club"), assert `propertyType: "apartment"`.
 - **CPF formatting** — with dots/dashes (040.032.329-09) extracted and normalized consistently.
 - **Partial extraction** — contract missing some fields → those fields are null, others still extracted.
 - **Error cases** — corrupt file, empty file, non-contract document → graceful error, not crash.
@@ -374,11 +444,21 @@ Cross-cutting concerns:
 ### Task 8: Verification & Code Review
 
 1. Run the type checker, full test suite (unit + integration), and linter. Everything passes.
-2. Verify the rename is complete — grep for bare `BillExtractionResult` (not `BillExtractionResult` or `ContractExtractionResult`) in source files returns zero results.
-3. Verify all 13 fixture files (7 unique contract contents) produce correct extraction results (Task 7 integration tests).
-4. Verify partial extraction and error cases are handled.
-5. Review extraction accuracy — for the real PT-BR contract, manually verify every extracted field matches the contract content.
-6. Dispatch `superpowers:code-reviewer` against the spec's Contract Extraction section and the implementation.
-7. Address any findings and re-verify.
+2. Verify the rename is complete — grep for bare `ExtractionResult` (the pre-rename name) in source files returns zero results. The new names `BillExtractionResult` and `ContractExtractionResult` should be the only matches for their respective contexts.
+3. Verify the collapsed error code — grep for `scanned_document` and `empty_content` in source files returns zero results.
+4. Verify `propertyType` is wired end-to-end: Postgres enum migration exists, Supabase-generated types include it, Zod schema uses `z.enum([...])` with the four values, and the compile-time assertion in `schema.ts` compiles.
+5. Verify all 13 fixture files (7 unique contract contents) produce correct extraction results (Task 7 integration tests).
+6. Verify partial extraction and error cases are handled.
+7. Review extraction accuracy — for the real PT-BR contract, manually verify every extracted field matches the contract content.
+8. Dispatch `superpowers:code-reviewer` with explicit acceptance criteria:
+   - All 12 error codes (post-collapse) are enumerated in `types.ts` and every failure path in `extractContract` maps to exactly one of them — no arbitrary strings, no uncaught paths
+   - File-size check lives in `extractContract` (not `extractText`) and runs before any parsing
+   - `rawExtractedText` is populated on every success response with the full document text (not truncated)
+   - Partial extraction (fields returned as `null` by the LLM) passes through the pipeline without crashing — no non-null assertions on optional fields
+   - Anthropic prompt caching is wired via `providerOptions.anthropic.cacheControl` on the system message — verify the marker is actually present, not just mentioned in a comment
+   - No user-facing strings anywhere in error responses — error payload is `{ code: ContractExtractionErrorCode }` only
+   - `propertyType` returns from the LLM are always one of the four enum values, never freeform (Zod constraint proves this at runtime; compile-time assertion proves type alignment)
+   - Integration tests are excluded from the default `pnpm test` run and only execute under `pnpm test:llm`
+9. Address any findings and re-verify.
 
 **Do not commit.** Present results for user testing.

@@ -23,7 +23,7 @@ The persistence utility should be reusable — not coupled to property creation.
 
 **Contract PDF:** Since the contract is uploaded to Supabase Storage immediately in step 1, the persisted wizard state only stores a pointer to the uploaded file (storage path/ID), not the file itself.
 
-**Step transitions:** Steps slide in/out as the user progresses forward or goes back — slide left to advance, slide right to go back. Step 1 displays immediately on mount with no animation. This should be part of the reusable wizard infrastructure, not specific to property creation.
+**Step transitions:** Steps slide in/out as the user progresses forward or goes back — slide left to advance, slide right to go back. Step 1 displays immediately on mount with no animation. Adapt the existing `SlideIn`, `StepProgress`, and composable `PropertyForm` components at `src/app/app/(focused)/p/new/` — don't rebuild these primitives from scratch.
 
 **With contract:** Upload → Property details → Contract terms → Tenants → Expenses → CPF (if missing) → Bank account → Success
 
@@ -41,7 +41,7 @@ Two paths presented on one screen:
 
 **Alternate path:** "I don't have a contract" link/toggle. Skips extraction and enters a lighter manual flow (address form, manual rent/expenses optional, CPF if missing, bank account connection). Tenants are skipped.
 
-**After upload:** A polished "thinking..." overlay appears while extraction runs — the platform is "reading" the contract. Should include a smooth animation (e.g., document scanning effect, pulsing/morphing logo, or animated progress indicator) to make the wait feel intentional and premium. Keep it simple — if a polished animation is straightforward to build, include it in the first pass; if not, ship with a clean loading state and improve later. Once extraction completes, the wizard auto-advances to step 2. The user does not need to tap "Next."
+**After upload:** A polished loading state appears while extraction runs — the platform is "reading" the contract. The specific animation and voice are decided during UI implementation (Plan 2). Once extraction completes, the wizard auto-advances to step 2. The user does not need to tap "Next."
 
 **Going back to step 1:** From any subsequent step, the user can go back to step 1 to remove the contract or upload a new one. If the contract is removed or replaced:
 - The previous PDF is deleted from Supabase Storage
@@ -55,8 +55,8 @@ Two paths presented on one screen:
 
 Extracted from contract, all fields editable:
 
-- Property address (street, number, complement, neighborhood, city, state, CEP)
-- Property type or description (if extractable)
+- Property address (street, number, complement, neighborhood, city, state, postal code, country)
+- Property type — one of `apartment`, `house`, `commercial`, `other`. Stored as a Postgres enum (source of truth); TS type is generated from Supabase. Extracted and presented for verification. Metadata only — does not drive UX branching.
 
 From the address, the platform derives the region and looks up utility providers available in the system. This is used in step 5 for provider matching.
 
@@ -68,11 +68,11 @@ From the address, the platform derives the region and looks up utility providers
 
 Extracted from contract, all fields editable:
 
-- Rent amount and currency (BRL)
+- Rent amount (integer minor units), currency (ISO 4217), and due day of month
 - Contract start date
 - Contract end date
-- IPCA adjustment date(s) / adjustment frequency
-- Charge-related info (expense types, provider names/CNPJs, amounts, responsibility) — used to pre-populate step 5 (expenses)
+- Rent adjustment details — frequency (monthly/quarterly/biannual/annual/other), method (index/fixed amount/fixed percentage/other), index name if method is index (e.g., IPCA, CPI, IPC), value if fixed
+- Charge-related info (expense types, provider names/CNPJs) — used to pre-populate step 5 (expenses). Responsibility is not declared here; it's inferred from bills later (see Step 5).
 
 Rent is stored in a dedicated rent table (separate from charge definitions) because it is fundamentally different from expenses: defined by the contract, flows to the landlord, is the primary revenue metric, has IPCA adjustments, and payment detection works differently (incoming transfer to LL's bank).
 
@@ -121,24 +121,28 @@ Collected inline during property creation rather than as a separate onboarding f
 
 ### Step 7: Bank Account Connection
 
-**Strong nudge — this is critical infrastructure, not optional polish.**
+**This step is load-bearing for the product — not optional polish.** Automatic payment detection is the core value proposition for landlords; without the bank connection, the platform is a glorified spreadsheet. The step must communicate *why* (automation), *how* (Pluggy, read-only), and *make the LL feel safe* well enough that they actually connect. All three dimensions are requirements — voice, copy, and layout are chosen during Plan 2.
 
-Messaging should sell the value clearly:
-- "Connect your bank account so rent payments are detected automatically."
-- "Without this, you'll need to manually confirm every payment."
-- Emphasize what they GET (automatic payment detection, zero effort each month) not what we're asking for.
+**Required content (every item below must appear in the step — not in a tooltip, not collapsed):**
 
-**Trust and safety messaging:** The bank connection step must include clear, reassuring language about data usage. The user should feel 100% comfortable before connecting. Key points to communicate:
+*The why*
+- Automatic rent payment detection, zero effort each month
+- Without it, every payment must be manually confirmed
+
+*The how*
+- Pluggy Open Finance, OAuth consent flow
+- Read-only connection, can be disconnected at any time
+
+*The trust facts*
 - We only read transactions — we cannot move, transfer, or withdraw money
 - Your data is never sold to third parties
-- We use bank data solely to detect payments on your property
-- Connection is read-only and can be disconnected at any time
-- Your banking credentials and financial data are stored securely by Pluggy (our Open Finance partner), not on Mabenn's servers
+- Bank data is used solely to detect payments on your property
+- Banking credentials and financial data are stored securely by Pluggy, not on Mabenn's servers
 - Pluggy is regulated by the Central Bank of Brazil and compliant with Open Finance standards
-- Links to Pluggy's security and privacy documentation so users can verify for themselves
-- Link to Mabenn's privacy policy for full details
 
-This isn't fine print — it should be prominent and part of the flow, not buried in a tooltip. The implementation plan should research and include the correct Pluggy documentation URLs (privacy policy, security practices, user rights, LGPD compliance).
+*Verification links*
+- Pluggy's security and privacy documentation (URLs researched during Plan 2)
+- Mabenn's privacy policy
 
 **If already connected at user level:** "We see your [Bank Name] account — is this the right one for this property?" with option to confirm, pick a different connected account, or add a new one. **Planning note:** Verify with Pluggy's API whether we can retrieve connected account metadata (bank name, account details) to display here — this depends on what Pluggy exposes after the OAuth consent flow. Don't assume; confirm during planning.
 
@@ -179,11 +183,18 @@ Summary of what was set up:
 
 ### Rent (dedicated table)
 - Linked to property and contract
-- Amount, currency, due day of month
+- Amount (integer minor units), currency (ISO 4217), due day of month
 - `includes` — optional array of what the stated amount covers when bundled (e.g., ["rent", "condo", "IPTU"]). When present, the UI surfaces this to the landlord so they can decide whether to track bundled charges separately.
-- IPCA adjustment date(s) / frequency
+- Rent adjustment details — frequency, method (index / fixed_amount / fixed_percentage / other), index name if method is index, value if fixed
 - Contract start and end dates
 - Separate from charge definitions — rent is first-class
+- Data model is country/currency-agnostic. Brazil-first UI, but rent currency, tax ID types, state codes, and postal formats flow from the contract — not hardcoded. A BR landlord writing a USD-denominated contract (e.g., for a foreign tenant) is supported.
+
+### Property type
+- Stored as a Postgres enum: `apartment`, `house`, `commercial`, `other`
+- TypeScript type generated from Supabase (`pnpm supabase gen types --local`)
+- Extraction returns one of these values (or null if not extractable)
+- Metadata only — does not drive UX branching. Easy to extend later (`ALTER TYPE ADD VALUE`); start narrow.
 
 ### Charge definitions (expenses)
 - Linked to property
@@ -227,7 +238,8 @@ Summary of what was set up:
 ### Output
 - `ContractExtractionResponse` — a discriminated union: success with structured data, or failure with a typed error code
 - `isRentalContract` — boolean: the LLM classifies whether the document is a rental contract before extracting. If false, returns `not_a_contract` error.
-- Structured data covering: property address, rent (amount/currency/due day/`includes` — optional array of what the stated amount covers when charges are bundled, e.g. ["rent", "condo", "IPTU"]), contract start/end dates, IPCA adjustment dates, landlords (name/CPF/email), tenants (name/CPF/email), expenses/providers/CNPJs, language detected
+- Structured data covering: property address (street/number/complement/neighborhood/city/state/postal code/country), property type (enum: apartment/house/commercial/other), rent (amount in integer minor units/ISO 4217 currency/due day/`includes` array for bundled charges e.g. ["rent", "condo", "IPTU"]), contract start/end dates, rent adjustment (frequency/method/index name/value), landlords (name/tax ID/email), tenants (name/tax ID/email), expenses (type/provider name/provider tax ID), language detected
+- Data model is country-agnostic. Brazil-first UI, but extraction supports any ISO 4217 currency and non-BR tax ID formats (SSN, DNI, RFC, etc.).
 - Raw extracted text stored alongside structured data — used for future "chat with your contract" feature, re-extraction with improved prompts, and full-text search
 
 ### Extraction approach
@@ -341,3 +353,4 @@ All errors from the extraction engine are returned as strongly typed error codes
 | Document classification | LLM returns `isRentalContract` boolean | Better than null-field checking. LLM classifies before we return results. |
 | Bundled rent | Store stated amount + `includes` array | Don't decompose — user decides during wizard. Extraction captures what the contract says. |
 | Provider matching | Region + CNPJ/name, suggestion-based | Never auto-assign — always present for LL confirmation. Unmatched providers flagged for engineering |
+| Property type | Strongly typed Postgres enum (apartment/house/commercial/other); TS type generated from Supabase | DB is source of truth. Start narrow — adding values is one line, removing is migration pain. Metadata only, no UX branching |
