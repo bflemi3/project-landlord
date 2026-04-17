@@ -1,5 +1,5 @@
 import { anthropic } from '@ai-sdk/anthropic'
-import { APICallError, generateObject } from 'ai'
+import { APICallError, generateText, Output } from 'ai'
 import type { z } from 'zod'
 import { detectLanguage } from './language-detection'
 import { extractText, ExtractTextError, type ExtractTextErrorCode } from './extract-text'
@@ -11,6 +11,7 @@ import type {
   ContractExtractionErrorCode,
   ContractExtractionInput,
   ContractExtractionLlmResult,
+  ContractExtractionModelId,
   ContractExtractionOptions,
   ContractExtractionResponse,
   ContractParty,
@@ -22,7 +23,7 @@ import type {
 type LlmRaw = z.infer<typeof contractExtractionLlmSchema>
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
-const DEFAULT_MODEL = 'claude-sonnet-4-6'
+const DEFAULT_MODEL: ContractExtractionModelId = 'claude-sonnet-4-6'
 const DEFAULT_TIMEOUT_MS = 120_000
 
 /**
@@ -58,8 +59,9 @@ function isRateLimitError(error: unknown): boolean {
 }
 
 /**
- * Detect an abort (timeout). Both user-signaled aborts and the SDK's
- * AbortError land here — `AbortError` name or a DOMException with `ABORT_ERR`.
+ * Detect an abort (timeout). Matches on `error.name` — Node 20+ abort
+ * signals throw an Error with `name === 'AbortError'`, and the SDK's own
+ * timeout path surfaces as `TimeoutError`.
  */
 function isAbortError(error: unknown): boolean {
   if (!(error instanceof Error)) return false
@@ -109,17 +111,19 @@ function normalizeRent(raw: LlmRaw['rent']): ContractRent | null {
   }
   return {
     amount: raw.amount,
-    currency: currency ?? '',
+    currency,
     dueDay: raw.dueDay,
-    includes: arrOrNull(raw.includes),
+    includes: raw.includes,
   }
 }
 
-function normalizeContractDates(raw: LlmRaw['contractDates']): { start: string; end: string } | null {
+function normalizeContractDates(
+  raw: LlmRaw['contractDates'],
+): { start: string | null; end: string | null } | null {
   const start = strOrNull(raw.start)
   const end = strOrNull(raw.end)
   if (!start && !end) return null
-  return { start: start ?? '', end: end ?? '' }
+  return { start, end }
 }
 
 function normalizeRentAdjustment(
@@ -144,6 +148,8 @@ function normalizeParty(raw: LlmRaw['landlords'][number]): ContractParty | null 
 }
 
 function normalizeParties(raw: LlmRaw['landlords']): ContractParty[] | null {
+  // Drop fully-empty parties so callers don't get placeholder entries; fall
+  // back to null when every party was empty.
   const parties = raw.map(normalizeParty).filter((p): p is ContractParty => p != null)
   return arrOrNull(parties)
 }
@@ -252,12 +258,14 @@ export async function extractContract(
   const timeoutHandle = setTimeout(() => abortController.abort(), DEFAULT_TIMEOUT_MS)
 
   let llmResult: ContractExtractionLlmResult
-  let usage: Awaited<ReturnType<typeof generateObject>>['usage'] | undefined
+  let usage: Awaited<ReturnType<typeof generateText>>['usage'] | undefined
   const startedAt = Date.now()
   try {
-    const result = await generateObject({
+    const result = await generateText({
       model: anthropic(modelId),
-      schema: contractExtractionLlmSchema,
+      // Structured-output spec — replaces the deprecated `generateObject`.
+      // `result.output` is the parsed, schema-validated object.
+      output: Output.object({ schema: contractExtractionLlmSchema }),
       // System as a SystemModelMessage so the anthropic ephemeral cache marker
       // attaches at message level — top-level `providerOptions` only sets
       // call-level flags, not per-message cache breakpoints.
@@ -273,7 +281,7 @@ export async function extractContract(
       prompt: rawText,
       abortSignal: abortController.signal,
     })
-    llmResult = normalizeLlmOutput(result.object)
+    llmResult = normalizeLlmOutput(result.output)
     usage = result.usage
   } catch (err) {
     clearTimeout(timeoutHandle)

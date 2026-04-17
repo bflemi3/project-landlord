@@ -33,7 +33,7 @@ function makeValidResult(): ContractExtractionResult {
       amount: 250000,
       currency: 'BRL',
       dueDay: 5,
-      includes: null,
+      includes: [],
     },
     contractDates: {
       start: '2026-01-01',
@@ -152,7 +152,7 @@ describe('contractExtractionResultSchema', () => {
         amount: 150000,
         currency: 'BRL',
         dueDay: null,
-        includes: null,
+        includes: [],
       },
       contractDates: null,
       rentAdjustment: null,
@@ -234,13 +234,21 @@ describe('contractExtractionResultSchema', () => {
     expect(parsed.expenses?.[0]?.type).toBeNull()
   })
 
-  it('accepts rent without includes array', () => {
+  it('accepts rent with empty includes array (no bundling info)', () => {
+    const result = {
+      ...validResult,
+      rent: { amount: 200000, currency: 'BRL', dueDay: 10, includes: [] },
+    }
+    const parsed = contractExtractionResultSchema.parse(result)
+    expect(parsed.rent?.includes).toEqual([])
+  })
+
+  it('rejects null includes (empty array is the sentinel for "no bundling info")', () => {
     const result = {
       ...validResult,
       rent: { amount: 200000, currency: 'BRL', dueDay: 10, includes: null },
     }
-    const parsed = contractExtractionResultSchema.parse(result)
-    expect(parsed.rent?.includes).toBeNull()
+    expect(() => contractExtractionResultSchema.parse(result)).toThrow()
   })
 })
 

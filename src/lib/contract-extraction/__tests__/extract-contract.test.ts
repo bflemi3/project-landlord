@@ -7,13 +7,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // themselves must be declared with `vi.hoisted` to be reachable from the
 // factory bodies.
 //
-// We intercept generateObject so unit tests never hit the LLM, and mock
+// We intercept generateText so unit tests never hit the LLM, and mock
 // extractText / detectLanguage so failure-path mapping can be driven directly
 // (avoids needing fixture buffers for every error code).
 // ---------------------------------------------------------------------------
 
-const { generateObjectMock, extractTextMock, detectLanguageMock } = vi.hoisted(() => ({
-  generateObjectMock: vi.fn(),
+const { generateTextMock, extractTextMock, detectLanguageMock } = vi.hoisted(() => ({
+  generateTextMock: vi.fn(),
   extractTextMock: vi.fn<(buf: unknown) => Promise<string>>(),
   detectLanguageMock: vi.fn<(text: string | null | undefined) => 'pt-br' | 'en' | 'es' | null>(),
 }))
@@ -24,7 +24,7 @@ vi.mock('ai', async () => {
   const actual = await vi.importActual<typeof import('ai')>('ai')
   return {
     ...actual,
-    generateObject: generateObjectMock,
+    generateText: generateTextMock,
   }
 })
 
@@ -131,7 +131,7 @@ beforeEach(() => {
   // Default mocks — happy path. Individual tests override.
   extractTextMock.mockResolvedValue('Full extracted contract text goes here.')
   detectLanguageMock.mockReturnValue('pt-br')
-  generateObjectMock.mockResolvedValue({ object: validLlmRawOutput() })
+  generateTextMock.mockResolvedValue({ output: validLlmRawOutput() })
 })
 
 afterEach(() => {
@@ -148,7 +148,7 @@ afterEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('extractContract — pipeline', () => {
-  it('extracts text, detects language, picks the prompt, calls generateObject, returns typed result', async () => {
+  it('extracts text, detects language, picks the prompt, calls generateText, returns typed result', async () => {
     extractTextMock.mockResolvedValue('Some extracted contract text')
     detectLanguageMock.mockReturnValue('pt-br')
 
@@ -159,12 +159,12 @@ describe('extractContract — pipeline', () => {
 
     expect(extractTextMock).toHaveBeenCalledTimes(1)
     expect(detectLanguageMock).toHaveBeenCalledWith('Some extracted contract text')
-    expect(generateObjectMock).toHaveBeenCalledTimes(1)
+    expect(generateTextMock).toHaveBeenCalledTimes(1)
 
-    const args = generateObjectMock.mock.calls[0][0] as {
+    const args = generateTextMock.mock.calls[0][0] as {
       system: Array<{ role: string; content: string; providerOptions?: unknown }>
       prompt: string
-      schema: unknown
+      output: unknown
       abortSignal?: AbortSignal
     }
 
@@ -175,8 +175,8 @@ describe('extractContract — pipeline', () => {
     expect(args.system[0].role).toBe('system')
     expect(args.system[0].content).toContain(systemPrompt)
     expect(args.system[0].content).toContain(ptBrPrompt)
-    // Schema is wired through.
-    expect(args.schema).toBeDefined()
+    // Structured-output spec is wired through (replaces deprecated generateObject).
+    expect(args.output).toBeDefined()
 
     // Engine-produced fields are populated on the way back.
     expect(response.data.languageDetected).toBe('pt-br')
@@ -187,7 +187,7 @@ describe('extractContract — pipeline', () => {
   it('attaches Anthropic cacheControl on the system message for prompt caching', async () => {
     await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
 
-    const args = generateObjectMock.mock.calls[0][0] as {
+    const args = generateTextMock.mock.calls[0][0] as {
       system: Array<{ providerOptions?: { anthropic?: { cacheControl?: { type: string } } } }>
     }
     expect(args.system[0].providerOptions?.anthropic?.cacheControl).toEqual({ type: 'ephemeral' })
@@ -195,7 +195,7 @@ describe('extractContract — pipeline', () => {
 
   it('passes an abort signal for timeout handling', async () => {
     await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
-    const args = generateObjectMock.mock.calls[0][0] as { abortSignal?: AbortSignal }
+    const args = generateTextMock.mock.calls[0][0] as { abortSignal?: AbortSignal }
     expect(args.abortSignal).toBeInstanceOf(AbortSignal)
   })
 })
@@ -212,7 +212,7 @@ describe('extractContract — prompt selection', () => {
   ] as const)('uses the %s prompt when language is %s', async (language, expectedPrompt) => {
     detectLanguageMock.mockReturnValue(language)
     await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
-    const args = generateObjectMock.mock.calls[0][0] as {
+    const args = generateTextMock.mock.calls[0][0] as {
       system: Array<{ content: string }>
     }
     expect(args.system[0].content).toContain(expectedPrompt)
@@ -225,8 +225,8 @@ describe('extractContract — prompt selection', () => {
 
 describe('extractContract — result shape', () => {
   it('collapses all-sentinel LLM output back to null fields', async () => {
-    generateObjectMock.mockResolvedValue({
-      object: validLlmRawOutput({
+    generateTextMock.mockResolvedValue({
+      output: validLlmRawOutput({
         address: emptyAddress,
         rent: emptyRent,
         contractDates: emptyContractDates,
@@ -250,8 +250,8 @@ describe('extractContract — result shape', () => {
   })
 
   it('round-trips bundled rent `includes` array', async () => {
-    generateObjectMock.mockResolvedValue({
-      object: validLlmRawOutput({
+    generateTextMock.mockResolvedValue({
+      output: validLlmRawOutput({
         rent: { amount: 630000, currency: 'BRL', dueDay: 5, includes: ['rent', 'condo', 'IPTU'] },
       }),
     })
@@ -284,13 +284,13 @@ describe('extractContract — result shape', () => {
     await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     // The anthropic provider constructs a model from the id; the call's
     // `model` field is a LanguageModel instance, so verify modelId on it.
-    const args = generateObjectMock.mock.calls[0][0] as { model: { modelId?: string } }
+    const args = generateTextMock.mock.calls[0][0] as { model: { modelId?: string } }
     expect(args.model.modelId).toBe('claude-haiku-4-5-20251001')
   })
 
   it('defaults to claude-sonnet-4-6 when the env var is unset', async () => {
     await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
-    const args = generateObjectMock.mock.calls[0][0] as { model: { modelId?: string } }
+    const args = generateTextMock.mock.calls[0][0] as { model: { modelId?: string } }
     expect(args.model.modelId).toBe('claude-sonnet-4-6')
   })
 })
@@ -301,8 +301,8 @@ describe('extractContract — result shape', () => {
 
 describe('extractContract — telemetry', () => {
   it('invokes onTelemetry with the usage breakdown on success', async () => {
-    generateObjectMock.mockResolvedValue({
-      object: validLlmRawOutput(),
+    generateTextMock.mockResolvedValue({
+      output: validLlmRawOutput(),
       usage: {
         inputTokens: 4200,
         outputTokens: 550,
@@ -332,7 +332,7 @@ describe('extractContract — telemetry', () => {
   })
 
   it('does not fire onTelemetry on error paths', async () => {
-    generateObjectMock.mockRejectedValue(new Error('boom'))
+    generateTextMock.mockRejectedValue(new Error('boom'))
     const calls: unknown[] = []
     const response = await extractContract(
       { fileBuffer: validBuffer(), fileType: 'pdf' },
@@ -343,8 +343,8 @@ describe('extractContract — telemetry', () => {
   })
 
   it('swallows onTelemetry callback errors so they cannot break extraction', async () => {
-    generateObjectMock.mockResolvedValue({
-      object: validLlmRawOutput(),
+    generateTextMock.mockResolvedValue({
+      output: validLlmRawOutput(),
       usage: { inputTokens: 100, outputTokens: 50, inputTokenDetails: {} },
     })
     const response = await extractContract(
@@ -360,62 +360,6 @@ describe('extractContract — telemetry', () => {
 })
 
 // ---------------------------------------------------------------------------
-// Telemetry
-// ---------------------------------------------------------------------------
-
-describe('extractContract — telemetry', () => {
-  it('invokes onTelemetry with usage, cache breakdown, model, language, and duration on success', async () => {
-    generateObjectMock.mockResolvedValue({
-      object: validLlmRawOutput(),
-      usage: {
-        inputTokens: 3800,
-        outputTokens: 450,
-        inputTokenDetails: {
-          noCacheTokens: 200,
-          cacheReadTokens: 0,
-          cacheWriteTokens: 3600,
-        },
-      },
-    })
-    detectLanguageMock.mockReturnValue('pt-br')
-
-    const onTelemetry = vi.fn()
-    await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' }, { onTelemetry })
-
-    expect(onTelemetry).toHaveBeenCalledTimes(1)
-    const payload = onTelemetry.mock.calls[0][0]
-    expect(payload).toMatchObject({
-      inputTokens: 3800,
-      outputTokens: 450,
-      cacheWriteTokens: 3600,
-      cacheReadTokens: 0,
-      modelId: 'claude-sonnet-4-6',
-      language: 'pt-br',
-    })
-    expect(typeof payload.durationMs).toBe('number')
-    expect(payload.durationMs).toBeGreaterThanOrEqual(0)
-  })
-
-  it('does not throw if the callback throws', async () => {
-    const onTelemetry = vi.fn(() => {
-      throw new Error('boom')
-    })
-    const response = await extractContract(
-      { fileBuffer: validBuffer(), fileType: 'pdf' },
-      { onTelemetry },
-    )
-    expect(response.success).toBe(true)
-  })
-
-  it('does not invoke onTelemetry on error paths', async () => {
-    extractTextMock.mockRejectedValue(new ExtractTextError('corrupt_file'))
-    const onTelemetry = vi.fn()
-    await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' }, { onTelemetry })
-    expect(onTelemetry).not.toHaveBeenCalled()
-  })
-})
-
-// ---------------------------------------------------------------------------
 // Error-code mapping
 // ---------------------------------------------------------------------------
 
@@ -426,7 +370,7 @@ describe('extractContract — error mapping', () => {
     expect(response).toEqual({ success: false, error: { code: 'file_too_large' } })
     // No downstream calls when the size guard trips.
     expect(extractTextMock).not.toHaveBeenCalled()
-    expect(generateObjectMock).not.toHaveBeenCalled()
+    expect(generateTextMock).not.toHaveBeenCalled()
   })
 
   it('returns empty_file for a zero-byte buffer', async () => {
@@ -472,19 +416,19 @@ describe('extractContract — error mapping', () => {
     extractTextMock.mockRejectedValue(new ExtractTextError(code))
     const response = await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     expect(response).toEqual({ success: false, error: { code } })
-    expect(generateObjectMock).not.toHaveBeenCalled()
+    expect(generateTextMock).not.toHaveBeenCalled()
   })
 
   it('returns unsupported_language when detectLanguage returns null', async () => {
     detectLanguageMock.mockReturnValue(null)
     const response = await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     expect(response).toEqual({ success: false, error: { code: 'unsupported_language' } })
-    expect(generateObjectMock).not.toHaveBeenCalled()
+    expect(generateTextMock).not.toHaveBeenCalled()
   })
 
   it('returns not_a_contract when the LLM returns isRentalContract: false', async () => {
-    generateObjectMock.mockResolvedValue({
-      object: validLlmRawOutput({
+    generateTextMock.mockResolvedValue({
+      output: validLlmRawOutput({
         isRentalContract: false,
         propertyType: null,
         address: emptyAddress,
@@ -500,14 +444,14 @@ describe('extractContract — error mapping', () => {
     expect(response).toEqual({ success: false, error: { code: 'not_a_contract' } })
   })
 
-  it('returns extraction_failed when generateObject throws a generic Error', async () => {
-    generateObjectMock.mockRejectedValue(new Error('network blew up'))
+  it('returns extraction_failed when generateText throws a generic Error', async () => {
+    generateTextMock.mockRejectedValue(new Error('network blew up'))
     const response = await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     expect(response).toEqual({ success: false, error: { code: 'extraction_failed' } })
   })
 
   it('returns extraction_timeout when the call is aborted', async () => {
-    generateObjectMock.mockImplementation(() => {
+    generateTextMock.mockImplementation(() => {
       const abortErr = new Error('aborted')
       abortErr.name = 'AbortError'
       return Promise.reject(abortErr)
@@ -516,8 +460,8 @@ describe('extractContract — error mapping', () => {
     expect(response).toEqual({ success: false, error: { code: 'extraction_timeout' } })
   })
 
-  it('returns rate_limited when generateObject throws an APICallError with 429', async () => {
-    generateObjectMock.mockRejectedValue(
+  it('returns rate_limited when generateText throws an APICallError with 429', async () => {
+    generateTextMock.mockRejectedValue(
       new APICallError({
         message: 'rate limit exceeded',
         url: 'https://api.anthropic.com/v1/messages',
@@ -532,7 +476,7 @@ describe('extractContract — error mapping', () => {
 
   it('returns rate_limited when error message signals rate limiting', async () => {
     const err = new Error('Request failed: rate_limit_error (429)')
-    generateObjectMock.mockRejectedValue(err)
+    generateTextMock.mockRejectedValue(err)
     const response = await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     expect(response).toEqual({ success: false, error: { code: 'rate_limited' } })
   })

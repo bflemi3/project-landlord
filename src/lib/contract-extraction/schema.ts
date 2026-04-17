@@ -12,7 +12,7 @@ import type {
  *
  * There are two schema layers here:
  *
- * 1. `contractExtractionLlmSchema` — the schema passed to `generateObject`.
+ * 1. `contractExtractionLlmSchema` — the schema passed to `Output.object({ schema })` in `generateText`.
  *    Uses sentinel values (empty string "" / empty array []) instead of
  *    `.nullable()` on most fields. Why: Anthropic's structured-output endpoint
  *    caps schemas at 16 parameters with union types (each `.nullable()` emits
@@ -151,7 +151,7 @@ const propertyTypeSchema = z
   )
 
 // ---------------------------------------------------------------------------
-// LLM schema — passed to generateObject
+// LLM schema — passed to Output.object({ schema }) in generateText
 //
 // Union-typed field count: propertyType, rent.dueDay, rentAdjustment (top),
 // rentAdjustment.frequency, rentAdjustment.method, rentAdjustment.value,
@@ -201,19 +201,20 @@ const contractRentSchema = z.object({
   amount: z.number().refine((n) => Number.isInteger(n) && n >= 0, {
     message: 'amount must be a non-negative integer (minor units)',
   }),
-  currency: z.string(),
+  currency: z.string().nullable(),
   dueDay: z
     .number()
     .refine((n) => Number.isInteger(n) && n >= 1 && n <= 31, {
       message: 'dueDay must be an integer between 1 and 31',
     })
     .nullable(),
-  includes: z.array(z.string()).nullable(),
+  // Always an array — empty means "no bundling info", not "field absent".
+  includes: z.array(z.string()),
 })
 
 const contractDatesSchema = z.object({
-  start: z.string(),
-  end: z.string(),
+  start: z.string().nullable(),
+  end: z.string().nullable(),
 })
 
 const contractRentAdjustmentSchema = z.object({

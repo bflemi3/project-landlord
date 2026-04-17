@@ -3,7 +3,7 @@
  *
  * ContractExtractionResult is the structured output from LLM-based
  * contract parsing. The matching Zod schema in schema.ts is used by
- * Vercel AI SDK's generateObject to guarantee this shape.
+ * Vercel AI SDK's generateText + Output.object to guarantee this shape.
  *
  * Money is always integer minor units (e.g., centavos, cents). Never floating point.
  */
@@ -54,19 +54,23 @@ export interface ContractAddress {
 export interface ContractRent {
   /** Integer minor units (e.g., centavos, cents). Never floating point. */
   amount: number
-  /** ISO 4217 currency code */
-  currency: string
+  /** ISO 4217 currency code. Null when the contract's currency is undeterminable. */
+  currency: string | null
   /** Day of month (1-31) */
   dueDay: number | null
-  /** What the stated amount covers, e.g. ["rent", "condo", "IPTU"] */
-  includes: string[] | null
+  /**
+   * What the stated amount covers, e.g. ["rent", "condo", "IPTU"]. Always an
+   * array — an empty array means the contract doesn't itemize what rent bundles
+   * (treat as "rent only"), not "field is absent".
+   */
+  includes: string[]
 }
 
 export interface ContractDates {
-  /** ISO date string YYYY-MM-DD */
-  start: string
-  /** ISO date string YYYY-MM-DD */
-  end: string
+  /** ISO date string YYYY-MM-DD. Null if the contract doesn't state a start date. */
+  start: string | null
+  /** ISO date string YYYY-MM-DD. Null if the contract doesn't state an end date. */
+  end: string | null
 }
 
 export type RentAdjustmentFrequency = 'monthly' | 'quarterly' | 'biannual' | 'annual' | 'other'
@@ -108,7 +112,7 @@ export interface ContractExpense {
 }
 
 /**
- * LLM-produced fields only — the shape returned by generateObject.
+ * LLM-produced fields only — the shape returned by generateText + Output.object.
  * Does NOT include engine-produced fields (languageDetected, rawExtractedText).
  */
 export interface ContractExtractionLlmResult {
@@ -142,8 +146,31 @@ export interface ContractExtractionResult extends ContractExtractionLlmResult {
 
 export interface ContractExtractionInput {
   fileBuffer: Buffer
+  /**
+   * Advisory — the engine does not read this field. `extractText` detects
+   * the format from the buffer's magic bytes (`%PDF-` for PDFs, the PK zip
+   * header + `word/` entry for DOCX). Kept in the public API as a hint for
+   * callers who already know the format from an upload's MIME type; mismatches
+   * between `fileType` and the actual content are resolved in favor of the
+   * content.
+   */
   fileType: 'pdf' | 'docx'
 }
+
+// ---------------------------------------------------------------------------
+// Models — typed default, free-form env override
+//
+// The default is the model we've calibrated the cost/accuracy envelope
+// against (see fixtures/README.md for the most recent numbers). Adding a
+// new model to this union is a signal that it's been calibrated; the
+// CONTRACT_EXTRACTION_MODEL env var accepts any string so an engineer can
+// try a new model locally before committing it to the union.
+// ---------------------------------------------------------------------------
+
+export type ContractExtractionModelId =
+  | 'claude-sonnet-4-6'
+  | 'claude-haiku-4-5-20251001'
+  | 'claude-opus-4-7'
 
 // ---------------------------------------------------------------------------
 // Telemetry — surfaced via optional onTelemetry callback, not part of the

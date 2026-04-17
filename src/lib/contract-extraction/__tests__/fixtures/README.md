@@ -133,6 +133,32 @@ Task 7's integration-test helper walks the expected tree, recurses into
 nested objects, and dispatches on the assertion-spec shape at each leaf. Task
 7 owns accent stripping / case folding; the fixture files are pure data.
 
+## Cost envelope (Claude Sonnet 4.6, calibrated 2026-04-17)
+
+Full 14-fixture matrix (7 stems × PDF + DOCX) against `claude-sonnet-4-6`:
+
+| Metric                | Value                 |
+| --------------------- | --------------------- |
+| Total cost (USD)      | ~$0.58                |
+| Per-fixture avg       | ~$0.041               |
+| Per-fixture duration  | ~7.3s                 |
+| Input tokens (total)  | ~134k                 |
+| Output tokens (total) | ~6k                   |
+| Cache reads (total)   | ~89k (~66% of inputs) |
+| Cache writes (total)  | ~15k (first call per language prompt) |
+
+Anthropic prompt caching is wired via `providerOptions.anthropic.cacheControl`
+on the system message — the first fixture per language pays the cache write
+(input rate × 1.25) and every subsequent fixture in the same language reads
+the cached system + language prompt (input rate × 0.1). A regression here
+shows up as cache_read dropping to zero while input token count stays high.
+
+Use these numbers as a trip-wire: if a future `pnpm test:llm` run reports
+substantially higher per-fixture cost, check for (a) bigger prompts causing
+extra input tokens, (b) broken cache markers dropping the 10x discount, or
+(c) models returning more output tokens than the ~400 typical for a
+well-structured contract.
+
 ### Example (partial)
 
 ```json

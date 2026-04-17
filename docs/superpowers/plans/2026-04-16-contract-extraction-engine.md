@@ -449,22 +449,22 @@ Cross-cutting concerns:
 
 ### Task 8: Verification & Code Review
 
-1. Run the type checker, full test suite (unit + integration), and linter. Everything passes.
-2. Verify the rename is complete — grep for bare `ExtractionResult` (the pre-rename name) in source files returns zero results. The new names `BillExtractionResult` and `ContractExtractionResult` should be the only matches for their respective contexts.
-3. Verify the collapsed error code — grep for `scanned_document` and `empty_content` in source files returns zero results.
-4. Verify `propertyType` is wired end-to-end: Postgres enum migration exists, Supabase-generated types include it, Zod schema uses `z.enum([...])` with the four values, and the compile-time assertion in `schema.ts` compiles.
-5. Verify all 13 fixture files (7 unique contract contents) produce correct extraction results (Task 7 integration tests).
-6. Verify partial extraction and error cases are handled.
-7. Review extraction accuracy — for the real PT-BR contract, manually verify every extracted field matches the contract content.
-8. Dispatch `superpowers:code-reviewer` with explicit acceptance criteria:
+1. **Type, test, lint pass.** `pnpm exec tsc --noEmit` succeeds for contract-extraction files (pre-existing errors elsewhere in the repo do not count). `pnpm test` (unit) and `pnpm test:llm` (integration) green. `pnpm lint` green.
+2. **`propertyType` is wired end-to-end.** Postgres enum migration exists, Supabase-generated types include it, Zod schema uses `z.enum([...])` with the four values, and the compile-time drift assertion in `schema.ts` compiles (same check for `expense_type`).
+3. **Partial-extraction and error paths are hit by tests.** Spot-check `extract-contract.test.ts` covers: every error code in `ContractExtractionErrorCode`, the `isRentalContract: false` short-circuit, all-null LLM output collapsing cleanly to null fields, and the telemetry swallow-errors path.
+4. **Manually review the real PT-BR fixture.** Run extraction once against `pt-br-real.pdf`, dump `response.data` to stdout, open `pt-br-real.pdf` (or the raw extracted text) side by side, and walk every populated field — plus every `null` — confirming it matches the contract. The assertion DSL tolerates `contains`/`normalizedEquals` matches, which can let hallucinated fragments of a string through; this step is the check the DSL doesn't do.
+5. **Confirm Anthropic prompt caching is actually hitting in practice.** The Task 7 integration run logged `cache_r=7481` on the second ES fixture and similar values across the matrix — caching works, not just the marker being present. Verify the cached-token counts in the most recent `pnpm test:llm` run and record the numbers in the PR description (or here) so a future regression in cache hit rate is detectable.
+6. **Record the cost envelope.** Full 14-fixture matrix ran at ~$0.58 total, ~$0.04 per fixture, ~7s per fixture. Note this in the fixtures `README.md` so a future ballooning (bigger prompt, cache misses, bigger `max_tokens`) shows up as an obvious regression.
+7. **Dispatch `superpowers:code-reviewer` with explicit acceptance criteria:**
    - All 12 error codes (post-collapse) are enumerated in `types.ts` and every failure path in `extractContract` maps to exactly one of them — no arbitrary strings, no uncaught paths
    - File-size check lives in `extractContract` (not `extractText`) and runs before any parsing
    - `rawExtractedText` is populated on every success response with the full document text (not truncated)
    - Partial extraction (fields returned as `null` by the LLM) passes through the pipeline without crashing — no non-null assertions on optional fields
-   - Anthropic prompt caching is wired via `providerOptions.anthropic.cacheControl` on the system message — verify the marker is actually present, not just mentioned in a comment
+   - Anthropic prompt caching is wired via `providerOptions.anthropic.cacheControl` on the system message — verify the marker is present AND the integration-test cache-read counts demonstrate it's firing
    - No user-facing strings anywhere in error responses — error payload is `{ code: ContractExtractionErrorCode }` only
    - `propertyType` returns from the LLM are always one of the four enum values, never freeform (Zod constraint proves this at runtime; compile-time assertion proves type alignment)
    - Integration tests are excluded from the default `pnpm test` run and only execute under `pnpm test:llm`
-9. Address any findings and re-verify.
+   - **Sentinel boundary is lossless.** The LLM schema uses sentinels (`""`, `[]`, `"none"`) that `normalizeLlmOutput()` converts back to `null`. Sanity-check every sentinel-to-null conversion: could a real contract legitimately contain the sentinel as a real value? E.g., can a person's `name` literally be `""` in any valid extraction, or an expense's `bundledInto` literally be the string `"none"`? If yes, the conversion is lossy and needs a different marker.
+8. Address any findings and re-verify.
 
 **Do not commit.** Present results for user testing.
