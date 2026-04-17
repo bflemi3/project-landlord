@@ -142,7 +142,7 @@ export const contractExtractionLlmSchema = z.object({
   contractDates: contractDatesSchema.nullable().describe('Contract start and end dates'),
   rentAdjustment: contractRentAdjustmentSchema
     .nullable()
-    .describe('Rent adjustment clause (IPCA in Brazil, CPI in US, IPC in Spain/Mexico)'),
+    .describe('How rent changes over time, if the contract specifies. Null if the contract is silent on adjustment — do not assume a default. See the inner fields for the adjustment method, frequency, and value.'),
   landlords: z
     .array(contractPartySchema)
     .nullable()
