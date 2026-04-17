@@ -1,0 +1,54 @@
+{
+  "isRentalContract": { "equals": true },
+  "languageDetected": { "equals": "en" },
+  "propertyType": { "equals": "apartment" },
+  "address": {
+    "street": { "contains": "Sunset" },
+    "number": { "equals": "3400" },
+    "complement": { "contains": "506" },
+    "city": { "normalizedEquals": "los angeles" },
+    "state": { "contains": "CA" },
+    "postalCode": { "contains": "90026" },
+    "country": { "notNull": true }
+  },
+  "rent": {
+    "amount": { "equals": 240000 },
+    "currency": { "equals": "USD" },
+    "dueDay": { "equals": 1 }
+  },
+  "contractDates": {
+    "start": { "equals": "2026-04-01" },
+    "end": { "equals": "2027-03-31" }
+  },
+  "rentAdjustment": {
+    "frequency": { "equals": "annual" },
+    "method": { "equals": "index" },
+    "indexName": { "contains": "CPI" }
+  },
+  "landlords": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "john smith" },
+        "taxId": { "contains": "123-45-6789" }
+      }
+    ]
+  },
+  "tenants": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "emily carter" },
+        "taxId": { "contains": "987-65-4321" }
+      }
+    ]
+  },
+  "expenses": {
+    "minLength": 3,
+    "items": [
+      { "type": { "normalizedEquals": "electricity" } },
+      { "type": { "normalizedEquals": "gas" } },
+      { "type": { "normalizedEquals": "water" } }
+    ]
+  }
+}

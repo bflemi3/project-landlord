@@ -1,0 +1,55 @@
+{
+  "isRentalContract": { "equals": true },
+  "languageDetected": { "equals": "pt-br" },
+  "propertyType": { "equals": "apartment" },
+  "address": {
+    "street": { "contains": "Campeche" },
+    "number": { "equals": "533" },
+    "complement": { "contains": "5127" },
+    "neighborhood": { "normalizedEquals": "campeche" },
+    "city": { "normalizedEquals": "florianopolis" },
+    "state": { "contains": "SC" },
+    "postalCode": { "contains": "88063-300" },
+    "country": { "notNull": true }
+  },
+  "rent": {
+    "amount": { "equals": 630000 },
+    "currency": { "equals": "BRL" },
+    "dueDay": { "equals": 5 },
+    "includes": { "notNull": true }
+  },
+  "contractDates": {
+    "start": { "equals": "2026-02-28" },
+    "end": { "equals": "2026-12-15" }
+  },
+  "rentAdjustment": { "isNull": true },
+  "landlords": {
+    "length": 2,
+    "items": [
+      {
+        "name": { "normalizedEquals": "alex amorim anton" },
+        "taxId": { "contains": "040.032.329-09" }
+      },
+      {
+        "name": { "normalizedEquals": "daiana paula stolf" },
+        "taxId": { "contains": "008.899.229-26" }
+      }
+    ]
+  },
+  "tenants": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "brandon flemming" }
+      }
+    ]
+  },
+  "expenses": {
+    "minLength": 3,
+    "items": [
+      { "type": { "contains": "IPTU" } },
+      { "type": { "normalizedEquals": "agua" } },
+      { "type": { "normalizedEquals": "gas" } }
+    ]
+  }
+}

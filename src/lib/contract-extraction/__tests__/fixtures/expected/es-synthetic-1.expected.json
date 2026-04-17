@@ -1,0 +1,55 @@
+{
+  "isRentalContract": { "equals": true },
+  "languageDetected": { "equals": "es" },
+  "propertyType": { "equals": "apartment" },
+  "address": {
+    "street": { "contains": "Nuevo León" },
+    "number": { "equals": "247" },
+    "complement": { "contains": "8" },
+    "neighborhood": { "normalizedEquals": "hipodromo condesa" },
+    "city": { "normalizedEquals": "ciudad de mexico" },
+    "state": { "normalizedEquals": "ciudad de mexico" },
+    "postalCode": { "contains": "06100" },
+    "country": { "notNull": true }
+  },
+  "rent": {
+    "amount": { "equals": 1850000 },
+    "currency": { "equals": "MXN" },
+    "dueDay": { "equals": 5 }
+  },
+  "contractDates": {
+    "start": { "equals": "2026-05-01" },
+    "end": { "equals": "2027-04-30" }
+  },
+  "rentAdjustment": {
+    "frequency": { "equals": "annual" },
+    "method": { "equals": "index" },
+    "indexName": { "contains": "INPC" }
+  },
+  "landlords": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "carlos eduardo martinez ramirez" },
+        "taxId": { "contains": "MARC-850712-H24" }
+      }
+    ]
+  },
+  "tenants": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "sofia alejandra gomez herrera" },
+        "taxId": { "contains": "GOHS-920318-KL4" }
+      }
+    ]
+  },
+  "expenses": {
+    "minLength": 3,
+    "items": [
+      { "type": { "normalizedEquals": "energia electrica" } },
+      { "type": { "normalizedEquals": "agua" } },
+      { "type": { "normalizedEquals": "gas natural" } }
+    ]
+  }
+}

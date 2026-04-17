@@ -1,0 +1,55 @@
+{
+  "isRentalContract": { "equals": true },
+  "languageDetected": { "equals": "es" },
+  "propertyType": { "equals": "apartment" },
+  "address": {
+    "street": { "contains": "Hermosilla" },
+    "number": { "equals": "45" },
+    "complement": { "contains": "puerta" },
+    "neighborhood": { "isNull": true },
+    "city": { "normalizedEquals": "madrid" },
+    "state": { "isNull": true },
+    "postalCode": { "contains": "28001" },
+    "country": { "notNull": true }
+  },
+  "rent": {
+    "amount": { "equals": 120000 },
+    "currency": { "equals": "EUR" },
+    "dueDay": { "notNull": true }
+  },
+  "contractDates": {
+    "start": { "equals": "2026-04-01" },
+    "end": { "equals": "2027-03-31" }
+  },
+  "rentAdjustment": {
+    "frequency": { "equals": "annual" },
+    "method": { "equals": "index" },
+    "indexName": { "contains": "IPC" }
+  },
+  "landlords": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "javier romero fernandez" },
+        "taxId": { "contains": "05.678.432-B" }
+      }
+    ]
+  },
+  "tenants": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "lucia moreno vazquez" },
+        "taxId": { "contains": "50.123.987-K" }
+      }
+    ]
+  },
+  "expenses": {
+    "minLength": 3,
+    "items": [
+      { "type": { "normalizedEquals": "energia electrica" } },
+      { "type": { "normalizedEquals": "agua" } },
+      { "type": { "normalizedEquals": "gas natural" } }
+    ]
+  }
+}
