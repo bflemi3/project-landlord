@@ -277,10 +277,16 @@ ES (4 files — 2 synthetic × 2 formats):
 - Must contain extractable: property address, rent amount + currency, contract start/end dates, at least one landlord with name + tax ID, at least one tenant with name + tax ID, at least 2 expenses
 - Must use realistic formatting, legal language, and section structure for its language/country — based on the templates researched, not invented
 - Each pair within a language must have meaningful structural variation — different date formats (DD/MM/YYYY vs written out), different ways of expressing rent (monthly value vs annual), different section ordering, different section headings
-- PDF files must be valid PDFs. Generate them by converting the corresponding DOCX fixture via LibreOffice headless mode: `libreoffice --headless --convert-to pdf <fixture>.docx --outdir <dir>`. Document the exact command (and any font/locale flags needed for accented characters) in a `fixtures/README.md` so the conversion is reproducible.
-- DOCX files must be valid DOCX documents. Author them in a DOCX editor (Word, Pages, Google Docs → Download as .docx, or LibreOffice Writer) — not programmatically — so the structure (headings, tables, styled runs) resembles real-world contracts.
+- DOCX files are generated programmatically via the [`docx`](https://www.npmjs.com/package/docx) npm package (install as a `devDependency` — this is a test-fixture tool, not runtime code). The generator script must produce real document structure — `Document`, `Paragraph`, `HeadingLevel`, `Table`/`TableRow`/`TableCell` for Quadro Resumo–style blocks, styled `TextRun` for bold/emphasis — so the resulting DOCX resembles a real-world contract after extraction (mammoth's `extractRawText` walks tables, headings, and styled runs). Do not dump legal prose into a single giant paragraph. A single generator script at `src/lib/contract-extraction/__tests__/fixtures/generate.mjs` produces all synthetic DOCX fixtures; running it is idempotent and reproducible.
+- PDF files must be valid PDFs. Generate them by converting the corresponding DOCX fixture via LibreOffice headless mode: `soffice --headless --convert-to pdf <fixture>.docx --outdir <dir>`. Document the exact command (and any font/locale flags needed for accented characters) in a `fixtures/README.md` so the conversion is reproducible.
 
-**If LibreOffice is not installed on the executor's machine, STOP and ask the user to install it (`brew install --cask libreoffice`) before continuing. Do not attempt to work around this with a different library — the whole point is realistic fixtures.**
+**LibreOffice is required for DOCX→PDF conversion. If `soffice` is not on PATH, STOP and ask the user to install it (`brew install --cask libreoffice`) before continuing. Do not substitute another library — the whole point is that PDFs pass through the same rendering pipeline a user would hit when exporting from Word/Pages.**
+
+**`fixtures/README.md` must document:**
+1. How to regenerate DOCX fixtures (`node generate.mjs`)
+2. How to convert each DOCX to PDF via `soffice` (one command per file, or a loop)
+3. Any font/locale flags needed for PT-BR/ES accented characters to render correctly
+4. The exact `docx` package version used (so a future regeneration matches byte-for-byte semantics)
 
 **Expected values files:** For each fixture, create a companion `.expected.json` in the `expected/` subdirectory documenting the expected extraction values. PDF and DOCX of the same content share one expected file (same extraction result regardless of format). 7 expected files total.
 
