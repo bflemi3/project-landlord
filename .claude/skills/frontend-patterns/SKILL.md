@@ -1,6 +1,6 @@
 ---
 name: frontend-patterns
-description: React hooks, component ordering, form patterns, and data fetching conventions. Use when writing React components, hooks, forms, or data fetching code.
+description: Performance rules, data fetching architecture, component conventions, and form patterns. Use when writing any React component, hook, page, or server action.
 paths:
   - "src/**/*.tsx"
   - "src/**/*.ts"
@@ -8,63 +8,77 @@ paths:
 
 # Frontend Patterns
 
-## React Hooks — Never Violate
+The app must feel fast. Click → content visible within tens of milliseconds. Every rule in this skill serves that goal, or the goal of keeping the UI consistent as the product grows.
 
-**Never call hooks after a conditional return.** All `use*` calls must come before the first `return` in a component.
+## Performance — The App Must Feel Fast
 
-With `useSuspenseQuery`, the query function should **throw on error** (not return `null`) so `data` is always non-nullable — eliminating null-check early returns that push hooks below a `return`.
+These rules govern how navigations and initial paints work. Violating any one of them noticeably slows the app.
 
-## Atomic Hooks
+### Navigation feels instant via three mechanisms combined
 
-Hooks must be atomic and single-responsibility. Parent hooks return their own data + child IDs, never children's data. Child hooks fetch their own details. React Query deduplicates identical queries automatically.
+1. **`loading.tsx` on every route.** Returns `<PageLoader />`. This enables Next.js `<Link>` prefetching on hover and shows *something* the instant the user clicks.
+2. **Client boundaries pushed to the leaves.** Pages and sections are server components by default. Only interactive leaves (buttons with handlers, form inputs, modals) get `'use client'`. A page-level client component defeats streaming and prefetching.
+3. **Per-section skeletons that match final layout.** Each server-rendered section is wrapped in `<SuspenseFadeIn fallback={<SectionSkeleton />}>`. Sections stream independently. Skeletons structurally match the final content (same card shapes, grid columns, heights, spacing) so there is zero layout shift when content resolves.
 
-Components receive only primitive IDs as props and fetch their own data. Use Supabase joins to get child IDs in one query.
+The goal: the user sees the page shell immediately, then real content streams in section by section within tens of ms.
 
-## Component Body Ordering
+### Always use `<SuspenseFadeIn>`, never raw `<Suspense>`
 
-1. **Refs** — `useRef`
-2. **Context** — `useContext`, `useTranslations`, `useLocale`
-3. **Router** — `useRouter`, `usePathname`, `useSearchParams`
-4. **State** — `useState`, `useReducer`, `useActionState`
-5. **Derived** — `useMemo`, `useDeferredValue`, computed values
-6. **Queries** — `useSuspenseQuery`, `useQuery`, `useMutation`
-7. **Effects** — `useEffect`, `useLayoutEffect`
-8. **Callbacks** — `useCallback`, event/form handlers
-9. **Render helpers** — conditional variables, formatted values
-10. **Return** — JSX
+`src/components/suspense-fade-in.tsx` wraps `Suspense + FadeIn`. Content fades in when data resolves instead of popping in. Do NOT use raw `<Suspense>` + `<FadeIn>` separately — use the composed component.
 
-Principle: stable → reactive → side-effectful → behavioral.
+### Fetch in parallel — never in sequence
 
-## Data Fetching
+Inside a single server component, never chain awaits that don't depend on each other. Every sequential await adds a round trip.
 
-**Domain-organized data layer** — all data fetching code lives in `src/data/<domain>/`:
+Wrong: `const a = await getA(); const b = await getB()` (two sequential trips).
+Right: `const [a, b] = await Promise.all([getA(), getB()])`.
 
-| File | Purpose |
-|---|---|
-| `shared.ts` | Pure fetch functions, TypeScript types, query keys |
-| `server.ts` | Server-side fetch wrappers for streaming server components |
-| `client.ts` | React Query hooks via `createSuspenseHook` factory |
-| `actions/` | Server actions (mutations with `revalidatePath()` / `revalidateTag()`) |
+Applies equally to server wrappers prefetching multiple datasets for `HydrationBoundary`.
 
-**Rules:**
+### No data waterfalls across components
 
-- Server fetchers in `server.ts` are wrapped in `React.cache()` for per-request deduplication — multiple components calling the same fetcher in one render share a single DB hit
-- Server fetchers call `createClient()` (Supabase server client with cookies) and delegate to `shared.ts`
-- Never fetch your own API routes from server components — call the data function directly
-- Server actions that mutate data must call `revalidatePath()` or `revalidateTag()` to bust caches
-- Prefer `useSuspenseQuery` over `useQuery` — wrap with `<Suspense>` boundaries
-- Strong loading / empty / error / success states
+A waterfall is: parent fetches data, passes result to child, child fetches more data *that could have been fetched in parallel at the parent*. This serializes network time.
 
-## Client Components with useSuspenseQuery — SSR Hydration
+Rule: fetch sibling data in parallel at the page/wrapper level, then pass IDs (or full results) down. Children receive IDs as props and fetch their own details — but those child fetches should all *start* in parallel because each child suspends independently.
 
-`'use client'` components that use `useSuspenseQuery` are server-side rendered by Next.js. The browser Supabase client (`createBrowserClient`) has no auth during SSR, so queries fail. **Every client component using `useSuspenseQuery` must be wrapped in `HydrationBoundary` with prefetched data from a parent server component.**
+### `React.cache()` on every server fetcher
 
-**Pattern:** Create a server component wrapper that prefetches the data the client component needs, then dehydrates it:
+Server fetchers in `src/data/<domain>/server.ts` are wrapped in `React.cache()` for per-request deduplication. Multiple components calling the same fetcher in a single render share one DB hit. Without this, a page that reads the property in three sections does three DB trips.
+
+### React Query `staleTime` for back-nav feeling instant
+
+React Query hooks must configure `staleTime` (typically 30s–5min depending on data volatility). When the user hits back after a navigation, cached data renders immediately and a refetch runs in the background. `staleTime: 0` forces a loading state on every back-nav — never the right default.
+
+### Dynamic import anything heavy and below-the-fold
+
+Framer Motion, charts, editors, bottom-sheet content, anything the user doesn't see on first paint — lazy load via `React.lazy` + top-level `import()` preload:
 
 ```tsx
-// server wrapper
-import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
+const promise = import('./heavy-thing')
+const HeavyThing = lazy(() => promise.then(...))
+```
 
+The top-level `import()` fires when the parent module is parsed — not on render, not on interaction. The asset downloads in the background while the user interacts with static UI.
+
+For Framer Motion specifically: never import `motion/react` at the top of a file. Always lazy-load. Use CSS animations (`animate-fade-in`, `animate-fade-up`) for simple opacity/transform transitions that don't need JS.
+
+### Layouts must have zero async operations
+
+No `await`, no `createClient()`, no DB queries, no `cookies()` in layouts. A blocking layout blocks every child route on every navigation. Auth redirects and access checks go in middleware via JWT claims, not in layouts.
+
+### Suspense boundary placement
+
+Wrap `<SuspenseFadeIn>` around *slow* sections, not the whole page. A single page-level boundary defeats streaming — the whole page waits on the slowest query. Each independently-fetched section gets its own boundary so fast sections paint immediately.
+
+## Server vs Client Components (Next.js App Router)
+
+- Pages and layouts are server components. Push `'use client'` down to leaf interactive components (buttons with handlers, form inputs, modals, hook-using components).
+- Client components with `useSuspenseQuery` require an `HydrationBoundary` parent. The browser Supabase client (`createBrowserClient`) has no auth during SSR, so queries fail unless data is prefetched server-side and dehydrated.
+
+**SSR hydration pattern:**
+
+```tsx
+// Server wrapper
 export async function SectionWrapper({ unitId }: { unitId: string }) {
   const queryClient = new QueryClient()
   const [unit, charges] = await Promise.all([getUnit(unitId), getUnitCharges(unitId)])
@@ -73,80 +87,88 @@ export async function SectionWrapper({ unitId }: { unitId: string }) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ClientSection unitId={unitId} />   {/* useSuspenseQuery finds data in cache */}
+      <ClientSection unitId={unitId} />
     </HydrationBoundary>
   )
 }
 ```
 
-**Rules:**
-- Only use `HydrationBoundary` for client components with `useSuspenseQuery` — server components don't need it
-- The server wrapper prefetches using `server.ts` functions (authenticated, `React.cache()` deduplicates)
-- The client component's `useSuspenseQuery` finds data in the hydrated cache during SSR — no auth failure
-- This follows TanStack React Query's official Advanced SSR pattern
+Only needed for client components using `useSuspenseQuery`. Pure server components don't need it. The server wrapper calls `server.ts` fetchers (authenticated, `React.cache()` dedupes).
 
-## Server vs Client Components
+## Data Layer (`src/data/<domain>/`)
 
-- **Layouts must have zero async operations** — no `await`, no `createClient()`, no DB queries, no `cookies()`. A blocking layout blocks every child route on every navigation
-- Push `'use client'` down the tree — layouts and pages should be server components, only interactive leaf components should be client
-- Use server components for data fetching — they call server.ts functions that create a Supabase client per-request
-- Client components are for: click handlers, form state, hooks, browser APIs
-- Auth redirects and access checks happen in middleware via JWT claims, never in layouts
+All data fetching code is domain-organized:
 
-## Streaming & Suspense
+| File | Purpose |
+|---|---|
+| `shared.ts` | Pure fetch functions, TypeScript types, query keys |
+| `server.ts` | Server-side fetch wrappers wrapped in `React.cache()` |
+| `client.ts` | React Query hooks via `createSuspenseHook` factory |
+| `actions/` | Server actions (mutations with `revalidatePath` / `revalidateTag`) |
 
-- Every meaningful route must have a `loading.tsx` returning `<PageLoader />` — this enables partial prefetching
-- Use `<SuspenseFadeIn fallback={<Skeleton />}>` for streaming sections — combines Suspense + FadeIn in one component (`@/components/suspense-fade-in`). Do NOT use raw `<Suspense>` + `<FadeIn>` separately.
-- Skeleton fallbacks must structurally match their resolved content — same card shapes, grid columns, section heights, spacing — to prevent layout shift when content streams in
-- Static parts of the page (headers, labels, navigation) render immediately outside Suspense
-- Server component streaming provides fast initial paint — React Query handles client-side caching for back-navigation and refetching
+Rules:
+
+- Server fetchers call `createClient()` (Supabase server client with cookies) and delegate to `shared.ts`
+- Never fetch your own API routes from server components — call the data function directly
+- Server actions that mutate data MUST call `revalidatePath()` or `revalidateTag()` to bust caches
+- Prefer `useSuspenseQuery` over `useQuery`, wrap with `<SuspenseFadeIn>` boundaries
+- `useSuspenseQuery` query functions should **throw** on error (not return `null`) — keeps `data` non-nullable and eliminates null-check early returns
+- Strong loading / empty / error / success states for every query
+
+## Atomic Hooks
+
+Hooks are atomic and single-responsibility. Parent hooks return their own data plus child IDs — never children's data. Child hooks fetch their own details.
+
+Components receive only primitive IDs as props and fetch their own data via hooks. Use Supabase joins to get child IDs in one query. React Query deduplicates identical queries automatically.
+
+## Hooks Discipline
+
+**Never call hooks after a conditional return.** All `use*` calls must come before the first `return`. With `useSuspenseQuery` throwing on error (above), `data` is always non-nullable, eliminating the null-check early return pattern that pushes hooks below a return.
+
+## Component Body Ordering
+
+1. Refs — `useRef`
+2. Context — `useContext`, `useTranslations`, `useLocale`
+3. Router — `useRouter`, `usePathname`, `useSearchParams`
+4. State — `useState`, `useReducer`, `useActionState`
+5. Derived — `useMemo`, `useDeferredValue`
+6. Queries — `useSuspenseQuery`, `useQuery`, `useMutation`
+7. Effects — `useEffect`, `useLayoutEffect`
+8. Callbacks — `useCallback`, event/form handlers
+9. Render helpers — conditional variables, formatted values
+10. Return — JSX
+
+Principle: stable → reactive → side-effectful → behavioral.
 
 ## Navigation
 
-- Use `next/link` (`<Link>`) for all internal navigation — never `<a href>` tags, which cause full page reloads
-- `loading.tsx` on every route enables partial prefetching for `<Link>` navigations
-- Back/close buttons feel instant due to: static layout (no server roundtrip) + React Query client cache + loading states
-
-## Framer Motion
-
-- Never import `motion/react` directly at the top of a file — always use dynamic import
-- Use CSS animations (`animate-fade-in`, `animate-fade-up`) for simple opacity/transform transitions
-- For `AnimatePresence` (mount/unmount animations): extract to a separate component file, lazy-load with `React.lazy` + top-level `import()` preload
-- Preload pattern: `const promise = import('./component'); const Component = lazy(() => promise.then(...))`
-- The top-level `import()` fires when the parent module is parsed — not on render, not on user interaction. Framer Motion downloads in the background while the user interacts with static UI
+Use `next/link` (`<Link>`) for all internal navigation — never `<a href>`, which triggers a full page reload and breaks prefetching. `loading.tsx` on every route enables partial prefetching for `<Link>`.
 
 ## Form Patterns
 
-**Validation:**
-- Server-side validation is source of truth — always validate in server actions
-- MVP: server validation only via `useActionState` returning field-level errors
-- Never use native HTML validation messages (`required`, `pattern`) for user-facing UX
-
-**React 19 patterns:**
+**React 19 primitives:**
 - `useActionState` for all form submissions: `[state, formAction, isPending]`
 - `useFormStatus` in child components for pending state
 - Pass `formAction` to `<form action={formAction}>`
-- Return `{ errors: { fieldName: 'message' }, success: false }` — never throw
-- Field-level errors near the input, not banner at top
-
-**Form UX:**
-- Labels above inputs, generous mobile tap targets
-- Disable submit + show loading while `isPending`
-- Multi-step forms: client-side step state on single route
+- Actions return `{ errors: { fieldName: 'message' }, success: false }` — never throw
+- Field-level errors near the input, not a banner at the top
 - `<fieldset disabled={isPending}>` to disable during submission
 
-**Address forms (Brazil-first):**
-- CEP at top — auto-fill via ViaCEP on valid input
-- Country-adaptive provider pattern (`src/lib/address/`)
-- State as select dropdown, separate number/complement fields
+**Validation policy:**
+- Server-side validation is the source of truth — always validate in the server action
+- MVP: server validation only, returned via `useActionState`
+- Never use native HTML validation (`required`, `pattern`) for user-facing UX
+- Do NOT add zod or react-hook-form unless genuinely needed for complex conditional validation
+- Do NOT validate on blur for MVP — submit only
+- Do NOT block submission on optional fields
 
-**Don't:**
-- Add zod/react-hook-form unless genuinely needed for complex conditional validation
-- Validate on blur for MVP — submit only
-- Block submission on optional fields
+**Brazil address forms (country-adaptive):**
+- CEP field at top — auto-fill via ViaCEP on valid input
+- Use the country-adaptive provider pattern (`src/lib/address/`) — the data model supports other countries even though BR is the only live locale
+- State as select dropdown, separate number and complement fields
 
 ## General Rules
 
-- Prefer shadcn components: `npx shadcn@latest add <component>`
-- Extract to shared component when markup appears in 3+ files
-- Avoid: giant page components, business logic in presentational components, state spaghetti, speculative abstractions
+- Prefer shadcn components: `npx shadcn@latest add <component>` before building manually
+- Extract a shared component when the markup appears in 3+ files
+- Avoid: giant page components, business logic in presentational components, speculative abstractions

@@ -1,0 +1,56 @@
+{
+  "isRentalContract": { "equals": true },
+  "languageDetected": { "equals": "en" },
+  "propertyType": { "equals": "house" },
+  "address": {
+    "street": { "contains": "East 12th" },
+    "number": { "equals": "1847" },
+    "city": { "normalizedEquals": "austin" },
+    "state": { "notNull": true },
+    "postalCode": { "contains": "78702" },
+    "country": { "notNull": true }
+  },
+  "rent": {
+    "amount": { "equals": 185000 },
+    "currency": { "equals": "USD" },
+    "dueDay": { "equals": 5 }
+  },
+  "contractDates": {
+    "start": { "equals": "2026-06-01" },
+    "end": { "equals": "2028-05-31" }
+  },
+  "rentAdjustment": {
+    "frequency": { "equals": "annual" },
+    "method": { "notNull": true }
+  },
+  "landlords": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "margaret anne thompson" },
+        "taxId": { "contains": "456-78-9012" }
+      }
+    ]
+  },
+  "tenants": {
+    "length": 2,
+    "items": [
+      {
+        "name": { "normalizedEquals": "david michael reynolds" },
+        "taxId": { "contains": "234-56-7890" }
+      },
+      {
+        "name": { "normalizedEquals": "jennifer lynn reynolds" },
+        "taxId": { "contains": "345-67-8901" }
+      }
+    ]
+  },
+  "expenses": {
+    "minLength": 3,
+    "items": [
+      { "type": { "normalizedEquals": "electricity" } },
+      { "type": { "normalizedEquals": "water" } },
+      { "type": { "normalizedEquals": "gas" } }
+    ]
+  }
+}

@@ -4,7 +4,7 @@
 
 **Goal:** Update Phase 0 dev page imports to use the new billing-intelligence module and remove old code.
 
-**Architecture:** Mechanical refactor — update import paths, adapt UI to new ExtractionResult shape, delete old files. No new logic.
+**Architecture:** Mechanical refactor — update import paths, adapt UI to new BillExtractionResult shape, delete old files. No new logic.
 
 **Tech Stack:** TypeScript
 
@@ -82,7 +82,7 @@ git commit -m "refactor: migrate billing code to src/lib/billing-intelligence an
 After all 15 tasks:
 
 - **4 DB migrations:** extended `provider_invoice_profiles` with category/region/status/capabilities, added `company_cache` + history (country-agnostic), added `external_call_log` for dependency monitoring, added `engineer_allowlist` (with user_id FK)
-- **Shared types** with `ExtractionResult` contract using `profileId` to link to DB
+- **Shared types** with `BillExtractionResult` contract using `profileId` to link to DB
 - **Provider interface** with `profileId` as the DB link, plus README documenting provider directory structure
 - **External dependency monitor** — cross-cutting wrapper for all external calls with error normalization and reporting
 - **Normalization utilities** for dates, months, barcodes, money

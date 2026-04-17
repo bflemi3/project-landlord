@@ -769,7 +769,7 @@ CREATE TYPE test_competency AS ENUM (
 The `expected_fields` JSONB structure varies by competency. Documented here for test runner and UI interpretation:
 
 - **Identification:** `{ "identification.providerId": "uuid", "identification.confidence": 0.95 }`
-- **Extraction:** `{ "billing.amountDue": 24567, "billing.dueDate": "2026-04-24", "customer.name": "John", ... }` (dot-notation matching `ExtractionResult` fields)
+- **Extraction:** `{ "billing.amountDue": 24567, "billing.dueDate": "2026-04-24", "customer.name": "John", ... }` (dot-notation matching `BillExtractionResult` fields)
 - **Validation:** `{ "validation.passed": true, "validation.confirmedFields": ["amountDue", "dueDate"], "validation.discrepancies": [] }`
 - **Payment matching:** `{ "matching.matched": true, "matching.confidence": 0.92, "matching.criteria": ["cnpj", "amount", "date_window"] }` (Plan 3b)
 - **Invoice discovery:** `{ "discovery.invoicesFound": 2, "discovery.invoices": [...] }` (Future)
@@ -808,7 +808,7 @@ All code importing `ProviderCategory` or `ProviderProfileStatus` from `billing-i
 
 **Exceptions:** `TaxIdType` remains a code-level type — it's intentionally open-ended (`(string & {})`) for country extensibility without migrations. Audit log `entity_type` and `action` remain text columns — audit logs benefit from flexibility; new entity types or actions shouldn't require a migration.
 
-### `buildExtractionConfidence` (`confidence.ts`)
+### `buildBillExtractionConfidence` (`confidence.ts`)
 
 Currently uses hardcoded threshold values. Update to accept thresholds as parameters — call sites fetch from DB and pass them. Update existing tests in `confidence.test.ts`.
 

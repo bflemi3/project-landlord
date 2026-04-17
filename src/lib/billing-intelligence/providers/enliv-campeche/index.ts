@@ -1,10 +1,10 @@
 import type { Provider } from '../types'
-import type { ExtractionResult, PaymentStatus, ValidationResult } from '../../types'
+import type { BillExtractionResult, PaymentStatus, ValidationResult } from '../../types'
 import { parseEnlivBillText } from './parser'
 import { fetchEnlivDebitos, fetchEnlivPagas } from './api-client'
 import { validateEnlivExtraction } from './validate'
 import { normalizeDate, toMinorUnits, normalizeBarcode } from '../../normalize'
-import { buildExtractionConfidence } from '../../confidence'
+import { buildBillExtractionConfidence } from '../../confidence'
 
 // Placeholder — will be replaced with the real provider_invoice_profiles.id
 // when Enliv Campeche is created through the engineering playground
@@ -37,11 +37,11 @@ export const enlivCampeche: Provider = {
     return null
   },
 
-  extractBill(text: string): ExtractionResult | null {
+  extractBill(text: string): BillExtractionResult | null {
     return parseEnlivBillText(text)
   },
 
-  async lookupBills(taxId: string): Promise<ExtractionResult[] | null> {
+  async lookupBills(taxId: string): Promise<BillExtractionResult[] | null> {
     try {
       const data = await fetchEnlivDebitos(taxId)
       return data.debitos.map((d) => ({
@@ -49,7 +49,7 @@ export const enlivCampeche: Provider = {
         customer: { name: data.nome_cliente, taxId, taxIdType: taxId.replace(/[.\-/]/g, '').length === 14 ? 'cnpj' as const : 'cpf' as const, countryCode: 'BR', accountNumber: d.cadastroDistribuidora },
         billing: { referenceMonth: '', dueDate: normalizeDate(d.vencimento), amountDue: toMinorUnits(d.valor), currency: 'BRL' },
         payment: { linhaDigitavel: normalizeBarcode(d.linha_digitavel), pixPayload: d.emv_pix },
-        confidence: buildExtractionConfidence({
+        confidence: buildBillExtractionConfidence({
           sourceMethod: 'api',
           fields: {
             customerName: { found: !!data.nome_cliente },
@@ -76,7 +76,7 @@ export const enlivCampeche: Provider = {
     } catch { return null }
   },
 
-  async validateExtraction(extraction: ExtractionResult): Promise<ValidationResult | null> {
+  async validateExtraction(extraction: BillExtractionResult): Promise<ValidationResult | null> {
     return validateEnlivExtraction(extraction)
   },
 }

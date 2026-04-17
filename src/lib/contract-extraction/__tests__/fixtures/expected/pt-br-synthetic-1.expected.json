@@ -1,0 +1,59 @@
+{
+  "isRentalContract": { "equals": true },
+  "languageDetected": { "equals": "pt-br" },
+  "propertyType": { "equals": "apartment" },
+  "address": {
+    "street": { "contains": "Bela Cintra" },
+    "number": { "equals": "1870" },
+    "neighborhood": { "normalizedEquals": "jardim paulista" },
+    "city": { "normalizedEquals": "sao paulo" },
+    "state": { "contains": "SP" },
+    "postalCode": { "contains": "01415-002" },
+    "country": { "notNull": true }
+  },
+  "rent": {
+    "amount": { "equals": 350000 },
+    "currency": { "equals": "BRL" },
+    "dueDay": { "equals": 10 }
+  },
+  "contractDates": {
+    "start": { "equals": "2026-03-01" },
+    "end": { "equals": "2027-02-28" }
+  },
+  "rentAdjustment": {
+    "frequency": { "equals": "annual" },
+    "method": { "equals": "index" },
+    "indexName": { "contains": "IPCA" }
+  },
+  "landlords": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "ricardo mendes silva" },
+        "taxId": { "contains": "321.654.987-00" }
+      }
+    ]
+  },
+  "tenants": {
+    "length": 2,
+    "items": [
+      {
+        "name": { "normalizedEquals": "maria aparecida ferreira" },
+        "taxId": { "contains": "456.789.123-45" }
+      },
+      {
+        "name": { "normalizedEquals": "joao carlos oliveira" },
+        "taxId": { "contains": "789.123.456-78" }
+      }
+    ]
+  },
+  "expenses": {
+    "minLength": 4,
+    "items": [
+      { "type": { "equals": "condo" } },
+      { "type": { "equals": "other" } },
+      { "type": { "equals": "electricity" } },
+      { "type": { "equals": "water" } }
+    ]
+  }
+}

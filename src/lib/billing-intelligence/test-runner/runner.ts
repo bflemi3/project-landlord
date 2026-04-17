@@ -1,4 +1,4 @@
-import type { ExtractionResult } from '../types'
+import type { BillExtractionResult } from '../types'
 import type {
   LoadedTestCase,
   TestCaseResult,
@@ -8,7 +8,7 @@ import { compareAllFields } from './compare'
 
 export interface RunTestCaseInput {
   testCase: LoadedTestCase
-  extraction: ExtractionResult | null
+  extraction: BillExtractionResult | null
   identificationPassed: boolean | null
   validationPassed: boolean | null
 }

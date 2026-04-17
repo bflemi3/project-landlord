@@ -1,0 +1,54 @@
+{
+  "isRentalContract": { "equals": true },
+  "languageDetected": { "equals": "pt-br" },
+  "propertyType": { "equals": "house" },
+  "address": {
+    "street": { "contains": "Aristides Espínola" },
+    "number": { "equals": "88" },
+    "neighborhood": { "normalizedEquals": "leblon" },
+    "city": { "normalizedEquals": "rio de janeiro" },
+    "state": { "contains": "RJ" },
+    "postalCode": { "contains": "22440-050" },
+    "country": { "notNull": true }
+  },
+  "rent": {
+    "amount": { "equals": 520000 },
+    "currency": { "equals": "BRL" },
+    "dueDay": { "isNull": true }
+  },
+  "contractDates": {
+    "start": { "equals": "2026-04-15" },
+    "end": { "equals": "2028-10-14" }
+  },
+  "rentAdjustment": {
+    "frequency": { "equals": "annual" },
+    "method": { "equals": "index" },
+    "indexName": { "contains": "IGP-M" }
+  },
+  "landlords": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "ana beatriz souza nascimento" },
+        "taxId": { "contains": "123.987.654-32" }
+      }
+    ]
+  },
+  "tenants": {
+    "length": 1,
+    "items": [
+      {
+        "name": { "normalizedEquals": "pedro henrique costa almeida" },
+        "taxId": { "contains": "654.321.987-01" }
+      }
+    ]
+  },
+  "expenses": {
+    "minLength": 3,
+    "items": [
+      { "type": { "equals": "other" } },
+      { "type": { "equals": "water" } },
+      { "type": { "equals": "electricity" } }
+    ]
+  }
+}
