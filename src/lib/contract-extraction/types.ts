@@ -8,11 +8,19 @@
  * Money is always integer minor units (e.g., centavos, cents). Never floating point.
  */
 
+import type { Database } from '@/lib/types/database'
+
 // ---------------------------------------------------------------------------
 // Supported languages
 // ---------------------------------------------------------------------------
 
 export type SupportedLanguage = 'pt-br' | 'en' | 'es'
+
+// ---------------------------------------------------------------------------
+// Property type — Postgres enum is source of truth (see property_type enum migration)
+// ---------------------------------------------------------------------------
+
+export type PropertyType = Database['public']['Enums']['property_type']
 
 // ---------------------------------------------------------------------------
 // Extraction result — the LLM output shape
@@ -84,6 +92,7 @@ export interface ContractExtractionLlmResult {
    * If false, the extraction engine returns `not_a_contract` error.
    */
   isRentalContract: boolean
+  propertyType: PropertyType | null
   address: ContractAddress | null
   rent: ContractRent | null
   contractDates: ContractDates | null
@@ -120,8 +129,7 @@ export type ContractExtractionErrorCode =
   | 'unsupported_format'
   | 'corrupt_file'
   | 'empty_file'
-  | 'scanned_document'
-  | 'empty_content'
+  | 'no_text_extractable'
   | 'password_protected'
   | 'unsupported_language'
   | 'not_a_contract'

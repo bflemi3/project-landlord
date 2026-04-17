@@ -1,5 +1,10 @@
 import { z } from 'zod'
-import type { ContractExtractionLlmResult, ContractExtractionResult } from './types'
+import { Constants } from '@/lib/types/database'
+import type {
+  ContractExtractionLlmResult,
+  ContractExtractionResult,
+  PropertyType,
+} from './types'
 
 /**
  * Zod schemas for contract extraction.
@@ -76,12 +81,22 @@ const contractExpenseSchema = z.object({
 
 const supportedLanguageSchema = z.enum(['pt-br', 'en', 'es'])
 
+const propertyTypeSchema = z
+  .enum(['apartment', 'house', 'commercial', 'other'])
+  .describe(
+    'Type of property. Allowed values: apartment, house, commercial, other. ' +
+      'Mapping guidance: Brazilian "apartamento"/"cobertura"/"kitnet"/"loft"/"studio" → apartment; ' +
+      '"casa"/"sobrado" → house; "sala comercial"/"loja"/"galpão"/"escritório" → commercial; ' +
+      'anything else → other. Return null if the contract does not indicate the property type.',
+  )
+
 // ---------------------------------------------------------------------------
 // LLM schema — passed to generateObject (no engine-produced fields)
 // ---------------------------------------------------------------------------
 
 export const contractExtractionLlmSchema = z.object({
   isRentalContract: z.boolean().describe('Whether this document is a rental/lease contract'),
+  propertyType: propertyTypeSchema.nullable(),
   address: contractAddressSchema.nullable().describe('Property address from the contract'),
   rent: contractRentSchema.nullable().describe('Rent payment details'),
   contractDates: contractDatesSchema.nullable().describe('Contract start and end dates'),
@@ -132,6 +147,27 @@ type _ResultSchemaMatchesType = z.infer<typeof contractExtractionResultSchema> e
   : never
 const _resultTypeCheck: _ResultSchemaMatchesType = true
 
+// Guard against drift between the Postgres property_type enum (source of truth,
+// surfaced via Constants.public.Enums.property_type) and the Zod enum literals
+// below. If the DB enum gains/loses a value and the regen is run but the Zod
+// schema isn't updated, this assignment fails to type-check.
+type _ZodPropertyTypeValue = z.infer<typeof propertyTypeSchema>
+type _DbPropertyTypeValue = (typeof Constants.public.Enums.property_type)[number]
+type _PropertyTypeZodMatchesDb = [_ZodPropertyTypeValue] extends [_DbPropertyTypeValue]
+  ? [_DbPropertyTypeValue] extends [_ZodPropertyTypeValue]
+    ? true
+    : never
+  : never
+const _propertyTypeEnumCheck: _PropertyTypeZodMatchesDb = true
+type _PropertyTypeAliasMatchesDb = [PropertyType] extends [_DbPropertyTypeValue]
+  ? [_DbPropertyTypeValue] extends [PropertyType]
+    ? true
+    : never
+  : never
+const _propertyTypeAliasCheck: _PropertyTypeAliasMatchesDb = true
+
 // Suppress unused variable warnings
 void _llmTypeCheck
 void _resultTypeCheck
+void _propertyTypeEnumCheck
+void _propertyTypeAliasCheck

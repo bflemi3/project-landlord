@@ -14,6 +14,7 @@ import type {
 function makeValidResult(): ContractExtractionResult {
   return {
     isRentalContract: true,
+    propertyType: 'apartment',
     address: {
       street: 'Rua das Flores',
       number: '123',
@@ -58,6 +59,7 @@ function makeValidLlmResult(): ContractExtractionLlmResult {
 describe('contractExtractionResultSchema', () => {
   const validResult: ContractExtractionResult = {
     isRentalContract: true,
+    propertyType: 'apartment',
     address: {
       street: 'Rua das Flores',
       number: '123',
@@ -108,6 +110,7 @@ describe('contractExtractionResultSchema', () => {
   it('accepts a non-rental-contract result', () => {
     const result = {
       isRentalContract: false,
+      propertyType: null,
       address: null,
       rent: null,
       contractDates: null,
@@ -125,6 +128,7 @@ describe('contractExtractionResultSchema', () => {
   it('accepts partial extraction with many null fields', () => {
     const partial = {
       isRentalContract: true,
+      propertyType: null,
       address: {
         street: 'Rua X',
         number: null,
@@ -154,6 +158,7 @@ describe('contractExtractionResultSchema', () => {
     expect(parsed.address?.number).toBeNull()
     expect(parsed.rent?.dueDay).toBeNull()
     expect(parsed.contractDates).toBeNull()
+    expect(parsed.propertyType).toBeNull()
   })
 
   it('requires isRentalContract to be a boolean', () => {
@@ -258,6 +263,7 @@ describe('contractExtractionLlmSchema', () => {
   it('accepts a minimal non-contract LLM result', () => {
     const result = {
       isRentalContract: false,
+      propertyType: null,
       address: null,
       rent: null,
       contractDates: null,
@@ -268,6 +274,38 @@ describe('contractExtractionLlmSchema', () => {
     }
     const parsed = contractExtractionLlmSchema.parse(result)
     expect(parsed.isRentalContract).toBe(false)
+  })
+})
+
+describe('propertyType on contractExtractionResultSchema', () => {
+  it.each(['apartment', 'house', 'commercial', 'other'] as const)(
+    'accepts propertyType %s',
+    (propertyType) => {
+      const result = { ...makeValidResult(), propertyType }
+      const parsed = contractExtractionResultSchema.parse(result)
+      expect(parsed.propertyType).toBe(propertyType)
+    },
+  )
+
+  it('accepts null propertyType', () => {
+    const result = { ...makeValidResult(), propertyType: null }
+    const parsed = contractExtractionResultSchema.parse(result)
+    expect(parsed.propertyType).toBeNull()
+  })
+
+  it('rejects propertyType values outside the enum', () => {
+    const withInvalid = { ...makeValidResult(), propertyType: 'studio' }
+    expect(() => contractExtractionResultSchema.parse(withInvalid)).toThrow()
+  })
+
+  it('rejects freeform strings as propertyType', () => {
+    const withFreeform = { ...makeValidResult(), propertyType: 'apartamento' }
+    expect(() => contractExtractionResultSchema.parse(withFreeform)).toThrow()
+  })
+
+  it('requires propertyType to be present', () => {
+    const { propertyType: _omit, ...missing } = makeValidResult()
+    expect(() => contractExtractionResultSchema.parse(missing)).toThrow()
   })
 })
 
@@ -303,8 +341,7 @@ describe('ContractExtractionErrorCode', () => {
       'unsupported_format',
       'corrupt_file',
       'empty_file',
-      'scanned_document',
-      'empty_content',
+      'no_text_extractable',
       'password_protected',
       'unsupported_language',
       'not_a_contract',
@@ -313,7 +350,7 @@ describe('ContractExtractionErrorCode', () => {
       'rate_limited',
       'api_key_missing',
     ]
-    expect(codes).toHaveLength(13)
+    expect(codes).toHaveLength(12)
   })
 })
 
