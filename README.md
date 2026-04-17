@@ -1,6 +1,6 @@
 # mabenn
 
-A Brazil-first rental billing and utility coordination app that replaces spreadsheet- and email-driven workflows with a shared billing workspace for landlords and tenants.
+Long-term rental management for small Brazilian landlords and their tenants — the structure and visibility of a property manager without the 8-12% fee.
 
 ## What it does
 
