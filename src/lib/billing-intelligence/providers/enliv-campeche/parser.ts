@@ -1,12 +1,12 @@
-import type { ExtractionResult } from '../../types'
+import type { BillExtractionResult } from '../../types'
 import { normalizeDate, normalizeMonth, parseBRL, toMinorUnits, normalizeBarcode } from '../../normalize'
-import { buildExtractionConfidence } from '../../confidence'
+import { buildBillExtractionConfidence } from '../../confidence'
 
 // Placeholder — will be replaced with the real provider_invoice_profiles.id
 // when Enliv Campeche is created through the engineering playground
 const PROFILE_ID = 'a1b2c3d4-0002-0002-0002-000000000001'
 
-export function parseEnlivBillText(text: string): ExtractionResult | null {
+export function parseEnlivBillText(text: string): BillExtractionResult | null {
   const providerTaxId = extractField(text, /CNPJ:\s*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/)
   if (!providerTaxId) return null
 
@@ -29,7 +29,7 @@ export function parseEnlivBillText(text: string): ExtractionResult | null {
   const cleanDoc = customerTaxId.replace(/[.\-/]/g, '')
   const taxIdType = cleanDoc.length === 14 ? 'cnpj' as const : 'cpf' as const
 
-  const confidence = buildExtractionConfidence({
+  const confidence = buildBillExtractionConfidence({
     sourceMethod: 'pdf',
     fields: {
       customerName: { found: !!customerName },

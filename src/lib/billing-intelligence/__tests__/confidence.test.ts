@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   computeFieldStatus,
   getSourceMethodScore,
-  buildExtractionConfidence,
+  buildBillExtractionConfidence,
 } from '../confidence'
 
 describe('getSourceMethodScore', () => {
@@ -115,9 +115,9 @@ describe('computeFieldStatus', () => {
   })
 })
 
-describe('buildExtractionConfidence', () => {
+describe('buildBillExtractionConfidence', () => {
   it('builds confidence with all fields found via PDF', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true },
@@ -137,7 +137,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('builds confidence with missing fields', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true },
@@ -154,7 +154,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('builds confidence with validation results', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'api' },
@@ -170,7 +170,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('API source produces higher extraction confidence', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true },
@@ -182,7 +182,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('OCR source produces lower extraction confidence', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'ocr',
       fields: {
         amountDue: { found: true },
@@ -194,7 +194,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('handles empty fields input', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {},
     })
@@ -204,7 +204,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('handles all fields missing', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: false },
@@ -219,7 +219,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('PDF source: all found fields are needs-review (0.80 < 0.9 threshold)', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'api' },  // extraction=0.80 < 0.9 → needs-review despite validation
@@ -237,7 +237,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('API source with validation achieves confirmed status', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'web' },
@@ -251,7 +251,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('validation without validationSource omits the field', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true, validation: 1.0 },
@@ -263,7 +263,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('field with found=false ignores validation', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: false, validation: 1.0, validationSource: 'api' },
@@ -276,7 +276,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('autoAcceptable true when all fields confirmed', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'web' },
@@ -289,7 +289,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('DDA source method', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'dda',
       fields: { amountDue: { found: true } },
     })
@@ -301,7 +301,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('web-scrape source method', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'web-scrape',
       fields: { amountDue: { found: true } },
     })
@@ -311,7 +311,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('email source method', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'email',
       fields: { amountDue: { found: true } },
     })

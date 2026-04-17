@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest'
 import { resolveField, compareField, compareAllFields } from '../compare'
-import type { ExtractionResult } from '../../types'
-import { buildExtractionConfidence } from '../../confidence'
+import type { BillExtractionResult } from '../../types'
+import { buildBillExtractionConfidence } from '../../confidence'
 
-const sampleExtraction: ExtractionResult = {
+const sampleExtraction: BillExtractionResult = {
   provider: {
     profileId: 'test-profile',
     companyName: 'Test Co',
@@ -26,7 +26,7 @@ const sampleExtraction: ExtractionResult = {
   payment: {
     linhaDigitavel: '23793381286008301283715748301017194000000000015000',
   },
-  confidence: buildExtractionConfidence({
+  confidence: buildBillExtractionConfidence({
     sourceMethod: 'pdf',
     fields: {
       customerName: { found: true },
@@ -37,13 +37,13 @@ const sampleExtraction: ExtractionResult = {
 }
 
 // Extraction with optional consumption present
-const extractionWithConsumption: ExtractionResult = {
+const extractionWithConsumption: BillExtractionResult = {
   ...sampleExtraction,
   consumption: { value: 269, unit: 'kWh' },
 }
 
 // Extraction with consumption absent (undefined)
-const extractionWithoutConsumption: ExtractionResult = {
+const extractionWithoutConsumption: BillExtractionResult = {
   ...sampleExtraction,
   consumption: undefined,
 }

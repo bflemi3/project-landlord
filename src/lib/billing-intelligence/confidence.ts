@@ -1,6 +1,6 @@
 import type {
-  ExtractionConfidence,
-  ExtractionSource,
+  BillExtractionConfidence,
+  BillExtractionSource,
   FieldConfidence,
   FieldStatus,
 } from './types'
@@ -11,7 +11,7 @@ import type {
  * When a field is found, its extraction confidence is set to the source method score.
  * When a field is not found, its extraction confidence is 0.
  */
-const SOURCE_METHOD_SCORES: Record<ExtractionSource, number> = {
+const SOURCE_METHOD_SCORES: Record<BillExtractionSource, number> = {
   api: 0.95,
   dda: 0.90,
   pdf: 0.80,
@@ -21,7 +21,7 @@ const SOURCE_METHOD_SCORES: Record<ExtractionSource, number> = {
 }
 
 /** Get the base reliability score for a source method. */
-export function getSourceMethodScore(method: ExtractionSource): number {
+export function getSourceMethodScore(method: BillExtractionSource): number {
   return SOURCE_METHOD_SCORES[method] ?? 0.50
 }
 
@@ -67,21 +67,21 @@ interface FieldInput {
 }
 
 interface ConfidenceInput {
-  sourceMethod: ExtractionSource
+  sourceMethod: BillExtractionSource
   fields: Record<string, FieldInput>
 }
 
 /**
- * Build the full ExtractionConfidence object for an extraction result.
+ * Build the full BillExtractionConfidence object for an extraction result.
  * Called by providers after parsing to produce a uniform confidence structure.
  *
  * Each field's extraction confidence = source method score if found, 0 if not.
  * Validation is an independent dimension set per field if a second source is available.
  * Status routing is computed per field from both dimensions.
  */
-export function buildExtractionConfidence(
+export function buildBillExtractionConfidence(
   input: ConfidenceInput,
-): ExtractionConfidence {
+): BillExtractionConfidence {
   const methodScore = getSourceMethodScore(input.sourceMethod)
 
   const fields: Record<string, FieldConfidence> = {}

@@ -15,7 +15,7 @@ Each provider lives in its own directory. The structure is semi-standard:
   `provider_invoice_profiles`), metadata, and wires up all the methods.
 
 - `parser.ts` — Takes raw text (from PDF or OCR) and returns an
-  `ExtractionResult` or `null`. This is the core extraction logic — regex
+  `BillExtractionResult` or `null`. This is the core extraction logic — regex
   patterns specific to this bill format. Uses shared utilities from
   `../normalize.ts` for dates, money, and barcodes. Uses
   `../confidence.ts` for uniform confidence scoring.
@@ -54,7 +54,7 @@ If an optional file is present, its test is required.
 ```
 enliv-campeche/
   index.ts              # Provider implementation (required)
-  parser.ts             # Bill text → ExtractionResult (required)
+  parser.ts             # Bill text → BillExtractionResult (required)
   api-client.ts         # Provider API (optional — present, so tests required)
   validate.ts           # Cross-validation (optional — present, so tests required)
   __tests__/

@@ -4,7 +4,7 @@
 
 **Goal:** Build an accuracy test runner that executes real bill PDFs against the billing-intelligence pipeline (identification → extraction → validation), scores per-field/per-competency/per-provider accuracy, and stores results in the database. Consumed by the engineering playground (Plan 3) and custom MCP (Plan 4).
 
-**Architecture:** Real, unredacted bill PDFs are stored in `provider_test_bills` (uploaded by users via provider requests or engineers via playground). Test cases in `extraction_test_cases` reference a test bill and store human-verified expected field values as JSONB. The runner receives loaded test cases (bill text already extracted), compares each field against expected values, and produces accuracy reports stored in `extraction_test_runs`. The `ExtractionResult` type from Plan 1 is the contract — test cases define expected values using the same dot-notation field names. CI integration is shelved — can be added later as a thin wrapper around the runner.
+**Architecture:** Real, unredacted bill PDFs are stored in `provider_test_bills` (uploaded by users via provider requests or engineers via playground). Test cases in `extraction_test_cases` reference a test bill and store human-verified expected field values as JSONB. The runner receives loaded test cases (bill text already extracted), compares each field against expected values, and produces accuracy reports stored in `extraction_test_runs`. The `BillExtractionResult` type from Plan 1 is the contract — test cases define expected values using the same dot-notation field names. CI integration is shelved — can be added later as a thin wrapper around the runner.
 
 **Tech Stack:** Vitest (unit tests), Supabase (DB + Storage), TypeScript
 
@@ -69,7 +69,7 @@ comment on column provider_test_bills.source
   is 'provider_request, playground, or production_correction';
 
 -- Test cases: link a test bill to human-verified expected extraction values.
--- The expected_fields JSONB uses dot-notation keys matching ExtractionResult
+-- The expected_fields JSONB uses dot-notation keys matching BillExtractionResult
 -- field paths (e.g., "billing.amountDue", "customer.name").
 create table extraction_test_cases (
   id uuid primary key default gen_random_uuid(),
@@ -88,7 +88,7 @@ create index idx_extraction_test_cases_test_bill_id
   on extraction_test_cases(test_bill_id);
 
 comment on column extraction_test_cases.expected_fields
-  is 'JSONB with dot-notation keys matching ExtractionResult fields: provider.taxId, customer.name, billing.amountDue, etc.';
+  is 'JSONB with dot-notation keys matching BillExtractionResult fields: provider.taxId, customer.name, billing.amountDue, etc.';
 comment on column extraction_test_cases.competencies_tested
   is 'Which competencies this case validates: identification, extraction, validation';
 
@@ -247,7 +247,7 @@ git commit -m "feat: add provider_test_bills, extraction_test_cases, and extract
 
 - [ ] **Step 1: Write the types file**
 
-These types define the contract between the runner, reporter, and consumers (playground, MCP). The `expected_fields` JSONB in the DB uses dot-notation keys (e.g., `"billing.amountDue"`) that map to nested fields in `ExtractionResult`.
+These types define the contract between the runner, reporter, and consumers (playground, MCP). The `expected_fields` JSONB in the DB uses dot-notation keys (e.g., `"billing.amountDue"`) that map to nested fields in `BillExtractionResult`.
 
 Key design decisions:
 - `LoadedTestCase` includes `testBillId` so the playground can link back to the source bill
@@ -353,7 +353,7 @@ git commit -m "feat: add test runner types for accuracy measurement"
 - Create: `src/lib/billing-intelligence/test-runner/compare.ts`
 - Test: `src/lib/billing-intelligence/test-runner/__tests__/compare.test.ts`
 
-The compare module resolves dot-notation field paths (e.g., `"billing.amountDue"`) against an `ExtractionResult` and compares the resolved value to the expected value. This is the core scoring logic.
+The compare module resolves dot-notation field paths (e.g., `"billing.amountDue"`) against an `BillExtractionResult` and compares the resolved value to the expected value. This is the core scoring logic.
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -362,10 +362,10 @@ The compare module resolves dot-notation field paths (e.g., `"billing.amountDue"
 
 import { describe, it, expect } from 'vitest'
 import { resolveField, compareField, compareAllFields } from '../compare'
-import type { ExtractionResult } from '../../types'
-import { buildExtractionConfidence } from '../../confidence'
+import type { BillExtractionResult } from '../../types'
+import { buildBillExtractionConfidence } from '../../confidence'
 
-const sampleExtraction: ExtractionResult = {
+const sampleExtraction: BillExtractionResult = {
   provider: {
     profileId: 'test-profile',
     companyName: 'Test Co',
@@ -388,7 +388,7 @@ const sampleExtraction: ExtractionResult = {
   payment: {
     linhaDigitavel: '23793381286008301283715748301017194000000000015000',
   },
-  confidence: buildExtractionConfidence({
+  confidence: buildBillExtractionConfidence({
     sourceMethod: 'pdf',
     fields: {
       customerName: { found: true },
@@ -399,13 +399,13 @@ const sampleExtraction: ExtractionResult = {
 }
 
 // Extraction with optional consumption present
-const extractionWithConsumption: ExtractionResult = {
+const extractionWithConsumption: BillExtractionResult = {
   ...sampleExtraction,
   consumption: { value: 269, unit: 'kWh' },
 }
 
 // Extraction with consumption absent (undefined)
-const extractionWithoutConsumption: ExtractionResult = {
+const extractionWithoutConsumption: BillExtractionResult = {
   ...sampleExtraction,
   consumption: undefined,
 }
@@ -554,15 +554,15 @@ Expected: FAIL — `resolveField`, `compareField`, `compareAllFields` not found.
 ```typescript
 // src/lib/billing-intelligence/test-runner/compare.ts
 
-import type { ExtractionResult } from '../types'
+import type { BillExtractionResult } from '../types'
 import type { FieldComparison } from './types'
 
 /**
- * Resolve a dot-notation path against an ExtractionResult.
+ * Resolve a dot-notation path against an BillExtractionResult.
  * e.g., "billing.amountDue" → extraction.billing.amountDue
  */
 export function resolveField(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
   path: string,
 ): string | number | undefined {
   const parts = path.split('.')
@@ -587,7 +587,7 @@ export function resolveField(
  * of a number and actual is a number (or vice versa), compare as strings.
  */
 export function compareField(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
   path: string,
   expected: string | number,
 ): FieldComparison {
@@ -606,7 +606,7 @@ export function compareField(
  * Compare all expected fields against an extraction result.
  */
 export function compareAllFields(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
   expectedFields: Record<string, string | number>,
 ): FieldComparison[] {
   return Object.entries(expectedFields).map(([path, expected]) =>
@@ -647,10 +647,10 @@ Key behavior: **identification is a gate**. If identification fails, extraction 
 import { describe, it, expect } from 'vitest'
 import { runTestCase, buildAccuracyReport } from '../runner'
 import type { LoadedTestCase, TestCaseResult } from '../types'
-import type { ExtractionResult } from '../../types'
-import { buildExtractionConfidence } from '../../confidence'
+import type { BillExtractionResult } from '../../types'
+import { buildBillExtractionConfidence } from '../../confidence'
 
-const makeExtraction = (overrides: Partial<ExtractionResult['billing']> = {}): ExtractionResult => ({
+const makeExtraction = (overrides: Partial<BillExtractionResult['billing']> = {}): BillExtractionResult => ({
   provider: {
     profileId: 'test-profile',
     companyName: 'Test Co',
@@ -672,7 +672,7 @@ const makeExtraction = (overrides: Partial<ExtractionResult['billing']> = {}): E
     ...overrides,
   },
   payment: {},
-  confidence: buildExtractionConfidence({
+  confidence: buildBillExtractionConfidence({
     sourceMethod: 'pdf',
     fields: { amountDue: { found: true } },
   }),
@@ -977,7 +977,7 @@ Expected: FAIL — `runTestCase`, `buildAccuracyReport` not found.
 ```typescript
 // src/lib/billing-intelligence/test-runner/runner.ts
 
-import type { ExtractionResult } from '../types'
+import type { BillExtractionResult } from '../types'
 import type {
   LoadedTestCase,
   TestCaseResult,
@@ -987,7 +987,7 @@ import { compareAllFields } from './compare'
 
 export interface RunTestCaseInput {
   testCase: LoadedTestCase
-  extraction: ExtractionResult | null
+  extraction: BillExtractionResult | null
   identificationPassed: boolean | null
   validationPassed: boolean | null
 }

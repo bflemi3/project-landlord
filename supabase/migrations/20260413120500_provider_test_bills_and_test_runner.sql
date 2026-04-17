@@ -29,7 +29,7 @@ comment on column provider_test_bills.source
   is 'provider_request, playground, or production_correction';
 
 -- Test cases: link a test bill to human-verified expected extraction values.
--- The expected_fields JSONB uses dot-notation keys matching ExtractionResult
+-- The expected_fields JSONB uses dot-notation keys matching BillExtractionResult
 -- field paths (e.g., "billing.amountDue", "customer.name").
 create table extraction_test_cases (
   id uuid primary key default gen_random_uuid(),
@@ -48,7 +48,7 @@ create index idx_extraction_test_cases_test_bill_id
   on extraction_test_cases(test_bill_id);
 
 comment on column extraction_test_cases.expected_fields
-  is 'JSONB with dot-notation keys matching ExtractionResult fields: provider.taxId, customer.name, billing.amountDue, etc.';
+  is 'JSONB with dot-notation keys matching BillExtractionResult fields: provider.taxId, customer.name, billing.amountDue, etc.';
 comment on column extraction_test_cases.competencies_tested
   is 'Which competencies this case validates: identification, extraction, validation';
 

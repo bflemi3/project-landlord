@@ -206,7 +206,7 @@ Scheduled / webhook-triggered
 All providers produce the same base output shape. Provider-specific fields are allowed but the orchestration layer only uses the base fields.
 
 ```typescript
-interface ExtractionResult {
+interface BillExtractionResult {
   provider: {
     id: string
     companyName: string
@@ -229,11 +229,11 @@ interface ExtractionResult {
     linhaDigitavel?: string   // boleto barcode digits
     pixPayload?: string       // PIX QR code data
   }
-  confidence: ExtractionConfidence
+  confidence: BillExtractionConfidence
   rawSource: 'pdf' | 'api' | 'dda' | 'ocr'
 }
 
-interface ExtractionConfidence {
+interface BillExtractionConfidence {
   overall: number                       // 0-1
   fields: Record<string, number>        // per-field confidence
   factors: {
@@ -263,7 +263,7 @@ Stored as integer minor units (centavos) + currency code, consistent with the ex
 
 ```
 src/lib/billing-intelligence/
-  types.ts                              # shared types (ExtractionResult, Provider, etc.)
+  types.ts                              # shared types (BillExtractionResult, Provider, etc.)
   
   identification/
     cnpj-extract.ts                     # extract CNPJs from text (regex + validation)
@@ -272,10 +272,10 @@ src/lib/billing-intelligence/
   
   extraction/
     pdf.ts                              # PDF buffer → raw text (pdf-parse wrapper)
-    extract.ts                          # orchestration: PDF + provider → ExtractionResult
+    extract.ts                          # orchestration: PDF + provider → BillExtractionResult
   
   validation/
-    validate.ts                         # orchestration: ExtractionResult → ValidationResult
+    validate.ts                         # orchestration: BillExtractionResult → ValidationResult
   
   payment/
     detect.ts                           # check if a bill was paid (provider API, Open Finance, DDA)
@@ -285,7 +285,7 @@ src/lib/billing-intelligence/
     registry.ts                         # CNPJ → provider lookup, provider registration
     enliv-campeche/
       index.ts                          # provider metadata + exports
-      parser.ts                         # text → ExtractionResult
+      parser.ts                         # text → BillExtractionResult
       api-client.ts                     # Enliv API (optional)
       validate.ts                       # cross-validation (optional)
     condo-sunclub/

@@ -13,7 +13,7 @@
 **Blocks:** Plan 1c (provider system uses these utilities)
 
 **Key files from Plan 1a that this plan imports:**
-- `src/lib/billing-intelligence/types.ts` — `ExtractionConfidence`, `ExtractionSource`, `FieldConfidence`, `FieldStatus`
+- `src/lib/billing-intelligence/types.ts` — `BillExtractionConfidence`, `BillExtractionSource`, `FieldConfidence`, `FieldStatus`
 
 ---
 ## Task 6: Date and money normalization utilities
@@ -710,7 +710,7 @@ import { describe, it, expect } from 'vitest'
 import {
   computeFieldStatus,
   getSourceMethodScore,
-  buildExtractionConfidence,
+  buildBillExtractionConfidence,
 } from '../confidence'
 
 describe('getSourceMethodScore', () => {
@@ -823,9 +823,9 @@ describe('computeFieldStatus', () => {
   })
 })
 
-describe('buildExtractionConfidence', () => {
+describe('buildBillExtractionConfidence', () => {
   it('builds confidence with all fields found via PDF', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true },
@@ -844,7 +844,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('builds confidence with missing fields', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true },
@@ -860,7 +860,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('builds confidence with validation results', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'api' },
@@ -877,7 +877,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('API source produces higher extraction confidence', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true },
@@ -889,7 +889,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('OCR source produces lower extraction confidence', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'ocr',
       fields: {
         amountDue: { found: true },
@@ -901,7 +901,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('handles empty fields input', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {},
     })
@@ -911,7 +911,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('handles all fields missing', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: false },
@@ -926,7 +926,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('PDF source: all found fields are needs-review (0.80 < 0.9 threshold)', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'api' },  // extraction=0.80 < 0.9 → needs-review despite validation
@@ -944,7 +944,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('API source with validation achieves confirmed status', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'web' },
@@ -958,7 +958,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('validation without validationSource omits the field', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true, validation: 1.0 },
@@ -970,7 +970,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('field with found=false ignores validation', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
         amountDue: { found: false, validation: 1.0, validationSource: 'api' },
@@ -983,7 +983,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('autoAcceptable true when all fields confirmed', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'api',
       fields: {
         amountDue: { found: true, validation: 1.0, validationSource: 'web' },
@@ -996,7 +996,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('DDA source method', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'dda',
       fields: { amountDue: { found: true } },
     })
@@ -1008,7 +1008,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('web-scrape source method', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'web-scrape',
       fields: { amountDue: { found: true } },
     })
@@ -1018,7 +1018,7 @@ describe('buildExtractionConfidence', () => {
   })
 
   it('email source method', () => {
-    const result = buildExtractionConfidence({
+    const result = buildBillExtractionConfidence({
       sourceMethod: 'email',
       fields: { amountDue: { found: true } },
     })
@@ -1041,8 +1041,8 @@ Create `src/lib/billing-intelligence/confidence.ts`:
 
 ```typescript
 import type {
-  ExtractionConfidence,
-  ExtractionSource,
+  BillExtractionConfidence,
+  BillExtractionSource,
   FieldConfidence,
   FieldStatus,
 } from './types'
@@ -1063,7 +1063,7 @@ const SOURCE_METHOD_SCORES: Record<string, number> = {
 }
 
 /** Get the base reliability score for a source method. */
-export function getSourceMethodScore(method: ExtractionSource): number {
+export function getSourceMethodScore(method: BillExtractionSource): number {
   return SOURCE_METHOD_SCORES[method] ?? 0.50
 }
 
@@ -1109,21 +1109,21 @@ interface FieldInput {
 }
 
 interface ConfidenceInput {
-  sourceMethod: ExtractionSource
+  sourceMethod: BillExtractionSource
   fields: Record<string, FieldInput>
 }
 
 /**
- * Build the full ExtractionConfidence object for an extraction result.
+ * Build the full BillExtractionConfidence object for an extraction result.
  * Called by providers after parsing to produce a uniform confidence structure.
  *
  * Each field's extraction confidence = source method score if found, 0 if not.
  * Validation is an independent dimension set per field if a second source is available.
  * Status routing is computed per field from both dimensions.
  */
-export function buildExtractionConfidence(
+export function buildBillExtractionConfidence(
   input: ConfidenceInput,
-): ExtractionConfidence {
+): BillExtractionConfidence {
   const methodScore = getSourceMethodScore(input.sourceMethod)
 
   const fields: Record<string, FieldConfidence> = {}

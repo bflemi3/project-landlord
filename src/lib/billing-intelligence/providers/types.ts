@@ -1,5 +1,5 @@
 import type {
-  ExtractionResult,
+  BillExtractionResult,
   ProviderCategory,
   ProviderProfileStatus,
   ProviderCapabilities,
@@ -42,13 +42,13 @@ export interface Provider {
   /**
    * Extract structured data from bill text.
    */
-  extractBill(text: string): ExtractionResult | null
+  extractBill(text: string): BillExtractionResult | null
 
   /**
    * Look up open bills for a customer.
    * Only available if capabilities.apiLookup is true.
    */
-  lookupBills?(document: string): Promise<ExtractionResult[] | null>
+  lookupBills?(document: string): Promise<BillExtractionResult[] | null>
 
   /**
    * Check payment status for a customer's bills.
@@ -60,5 +60,5 @@ export interface Provider {
    * Validate an extraction against an external source.
    * Only available if capabilities.validation is true.
    */
-  validateExtraction?(extraction: ExtractionResult): Promise<ValidationResult | null>
+  validateExtraction?(extraction: BillExtractionResult): Promise<ValidationResult | null>
 }

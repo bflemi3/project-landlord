@@ -37,7 +37,7 @@ The persistence utility should be reusable — not coupled to property creation.
 
 Two paths presented on one screen:
 
-**Primary path:** Upload contract PDF (drag-and-drop or file picker). Extraction runs immediately. Supports EN, PT-BR, and ES contracts via a pluggable language adapter pattern — extraction code is abstracted so languages are plug-and-play.
+**Primary path:** Upload contract PDF or DOCX (drag-and-drop or file picker). Max 10MB. Extraction runs immediately. Supports EN, PT-BR, and ES contracts via language-specific LLM prompts with `franc`-based language detection.
 
 **Alternate path:** "I don't have a contract" link/toggle. Skips extraction and enters a lighter manual flow (address form, manual rent/expenses optional, CPF if missing, bank account connection). Tenants are skipped.
 
@@ -172,14 +172,15 @@ Summary of what was set up:
 ## Data Model
 
 ### Contract storage
-- Contract PDF stored in Supabase Storage, linked to property
-- Extracted contract data stored as a structured record (separate from the PDF)
-- Extraction metadata: language detected, confidence, fields extracted vs manually entered
-- If a contract is removed or replaced, the previous PDF is deleted from Supabase Storage and the previous extraction record is deleted from the database
+- Contract file (PDF or DOCX) stored in Supabase Storage, linked to property
+- Extracted contract data stored as a structured record (separate from the file) including raw extracted text for future features (chat with contract, re-extraction, search)
+- Extraction metadata: language detected, `isRentalContract` classification, fields extracted vs manually entered
+- If a contract is removed or replaced, the previous file is deleted from Supabase Storage and the previous extraction record is deleted from the database
 
 ### Rent (dedicated table)
 - Linked to property and contract
 - Amount, currency, due day of month
+- `includes` — optional array of what the stated amount covers when bundled (e.g., ["rent", "condo", "IPTU"]). When present, the UI surfaces this to the landlord so they can decide whether to track bundled charges separately.
 - IPCA adjustment date(s) / frequency
 - Contract start and end dates
 - Separate from charge definitions — rent is first-class
@@ -220,20 +221,36 @@ Summary of what was set up:
 ## Contract Extraction
 
 ### Input
-- PDF file (uploaded by landlord)
+- PDF or DOCX file (uploaded by landlord)
+- Max file size: 10MB
 
 ### Output
-Structured data covering: property address, rent amount/currency, contract start/end dates, IPCA adjustment dates, tenant names/CPFs/emails, expenses/providers/CNPJs.
+- `ContractExtractionResponse` — a discriminated union: success with structured data, or failure with a typed error code
+- `isRentalContract` — boolean: the LLM classifies whether the document is a rental contract before extracting. If false, returns `not_a_contract` error.
+- Structured data covering: property address, rent (amount/currency/due day/`includes` — optional array of what the stated amount covers when charges are bundled, e.g. ["rent", "condo", "IPTU"]), contract start/end dates, IPCA adjustment dates, landlords (name/CPF/email), tenants (name/CPF/email), expenses/providers/CNPJs, language detected
+- Raw extracted text stored alongside structured data — used for future "chat with your contract" feature, re-extraction with improved prompts, and full-text search
+
+### Extraction approach
+- LLM-based extraction via Vercel AI SDK (`generateObject` + Zod schema)
+- The Zod schema guarantees output structure; language-specific prompts guide the LLM on where to find fields
+- System prompt + language prompt combined in the `system` parameter for prompt caching; contract text in `prompt`
+- Model: Claude Sonnet 4.6 (configurable). Cost: ~$0.03 per extraction. See `docs/project/llm-extraction-costs.md`.
 
 ### Language handling
 - Supports EN, PT-BR, ES
-- Extraction code uses a pluggable language adapter pattern — each language is a module that can be added independently
-- Language is detected from the document, not configured by the user
+- Language detected from document text using `franc` (trigram-based detection library)
+- Each language has a specific prompt guiding the LLM on contract structure, section headings, date/currency formats, and tax ID patterns
+- Unsupported languages return `unsupported_language` error code before the LLM call (no wasted tokens)
 
 ### Partial extraction
 - Any field can fail to extract — this is expected and handled gracefully
 - Successfully extracted fields are pre-filled; failed fields are left empty for manual entry
 - The UI clearly distinguishes "extracted" vs "manually entered" (subtle indicator, not intrusive)
+
+### Bundled rent
+- Some contracts state a single amount covering rent + other charges (e.g., R$6,300 includes rent, condo fee, and IPTU)
+- Extraction captures the stated total amount and an `includes` array listing what's bundled
+- The extraction does NOT decompose the amount — that's a user decision during the wizard flow
 
 ### Provider matching from extraction
 - If a CNPJ is found alongside a charge, match directly against the provider DB
@@ -242,12 +259,34 @@ Structured data covering: property address, rent amount/currency, contract start
 
 ---
 
-## Error Handling Principles
+## Error Handling
 
-- **Never a dead end.** Every error state has a clear message and at least one CTA (retry, skip, manual entry, go back).
+### Structured error codes
+All errors from the extraction engine are returned as strongly typed error codes (`ContractExtractionErrorCode`), not user-facing strings. Both backend and frontend use this type. The UI layer maps codes to internationalized messages (via i18n keys) and attaches appropriate CTAs.
+
+### Error codes
+
+| Code | Trigger | Frontend intent |
+|---|---|---|
+| `file_too_large` | File exceeds 10MB | "File too large" |
+| `unsupported_format` | Not PDF or DOCX | "Upload a PDF or DOCX" |
+| `corrupt_file` | Valid header but broken content | "Couldn't read this file" |
+| `empty_file` | Zero bytes or null input | "File is empty" |
+| `scanned_document` | PDF with no text layer (image-only) | "Scanned doc — upload digital version" |
+| `empty_content` | Valid file but no text | "No text found" |
+| `password_protected` | Encrypted file | "Remove password protection" |
+| `unsupported_language` | Language not EN/PT-BR/ES | "Language not supported yet" |
+| `not_a_contract` | LLM classifies as not a rental contract | "Doesn't appear to be a rental contract" |
+| `extraction_failed` | LLM call failed or schema validation failed | "Something went wrong, try again" |
+| `extraction_timeout` | LLM call exceeded timeout | "Taking too long, try again" |
+| `rate_limited` | Anthropic rate limit | "High demand, try again shortly" |
+| `api_key_missing` | No API key configured | Internal error only |
+
+### Principles
+- **Never a dead end.** Every error has a clear internationalized message and at least one CTA (retry, upload different file, switch to manual setup).
 - **Partial success is fine.** Extraction that gets 70% of fields is still valuable — show what worked, let the user fill the rest.
-- **User-friendly language.** No technical jargon in error messages. "We couldn't read your contract" not "PDF extraction failed with error code 422."
-- **Graceful degradation.** If extraction fails entirely, the manual path is always available. The product works without extraction — it's just more manual.
+- **No user-facing strings in error responses.** Error codes only. The frontend maps to i18n keys.
+- **Graceful degradation.** If extraction fails entirely, the manual path is always available.
 
 ---
 
@@ -255,8 +294,8 @@ Structured data covering: property address, rent amount/currency, contract start
 
 ### In scope
 - The wizard flow (steps 1-8)
-- Contract PDF upload and storage
-- Contract extraction (EN, PT-BR, ES)
+- Contract upload (PDF + DOCX) and storage
+- Contract extraction via LLM (EN, PT-BR, ES) with structured error codes
 - Structured data storage from extraction
 - Rent as a separate data entity
 - Charge definition creation from extraction
@@ -295,5 +334,10 @@ Structured data covering: property address, rent amount/currency, contract start
 | CPF collection | Inline during property creation, not separate onboarding | Least friction — collected when actually needed |
 | Bank account nudge | Strong nudge, not required (for LL) | The automation backbone depends on it, but blocking creation would kill conversion |
 | No-contract path | Supported but secondary | Some landlords are pre-lease or don't have the PDF handy. Manual path keeps them on the platform |
-| Extraction languages | Pluggable adapter pattern | Brazil-first but supports EN/ES. Adding languages shouldn't require restructuring extraction code |
+| Extraction approach | LLM-based via Vercel AI SDK | Contracts are freeform legal docs — too varied for regex. LLM + Zod schema guarantees structured output. ~$0.03/extraction. |
+| Extraction languages | Language-specific LLM prompts with franc detection | Brazil-first but supports EN/ES. Adding a language = adding a prompt module. |
+| File formats | PDF + DOCX | Both common for rental contracts. DOCX via mammoth, PDF via unpdf. |
+| Error handling | Strongly typed error codes, no user-facing strings | Frontend maps codes to i18n keys. 13 error codes covering every failure scenario. |
+| Document classification | LLM returns `isRentalContract` boolean | Better than null-field checking. LLM classifies before we return results. |
+| Bundled rent | Store stated amount + `includes` array | Don't decompose — user decides during wizard. Extraction captures what the contract says. |
 | Provider matching | Region + CNPJ/name, suggestion-based | Never auto-assign — always present for LL confirmation. Unmatched providers flagged for engineering |

@@ -1,9 +1,9 @@
-import type { ExtractionResult, ValidationResult } from '../../types'
+import type { BillExtractionResult, ValidationResult } from '../../types'
 import { normalizeBarcode, normalizeDate, toMinorUnits } from '../../normalize'
 import { fetchEnlivDebitos } from './api-client'
 
 export async function validateEnlivExtraction(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
 ): Promise<ValidationResult | null> {
   try {
     const apiData = await fetchEnlivDebitos(extraction.customer.taxId)

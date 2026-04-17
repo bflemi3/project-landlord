@@ -13,10 +13,10 @@
 **Blocks:** Plan 1d (cleanup)
 
 **Key files from earlier plans that this plan imports:**
-- `src/lib/billing-intelligence/types.ts` — `ExtractionResult`, `ValidationResult`, `PaymentStatus`, etc.
+- `src/lib/billing-intelligence/types.ts` — `BillExtractionResult`, `ValidationResult`, `PaymentStatus`, etc.
 - `src/lib/billing-intelligence/providers/types.ts` — `Provider` interface
 - `src/lib/billing-intelligence/normalize.ts` — `normalizeDate`, `normalizeMonth`, `parseBRL`, `toMinorUnits`, `normalizeBarcode`
-- `src/lib/billing-intelligence/confidence.ts` — `buildExtractionConfidence`
+- `src/lib/billing-intelligence/confidence.ts` — `buildBillExtractionConfidence`
 - `src/lib/billing-intelligence/extraction/pdf.ts` — `extractTextFromPdf`
 - `src/lib/external/call.ts` — `externalFetch` (for Enliv API calls and CNPJ lookups)
 - `src/lib/cnpj/validate.ts` — `isValidCnpj`
@@ -467,9 +467,9 @@ git commit -m "feat: add provider registry mapping profile IDs to code modules"
 ## Task 12: Enliv Campeche provider module
 
 **IMPORTANT:**
-- The code samples below use the field names from the `ExtractionResult` type defined in Plan 1a Task 5. When implementing, read `src/lib/billing-intelligence/types.ts` first and ensure all field names match (e.g., `provider.taxId` not `provider.cnpj`, `customer.taxId` not `customer.document`, `customer.taxIdType` not `customer.documentType`).
+- The code samples below use the field names from the `BillExtractionResult` type defined in Plan 1a Task 5. When implementing, read `src/lib/billing-intelligence/types.ts` first and ensure all field names match (e.g., `provider.taxId` not `provider.cnpj`, `customer.taxId` not `customer.document`, `customer.taxIdType` not `customer.documentType`).
 - The extraction should also include `consumption` data (kWh for electricity).
-- Use `buildExtractionConfidence` from Plan 1b Task 9 instead of building confidence objects manually.
+- Use `buildBillExtractionConfidence` from Plan 1b Task 9 instead of building confidence objects manually.
 - The `api-client.ts` must use `externalFetch` from `@/lib/external/call` (not raw `fetch`) so all API calls are monitored and logged to `external_call_log`.
 
 **Files:**
@@ -481,22 +481,22 @@ git commit -m "feat: add provider registry mapping profile IDs to code modules"
 - Create: `src/lib/billing-intelligence/providers/enliv-campeche/__tests__/api-client.test.ts`
 - Create: `src/lib/billing-intelligence/providers/enliv-campeche/__tests__/validate.test.ts`
 
-This migrates the Phase 0 Enliv code into the new structure, adapting to use `Provider` interface, `ExtractionResult` type, normalized dates/money, and the profile UUID.
+This migrates the Phase 0 Enliv code into the new structure, adapting to use `Provider` interface, `BillExtractionResult` type, normalized dates/money, and the profile UUID.
 
 - [ ] **Step 1: Create parser.ts**
 
 Create `src/lib/billing-intelligence/providers/enliv-campeche/parser.ts`:
 
 ```typescript
-import type { ExtractionResult } from '../../types'
+import type { BillExtractionResult } from '../../types'
 import { normalizeDate, normalizeMonth, parseBRL, toMinorUnits, normalizeBarcode } from '../../normalize'
-import { buildExtractionConfidence } from '../../confidence'
+import { buildBillExtractionConfidence } from '../../confidence'
 
 // Placeholder — will be replaced with the real provider_invoice_profiles.id
 // when Enliv Campeche is created through the engineering playground
 const PROFILE_ID = 'a1b2c3d4-0002-0002-0002-000000000001'
 
-export function parseEnlivBillText(text: string): ExtractionResult | null {
+export function parseEnlivBillText(text: string): BillExtractionResult | null {
   const providerTaxId = extractField(text, /CNPJ:\s*(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2})/)
   if (!providerTaxId) return null
 
@@ -519,7 +519,7 @@ export function parseEnlivBillText(text: string): ExtractionResult | null {
   const cleanDoc = customerTaxId.replace(/[.\-/]/g, '')
   const taxIdType = cleanDoc.length === 14 ? 'cnpj' as const : 'cpf' as const
 
-  const confidence = buildExtractionConfidence({
+  const confidence = buildBillExtractionConfidence({
     sourceMethod: 'pdf',
     fields: {
       customerName: { found: !!customerName },
@@ -635,12 +635,12 @@ export async function fetchEnlivPagas(document: string, page = 1): Promise<Enliv
 Create `src/lib/billing-intelligence/providers/enliv-campeche/validate.ts`:
 
 ```typescript
-import type { ExtractionResult, ValidationResult } from '../../types'
+import type { BillExtractionResult, ValidationResult } from '../../types'
 import { normalizeBarcode, normalizeDate } from '../../normalize'
 import { fetchEnlivDebitos } from './api-client'
 
 export async function validateEnlivExtraction(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
 ): Promise<ValidationResult | null> {
   try {
     const apiData = await fetchEnlivDebitos(extraction.customer.taxId)
@@ -682,12 +682,12 @@ Create `src/lib/billing-intelligence/providers/enliv-campeche/index.ts`:
 
 ```typescript
 import type { Provider } from '../types'
-import type { ExtractionResult, PaymentStatus, ValidationResult } from '../../types'
+import type { BillExtractionResult, PaymentStatus, ValidationResult } from '../../types'
 import { parseEnlivBillText } from './parser'
 import { fetchEnlivDebitos, fetchEnlivPagas } from './api-client'
 import { validateEnlivExtraction } from './validate'
 import { normalizeDate, toMinorUnits, normalizeBarcode } from '../../normalize'
-import { buildExtractionConfidence } from '../../confidence'
+import { buildBillExtractionConfidence } from '../../confidence'
 
 // Placeholder — will be replaced with the real provider_invoice_profiles.id
 // when Enliv Campeche is created through the engineering playground
@@ -720,11 +720,11 @@ export const enlivCampeche: Provider = {
     return null
   },
 
-  extractBill(text: string): ExtractionResult | null {
+  extractBill(text: string): BillExtractionResult | null {
     return parseEnlivBillText(text)
   },
 
-  async lookupBills(taxId: string): Promise<ExtractionResult[] | null> {
+  async lookupBills(taxId: string): Promise<BillExtractionResult[] | null> {
     try {
       const data = await fetchEnlivDebitos(taxId)
       return data.debitos.map((d) => ({
@@ -732,7 +732,7 @@ export const enlivCampeche: Provider = {
         customer: { name: data.nome_cliente, taxId, taxIdType: 'cpf' as const, countryCode: 'BR', accountNumber: d.cadastroDistribuidora },
         billing: { referenceMonth: '', dueDate: normalizeDate(d.vencimento), amountDue: toMinorUnits(d.valor), currency: 'BRL' },
         payment: { linhaDigitavel: normalizeBarcode(d.linha_digitavel), pixPayload: d.emv_pix },
-        confidence: buildExtractionConfidence({
+        confidence: buildBillExtractionConfidence({
           sourceMethod: 'api',
           fields: {
             customerName: { found: !!data.nome_cliente },
@@ -759,7 +759,7 @@ export const enlivCampeche: Provider = {
     } catch { return null }
   },
 
-  async validateExtraction(extraction: ExtractionResult): Promise<ValidationResult | null> {
+  async validateExtraction(extraction: BillExtractionResult): Promise<ValidationResult | null> {
     return validateEnlivExtraction(extraction)
   },
 }
@@ -802,7 +802,7 @@ R$ 218,47
 74891.16009 06660.307304 32263.871033 5 14260000021847`
 
 describe('parseEnlivBillText', () => {
-  it('returns ExtractionResult with profile ID', () => {
+  it('returns BillExtractionResult with profile ID', () => {
     const result = parseEnlivBillText(sampleText)
     expect(result).not.toBeNull()
     expect(result!.provider.profileId).toBe('a1b2c3d4-0002-0002-0002-000000000001')
@@ -837,7 +837,7 @@ describe('parseEnlivBillText', () => {
     expect(result.payment.linhaDigitavel).toBe('74891160090666030730432263871033514260000021847')
   })
 
-  it('uses buildExtractionConfidence for uniform scoring', () => {
+  it('uses buildBillExtractionConfidence for uniform scoring', () => {
     const result = parseEnlivBillText(sampleText)!
     expect(result.confidence.source.method).toBe('pdf')
     expect(result.confidence.source.methodScore).toBe(0.80)
@@ -906,16 +906,16 @@ Create `src/lib/billing-intelligence/providers/enliv-campeche/__tests__/validate
 ```typescript
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { validateEnlivExtraction } from '../validate'
-import type { ExtractionResult } from '../../../types'
-import { buildExtractionConfidence } from '../../../confidence'
+import type { BillExtractionResult } from '../../../types'
+import { buildBillExtractionConfidence } from '../../../confidence'
 
-function makeExtraction(overrides: Partial<ExtractionResult> = {}): ExtractionResult {
+function makeExtraction(overrides: Partial<BillExtractionResult> = {}): BillExtractionResult {
   return {
     provider: { profileId: 'test', companyName: 'Enliv', taxId: '49449868000162', category: 'electricity' },
     customer: { name: 'Test', taxId: '04003232909', taxIdType: 'cpf', countryCode: 'BR', accountNumber: '59069412' },
     billing: { referenceMonth: '2026-03', dueDate: '2026-04-24', amountDue: 21847, currency: 'BRL' },
     payment: { linhaDigitavel: '74891160090666030730432263871033514260000021847' },
-    confidence: buildExtractionConfidence({ sourceMethod: 'pdf', fields: { amountDue: { found: true } } }),
+    confidence: buildBillExtractionConfidence({ sourceMethod: 'pdf', fields: { amountDue: { found: true } } }),
     rawSource: 'pdf',
     ...overrides,
   }

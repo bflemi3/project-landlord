@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { validateEnlivExtraction } from '../validate'
-import type { ExtractionResult } from '../../../types'
-import { buildExtractionConfidence } from '../../../confidence'
+import type { BillExtractionResult } from '../../../types'
+import { buildBillExtractionConfidence } from '../../../confidence'
 
-function makeExtraction(overrides: Partial<ExtractionResult> = {}): ExtractionResult {
+function makeExtraction(overrides: Partial<BillExtractionResult> = {}): BillExtractionResult {
   return {
     provider: { profileId: 'test', companyName: 'Enliv', taxId: '49449868000162', category: 'electricity' },
     customer: { name: 'Test', taxId: '04003232909', taxIdType: 'cpf', countryCode: 'BR', accountNumber: '59069412' },
     billing: { referenceMonth: '2026-03', dueDate: '2026-04-24', amountDue: 21847, currency: 'BRL' },
     payment: { linhaDigitavel: '74891160090666030730432263871033514260000021847' },
-    confidence: buildExtractionConfidence({ sourceMethod: 'pdf', fields: { amountDue: { found: true } } }),
+    confidence: buildBillExtractionConfidence({ sourceMethod: 'pdf', fields: { amountDue: { found: true } } }),
     rawSource: 'pdf',
     ...overrides,
   }

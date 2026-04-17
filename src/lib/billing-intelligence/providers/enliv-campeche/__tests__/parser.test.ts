@@ -30,7 +30,7 @@ R$ 218,47
 74891.16009 06660.307304 32263.871033 5 14260000021847`
 
 describe('parseEnlivBillText', () => {
-  it('returns ExtractionResult with profile ID', () => {
+  it('returns BillExtractionResult with profile ID', () => {
     const result = parseEnlivBillText(sampleText)
     expect(result).not.toBeNull()
     expect(result!.provider.profileId).toBe('a1b2c3d4-0002-0002-0002-000000000001')
@@ -65,7 +65,7 @@ describe('parseEnlivBillText', () => {
     expect(result.payment.linhaDigitavel).toBe('74891160090666030730432263871033514260000021847')
   })
 
-  it('uses buildExtractionConfidence for uniform scoring', () => {
+  it('uses buildBillExtractionConfidence for uniform scoring', () => {
     const result = parseEnlivBillText(sampleText)!
     expect(result.confidence.source.method).toBe('pdf')
     expect(result.confidence.source.methodScore).toBe(0.80)

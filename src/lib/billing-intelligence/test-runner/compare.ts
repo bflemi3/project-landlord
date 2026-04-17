@@ -1,12 +1,12 @@
-import type { ExtractionResult } from '../types'
+import type { BillExtractionResult } from '../types'
 import type { FieldComparison } from './types'
 
 /**
- * Resolve a dot-notation path against an ExtractionResult.
+ * Resolve a dot-notation path against an BillExtractionResult.
  * e.g., "billing.amountDue" → extraction.billing.amountDue
  */
 export function resolveField(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
   path: string,
 ): string | number | undefined {
   const parts = path.split('.')
@@ -31,7 +31,7 @@ export function resolveField(
  * of a number and actual is a number (or vice versa), compare as strings.
  */
 export function compareField(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
   path: string,
   expected: string | number,
 ): FieldComparison {
@@ -50,7 +50,7 @@ export function compareField(
  * Compare all expected fields against an extraction result.
  */
 export function compareAllFields(
-  extraction: ExtractionResult,
+  extraction: BillExtractionResult,
   expectedFields: Record<string, string | number>,
 ): FieldComparison[] {
   return Object.entries(expectedFields).map(([path, expected]) =>

@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { runTestCase, buildAccuracyReport } from '../runner'
 import type { LoadedTestCase, TestCaseResult } from '../types'
-import type { ExtractionResult } from '../../types'
-import { buildExtractionConfidence } from '../../confidence'
+import type { BillExtractionResult } from '../../types'
+import { buildBillExtractionConfidence } from '../../confidence'
 
-const makeExtraction = (overrides: Partial<ExtractionResult['billing']> = {}): ExtractionResult => ({
+const makeExtraction = (overrides: Partial<BillExtractionResult['billing']> = {}): BillExtractionResult => ({
   provider: {
     profileId: 'test-profile',
     companyName: 'Test Co',
@@ -26,7 +26,7 @@ const makeExtraction = (overrides: Partial<ExtractionResult['billing']> = {}): E
     ...overrides,
   },
   payment: {},
-  confidence: buildExtractionConfidence({
+  confidence: buildBillExtractionConfidence({
     sourceMethod: 'pdf',
     fields: { amountDue: { found: true } },
   }),
