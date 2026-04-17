@@ -47,9 +47,9 @@
   "expenses": {
     "minLength": 3,
     "items": [
-      { "type": { "contains": "IPTU" } },
-      { "type": { "normalizedEquals": "agua" } },
-      { "type": { "normalizedEquals": "gas" } }
+      { "type": { "equals": "other" } },
+      { "type": { "equals": "water" } },
+      { "type": { "equals": "gas" } }
     ]
   }
 }

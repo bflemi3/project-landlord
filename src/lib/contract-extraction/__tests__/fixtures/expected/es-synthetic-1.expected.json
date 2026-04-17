@@ -47,9 +47,9 @@
   "expenses": {
     "minLength": 3,
     "items": [
-      { "type": { "normalizedEquals": "energia electrica" } },
-      { "type": { "normalizedEquals": "agua" } },
-      { "type": { "normalizedEquals": "gas natural" } }
+      { "type": { "equals": "electricity" } },
+      { "type": { "equals": "water" } },
+      { "type": { "equals": "gas" } }
     ]
   }
 }

@@ -94,7 +94,12 @@ describe('contractExtractionResultSchema', () => {
       { name: 'Joao Santos', taxId: '987.654.321-00', email: 'joao@example.com' },
     ],
     expenses: [
-      { type: 'electricity', providerName: 'Enel', providerTaxId: '12.345.678/0001-90' },
+      {
+        type: 'electricity',
+        bundledInto: null,
+        providerName: 'Enel',
+        providerTaxId: '12.345.678/0001-90',
+      },
     ],
     languageDetected: 'pt-br',
     rawExtractedText: 'Contrato de locacao residencial...',
@@ -219,7 +224,7 @@ describe('contractExtractionResultSchema', () => {
   it('accepts expenses with all optional fields null', () => {
     const result = {
       ...validResult,
-      expenses: [{ type: null, providerName: null, providerTaxId: null }],
+      expenses: [{ type: null, bundledInto: null, providerName: null, providerTaxId: null }],
     }
     const parsed = contractExtractionResultSchema.parse(result)
     expect(parsed.expenses?.[0]?.type).toBeNull()
@@ -274,6 +279,105 @@ describe('contractExtractionLlmSchema', () => {
     }
     const parsed = contractExtractionLlmSchema.parse(result)
     expect(parsed.isRentalContract).toBe(false)
+  })
+})
+
+describe('expense type on contractExtractionResultSchema', () => {
+  const canonicalTypes = [
+    'electricity',
+    'water',
+    'gas',
+    'internet',
+    'condo',
+    'trash',
+    'sewer',
+    'cable',
+    'maintenance',
+    'other',
+  ] as const
+
+  it.each(canonicalTypes)('accepts expense type %s', (type) => {
+    const result = {
+      ...makeValidResult(),
+      expenses: [{ type, bundledInto: null, providerName: null, providerTaxId: null }],
+    }
+    const parsed = contractExtractionResultSchema.parse(result)
+    expect(parsed.expenses?.[0]?.type).toBe(type)
+  })
+
+  it('accepts null expense type', () => {
+    const result = {
+      ...makeValidResult(),
+      expenses: [{ type: null, bundledInto: null, providerName: null, providerTaxId: null }],
+    }
+    const parsed = contractExtractionResultSchema.parse(result)
+    expect(parsed.expenses?.[0]?.type).toBeNull()
+  })
+
+  it('rejects non-canonical expense types (native-language terms)', () => {
+    const ptBrNative = {
+      ...makeValidResult(),
+      expenses: [{ type: 'água', bundledInto: null, providerName: null, providerTaxId: null }],
+    }
+    expect(() => contractExtractionResultSchema.parse(ptBrNative)).toThrow()
+
+    const esNative = {
+      ...makeValidResult(),
+      expenses: [{ type: 'energía eléctrica', bundledInto: null, providerName: null, providerTaxId: null }],
+    }
+    expect(() => contractExtractionResultSchema.parse(esNative)).toThrow()
+
+    const freeform = {
+      ...makeValidResult(),
+      expenses: [{ type: 'property_tax', bundledInto: null, providerName: null, providerTaxId: null }],
+    }
+    expect(() => contractExtractionResultSchema.parse(freeform)).toThrow()
+  })
+})
+
+describe('expense.bundledInto on contractExtractionResultSchema', () => {
+  const makeExpense = (bundledInto: unknown) => ({
+    type: 'water' as const,
+    bundledInto,
+    providerName: null,
+    providerTaxId: null,
+  })
+
+  it('accepts null (expense has its own bill)', () => {
+    const result = { ...makeValidResult(), expenses: [makeExpense(null)] }
+    const parsed = contractExtractionResultSchema.parse(result)
+    expect(parsed.expenses?.[0]?.bundledInto).toBeNull()
+  })
+
+  it('accepts "rent" literal (bundled into rent payment)', () => {
+    const result = { ...makeValidResult(), expenses: [makeExpense('rent')] }
+    const parsed = contractExtractionResultSchema.parse(result)
+    expect(parsed.expenses?.[0]?.bundledInto).toBe('rent')
+  })
+
+  it.each(['condo', 'electricity', 'water', 'gas', 'other'] as const)(
+    'accepts canonical expense type %s as parent',
+    (parentType) => {
+      const result = { ...makeValidResult(), expenses: [makeExpense(parentType)] }
+      const parsed = contractExtractionResultSchema.parse(result)
+      expect(parsed.expenses?.[0]?.bundledInto).toBe(parentType)
+    },
+  )
+
+  it('rejects non-canonical strings', () => {
+    const result = { ...makeValidResult(), expenses: [makeExpense('hoa')] }
+    expect(() => contractExtractionResultSchema.parse(result)).toThrow()
+
+    const freeform = { ...makeValidResult(), expenses: [makeExpense('utilities')] }
+    expect(() => contractExtractionResultSchema.parse(freeform)).toThrow()
+  })
+
+  it('requires the field to be present on every expense', () => {
+    const missing = {
+      ...makeValidResult(),
+      expenses: [{ type: 'water', providerName: null, providerTaxId: null }],
+    }
+    expect(() => contractExtractionResultSchema.parse(missing)).toThrow()
   })
 })
 

@@ -3,6 +3,7 @@ import { Constants } from '@/lib/types/database'
 import type {
   ContractExtractionLlmResult,
   ContractExtractionResult,
+  ExpenseType,
   PropertyType,
 } from './types'
 
@@ -73,8 +74,47 @@ const contractPartySchema = z.object({
   email: z.string().nullable().describe('Email address'),
 })
 
+const expenseTypeSchema = z
+  .enum([
+    'electricity',
+    'water',
+    'gas',
+    'internet',
+    'condo',
+    'trash',
+    'sewer',
+    'cable',
+    'maintenance',
+    'other',
+  ])
+  .describe(
+    'Canonical expense category. Normalize the contract\'s native term to this set — do not translate literally, classify semantically. ' +
+      'Mapping guidance: ' +
+      'PT-BR "luz"/"energia elétrica" → electricity; "água" → water; "gás" → gas; "internet" → internet; ' +
+      '"condomínio"/"taxa condominial" → condo; "IPTU" → other; "lixo" → trash; "esgoto" → sewer; "manutenção" → maintenance. ' +
+      'ES "energía eléctrica"/"electricidad"/"luz" → electricity; "agua" → water; "gas"/"gas natural" → gas; ' +
+      '"comunidad"/"gastos de comunidad" → condo; "mantenimiento"/"cuota de mantenimiento" → maintenance; ' +
+      '"IBI"/"predial" → other. ' +
+      'EN "electricity"/"electric" → electricity; "water" → water; "gas"/"natural gas" → gas; "HOA dues" → condo; ' +
+      '"trash"/"garbage"/"waste" → trash; "sewer" → sewer; "cable"/"TV" → cable. ' +
+      'Use "other" for any expense that does not fit an explicit category (IPTU, IBI, predial, security fees, pool fees, etc.). ' +
+      'Bundled expenses like "água e esgoto" should be split into separate entries (one "water", one "sewer").',
+  )
+
+const expenseBundledIntoSchema = z
+  .union([expenseTypeSchema, z.literal('rent')])
+  .nullable()
+  .describe(
+    'Where this expense is paid from: ' +
+      '"rent" → the amount rolls up into the monthly rent payment (e.g., "the rent includes IPTU"); ' +
+      'an expense type like "condo" → the bill is paid together with that category (e.g., a condo fee that covers water); ' +
+      'null → this expense has its own dedicated bill. ' +
+      'Every recurring service the contract mentions should be a first-class expense entry — if multiple services share one bill, the "secondary" services set bundledInto to the type of the primary bill.',
+  )
+
 const contractExpenseSchema = z.object({
-  type: z.string().nullable().describe('Category of expense, e.g. "electricity", "water", "condo"'),
+  type: expenseTypeSchema.nullable(),
+  bundledInto: expenseBundledIntoSchema,
   providerName: z.string().nullable().describe('Name of the utility or service provider'),
   providerTaxId: z.string().nullable().describe('Business tax ID of the provider (CNPJ in Brazil, EIN in US, CIF in Spain, RFC in Mexico)'),
 })
@@ -166,8 +206,28 @@ type _PropertyTypeAliasMatchesDb = [PropertyType] extends [_DbPropertyTypeValue]
   : never
 const _propertyTypeAliasCheck: _PropertyTypeAliasMatchesDb = true
 
+// Same drift guard for expense_type. PT-BR/ES/EN prompts canonicalize native
+// expense terms to this set; if the DB enum changes and types are regen'd but
+// the Zod enum isn't updated (or vice versa), compilation fails here.
+type _ZodExpenseTypeValue = z.infer<typeof expenseTypeSchema>
+type _DbExpenseTypeValue = (typeof Constants.public.Enums.expense_type)[number]
+type _ExpenseTypeZodMatchesDb = [_ZodExpenseTypeValue] extends [_DbExpenseTypeValue]
+  ? [_DbExpenseTypeValue] extends [_ZodExpenseTypeValue]
+    ? true
+    : never
+  : never
+const _expenseTypeEnumCheck: _ExpenseTypeZodMatchesDb = true
+type _ExpenseTypeAliasMatchesDb = [ExpenseType] extends [_DbExpenseTypeValue]
+  ? [_DbExpenseTypeValue] extends [ExpenseType]
+    ? true
+    : never
+  : never
+const _expenseTypeAliasCheck: _ExpenseTypeAliasMatchesDb = true
+
 // Suppress unused variable warnings
 void _llmTypeCheck
 void _resultTypeCheck
 void _propertyTypeEnumCheck
 void _propertyTypeAliasCheck
+void _expenseTypeEnumCheck
+void _expenseTypeAliasCheck

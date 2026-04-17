@@ -50,10 +50,10 @@
   "expenses": {
     "minLength": 4,
     "items": [
-      { "type": { "contains": "condomin" } },
-      { "type": { "contains": "IPTU" } },
-      { "type": { "normalizedEquals": "energia eletrica" } },
-      { "type": { "normalizedEquals": "agua" } }
+      { "type": { "equals": "condo" } },
+      { "type": { "equals": "other" } },
+      { "type": { "equals": "electricity" } },
+      { "type": { "equals": "water" } }
     ]
   }
 }

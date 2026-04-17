@@ -1640,6 +1640,17 @@ export type Database = {
       charge_source: "manual" | "imported" | "corrected"
       charge_type: "rent" | "recurring" | "variable"
       dispute_status: "open" | "resolved"
+      expense_type:
+        | "electricity"
+        | "water"
+        | "gas"
+        | "internet"
+        | "condo"
+        | "trash"
+        | "sewer"
+        | "cable"
+        | "maintenance"
+        | "other"
       ingestion_status:
         | "uploaded"
         | "processing"
@@ -1806,6 +1817,18 @@ export const Constants = {
       charge_source: ["manual", "imported", "corrected"],
       charge_type: ["rent", "recurring", "variable"],
       dispute_status: ["open", "resolved"],
+      expense_type: [
+        "electricity",
+        "water",
+        "gas",
+        "internet",
+        "condo",
+        "trash",
+        "sewer",
+        "cable",
+        "maintenance",
+        "other",
+      ],
       ingestion_status: [
         "uploaded",
         "processing",

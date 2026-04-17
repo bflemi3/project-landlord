@@ -23,6 +23,20 @@ export type SupportedLanguage = 'pt-br' | 'en' | 'es'
 export type PropertyType = Database['public']['Enums']['property_type']
 
 // ---------------------------------------------------------------------------
+// Expense type — Postgres enum is source of truth (see expense_type enum migration)
+//
+// Canonical English vocabulary across all supported languages. The LLM
+// normalizes the contract's native term (PT-BR "luz"/"energia elétrica",
+// ES "energía eléctrica") to a single canonical value ("electricity").
+// Downstream consumers (billing, payment matching, ledger, analytics, UI)
+// work off this canonical set — they never need per-language synonym logic.
+// "other" is the escape hatch for expenses that don't fit (e.g., IPTU, IBI,
+// predial, security fees).
+// ---------------------------------------------------------------------------
+
+export type ExpenseType = Database['public']['Enums']['expense_type']
+
+// ---------------------------------------------------------------------------
 // Extraction result — the LLM output shape
 // ---------------------------------------------------------------------------
 
@@ -75,9 +89,20 @@ export interface ContractParty {
   email: string | null
 }
 
+/**
+ * Where an expense is paid from:
+ * - "rent" → bundled into the rent payment (e.g., "rent includes IPTU")
+ * - An ExpenseType (e.g., "condo") → bundled into that expense's bill
+ *   (e.g., a condo fee that covers water and trash)
+ * - null → this expense has its own dedicated bill
+ */
+export type ExpenseBundledInto = ExpenseType | 'rent' | null
+
 export interface ContractExpense {
-  /** Category/type of expense, e.g. "electricity", "water", "condo" */
-  type: string | null
+  /** Canonical category. See ExpenseType — the LLM normalizes native terms to this set. */
+  type: ExpenseType | null
+  /** If this expense is paid as part of another payment stream. See ExpenseBundledInto. */
+  bundledInto: ExpenseBundledInto
   providerName: string | null
   providerTaxId: string | null
 }
