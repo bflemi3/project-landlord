@@ -146,6 +146,28 @@ export interface ContractExtractionInput {
 }
 
 // ---------------------------------------------------------------------------
+// Telemetry — surfaced via optional onTelemetry callback, not part of the
+// response shape. The engine fires it on the success path only; failure
+// paths either don't reach the LLM or have no usable usage data.
+// ---------------------------------------------------------------------------
+
+export interface ContractExtractionTelemetry {
+  inputTokens: number
+  outputTokens: number
+  /** Tokens the provider billed as "cache write" (priced 1.25x input for Anthropic ephemeral). */
+  cacheWriteTokens: number
+  /** Tokens served from cache (priced 0.1x input for Anthropic ephemeral). */
+  cacheReadTokens: number
+  modelId: string
+  language: SupportedLanguage
+  durationMs: number
+}
+
+export interface ContractExtractionOptions {
+  onTelemetry?: (telemetry: ContractExtractionTelemetry) => void
+}
+
+// ---------------------------------------------------------------------------
 // Errors
 // ---------------------------------------------------------------------------
 

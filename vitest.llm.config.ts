@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config'
+import { loadEnv } from 'vite'
 
 /**
  * LLM integration tests — run only via `pnpm test:llm`.
@@ -10,8 +11,12 @@ import { defineConfig } from 'vitest/config'
  *
  * Scoped to `src/lib/contract-extraction/` so future DB integration tests
  * with `.integration.test.ts` suffixes don't leak in.
+ *
+ * Env loading: Vitest doesn't auto-load `.env.local` like Next does. We
+ * pull it in via Vite's `loadEnv` so `ANTHROPIC_API_KEY` and
+ * `CONTRACT_EXTRACTION_MODEL` are available to the engine under test.
  */
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   resolve: {
     tsconfigPaths: true,
   },
@@ -22,8 +27,7 @@ export default defineConfig({
     // default 5s timeout. 120s per test plus generous suite budget.
     testTimeout: 120_000,
     hookTimeout: 60_000,
-    // Phase 2 will write the actual integration tests — until then, this
-    // config must exit 0 when the suite is empty.
     passWithNoTests: true,
+    env: loadEnv(mode, process.cwd(), ''),
   },
-})
+}))

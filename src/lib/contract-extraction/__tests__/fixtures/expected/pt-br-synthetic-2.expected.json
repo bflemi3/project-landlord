@@ -14,7 +14,7 @@
   "rent": {
     "amount": { "equals": 520000 },
     "currency": { "equals": "BRL" },
-    "dueDay": { "equals": 1 }
+    "dueDay": { "isNull": true }
   },
   "contractDates": {
     "start": { "equals": "2026-04-15" },

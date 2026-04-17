@@ -41,31 +41,39 @@ vi.mock('../language-detection', () => ({
 }))
 
 // Import AFTER mocks so the SUT resolves against them.
+import type { z } from 'zod'
 import { APICallError } from 'ai'
 import { extractContract } from '../extract-contract'
 import { ExtractTextError } from '../extract-text'
 import { enPrompt, esPrompt, ptBrPrompt, systemPrompt } from '../prompts'
-import type { ContractExtractionLlmResult } from '../types'
+import { contractExtractionLlmSchema } from '../schema'
 
 // ---------------------------------------------------------------------------
 // Helpers
+//
+// `validLlmRawOutput` produces a fixture matching the LLM-facing schema —
+// sentinel values ("" for absent strings, [] for absent arrays, "none" for a
+// non-bundled expense) rather than nulls. The engine normalizes sentinels
+// back to null before returning, which the assertions below reflect.
 // ---------------------------------------------------------------------------
 
-function validLlmResult(overrides: Partial<ContractExtractionLlmResult> = {}): ContractExtractionLlmResult {
+type LlmRawOutput = z.infer<typeof contractExtractionLlmSchema>
+
+function validLlmRawOutput(overrides: Partial<LlmRawOutput> = {}): LlmRawOutput {
   return {
     isRentalContract: true,
     propertyType: 'apartment',
     address: {
       street: 'Rua das Flores',
       number: '123',
-      complement: null,
+      complement: '',
       neighborhood: 'Centro',
       city: 'Sao Paulo',
       state: 'SP',
       postalCode: '01001-000',
       country: 'BR',
     },
-    rent: { amount: 250000, currency: 'BRL', dueDay: 5, includes: null },
+    rent: { amount: 250000, currency: 'BRL', dueDay: 5, includes: [] },
     contractDates: { start: '2026-01-01', end: '2027-01-01' },
     rentAdjustment: {
       date: '2027-01-01',
@@ -74,12 +82,35 @@ function validLlmResult(overrides: Partial<ContractExtractionLlmResult> = {}): C
       indexName: 'IPCA',
       value: null,
     },
-    landlords: [{ name: 'Maria Silva', taxId: null, email: null }],
-    tenants: [{ name: 'Joao Santos', taxId: null, email: null }],
-    expenses: null,
+    landlords: [{ name: 'Maria Silva', taxId: '', email: '' }],
+    tenants: [{ name: 'Joao Santos', taxId: '', email: '' }],
+    expenses: [],
     ...overrides,
   }
 }
+
+/**
+ * All-empty-sentinel version of a raw output — used to simulate the LLM
+ * finding nothing for a particular top-level section. The engine collapses
+ * these to null on the way out.
+ */
+const emptyAddress: LlmRawOutput['address'] = {
+  street: '',
+  number: '',
+  complement: '',
+  neighborhood: '',
+  city: '',
+  state: '',
+  postalCode: '',
+  country: '',
+}
+const emptyRent: LlmRawOutput['rent'] = {
+  amount: 0,
+  currency: '',
+  dueDay: null,
+  includes: [],
+}
+const emptyContractDates: LlmRawOutput['contractDates'] = { start: '', end: '' }
 
 /**
  * A minimal valid PDF buffer — `extractText` is mocked so the bytes don't
@@ -100,7 +131,7 @@ beforeEach(() => {
   // Default mocks — happy path. Individual tests override.
   extractTextMock.mockResolvedValue('Full extracted contract text goes here.')
   detectLanguageMock.mockReturnValue('pt-br')
-  generateObjectMock.mockResolvedValue({ object: validLlmResult() })
+  generateObjectMock.mockResolvedValue({ object: validLlmRawOutput() })
 })
 
 afterEach(() => {
@@ -193,16 +224,16 @@ describe('extractContract — prompt selection', () => {
 // ---------------------------------------------------------------------------
 
 describe('extractContract — result shape', () => {
-  it('passes through partial LLM results with null fields intact', async () => {
+  it('collapses all-sentinel LLM output back to null fields', async () => {
     generateObjectMock.mockResolvedValue({
-      object: validLlmResult({
-        address: null,
-        rent: null,
-        contractDates: null,
+      object: validLlmRawOutput({
+        address: emptyAddress,
+        rent: emptyRent,
+        contractDates: emptyContractDates,
         rentAdjustment: null,
-        landlords: null,
-        tenants: null,
-        expenses: null,
+        landlords: [],
+        tenants: [],
+        expenses: [],
       }),
     })
 
@@ -220,7 +251,7 @@ describe('extractContract — result shape', () => {
 
   it('round-trips bundled rent `includes` array', async () => {
     generateObjectMock.mockResolvedValue({
-      object: validLlmResult({
+      object: validLlmRawOutput({
         rent: { amount: 630000, currency: 'BRL', dueDay: 5, includes: ['rent', 'condo', 'IPTU'] },
       }),
     })
@@ -261,6 +292,126 @@ describe('extractContract — result shape', () => {
     await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     const args = generateObjectMock.mock.calls[0][0] as { model: { modelId?: string } }
     expect(args.model.modelId).toBe('claude-sonnet-4-6')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Telemetry
+// ---------------------------------------------------------------------------
+
+describe('extractContract — telemetry', () => {
+  it('invokes onTelemetry with the usage breakdown on success', async () => {
+    generateObjectMock.mockResolvedValue({
+      object: validLlmRawOutput(),
+      usage: {
+        inputTokens: 4200,
+        outputTokens: 550,
+        inputTokenDetails: {
+          noCacheTokens: 400,
+          cacheWriteTokens: 3800,
+          cacheReadTokens: 0,
+        },
+      },
+    })
+    const calls: unknown[] = []
+    await extractContract(
+      { fileBuffer: validBuffer(), fileType: 'pdf' },
+      { onTelemetry: (t) => calls.push(t) },
+    )
+    expect(calls).toHaveLength(1)
+    expect(calls[0]).toMatchObject({
+      inputTokens: 4200,
+      outputTokens: 550,
+      cacheWriteTokens: 3800,
+      cacheReadTokens: 0,
+      modelId: 'claude-sonnet-4-6',
+      language: 'pt-br',
+    })
+    // durationMs is time-sensitive — just assert it's a finite non-negative number.
+    expect((calls[0] as { durationMs: number }).durationMs).toBeGreaterThanOrEqual(0)
+  })
+
+  it('does not fire onTelemetry on error paths', async () => {
+    generateObjectMock.mockRejectedValue(new Error('boom'))
+    const calls: unknown[] = []
+    const response = await extractContract(
+      { fileBuffer: validBuffer(), fileType: 'pdf' },
+      { onTelemetry: (t) => calls.push(t) },
+    )
+    expect(response.success).toBe(false)
+    expect(calls).toHaveLength(0)
+  })
+
+  it('swallows onTelemetry callback errors so they cannot break extraction', async () => {
+    generateObjectMock.mockResolvedValue({
+      object: validLlmRawOutput(),
+      usage: { inputTokens: 100, outputTokens: 50, inputTokenDetails: {} },
+    })
+    const response = await extractContract(
+      { fileBuffer: validBuffer(), fileType: 'pdf' },
+      {
+        onTelemetry: () => {
+          throw new Error('telemetry sink is down')
+        },
+      },
+    )
+    expect(response.success).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Telemetry
+// ---------------------------------------------------------------------------
+
+describe('extractContract — telemetry', () => {
+  it('invokes onTelemetry with usage, cache breakdown, model, language, and duration on success', async () => {
+    generateObjectMock.mockResolvedValue({
+      object: validLlmRawOutput(),
+      usage: {
+        inputTokens: 3800,
+        outputTokens: 450,
+        inputTokenDetails: {
+          noCacheTokens: 200,
+          cacheReadTokens: 0,
+          cacheWriteTokens: 3600,
+        },
+      },
+    })
+    detectLanguageMock.mockReturnValue('pt-br')
+
+    const onTelemetry = vi.fn()
+    await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' }, { onTelemetry })
+
+    expect(onTelemetry).toHaveBeenCalledTimes(1)
+    const payload = onTelemetry.mock.calls[0][0]
+    expect(payload).toMatchObject({
+      inputTokens: 3800,
+      outputTokens: 450,
+      cacheWriteTokens: 3600,
+      cacheReadTokens: 0,
+      modelId: 'claude-sonnet-4-6',
+      language: 'pt-br',
+    })
+    expect(typeof payload.durationMs).toBe('number')
+    expect(payload.durationMs).toBeGreaterThanOrEqual(0)
+  })
+
+  it('does not throw if the callback throws', async () => {
+    const onTelemetry = vi.fn(() => {
+      throw new Error('boom')
+    })
+    const response = await extractContract(
+      { fileBuffer: validBuffer(), fileType: 'pdf' },
+      { onTelemetry },
+    )
+    expect(response.success).toBe(true)
+  })
+
+  it('does not invoke onTelemetry on error paths', async () => {
+    extractTextMock.mockRejectedValue(new ExtractTextError('corrupt_file'))
+    const onTelemetry = vi.fn()
+    await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' }, { onTelemetry })
+    expect(onTelemetry).not.toHaveBeenCalled()
   })
 })
 
@@ -333,17 +484,17 @@ describe('extractContract — error mapping', () => {
 
   it('returns not_a_contract when the LLM returns isRentalContract: false', async () => {
     generateObjectMock.mockResolvedValue({
-      object: {
+      object: validLlmRawOutput({
         isRentalContract: false,
         propertyType: null,
-        address: null,
-        rent: null,
-        contractDates: null,
+        address: emptyAddress,
+        rent: emptyRent,
+        contractDates: emptyContractDates,
         rentAdjustment: null,
-        landlords: null,
-        tenants: null,
-        expenses: null,
-      },
+        landlords: [],
+        tenants: [],
+        expenses: [],
+      }),
     })
     const response = await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     expect(response).toEqual({ success: false, error: { code: 'not_a_contract' } })

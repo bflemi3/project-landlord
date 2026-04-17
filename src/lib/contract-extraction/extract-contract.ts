@@ -1,15 +1,25 @@
 import { anthropic } from '@ai-sdk/anthropic'
 import { APICallError, generateObject } from 'ai'
+import type { z } from 'zod'
 import { detectLanguage } from './language-detection'
 import { extractText, ExtractTextError, type ExtractTextErrorCode } from './extract-text'
 import { getLanguagePrompt, systemPrompt } from './prompts'
 import { contractExtractionLlmSchema } from './schema'
 import type {
+  ContractAddress,
+  ContractExpense,
   ContractExtractionErrorCode,
   ContractExtractionInput,
   ContractExtractionLlmResult,
+  ContractExtractionOptions,
   ContractExtractionResponse,
+  ContractParty,
+  ContractRent,
+  ContractRentAdjustment,
+  ExpenseBundledInto,
 } from './types'
+
+type LlmRaw = z.infer<typeof contractExtractionLlmSchema>
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
 const DEFAULT_MODEL = 'claude-sonnet-4-6'
@@ -58,6 +68,136 @@ function isAbortError(error: unknown): boolean {
   return false
 }
 
+// ---------------------------------------------------------------------------
+// LLM output normalization
+//
+// The LLM-facing schema uses sentinel values ("" for absent strings, [] for
+// absent arrays, "none" for a non-bundled expense) to stay under Anthropic's
+// 16-parameter cap on union types. These helpers convert the sentinels back
+// to null so callers see the documented `ContractExtractionLlmResult` shape.
+// ---------------------------------------------------------------------------
+
+function strOrNull(s: string): string | null {
+  return s === '' ? null : s
+}
+
+function arrOrNull<T>(a: T[]): T[] | null {
+  return a.length === 0 ? null : a
+}
+
+function normalizeAddress(raw: LlmRaw['address']): ContractAddress | null {
+  const street = strOrNull(raw.street)
+  const number = strOrNull(raw.number)
+  const complement = strOrNull(raw.complement)
+  const neighborhood = strOrNull(raw.neighborhood)
+  const city = strOrNull(raw.city)
+  const state = strOrNull(raw.state)
+  const postalCode = strOrNull(raw.postalCode)
+  const country = strOrNull(raw.country)
+  const anyPopulated =
+    street || number || complement || neighborhood || city || state || postalCode || country
+  if (!anyPopulated) return null
+  return { street, number, complement, neighborhood, city, state, postalCode, country }
+}
+
+function normalizeRent(raw: LlmRaw['rent']): ContractRent | null {
+  const currency = strOrNull(raw.currency)
+  // No amount AND no currency AND nothing else populated → treat as "LLM
+  // couldn't find rent details at all" and return null.
+  if (raw.amount === 0 && !currency && raw.dueDay == null && raw.includes.length === 0) {
+    return null
+  }
+  return {
+    amount: raw.amount,
+    currency: currency ?? '',
+    dueDay: raw.dueDay,
+    includes: arrOrNull(raw.includes),
+  }
+}
+
+function normalizeContractDates(raw: LlmRaw['contractDates']): { start: string; end: string } | null {
+  const start = strOrNull(raw.start)
+  const end = strOrNull(raw.end)
+  if (!start && !end) return null
+  return { start: start ?? '', end: end ?? '' }
+}
+
+function normalizeRentAdjustment(
+  raw: LlmRaw['rentAdjustment'],
+): ContractRentAdjustment | null {
+  if (raw == null) return null
+  return {
+    date: strOrNull(raw.date),
+    frequency: raw.frequency,
+    method: raw.method,
+    indexName: strOrNull(raw.indexName),
+    value: raw.value,
+  }
+}
+
+function normalizeParty(raw: LlmRaw['landlords'][number]): ContractParty | null {
+  const name = strOrNull(raw.name)
+  const taxId = strOrNull(raw.taxId)
+  const email = strOrNull(raw.email)
+  if (!name && !taxId && !email) return null
+  return { name, taxId, email }
+}
+
+function normalizeParties(raw: LlmRaw['landlords']): ContractParty[] | null {
+  const parties = raw.map(normalizeParty).filter((p): p is ContractParty => p != null)
+  return arrOrNull(parties)
+}
+
+function normalizeExpense(raw: LlmRaw['expenses'][number]): ContractExpense | null {
+  const providerName = strOrNull(raw.providerName)
+  const providerTaxId = strOrNull(raw.providerTaxId)
+  // "none" is the sentinel for "expense has its own dedicated bill".
+  const bundledInto: ExpenseBundledInto = raw.bundledInto === 'none' ? null : raw.bundledInto
+  if (raw.type == null && bundledInto == null && !providerName && !providerTaxId) {
+    return null
+  }
+  return {
+    type: raw.type,
+    bundledInto,
+    providerName,
+    providerTaxId,
+  }
+}
+
+function normalizeExpenses(raw: LlmRaw['expenses']): ContractExpense[] | null {
+  const expenses = raw.map(normalizeExpense).filter((e): e is ContractExpense => e != null)
+  return arrOrNull(expenses)
+}
+
+function normalizeLlmOutput(raw: LlmRaw): ContractExtractionLlmResult {
+  // Non-contract short-circuit: every downstream field is discarded anyway,
+  // but we normalize to null so the shape stays consistent.
+  if (raw.isRentalContract === false) {
+    return {
+      isRentalContract: false,
+      propertyType: null,
+      address: null,
+      rent: null,
+      contractDates: null,
+      rentAdjustment: null,
+      landlords: null,
+      tenants: null,
+      expenses: null,
+    }
+  }
+  return {
+    isRentalContract: true,
+    propertyType: raw.propertyType,
+    address: normalizeAddress(raw.address),
+    rent: normalizeRent(raw.rent),
+    contractDates: normalizeContractDates(raw.contractDates),
+    rentAdjustment: normalizeRentAdjustment(raw.rentAdjustment),
+    landlords: normalizeParties(raw.landlords),
+    tenants: normalizeParties(raw.tenants),
+    expenses: normalizeExpenses(raw.expenses),
+  }
+}
+
 /**
  * Extract structured data from a rental contract PDF/DOCX.
  *
@@ -66,6 +206,7 @@ function isAbortError(error: unknown): boolean {
  */
 export async function extractContract(
   input: ContractExtractionInput,
+  options?: ContractExtractionOptions,
 ): Promise<ContractExtractionResponse> {
   // Size guard runs before any parsing — never load a 500MB upload into pdf.js.
   if (input?.fileBuffer != null && input.fileBuffer.byteLength > MAX_FILE_SIZE_BYTES) {
@@ -111,6 +252,8 @@ export async function extractContract(
   const timeoutHandle = setTimeout(() => abortController.abort(), DEFAULT_TIMEOUT_MS)
 
   let llmResult: ContractExtractionLlmResult
+  let usage: Awaited<ReturnType<typeof generateObject>>['usage'] | undefined
+  const startedAt = Date.now()
   try {
     const result = await generateObject({
       model: anthropic(modelId),
@@ -130,7 +273,8 @@ export async function extractContract(
       prompt: rawText,
       abortSignal: abortController.signal,
     })
-    llmResult = result.object
+    llmResult = normalizeLlmOutput(result.object)
+    usage = result.usage
   } catch (err) {
     clearTimeout(timeoutHandle)
     if (isAbortError(err)) return errorResponse('extraction_timeout')
@@ -138,6 +282,23 @@ export async function extractContract(
     return errorResponse('extraction_failed')
   }
   clearTimeout(timeoutHandle)
+
+  if (options?.onTelemetry) {
+    // Swallow callback errors — telemetry must never break extraction.
+    try {
+      options.onTelemetry({
+        inputTokens: usage?.inputTokens ?? 0,
+        outputTokens: usage?.outputTokens ?? 0,
+        cacheWriteTokens: usage?.inputTokenDetails?.cacheWriteTokens ?? 0,
+        cacheReadTokens: usage?.inputTokenDetails?.cacheReadTokens ?? 0,
+        modelId,
+        language,
+        durationMs: Date.now() - startedAt,
+      })
+    } catch {
+      // intentionally ignored
+    }
+  }
 
   if (llmResult.isRentalContract === false) {
     return errorResponse('not_a_contract')

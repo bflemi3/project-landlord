@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { contractExtractionResultSchema, contractExtractionLlmSchema } from '../schema'
+import {
+  contractExtractionResultSchema,
+  contractExtractionLlmSchema,
+  contractExtractionLlmResultShape,
+} from '../schema'
 import type {
   ContractExtractionResult,
   ContractExtractionLlmResult,
@@ -240,29 +244,28 @@ describe('contractExtractionResultSchema', () => {
   })
 })
 
-describe('contractExtractionLlmSchema', () => {
+describe('contractExtractionLlmResultShape (post-normalization)', () => {
   it('accepts a valid LLM result without engine fields', () => {
     const llmResult = makeValidLlmResult()
-    const parsed = contractExtractionLlmSchema.parse(llmResult)
+    const parsed = contractExtractionLlmResultShape.parse(llmResult)
     expect(parsed.isRentalContract).toBe(true)
     expect(parsed.rent?.amount).toBe(250000)
   })
 
   it('does not require languageDetected or rawExtractedText', () => {
     const llmResult = makeValidLlmResult()
-    // These fields should not exist on the LLM result
     expect('languageDetected' in llmResult).toBe(false)
     expect('rawExtractedText' in llmResult).toBe(false)
-    expect(() => contractExtractionLlmSchema.parse(llmResult)).not.toThrow()
+    expect(() => contractExtractionLlmResultShape.parse(llmResult)).not.toThrow()
   })
 
   it('rejects invalid LLM fields the same as the full schema', () => {
     const llmResult = makeValidLlmResult()
     const withFloat = {
       ...llmResult,
-      rent: { ...llmResult.rent, amount: 2500.50 },
+      rent: { ...llmResult.rent, amount: 2500.5 },
     }
-    expect(() => contractExtractionLlmSchema.parse(withFloat)).toThrow()
+    expect(() => contractExtractionLlmResultShape.parse(withFloat)).toThrow()
   })
 
   it('accepts a minimal non-contract LLM result', () => {
@@ -277,8 +280,85 @@ describe('contractExtractionLlmSchema', () => {
       tenants: null,
       expenses: null,
     }
-    const parsed = contractExtractionLlmSchema.parse(result)
+    const parsed = contractExtractionLlmResultShape.parse(result)
     expect(parsed.isRentalContract).toBe(false)
+  })
+})
+
+describe('contractExtractionLlmSchema (LLM-facing, sentinel-shaped)', () => {
+  // The LLM schema uses "" and [] sentinels instead of null on most fields
+  // so it stays under Anthropic's 16-parameter cap on union types. These
+  // tests document the shape the LLM must produce — the engine normalizes
+  // sentinels back to null for downstream consumers.
+
+  const validSentinelInput = {
+    isRentalContract: true,
+    propertyType: 'apartment' as const,
+    address: {
+      street: 'Rua X',
+      number: '123',
+      complement: '',
+      neighborhood: 'Centro',
+      city: 'Rio',
+      state: 'RJ',
+      postalCode: '',
+      country: 'BR',
+    },
+    rent: { amount: 200000, currency: 'BRL', dueDay: 10, includes: [] },
+    contractDates: { start: '2026-01-01', end: '2027-01-01' },
+    rentAdjustment: null,
+    landlords: [{ name: 'Ana', taxId: '', email: '' }],
+    tenants: [{ name: 'Bob', taxId: '', email: '' }],
+    expenses: [
+      { type: 'water' as const, bundledInto: 'none' as const, providerName: '', providerTaxId: '' },
+    ],
+  }
+
+  it('accepts the sentinel shape the LLM is instructed to produce', () => {
+    const parsed = contractExtractionLlmSchema.parse(validSentinelInput)
+    expect(parsed.isRentalContract).toBe(true)
+    expect(parsed.address.complement).toBe('')
+    expect(parsed.rent.includes).toEqual([])
+    expect(parsed.expenses[0].bundledInto).toBe('none')
+  })
+
+  it('rejects null on string fields (sentinel must be "")', () => {
+    const withNull = {
+      ...validSentinelInput,
+      address: { ...validSentinelInput.address, complement: null },
+    }
+    expect(() => contractExtractionLlmSchema.parse(withNull)).toThrow()
+  })
+
+  it('rejects null on array fields (sentinel must be [])', () => {
+    const withNull = { ...validSentinelInput, landlords: null }
+    expect(() => contractExtractionLlmSchema.parse(withNull)).toThrow()
+  })
+
+  it('still allows null on rentAdjustment at the top level', () => {
+    expect(() =>
+      contractExtractionLlmSchema.parse({ ...validSentinelInput, rentAdjustment: null }),
+    ).not.toThrow()
+  })
+
+  it('accepts "none" as bundledInto sentinel', () => {
+    expect(() => contractExtractionLlmSchema.parse(validSentinelInput)).not.toThrow()
+  })
+
+  it('rejects bundledInto: null (LLM must emit "none")', () => {
+    const withNull = {
+      ...validSentinelInput,
+      expenses: [{ ...validSentinelInput.expenses[0], bundledInto: null }],
+    }
+    expect(() => contractExtractionLlmSchema.parse(withNull)).toThrow()
+  })
+
+  it('rejects non-integer rent amounts', () => {
+    const withFloat = {
+      ...validSentinelInput,
+      rent: { ...validSentinelInput.rent, amount: 2500.5 },
+    }
+    expect(() => contractExtractionLlmSchema.parse(withFloat)).toThrow()
   })
 })
 
