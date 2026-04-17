@@ -32,8 +32,12 @@ export type ExtractTextErrorCode =
   | 'no_text_extractable'
 
 export class ExtractTextError extends Error {
-  constructor(public readonly code: ExtractTextErrorCode) {
-    super(code)
+  constructor(
+    public readonly code: ExtractTextErrorCode,
+    public readonly cause?: unknown,
+  ) {
+    const causeMessage = cause instanceof Error ? cause.message : undefined
+    super(causeMessage ? `${code}: ${causeMessage}` : code)
     this.name = 'ExtractTextError'
   }
 }
@@ -95,8 +99,8 @@ async function extractFromPdf(bytes: Uint8Array): Promise<string> {
   try {
     pdf = await getDocumentProxy(bytes)
   } catch (e) {
-    if (isPasswordError(e)) throw new ExtractTextError('password_protected')
-    throw new ExtractTextError('corrupt_file')
+    if (isPasswordError(e)) throw new ExtractTextError('password_protected', e)
+    throw new ExtractTextError('corrupt_file', e)
   }
 
   try {
@@ -105,8 +109,8 @@ async function extractFromPdf(bytes: Uint8Array): Promise<string> {
       const result = await unpdfExtractText(pdf, { mergePages: true })
       text = result.text
     } catch (e) {
-      if (isPasswordError(e)) throw new ExtractTextError('password_protected')
-      throw new ExtractTextError('corrupt_file')
+      if (isPasswordError(e)) throw new ExtractTextError('password_protected', e)
+      throw new ExtractTextError('corrupt_file', e)
     }
 
     if (text.trim().length === 0) {
@@ -119,15 +123,16 @@ async function extractFromPdf(bytes: Uint8Array): Promise<string> {
 }
 
 async function extractFromDocx(bytes: Uint8Array): Promise<string> {
-  // mammoth in node accepts a Node Buffer; coerce safely
-  const buffer = Buffer.from(bytes)
+  // Zero-copy wrap around the caller's bytes — no allocation. mammoth only
+  // reads from the buffer; Buffer.from(Uint8Array) would copy the memory.
+  const buffer = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength)
 
   let result: { value: string }
   try {
     result = await mammoth.extractRawText({ buffer })
   } catch (e) {
-    if (isPasswordError(e)) throw new ExtractTextError('password_protected')
-    throw new ExtractTextError('corrupt_file')
+    if (isPasswordError(e)) throw new ExtractTextError('password_protected', e)
+    throw new ExtractTextError('corrupt_file', e)
   }
 
   if (result.value.trim().length === 0) {
