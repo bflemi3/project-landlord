@@ -1,7 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { validateAndFetchInviteContext } from '@/app/actions/validate-invite'
-import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 import SignUpForm from './sign-up-form'
 
 interface SignUpPageProps {
@@ -23,13 +22,9 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
   } = await supabase.auth.getUser()
 
   if (user) {
-    // Already logged in — redeem the code, refresh JWT so middleware sees
-    // has_redeemed_invite on the /app request, then redirect.
-    const result = await redeemInviteByCodeCore(supabase, user.id, code)
-    if (result.success) {
-      await supabase.auth.refreshSession()
-    }
-    redirect('/app')
+    // Already logged in — delegate to the redeem route handler so the refreshed
+    // JWT cookie is actually written (Server Components can't set cookies).
+    redirect(`/auth/redeem?code=${encodeURIComponent(code)}&next=/app`)
   }
 
   // Validate the code and fetch context
