@@ -18,11 +18,17 @@ export default async function SignUpPage({ searchParams }: SignUpPageProps) {
 
   // Check if user is already authenticated
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (user) {
-    // Already logged in — redeem the code and redirect
-    await redeemInviteByCodeCore(supabase, user.id, code)
+    // Already logged in — redeem the code, refresh JWT so middleware sees
+    // has_redeemed_invite on the /app request, then redirect.
+    const result = await redeemInviteByCodeCore(supabase, user.id, code)
+    if (result.success) {
+      await supabase.auth.refreshSession()
+    }
     redirect('/app')
   }
 
