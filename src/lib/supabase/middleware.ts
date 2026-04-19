@@ -100,6 +100,9 @@ export async function updateSession(request: NextRequest) {
   if (user && pathname.startsWith('/auth') && !isPassthrough) {
     const url = request.nextUrl.clone()
     url.pathname = '/app'
+    // Drop the invite code so it doesn't leak into the landed URL. Other
+    // params (e.g. analytics, next) pass through untouched.
+    url.searchParams.delete('code')
     return redirectWithCookies(url, supabaseResponse)
   }
 

@@ -87,12 +87,14 @@ export async function GET(request: NextRequest) {
   }
 
   if (type === 'signup' || type === 'email') {
-    // DB trigger redeem_invite_code sets has_redeemed_invite during auth.users INSERT,
-    // so the session minted by exchangeCodeForSession already carries the claim.
     const inviteCode = data.session.user.user_metadata?.invite_code as string | undefined
     if (inviteCode) {
       await redeemInviteByCodeCore(supabase, data.session.user.id, inviteCode)
     }
+    // exchangeCodeForSession sometimes mints a JWT without the app_metadata
+    // claim the DB trigger set during signup. Refresh so the cookie carries
+    // has_redeemed_invite before middleware reads it on the /app request.
+    await supabase.auth.refreshSession()
     return redirectWithCookies(buildUrl('/auth/verified'), supabaseResponse)
   }
 
