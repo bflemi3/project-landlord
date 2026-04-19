@@ -96,7 +96,7 @@ export function EmptyState({ firstName, greeting }: EmptyStateProps) {
 // Property card — client (Link click handlers, setup progress rendering)
 // =============================================================================
 
-const CARD_CLASS = 'group block w-full overflow-hidden rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30'
+const CARD_CLASS = 'group block w-full overflow-hidden rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:shadow-none dark:hover:border-primary/30'
 
 export function PropertyCard({ property: p }: { property: HomeProperty }) {
   const tP = useTranslations('properties')
@@ -147,7 +147,7 @@ export function PropertyCard({ property: p }: { property: HomeProperty }) {
             {Math.round((completed / total) * 100)}%
           </span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-border dark:bg-zinc-700">
+        <div className="h-1.5 overflow-hidden rounded-full bg-border">
           <div
             className="h-full rounded-full bg-primary transition-all duration-500"
             style={{ width: `${(completed / total) * 100}%` }}
@@ -167,7 +167,7 @@ export function PropertyCard({ property: p }: { property: HomeProperty }) {
                 <Clock className="size-3 text-amber-500" />
               </div>
             ) : (
-              <div className="size-5 rounded-full border border-zinc-300 dark:border-zinc-600" />
+              <div className="size-5 rounded-full border border-border" />
             )}
             <span className={`text-sm ${step.done ? 'text-muted-foreground' : step.inProgress ? 'font-medium text-foreground' : 'text-muted-foreground/60'}`}>
               {tP(step.label)}
@@ -267,7 +267,7 @@ function ActionRow({ action }: { action: HomeAction }) {
     <Link
       prefetch
       href={`/app/p/${action.propertyId}${highlight ? `?highlight=${highlight}` : ''}`}
-      className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
+      className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:bg-muted/50"
     >
       <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary ${color}`}>
         <Icon className="size-4" />

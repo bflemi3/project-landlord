@@ -24,7 +24,7 @@ export function ComponentPreview({
   return (
     <div className="h-svh overflow-y-auto">
       {/* Header bar */}
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/80 px-6 py-3 backdrop-blur-lg dark:bg-zinc-900/80">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/80 px-6 py-3 backdrop-blur-lg">
         <div>
           <h1 className="text-sm font-bold text-foreground">{title}</h1>
           <p className="text-xs text-muted-foreground">{description}</p>

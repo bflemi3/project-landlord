@@ -30,7 +30,7 @@ export function ThemeToggle() {
   if (!mounted) return null
 
   return (
-    <div className="inline-flex items-center gap-1 rounded-full bg-zinc-200 p-1 dark:bg-secondary">
+    <div className="inline-flex items-center gap-1 rounded-full bg-secondary p-1">
       {options.map(({ value, icon: Icon, labelKey }) => (
         <Tooltip key={value}>
           <TooltipTrigger

@@ -28,7 +28,7 @@ export function UrgentActionList({ urgentActions }: { urgentActions: UrgentActio
         return (
           <button
             key={i}
-            className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
+            className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:bg-muted/50"
           >
             <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${color}`}>
               <Icon className="size-4" />

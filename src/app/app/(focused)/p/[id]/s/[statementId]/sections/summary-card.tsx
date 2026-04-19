@@ -29,7 +29,7 @@ export async function SummaryCard({ statementId }: { statementId: string }) {
   const publishByLabel = publishByDate.toLocaleDateString(locale, { month: 'long', day: 'numeric' })
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 dark:bg-zinc-800/80">
+    <div className="rounded-2xl border border-border bg-card p-5">
       <p className="text-sm text-muted-foreground">
         {isEstimated ? t('estimatedTenantOwes') : t('tenantOwes')}
       </p>
@@ -51,7 +51,7 @@ export async function SummaryCard({ statementId }: { statementId: string }) {
 
       {hasSplit && (
         <>
-          <Separator className="my-4 dark:bg-zinc-600" />
+          <Separator className="my-4" />
           <div className="text-sm tabular-nums">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t('youCover')}</span>

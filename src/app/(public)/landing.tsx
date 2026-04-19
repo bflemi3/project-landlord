@@ -108,14 +108,14 @@ export function Landing() {
             </h1>
           </FadeUp>
           <FadeUp delay={0.2}>
-            <p className="mt-5 text-lg leading-relaxed text-zinc-600 dark:text-zinc-400 md:text-xl">
+            <p className="mt-5 text-lg leading-relaxed text-muted-foreground md:text-xl">
               {t('heroSubtitle')}
             </p>
           </FadeUp>
           <FadeUp delay={0.35}>
             <div className="mt-10">
               <WaitlistForm />
-              <p className="mt-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+              <p className="mt-4 text-center text-sm text-muted-foreground">
                 {t('heroNote')}
               </p>
             </div>
@@ -149,7 +149,7 @@ export function Landing() {
 
       {/* Social Proof */}
       <section className="px-6 py-12">
-        <div className="relative rounded-2xl bg-zinc-100 px-8 py-10 dark:bg-zinc-800/70">
+        <div className="relative rounded-2xl bg-muted px-8 py-10">
           <div className="mb-5 h-1 w-10 rounded-full bg-primary" />
           <blockquote className="text-xl font-medium leading-relaxed italic text-foreground">
             &ldquo;{t('testimonialQuote')}&rdquo;

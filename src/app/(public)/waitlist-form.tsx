@@ -46,7 +46,7 @@ export function WaitlistForm() {
           onChange={(e) => setEmail(e.target.value)}
           required
           disabled={loading}
-          className="border-zinc-200 bg-white shadow-sm placeholder:text-zinc-400 dark:border-zinc-700 dark:bg-zinc-900 dark:shadow-md dark:shadow-black/20 dark:placeholder:text-zinc-500"
+          className="bg-card shadow-sm dark:shadow-md dark:shadow-black/20"
         />
       </div>
       <Button type="submit" disabled={loading} className="h-12 shrink-0 rounded-2xl px-6">

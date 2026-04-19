@@ -73,7 +73,7 @@ export function TenantsSection({ propertyId, unitId }: { propertyId: string; uni
             <button
               key={member.id}
               onClick={() => setSelectedMember(member)}
-              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
+              className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/20 dark:bg-muted/50"
             >
               <Avatar size="sm">
                 <AvatarFallback className="text-xs">{getInitials(member.name, member.email)}</AvatarFallback>
@@ -127,7 +127,7 @@ function InviteRow({ invite, onSelect }: { invite: UnitInvite; onSelect: () => v
     <button
       ref={ref}
       onClick={onSelect}
-      className={`flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50 ${highlighted ? 'section-highlight' : ''}`}
+      className={`flex w-full items-center gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-3 text-left transition-colors hover:border-primary/20 dark:bg-muted/50 ${highlighted ? 'section-highlight' : ''}`}
     >
       <Avatar size="sm">
         <AvatarFallback className="text-xs">{getInitials(invite.name, invite.email)}</AvatarFallback>
@@ -289,7 +289,7 @@ function TenantDetailModal({
       {member && (
         <div>
           {/* Tenant info card */}
-          <div className="rounded-xl bg-secondary/50 px-4 py-3.5 dark:bg-zinc-800/50">
+          <div className="rounded-xl bg-secondary/50 px-4 py-3.5">
             <div className="flex items-center gap-3">
               <Avatar>
                 <AvatarFallback>{getInitials(member.name, member.email)}</AvatarFallback>
@@ -398,7 +398,7 @@ function InviteDetailModal({
       {invite && (
         <div>
           {/* Invite info card */}
-          <div className="rounded-xl bg-secondary/50 px-4 py-3.5 dark:bg-zinc-800/50">
+          <div className="rounded-xl bg-secondary/50 px-4 py-3.5">
             <p className="font-semibold text-foreground">{invite.name ?? invite.email}</p>
             {invite.name && <p className="mt-0.5 text-sm text-muted-foreground">{invite.email}</p>}
             <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">

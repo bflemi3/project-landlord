@@ -12,7 +12,7 @@ export function GreetingSkeleton() {
 }
 
 const CARD_SKELETON_CLASS =
-  'w-full overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80 dark:shadow-none'
+  'w-full overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm dark:shadow-none'
 
 function CardSkeleton() {
   return (
@@ -65,7 +65,7 @@ export function ActionsSkeleton() {
         {[1].map((i) => (
           <div
             key={i}
-            className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 dark:border-zinc-700 dark:bg-zinc-800/50"
+            className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 dark:bg-muted/50"
           >
             {/* Icon */}
             <div className="size-9 shrink-0 animate-pulse rounded-lg bg-muted" />

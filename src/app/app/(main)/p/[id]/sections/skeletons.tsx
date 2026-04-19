@@ -39,7 +39,7 @@ export function HeaderSkeleton() {
 
 export function BillingSummarySkeleton() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80 dark:shadow-none">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:shadow-none">
       {/* Amount + "Tenant owes" */}
       <div className="flex items-baseline gap-2">
         <div className="h-8 w-28 animate-pulse rounded-lg bg-muted" />
@@ -81,7 +81,7 @@ export function UnitSectionSkeleton() {
 
 export function SetupProgressSkeleton() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80">
+    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:shadow-none">
       {/* "n of n steps" + percentage */}
       <div className="mb-2 flex items-center justify-between">
         <div className="h-3 w-20 animate-pulse rounded bg-muted" />
@@ -111,7 +111,7 @@ function PropertyInfoSkeleton() {
         <div className="h-8 w-14 animate-pulse rounded bg-muted" />
       </div>
       {/* Address card */}
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm dark:bg-zinc-800/80 dark:shadow-none">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm dark:shadow-none">
         <div className="flex gap-3">
           <div className="size-4 shrink-0 animate-pulse rounded bg-muted" />
           <div className="space-y-1.5">
@@ -138,7 +138,7 @@ export function TenantsSkeleton() {
       {/* Tenant rows */}
       <div className="space-y-2">
         {[1, 2].map((i) => (
-          <div key={i} className="flex items-center gap-3 rounded-xl border border-border px-4 py-3 dark:border-zinc-700">
+          <div key={i} className="flex items-center gap-3 rounded-xl border border-border px-4 py-3">
             <div className="size-8 animate-pulse rounded-full bg-muted" />
             <div className="min-w-0 flex-1">
               <div className="h-4 w-32 animate-pulse rounded bg-muted" />

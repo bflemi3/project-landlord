@@ -99,7 +99,7 @@ export function InviteTenantsForm({
             return (
               <div
                 key={tenant.email}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm dark:bg-zinc-800"
+                className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm dark:shadow-none"
               >
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {initial}

@@ -291,7 +291,7 @@ function SinglePropertyState({
               {actions.map((action, i) => (
                 <button
                   key={i}
-                  className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
+                  className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:bg-muted/50"
                 >
                   <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary ${action.color}`}>
                     <action.icon className="size-4" />

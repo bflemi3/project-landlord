@@ -35,7 +35,7 @@ export async function SetupProgressSection({ propertyId }: { propertyId: string 
 
   return (
     <div>
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80">
+      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:shadow-none">
         <div className="mb-3">
           <div className="mb-1.5 flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground">
@@ -45,7 +45,7 @@ export async function SetupProgressSection({ propertyId }: { propertyId: string 
               {Math.round((completed / total) * 100)}%
             </span>
           </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-border dark:bg-zinc-700">
+          <div className="h-1.5 overflow-hidden rounded-full bg-border">
             <div
               className="h-full rounded-full bg-primary transition-all duration-500"
               style={{ width: `${(completed / total) * 100}%` }}
@@ -65,7 +65,7 @@ export async function SetupProgressSection({ propertyId }: { propertyId: string 
                   <Clock className="size-3 text-amber-500" />
                 </div>
               ) : (
-                <div className="size-5 rounded-full border border-zinc-300 dark:border-zinc-600" />
+                <div className="size-5 rounded-full border border-border" />
               )}
               <span className={`text-sm ${step.done ? 'text-muted-foreground' : step.inProgress ? 'font-medium text-foreground' : 'text-muted-foreground/60'}`}>
                 {tP(step.label)}

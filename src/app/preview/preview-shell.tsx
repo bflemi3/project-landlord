@@ -30,9 +30,9 @@ export function PreviewShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   return (
-    <div className="flex min-h-svh bg-zinc-100 dark:bg-zinc-950">
+    <div className="flex min-h-svh bg-muted dark:bg-background">
       {/* Sidebar */}
-      <aside className="sticky top-0 flex h-svh w-64 shrink-0 flex-col border-r border-border bg-card dark:bg-zinc-900">
+      <aside className="sticky top-0 flex h-svh w-64 shrink-0 flex-col border-r border-border bg-card">
         {/* Header */}
         <div className="border-b border-border px-4 py-3">
           <Link href="/preview/home" className="text-sm font-bold text-foreground">
