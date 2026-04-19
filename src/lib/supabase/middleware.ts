@@ -5,6 +5,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 // Auth paths that authenticated users can still access
 const AUTH_PASSTHROUGH_PATHS = [
   '/auth/callback',
+  '/auth/redeem',
   '/auth/reset-password',
   '/auth/verified',
   '/auth/enter-code',
@@ -82,7 +83,9 @@ export async function updateSession(request: NextRequest) {
 
   // Authenticated users on /app who haven't redeemed invite → redirect to enter-code
   if (user && pathname.startsWith('/app')) {
-    const appMetadata = (user as Record<string, unknown>).app_metadata as Record<string, unknown> | undefined
+    const appMetadata = (user as Record<string, unknown>).app_metadata as
+      | Record<string, unknown>
+      | undefined
     const hasRedeemedInvite = appMetadata?.has_redeemed_invite === true
     if (!hasRedeemedInvite) {
       const url = request.nextUrl.clone()
@@ -97,6 +100,9 @@ export async function updateSession(request: NextRequest) {
   if (user && pathname.startsWith('/auth') && !isPassthrough) {
     const url = request.nextUrl.clone()
     url.pathname = '/app'
+    // Drop the invite code so it doesn't leak into the landed URL. Other
+    // params (e.g. analytics, next) pass through untouched.
+    url.searchParams.delete('code')
     return redirectWithCookies(url, supabaseResponse)
   }
 

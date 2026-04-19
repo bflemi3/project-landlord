@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.11.1
+
+- Fixed a loop where the app could bounce you back to the invite-code screen right after signing up or entering a valid code
+
 ## v0.11.0
 
 - Pages load faster — sections appear progressively instead of waiting for everything at once

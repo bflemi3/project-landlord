@@ -5,9 +5,17 @@ import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by
 
 export async function redeemInviteCode(code: string) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) return { success: false }
 
-  return redeemInviteByCodeCore(supabase, user.id, code)
+  const result = await redeemInviteByCodeCore(supabase, user.id, code)
+
+  if (result.success) {
+    await supabase.auth.refreshSession()
+  }
+
+  return result
 }
