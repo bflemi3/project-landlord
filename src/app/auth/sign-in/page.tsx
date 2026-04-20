@@ -48,9 +48,6 @@ function SignInForm() {
     e.preventDefault()
     setError('')
     setLoadingEmail(true)
-    if (code) {
-      document.cookie = `pending_invite_code=${encodeURIComponent(code)};path=/;max-age=3600;samesite=lax`
-    }
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
@@ -61,7 +58,9 @@ function SignInForm() {
       )
       setLoadingEmail(false)
     } else {
-      window.location.href = '/app'
+      window.location.href = code
+        ? `/auth/redeem?code=${encodeURIComponent(code)}&next=/app`
+        : '/app'
     }
   }
 

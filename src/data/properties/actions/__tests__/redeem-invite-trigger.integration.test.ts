@@ -17,51 +17,11 @@ describe('redeem_invite_code trigger', () => {
     await cleanupTestUser(systemUserId)
   })
 
-  it('sets has_redeemed_invite and acquisition_channel on profile when invite code is valid', async () => {
-    const inviteCode = `TEST-${Date.now()}`
-    await admin.from('invitations').insert({
-      code: inviteCode,
-      invited_email: 'trigger-test@test.local',
-      invited_by: systemUserId,
-      role: 'landlord',
-      status: 'pending',
-      source: 'waitlist',
-    })
-
-    // Create user with invite_code in metadata — triggers redeem_invite_code
-    const email = `trigger-test-${Date.now()}@test.local`
-    const { data: userData } = await admin.auth.admin.createUser({
-      email,
-      password: 'test-password-123!',
-      email_confirm: true,
-      user_metadata: { full_name: 'Trigger Test', invite_code: inviteCode },
-    })
-    const userId = userData.user!.id
-
-    // Check profile
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('has_redeemed_invite, acquisition_channel')
-      .eq('id', userId)
-      .single()
-
-    expect(profile?.has_redeemed_invite).toBe(true)
-    expect(profile?.acquisition_channel).toBe('waitlist')
-
-    // Check invitation was accepted
-    const { data: invite } = await admin
-      .from('invitations')
-      .select('status, accepted_by')
-      .eq('code', inviteCode)
-      .single()
-
-    expect(invite?.status).toBe('accepted')
-    expect(invite?.accepted_by).toBe(userId)
-
-    // Cleanup
-    await admin.from('properties').delete().eq('created_by', userId)
-    await admin.auth.admin.deleteUser(userId)
-  })
+  // NOTE: The on_profile_created_redeem_invite trigger was removed in migration
+  // 20260415120700. Redemption now happens via the redeem_invite RPC, called
+  // from application code (e.g. /auth/callback route). See the new integration
+  // tests in src/data/profiles/actions/__tests__/redeem-invite-rpc.integration.test.ts.
+  // The tests below cover default/no-op paths which are still valid.
 
   it('leaves has_redeemed_invite false when no invite code in metadata', async () => {
     const email = `no-invite-${Date.now()}@test.local`
@@ -83,40 +43,6 @@ describe('redeem_invite_code trigger', () => {
     expect(profile?.acquisition_channel).toBeNull()
 
     // Cleanup
-    await admin.auth.admin.deleteUser(userId)
-  })
-
-  it('handles invitation with null source gracefully', async () => {
-    const inviteCode = `NOSRC-${Date.now()}`
-    await admin.from('invitations').insert({
-      code: inviteCode,
-      invited_email: 'nosrc@test.local',
-      invited_by: systemUserId,
-      role: 'landlord',
-      status: 'pending',
-      source: null,
-    })
-
-    const email = `nosrc-${Date.now()}@test.local`
-    const { data: userData } = await admin.auth.admin.createUser({
-      email,
-      password: 'test-password-123!',
-      email_confirm: true,
-      user_metadata: { full_name: 'No Source User', invite_code: inviteCode },
-    })
-    const userId = userData.user!.id
-
-    const { data: profile } = await admin
-      .from('profiles')
-      .select('has_redeemed_invite, acquisition_channel')
-      .eq('id', userId)
-      .single()
-
-    expect(profile?.has_redeemed_invite).toBe(true)
-    expect(profile?.acquisition_channel).toBeNull()
-
-    // Cleanup
-    await admin.from('properties').delete().eq('created_by', userId)
     await admin.auth.admin.deleteUser(userId)
   })
 

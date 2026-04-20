@@ -19,7 +19,7 @@ Not every component needs exhaustive testing. The sensitive workflow logic does.
 
 Place test files in a `__tests__/` directory colocated with the module they test. For example:
 
-- `src/lib/invitations/__tests__/accept-tenant-invite.integration.test.ts` tests `src/lib/invitations/accept-tenant-invite.ts`
+- `src/data/profiles/actions/__tests__/redeem-invite-rpc.integration.test.ts` tests the `redeem_invite` RPC
 - `src/lib/__tests__/validation.test.ts` tests `src/lib/validation.ts`
 - `src/app/actions/properties/__tests__/invite-tenant.test.ts` tests `src/app/actions/properties/invite-tenant.ts`
 

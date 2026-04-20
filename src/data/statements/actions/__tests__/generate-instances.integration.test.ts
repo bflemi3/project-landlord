@@ -5,7 +5,7 @@ import {
   cleanupTestUser,
   getAdminClient,
 } from '@/test/supabase'
-import { createChargesCore } from '../../properties/create-charges'
+import { createChargesCore } from '../../../units/actions/create-charges'
 import { generateAndPersistInstancesCore } from '../generate-instances'
 import type { SupabaseClient } from '@supabase/supabase-js'
 

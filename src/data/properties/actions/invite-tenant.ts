@@ -45,6 +45,10 @@ export async function inviteTenantCore(
     return { success: false, errors: { general: 'notAuthenticated' } }
   }
 
+  // Email must be stored lowercased for RLS and redemption matching.
+  // See docs/project/architecture-auth.md.
+  const email = input.email.trim().toLowerCase()
+
   // Read the landlord's profile for locale and name
   const { data: profile } = await supabase
     .from('profiles')
@@ -61,7 +65,7 @@ export async function inviteTenantCore(
     .select('id')
     .eq('property_id', input.propertyId)
     .eq('unit_id', input.unitId)
-    .eq('invited_email', input.email)
+    .eq('invited_email', email)
     .eq('status', 'pending')
     .limit(1)
     .single()
@@ -79,7 +83,7 @@ export async function inviteTenantCore(
       property_id: input.propertyId,
       unit_id: input.unitId,
       invited_by: user.id,
-      invited_email: input.email,
+      invited_email: email,
       invited_name: input.tenantName,
       role: 'tenant' as const,
       status: 'pending' as const,

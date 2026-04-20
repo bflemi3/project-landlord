@@ -1612,6 +1612,7 @@ export type Database = {
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }
       is_unit_member: { Args: { p_unit_id: string }; Returns: boolean }
+      redeem_invite: { Args: { invite_code: string }; Returns: Json }
       replace_allocations: {
         Args: { p_allocations: Json; p_charge_definition_id: string }
         Returns: undefined

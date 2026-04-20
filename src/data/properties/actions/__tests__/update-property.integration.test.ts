@@ -1,12 +1,15 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import {
   createTestUser,
   createTestProperty,
   cleanupTestUser,
   getAdminClient,
 } from '@/test/supabase'
-import { updatePropertyCore } from '../update-property'
 import type { SupabaseClient } from '@supabase/supabase-js'
+
+vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
+
+const { updatePropertyCore } = await import('../update-property')
 
 describe('updatePropertyCore', () => {
   let client: SupabaseClient<any>

@@ -131,6 +131,7 @@ Wireframes in `docs/wireframes/` are low-fidelity structural guides. Use them fo
 ### Skills (`.claude/skills/`)
 
 **Engineering foundations**
+- `auth` — sign-in/sign-up, invite redemption, JWT claim gate, middleware. See `docs/project/architecture-auth.md`
 - `frontend-patterns` — performance, data fetching, hook discipline, forms
 - `design-system` — visual design, spacing, hierarchy, motion
 - `component-library` — component catalog, selection rules

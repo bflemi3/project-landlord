@@ -3,7 +3,6 @@ import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } f
 import { createClient } from '@supabase/supabase-js'
 import { inviteTenantCore } from '@/data/properties/actions/invite-tenant'
 import { generateInviteCode } from '@/data/invitations/generate-invite-code'
-import { redeemInviteByCodeCore } from '@/data/profiles/actions/redeem-invite-by-code'
 
 // Mock the server-side Supabase client so validateAndFetchInviteContext works in Node tests
 // (next/headers is not available outside Next.js runtime)
@@ -236,48 +235,10 @@ describe('tenant membership creation on code redemption', () => {
     await cleanupTestUser(landlordUserId)
   })
 
-  it('creates a tenant membership when a tenant invite code is redeemed via trigger', async () => {
-    const code = generateInviteCode()
-    const tenantEmail = `trigger-tenant-${Date.now()}@test.local`
-
-    await admin.from('invitations').insert({
-      code,
-      invited_email: tenantEmail,
-      invited_by: landlordUserId,
-      role: 'tenant',
-      status: 'pending',
-      property_id: propertyId,
-      unit_id: unitId,
-    })
-
-    const { data: userData } = await admin.auth.admin.createUser({
-      email: tenantEmail,
-      password: 'test-password-123!',
-      email_confirm: true,
-      user_metadata: { full_name: 'Trigger Tenant', invite_code: code },
-    })
-
-    const tenantUserId = userData.user!.id
-
-    const { data: invite } = await admin
-      .from('invitations')
-      .select('status, accepted_by')
-      .eq('code', code)
-      .single()
-    expect(invite?.status).toBe('accepted')
-    expect(invite?.accepted_by).toBe(tenantUserId)
-
-    const { data: membership } = await admin
-      .from('memberships')
-      .select('role, unit_id, property_id')
-      .eq('user_id', tenantUserId)
-      .eq('property_id', propertyId)
-      .single()
-    expect(membership?.role).toBe('tenant')
-    expect(membership?.unit_id).toBe(unitId)
-
-    await cleanupTestUser(tenantUserId)
-  })
+  // NOTE: The on_profile_created_redeem_invite trigger was removed in migration
+  // 20260415120700. Tenant membership creation on redemption now happens via
+  // the redeem_invite RPC. See redeem-invite-rpc.integration.test.ts for the
+  // authoritative coverage (tenant happy path, idempotency, landlord no-op).
 
   it('is idempotent — no error if membership already exists', async () => {
     const code = generateInviteCode()
@@ -351,137 +312,12 @@ describe('tenant membership creation on code redemption', () => {
   })
 })
 
-describe('redeemInviteByCodeCore membership creation', () => {
-  const admin = getAdminClient()
-  let landlordUserId: string
-  let propertyId: string
-  let unitId: string
-
-  beforeAll(async () => {
-    const user = await createTestUser()
-    landlordUserId = user.userId
-    const prop = await createTestProperty(user.client)
-    propertyId = prop.propertyId
-    unitId = prop.unitId
-  })
-
-  afterAll(async () => {
-    await cleanupTestUser(landlordUserId)
-  })
-
-  it('creates a tenant membership when redeeming a tenant invite code', async () => {
-    const code = generateInviteCode()
-    const tenantEmail = `redeem-tenant-${Date.now()}@test.local`
-
-    await admin.from('invitations').insert({
-      code,
-      invited_email: tenantEmail,
-      invited_by: landlordUserId,
-      role: 'tenant',
-      status: 'pending',
-      property_id: propertyId,
-      unit_id: unitId,
-    })
-
-    // Create user WITHOUT invite_code in metadata (simulates Google OAuth path — no trigger fires)
-    const { data: userData } = await admin.auth.admin.createUser({
-      email: tenantEmail,
-      password: 'test-password-123!',
-      email_confirm: true,
-      user_metadata: { full_name: 'Redeem Tenant' },
-    })
-    const tenantUserId = userData.user!.id
-
-    const result = await redeemInviteByCodeCore(admin, tenantUserId, code)
-    expect(result.success).toBe(true)
-
-    const { data: membership } = await admin
-      .from('memberships')
-      .select('role, unit_id, property_id')
-      .eq('user_id', tenantUserId)
-      .eq('property_id', propertyId)
-      .single()
-    expect(membership?.role).toBe('tenant')
-    expect(membership?.unit_id).toBe(unitId)
-
-    await cleanupTestUser(tenantUserId)
-  })
-
-  it('does NOT create membership for landlord invite codes', async () => {
-    const code = `LL-REDEEM-${Date.now()}`
-    const llEmail = `ll-redeem-${Date.now()}@test.local`
-
-    await admin.from('invitations').insert({
-      code,
-      invited_email: llEmail,
-      invited_by: landlordUserId,
-      role: 'landlord',
-      status: 'pending',
-    })
-
-    const { data: userData } = await admin.auth.admin.createUser({
-      email: llEmail,
-      password: 'test-password-123!',
-      email_confirm: true,
-      user_metadata: { full_name: 'LL Redeem' },
-    })
-    const llUserId = userData.user!.id
-
-    const result = await redeemInviteByCodeCore(admin, llUserId, code)
-    expect(result.success).toBe(true)
-
-    const { data: memberships } = await admin
-      .from('memberships')
-      .select('id')
-      .eq('user_id', llUserId)
-    expect(memberships).toHaveLength(0)
-
-    await cleanupTestUser(llUserId)
-  })
-
-  it('is idempotent — no error if membership already exists', async () => {
-    const code = generateInviteCode()
-    const tenantEmail = `redeem-idem-${Date.now()}@test.local`
-
-    await admin.from('invitations').insert({
-      code,
-      invited_email: tenantEmail,
-      invited_by: landlordUserId,
-      role: 'tenant',
-      status: 'pending',
-      property_id: propertyId,
-      unit_id: unitId,
-    })
-
-    const { data: userData } = await admin.auth.admin.createUser({
-      email: tenantEmail,
-      password: 'test-password-123!',
-      email_confirm: true,
-      user_metadata: { full_name: 'Idem Tenant' },
-    })
-    const tenantUserId = userData.user!.id
-
-    // Pre-create membership
-    await admin.from('memberships').insert({
-      user_id: tenantUserId,
-      property_id: propertyId,
-      unit_id: unitId,
-      role: 'tenant',
-    })
-
-    const result = await redeemInviteByCodeCore(admin, tenantUserId, code)
-    expect(result.success).toBe(true)
-
-    const { data: memberships } = await admin
-      .from('memberships')
-      .select('id')
-      .eq('user_id', tenantUserId)
-      .eq('property_id', propertyId)
-    expect(memberships).toHaveLength(1)
-
-    await cleanupTestUser(tenantUserId)
-  })
-})
+// NOTE: Previous tests in this block passed the admin (service-role) client into
+// redeemInviteByCodeCore, which bypassed RLS and hid the RLS-denial bug on
+// tenant membership inserts. Moved to redeem-invite-rpc.integration.test.ts
+// where each test signs in as the user and uses their RLS-scoped client — the
+// production privilege level. Do not restore admin-client tests for the core
+// redemption path.
 
 describe('validateAndFetchInviteContext', () => {
   const admin = getAdminClient()

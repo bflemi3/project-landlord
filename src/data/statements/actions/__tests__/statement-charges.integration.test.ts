@@ -5,7 +5,7 @@ import {
   cleanupTestUser,
   getAdminClient,
 } from '@/test/supabase'
-import { createChargesCore } from '../../properties/create-charges'
+import { createChargesCore } from '../../../units/actions/create-charges'
 import { createStatementCore } from '../create-statement'
 import { addChargeToStatementCore } from '../add-charge'
 import { updateChargeInstanceCore } from '../update-charge-instance'
