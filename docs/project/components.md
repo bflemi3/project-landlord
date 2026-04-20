@@ -66,6 +66,114 @@ The greeting header used on the home screen. Adapts based on context.
 
 ---
 
+## Editorial Primitives
+
+Small, reusable building blocks that form the base of the editorial surface layer. Compose them inside cards, empty states, and sections — they encode the design system's color, weight, and rhythm decisions once so callers don't reach for raw utility classes.
+
+### EyebrowLabel
+
+**File:** `src/components/eyebrow-label.tsx`
+
+Uppercase micro-label rendered above a title. Used for category, section context, or taxonomy cues. `text-xs font-semibold uppercase tracking-widest`.
+
+**Props:** `tone` — `primary` (default) / `muted` / `foreground`.
+
+```tsx
+<EyebrowLabel>Billing cycle</EyebrowLabel>
+<EyebrowLabel tone="muted">Getting started</EyebrowLabel>
+```
+
+### SectionLabel
+
+**File:** `src/components/section-label.tsx`
+
+Section heading above a grouped block (e.g., "What's next" above the action list). `text-sm font-medium text-muted-foreground` with `mb-4`. Renders `<h3>` by default; override via `as="h2" | "h4"`.
+
+```tsx
+<SectionLabel>What's next</SectionLabel>
+<Card size="none">...</Card>
+```
+
+### IconTile
+
+**File:** `src/components/icon-tile.tsx`
+
+Rounded surface holding a single lucide icon. Used in list rows, empty states, and headers. Uses paired semantic tokens (`bg-*-subtle` + `text-*-subtle-foreground`) so tone is hue-locked to the semantic system.
+
+**Props:**
+| Prop | Values | Default |
+|---|---|---|
+| `size` | `sm` / `md` / `lg` | `md` |
+| `shape` | `square` / `circle` | `square` |
+| `tone` | `primary` / `muted` / `success` / `warning` / `info` / `destructive` | `primary` |
+
+```tsx
+<IconTile size="lg" shape="circle" tone="warning">
+  <AlertTriangle />
+</IconTile>
+```
+
+Do not hardcode color utilities (`bg-amber-500/10`, `text-rose-500`, etc.) when an `IconTile` tone expresses the same intent.
+
+### ListRow
+
+**File:** `src/components/list-row.tsx`
+
+Compound primitives for list rows — a leading icon/avatar, body text, and trailing affordance. Three variants: `solid` and `dashed` render their own card-like chrome; `embedded` is chromeless and pairs with a parent `Card` + `List`.
+
+#### Primitives
+
+| Primitive | Purpose |
+|---|---|
+| `List` | Container; divides children with `divide-y divide-border/70`. |
+| `ListRow` | Row shell as `<div>`. Accepts `variant` and `interactive`. |
+| `ListRowButton` | Row shell as `<button>`. |
+| `ListRowLeading` | `shrink-0` slot for leading icon/avatar. Typically an `IconTile`. |
+| `ListRowBody` | `min-w-0 flex-1` column for title/description. |
+| `ListRowTitle` | `text-base font-medium text-foreground`. |
+| `ListRowDescription` | `text-sm text-muted-foreground` line below title. |
+| `ListRowTrailing` | `shrink-0` slot for chevron / status / amount. |
+| `ListRowChevron` | Default `ChevronRight` glyph for navigational rows. |
+| `listRowClassName({ variant, interactive, className })` | Classname helper for when the row element isn't `ListRow` (e.g., a `<Link>` or `<button>` from another lib). |
+
+#### Embedded example (inside a Card)
+
+```tsx
+<Card size="none">
+  <List>
+    {actions.map((a) => (
+      <Link key={a.id} href={a.href} className={listRowClassName({ variant: 'embedded' })}>
+        <ListRowLeading>
+          <IconTile size="lg" shape="circle" tone={a.tone}>
+            <a.Icon />
+          </IconTile>
+        </ListRowLeading>
+        <ListRowBody>
+          <ListRowTitle>{a.title}</ListRowTitle>
+          <ListRowDescription>{a.description}</ListRowDescription>
+        </ListRowBody>
+        <ListRowTrailing>
+          <ListRowChevron />
+        </ListRowTrailing>
+      </Link>
+    ))}
+  </List>
+</Card>
+```
+
+#### Standalone example
+
+```tsx
+<ListRow variant="dashed" interactive>
+  <ListRowLeading><IconTile tone="muted"><Plus /></IconTile></ListRowLeading>
+  <ListRowBody>
+    <ListRowTitle>Add tenant</ListRowTitle>
+  </ListRowBody>
+</ListRow>
+```
+
+---
+
 ## Property Cards
 
 **File:** `src/components/property-card.tsx`
@@ -104,23 +212,26 @@ All parts expose `data-slot="property-card-*"` and forward their native props th
     <PropertyCardChevron />
   </PropertyCardHead>
   <PropertyCardAmount>{formatCurrency(...)}</PropertyCardAmount>
-  <PropertyCardStatus tone="warning">{awaitingBillsLabel}</PropertyCardStatus>
+  <PropertyCardStatus tone="muted">{awaitingBillsLabel}</PropertyCardStatus>
 </PropertyCard>
 ```
+
+Use `tone="muted"` for passive states ("awaiting bills"), `tone="success"` for "all paid," and reserve `warning` / `destructive` for states where the landlord must act.
 
 ### Onboarding variant (setup in progress)
 
 ```tsx
-<PropertyCard href={href}>
-  <PropertyCardHead className="gap-2">
+<PropertyCard href={href} size="xl">
+  <PropertyCardHead>
     <PropertyCardBody>
-      <PropertyCardTitle className="mt-0 text-base">{name}</PropertyCardTitle>
-      <PropertyCardSubtitle className="mt-0.5">{address}</PropertyCardSubtitle>
+      <PropertyCardEyebrow>{gettingStartedLabel}</PropertyCardEyebrow>
+      <PropertyCardTitle>{name}</PropertyCardTitle>
+      <PropertyCardSubtitle>{address}</PropertyCardSubtitle>
     </PropertyCardBody>
-    <PropertyCardChevron className="mt-0.5" />
+    <PropertyCardChevron />
   </PropertyCardHead>
-  <PropertyCardProgress completed={done} total={total} label={setupLabel} className="mb-3" />
-  <PropertyCardSteps className="mt-0">
+  <PropertyCardProgress completed={done} total={total} label={setupLabel} />
+  <PropertyCardSteps>
     {steps.map((s) => <PropertyCardStep key={s.key} state={s.state}>{s.label}</PropertyCardStep>)}
   </PropertyCardSteps>
 </PropertyCard>
@@ -138,27 +249,19 @@ All parts expose `data-slot="property-card-*"` and forward their native props th
 
 **File:** `src/components/urgent-action-list.tsx`
 
-Action rows for items that need landlord attention. Used on the home screen when there are overdue payments, disputes, or claims.
+Action rows for items needing landlord attention on the home screen (overdue payments, disputes, claims). Composes `Card` + `List` + embedded `ListRow` + `IconTile`.
 
 **Props:** `urgentActions: UrgentAction[]`
 
-**Row layout:**
-```
-┌──────────────────────────────────────────┐
-│  [icon]  Title text                   >  │
-│          Description text                │
-└──────────────────────────────────────────┘
-```
-
-**Action type → icon/color mapping:**
-| Type | Icon | Color |
+**Action type → icon + IconTile tone:**
+| Type | Icon | Tone |
 |---|---|---|
-| `overdue_payment` | AlertTriangle | `text-rose-500 bg-rose-500/10` |
-| `payment_claim` | Check | `text-amber-500 bg-amber-500/10` |
-| `dispute` | MessageCircle | `text-amber-500 bg-amber-500/10` |
-| `bill_review` | FileText | `text-sky-500 bg-sky-500/10` |
+| `overdue_payment` | `AlertTriangle` | `destructive` |
+| `payment_claim` | `Check` | `warning` |
+| `dispute` | `MessageCircle` | `warning` |
+| `bill_review` | `FileText` | `info` |
 
-**Row styles:** `rounded-xl border border-border bg-card px-4 py-3.5` with icon in a `size-9 rounded-lg` container. Hover: `hover:border-primary/20`.
+Tones use the semantic subtle pairs from `IconTile`; do not hardcode color utilities.
 
 ---
 
@@ -522,8 +625,12 @@ These live in `src/components/ui/` and are shadcn-based with product customizati
 - Dropdown items use `pl-3 pr-9` for check indicator room
 
 ### Card (`ui/card.tsx`)
-- Composable: `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent`, `CardFooter`
-- `rounded-2xl` with shadow in light mode, border-only in dark mode
+- Composable: `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`, plus the `cardShellClassName` helper for non-`<div>` shells (e.g., a `<Link>` or `<button>`).
+- Card shell: `rounded-card bg-card shadow-card` in light mode, border-only (`dark:border-border`) with no shadow in dark.
+- **`size`** controls padding: `sm` (`p-4`) / `md` (`p-5`, default) / `lg` (`p-6`) / `xl` (`p-7`) / `compound` (`py-5`, horizontal padding deferred to children) / `none`.
+- **`variant`**: `solid` (default) or `dashed` for empty/add-more placeholders.
+- **`interactive`**: adds hover shadow-lift and dark-mode border accent. Use via `<Card interactive>` or `cardShellClassName({ interactive: true })`.
+- Tokens: `--radius-card: 1.25rem`, `--shadow-card`, `--shadow-card-hover`. Dark mode neutralizes the shadow pair.
 
 ### Sheet (`ui/sheet.tsx`)
 - Bottom sheet pattern for contextual actions
