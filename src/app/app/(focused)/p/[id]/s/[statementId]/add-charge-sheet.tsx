@@ -415,7 +415,7 @@ function AddChargeForm({
                       className={cn(
                         'flex-1 rounded-md text-sm font-medium transition-colors',
                         savedChargeType === 'recurring'
-                          ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                          ? 'bg-card text-foreground shadow-sm dark:bg-secondary'
                           : 'text-muted-foreground',
                       )}
                     >
@@ -427,7 +427,7 @@ function AddChargeForm({
                       className={cn(
                         'flex-1 rounded-md text-sm font-medium transition-colors',
                         savedChargeType === 'variable'
-                          ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                          ? 'bg-card text-foreground shadow-sm dark:bg-secondary'
                           : 'text-muted-foreground',
                       )}
                     >

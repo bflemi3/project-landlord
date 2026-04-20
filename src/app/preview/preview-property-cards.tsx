@@ -24,7 +24,7 @@ export function PreviewOperatingCard({
   const badge = getStatusBadge(opData)
 
   return (
-    <div className="group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30">
+    <div className="group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:shadow-none dark:hover:border-primary/30">
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold text-foreground">{property.name}</h3>
@@ -72,7 +72,7 @@ export function PreviewSetupCard({
   const total = steps.length
 
   return (
-    <div className="group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30">
+    <div className="group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:shadow-none dark:hover:border-primary/30">
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
           <h3 className="truncate font-semibold text-foreground">{property.name}</h3>
@@ -90,7 +90,7 @@ export function PreviewSetupCard({
             {Math.round((completed / total) * 100)}%
           </span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-border dark:bg-zinc-700">
+        <div className="h-1.5 overflow-hidden rounded-full bg-border">
           <div
             className="h-full rounded-full bg-primary transition-all duration-500"
             style={{ width: `${(completed / total) * 100}%` }}
@@ -110,7 +110,7 @@ export function PreviewSetupCard({
                 <Clock className="size-3 text-amber-500" />
               </div>
             ) : (
-              <div className="size-5 rounded-full border border-zinc-300 dark:border-zinc-600" />
+              <div className="size-5 rounded-full border border-border" />
             )}
             <span className={`text-sm ${step.done ? 'text-muted-foreground' : step.inProgress ? 'font-medium text-foreground' : 'text-muted-foreground/60'}`}>
               {tP(step.label)}

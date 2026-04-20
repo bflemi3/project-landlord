@@ -3,7 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { FileText, Trash2 } from 'lucide-react'
-import { EmptyState } from '@/components/empty-state'
+import {
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateDescription,
+} from '@/components/empty-state'
 import { Button } from '@/components/ui/button'
 import { ErrorBox } from '@/components/error-box'
 import { PageLoader } from '@/components/page-loader'
@@ -117,11 +122,15 @@ export default function ProviderDetailPage({
 
       {error && <div className="mb-6"><ErrorBox message={error} /></div>}
 
-      <EmptyState
-        icon={FileText}
-        heading="Provider detail coming soon"
-        description="This page will show provider info, profiles, and accuracy data."
-      />
+      <EmptyState>
+        <EmptyStateIcon>
+          <FileText />
+        </EmptyStateIcon>
+        <EmptyStateTitle>Provider detail coming soon</EmptyStateTitle>
+        <EmptyStateDescription>
+          This page will show provider info, profiles, and accuracy data.
+        </EmptyStateDescription>
+      </EmptyState>
     </div>
   )
 }

@@ -21,15 +21,17 @@ export function formatCurrency(
   amountMinor: number,
   currency: string,
   locale: Locale,
+  options?: { fractionDigits?: number },
 ): string {
   const amount = amountMinor / 100
   const intlLocale = intlLocaleMap[locale]
+  const digits = options?.fractionDigits ?? 2
 
   return new Intl.NumberFormat(intlLocale, {
     style: 'currency',
     currency,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
   }).format(amount)
 }
 

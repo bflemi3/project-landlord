@@ -2,19 +2,58 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
+type CardSize = 'sm' | 'md' | 'lg' | 'xl' | 'compound' | 'none'
+type CardVariant = 'solid' | 'dashed'
+
+const sizeClasses: Record<CardSize, string> = {
+  sm: 'p-4',
+  md: 'p-5',
+  lg: 'p-6',
+  xl: 'p-7',
+  compound: 'py-5',
+  none: '',
+}
+
+const variantClasses: Record<CardVariant, string> = {
+  solid: 'border border-transparent dark:border-border',
+  dashed: 'border border-dashed border-border',
+}
+
+type CardShellOptions = {
+  size?: CardSize
+  variant?: CardVariant
+  interactive?: boolean
+  className?: string
+}
+
+function cardShellClassName({
+  size = 'md',
+  variant = 'solid',
+  interactive = false,
+  className,
+}: CardShellOptions = {}) {
+  return cn(
+    'rounded-card bg-card text-card-foreground shadow-card dark:shadow-none overflow-hidden',
+    sizeClasses[size],
+    variantClasses[variant],
+    interactive && 'transition-all hover:shadow-card-hover dark:hover:border-primary/30',
+    className,
+  )
+}
+
 function Card({
   className,
-  size = 'default',
+  size = 'md',
+  variant = 'solid',
+  interactive = false,
   ...props
-}: React.ComponentProps<'div'> & { size?: 'default' | 'sm' }) {
+}: React.ComponentProps<'div'> & CardShellOptions) {
   return (
     <div
       data-slot="card"
       data-size={size}
-      className={cn(
-        'group/card bg-card text-card-foreground ring-foreground/10 flex flex-col gap-4 overflow-hidden rounded-xl py-4 text-sm ring-1 has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:gap-3 data-[size=sm]:py-3 data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl',
-        className,
-      )}
+      data-variant={variant}
+      className={cardShellClassName({ size, variant, interactive, className })}
       {...props}
     />
   )
@@ -25,7 +64,9 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card-header"
       className={cn(
-        'group/card-header @container/card-header grid auto-rows-min items-start gap-1 rounded-t-xl px-4 group-data-[size=sm]/card:px-3 has-data-[slot=card-action]:grid-cols-[1fr_auto] has-data-[slot=card-description]:grid-rows-[auto_auto] [.border-b]:pb-4 group-data-[size=sm]/card:[.border-b]:pb-3',
+        '@container/card-header grid auto-rows-min items-start gap-1 px-5',
+        'has-data-[slot=card-action]:grid-cols-[1fr_auto]',
+        'has-data-[slot=card-description]:grid-rows-[auto_auto]',
         className,
       )}
       {...props}
@@ -37,10 +78,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-title"
-      className={cn(
-        'text-base leading-snug font-medium group-data-[size=sm]/card:text-sm',
-        className,
-      )}
+      className={cn('text-base leading-snug font-medium', className)}
       {...props}
     />
   )
@@ -70,7 +108,7 @@ function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-content"
-      className={cn('px-4 group-data-[size=sm]/card:px-3', className)}
+      className={cn('px-5', className)}
       {...props}
     />
   )
@@ -80,13 +118,20 @@ function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-footer"
-      className={cn(
-        'bg-muted/50 flex items-center rounded-b-xl border-t p-4 group-data-[size=sm]/card:p-3',
-        className,
-      )}
+      className={cn('flex items-center border-t border-border px-5 pt-4', className)}
       {...props}
     />
   )
 }
 
-export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent }
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+  cardShellClassName,
+}
+export type { CardSize, CardVariant, CardShellOptions }

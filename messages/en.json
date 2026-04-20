@@ -147,12 +147,15 @@
     "noBillingData": "No billing data yet",
     "statusAllPaid": "All paid",
     "statusUnpaid": "{count, plural, one {# unpaid} other {# unpaid}}",
-    "statusBillsPending": "{count, plural, one {# bill pending} other {# bills pending}}"
+    "statusBillsPending": "{count, plural, one {# bill pending} other {# bills pending}}",
+    "awaitingBillsWithDueDate": "{count, plural, one {Awaiting # bill} other {Awaiting # bills}} · due {date}",
+    "allPaidThisCycle": "All paid this cycle"
   },
   "properties": {
     "createProperty": "Create property",
     "step": "Step {current} of {total}",
     "setupSteps": "{completed} of {total} steps",
+    "gettingStarted": "Getting started",
     "whereIsProperty": "Where is your property?",
     "whereIsPropertyDescription": "We'll use this address to organize your billing.",
     "propertyName": "Property name",

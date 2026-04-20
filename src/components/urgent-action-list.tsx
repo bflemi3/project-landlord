@@ -1,8 +1,18 @@
 'use client'
 
+import { AlertTriangle, Check, MessageCircle, FileText } from 'lucide-react'
+import { IconTile } from '@/components/icon-tile'
 import {
-  ChevronRight, Check, AlertTriangle, MessageCircle, FileText,
-} from 'lucide-react'
+  List,
+  ListRowBody,
+  ListRowChevron,
+  ListRowDescription,
+  ListRowLeading,
+  ListRowTitle,
+  ListRowTrailing,
+  listRowClassName,
+} from '@/components/list-row'
+import { Card } from '@/components/ui/card'
 import type { UrgentAction } from '@/lib/types/property'
 
 const iconMap: Record<string, React.ElementType> = {
@@ -12,35 +22,38 @@ const iconMap: Record<string, React.ElementType> = {
   bill_review: FileText,
 }
 
-const colorMap: Record<string, string> = {
-  overdue_payment: 'text-rose-500 bg-rose-500/10',
-  payment_claim: 'text-amber-500 bg-amber-500/10',
-  dispute: 'text-amber-500 bg-amber-500/10',
-  bill_review: 'text-sky-500 bg-sky-500/10',
+const toneMap: Record<string, React.ComponentProps<typeof IconTile>['tone']> = {
+  overdue_payment: 'destructive',
+  payment_claim: 'warning',
+  dispute: 'warning',
+  bill_review: 'info',
 }
 
 export function UrgentActionList({ urgentActions }: { urgentActions: UrgentAction[] }) {
   return (
-    <div className="space-y-2">
-      {urgentActions.map((action, i) => {
-        const Icon = iconMap[action.type] ?? AlertTriangle
-        const color = colorMap[action.type] ?? 'text-amber-500 bg-amber-500/10'
-        return (
-          <button
-            key={i}
-            className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:border-zinc-700 dark:bg-zinc-800/50"
-          >
-            <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${color}`}>
-              <Icon className="size-4" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-foreground">{action.title}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{action.description}</p>
-            </div>
-            <ChevronRight className="size-4 shrink-0 text-muted-foreground/40" />
-          </button>
-        )
-      })}
-    </div>
+    <Card size="none">
+      <List>
+        {urgentActions.map((action, i) => {
+          const Icon = iconMap[action.type] ?? AlertTriangle
+          const tone = toneMap[action.type] ?? 'warning'
+          return (
+            <button key={i} type="button" className={listRowClassName({ variant: 'embedded' })}>
+              <ListRowLeading>
+                <IconTile size="lg" shape="circle" tone={tone}>
+                  <Icon />
+                </IconTile>
+              </ListRowLeading>
+              <ListRowBody>
+                <ListRowTitle>{action.title}</ListRowTitle>
+                <ListRowDescription>{action.description}</ListRowDescription>
+              </ListRowBody>
+              <ListRowTrailing>
+                <ListRowChevron />
+              </ListRowTrailing>
+            </button>
+          )
+        })}
+      </List>
+    </Card>
   )
 }

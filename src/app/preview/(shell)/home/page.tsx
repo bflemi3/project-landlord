@@ -38,7 +38,7 @@ export default function PreviewHomePage() {
   return (
     <div className="flex h-svh">
       {/* State selector panel */}
-      <div className="flex w-56 shrink-0 flex-col border-r border-border bg-card/50 dark:bg-zinc-900/50">
+      <div className="flex w-56 shrink-0 flex-col border-r border-border bg-card/50">
         <div className="border-b border-border px-3 py-2.5">
           <div className="flex items-center gap-2">
             <h2 className="text-xs font-semibold text-foreground">States</h2>

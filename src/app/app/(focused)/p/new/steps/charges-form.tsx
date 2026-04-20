@@ -244,7 +244,7 @@ export function ChargesForm({
               if (e.key === 'Escape') { setShowCustomInput(false); setCustomName('') }
             }}
             placeholder={t('customChargeNamePlaceholder')}
-            className="h-12 w-full rounded-2xl border border-input bg-transparent px-4 pr-12 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-zinc-800"
+            className="h-12 w-full rounded-2xl border border-input bg-transparent px-4 pr-12 text-base outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
             autoFocus
           />
           <button

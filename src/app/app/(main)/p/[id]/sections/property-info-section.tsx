@@ -22,7 +22,7 @@ export async function PropertyInfoSection({ propertyId }: { propertyId: string }
         <PropertyInfoActions propertyId={propertyId} property={property} />
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-5 dark:border-zinc-700 dark:bg-zinc-800/50">
+      <div className="rounded-2xl border border-border bg-card p-5 dark:bg-muted/50">
         <div className="flex gap-3">
           <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground/60" />
           <div className="text-sm text-foreground">

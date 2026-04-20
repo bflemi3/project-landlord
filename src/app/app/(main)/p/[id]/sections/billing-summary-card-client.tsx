@@ -7,6 +7,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { ChevronRight, FileText } from 'lucide-react'
 import posthog from 'posthog-js'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useHighlightTarget } from '@/lib/hooks/use-highlight-target'
 import { formatCurrency } from '@/lib/format-currency'
@@ -87,7 +88,7 @@ export function BillingSummaryCardClient({
       : 'text-primary'
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:bg-zinc-800/80 dark:shadow-none">
+    <Card>
       {/* Hero: collection amount + due day */}
       <div className="flex items-baseline gap-2">
         <span className="text-2xl font-bold tabular-nums text-foreground">
@@ -124,7 +125,7 @@ export function BillingSummaryCardClient({
         <div className="mt-4">
           {urgency !== 'normal' && (
             <>
-              <Separator className="mb-4 dark:bg-zinc-600" />
+              <Separator className="mb-4" />
               <p className={`mb-2 text-sm font-medium ${actionText}`}>
                 {urgency === 'overdue'
                   ? t('statementOverdueShort', { period: periodLabel, days: formatDays(daysUntil) })
@@ -145,7 +146,7 @@ export function BillingSummaryCardClient({
           </Button>
         </div>
       )}
-    </div>
+    </Card>
   )
 }
 

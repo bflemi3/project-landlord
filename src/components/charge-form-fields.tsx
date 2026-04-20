@@ -114,7 +114,7 @@ export function VariablePlaceholder({
 
   return (
     <div>
-      <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-400 px-4 py-5 dark:border-zinc-600">
+      <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border px-4 py-5">
         <Upload className="size-5 text-muted-foreground" />
         <p className="text-center text-sm text-muted-foreground">{t('variableBillUploadHint')}</p>
       </div>
@@ -183,7 +183,7 @@ export function PayerToggle({
             className={cn(
               'flex-1 rounded-md px-2 text-xs font-medium transition-colors',
               value === option.value
-                ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                ? 'bg-card text-foreground shadow-sm dark:bg-secondary'
                 : 'text-muted-foreground',
             )}
           >
@@ -247,7 +247,7 @@ export function SplitSlider({
             className={cn(
               'rounded-md px-2 py-0.5 text-xs font-medium transition-colors',
               splitMode === 'percent'
-                ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                ? 'bg-card text-foreground shadow-sm dark:bg-secondary'
                 : 'text-muted-foreground',
             )}
           >
@@ -259,7 +259,7 @@ export function SplitSlider({
             className={cn(
               'rounded-md px-2 py-0.5 text-xs font-medium transition-colors',
               splitMode === 'amount'
-                ? 'bg-card text-foreground shadow-sm dark:bg-zinc-700'
+                ? 'bg-card text-foreground shadow-sm dark:bg-secondary'
                 : 'text-muted-foreground',
             )}
           >

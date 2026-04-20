@@ -24,7 +24,7 @@ export function StatementHeaderSkeleton() {
 
 export function SummaryCardSkeleton() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 dark:bg-zinc-800/80">
+    <div className="rounded-2xl border border-border bg-card p-5">
       {/* "Tenant owes" label */}
       <div className="h-4 w-24 animate-pulse rounded bg-muted" />
       {/* Amount */}
@@ -35,7 +35,7 @@ export function SummaryCardSkeleton() {
       <div className="mt-1.5 h-4 w-44 animate-pulse rounded bg-muted" />
 
       {/* Separator + split breakdown */}
-      <div className="my-4 h-px w-full bg-border dark:bg-zinc-600" />
+      <div className="my-4 h-px w-full bg-border" />
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="h-4 w-20 animate-pulse rounded bg-muted" />
