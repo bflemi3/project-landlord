@@ -1,3 +1,4 @@
+import { Card } from '@/components/ui/card'
 import { DetailPageLayoutMain, DetailPageLayoutSidebar } from '@/components/detail-page-layout'
 
 /**
@@ -39,7 +40,7 @@ export function HeaderSkeleton() {
 
 export function BillingSummarySkeleton() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:shadow-none">
+    <Card>
       {/* Amount + "Tenant owes" */}
       <div className="flex items-baseline gap-2">
         <div className="h-8 w-28 animate-pulse rounded-lg bg-muted" />
@@ -50,7 +51,7 @@ export function BillingSummarySkeleton() {
 
       {/* Action area — statement link or generate button */}
       <div className="mt-4 h-16 w-full animate-pulse rounded-xl bg-muted/50" />
-    </div>
+    </Card>
   )
 }
 
@@ -81,7 +82,7 @@ export function UnitSectionSkeleton() {
 
 export function SetupProgressSkeleton() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:shadow-none">
+    <Card>
       {/* "n of n steps" + percentage */}
       <div className="mb-2 flex items-center justify-between">
         <div className="h-3 w-20 animate-pulse rounded bg-muted" />
@@ -98,7 +99,7 @@ export function SetupProgressSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   )
 }
 
@@ -111,7 +112,7 @@ function PropertyInfoSkeleton() {
         <div className="h-8 w-14 animate-pulse rounded bg-muted" />
       </div>
       {/* Address card */}
-      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm dark:shadow-none">
+      <Card size="sm">
         <div className="flex gap-3">
           <div className="size-4 shrink-0 animate-pulse rounded bg-muted" />
           <div className="space-y-1.5">
@@ -122,7 +123,7 @@ function PropertyInfoSkeleton() {
             <div className="h-4 w-24 animate-pulse rounded bg-muted" />
           </div>
         </div>
-      </div>
+      </Card>
     </div>
   )
 }

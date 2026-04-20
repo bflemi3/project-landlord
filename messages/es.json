@@ -147,12 +147,15 @@
     "noBillingData": "Sin datos de facturación aún",
     "statusAllPaid": "Todo pagado",
     "statusUnpaid": "{count, plural, one {# impago} other {# impagos}}",
-    "statusBillsPending": "{count, plural, one {# factura pendiente} other {# facturas pendientes}}"
+    "statusBillsPending": "{count, plural, one {# factura pendiente} other {# facturas pendientes}}",
+    "awaitingBillsWithDueDate": "{count, plural, one {Esperando # factura} other {Esperando # facturas}} · vence {date}",
+    "allPaidThisCycle": "Todo pagado este ciclo"
   },
   "properties": {
     "createProperty": "Crear propiedad",
     "step": "Paso {current} de {total}",
     "setupSteps": "{completed} de {total} pasos",
+    "gettingStarted": "Primeros pasos",
     "whereIsProperty": "¿Dónde está tu propiedad?",
     "whereIsPropertyDescription": "Usaremos esta dirección para organizar tu facturación.",
     "propertyName": "Nombre de la propiedad",

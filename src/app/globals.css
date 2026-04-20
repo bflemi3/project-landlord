@@ -127,6 +127,10 @@ html, body {
   --color-info-subtle-foreground: var(--info-subtle-foreground);
   --color-destructive-subtle: var(--destructive-subtle);
   --color-destructive-subtle-foreground: var(--destructive-subtle-foreground);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+  --shadow-card: var(--shadow-card);
+  --shadow-card-hover: var(--shadow-card-hover);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -134,6 +138,8 @@ html, body {
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  /* Editorial card radius — 20px, matches reference design */
+  --radius-card: 1.25rem;
   /* Typography scale per design.md */
   --font-size-xs: 0.8125rem;
   --font-size-xs--line-height: 1.125rem;
@@ -166,6 +172,9 @@ html, body {
   /* teal-500 primary */
   --primary: oklch(0.704 0.14 182.503);
   --primary-foreground: oklch(1 0 0);
+  /* teal-500/10 tinted surface + teal-700 glyph, hue-locked to --primary */
+  --primary-subtle: oklch(0.704 0.14 182.503 / 0.10);
+  --primary-subtle-foreground: oklch(0.49 0.092 182.503);
   /* stone-100 secondary */
   --secondary: oklch(0.97 0.001 106.424);
   --secondary-foreground: oklch(0.216 0.006 56.043);
@@ -186,6 +195,9 @@ html, body {
   --ring: oklch(0.704 0.14 182.503);
   /* 1rem radius per DESIGN.md */
   --radius: 1rem;
+  /* Editorial card shadow — soft diffused, no visible hard edge */
+  --shadow-card: 0 1px 2px oklch(0 0 0 / 0.035), 0 8px 24px -12px oklch(0 0 0 / 0.06);
+  --shadow-card-hover: 0 2px 4px oklch(0 0 0 / 0.05), 0 12px 32px -12px oklch(0 0 0 / 0.09);
   /* chart colors — teal/emerald spectrum */
   --chart-1: oklch(0.704 0.14 182.503);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -196,24 +208,24 @@ html, body {
   /* emerald-500 success */
   --success: oklch(0.696 0.17 162.48);
   --success-foreground: oklch(1 0 0);
-  /* emerald-700 subtle pair (tinted surface + readable glyph) */
-  --success-subtle: oklch(0.52 0.14 162 / 0.10);
-  --success-subtle-foreground: oklch(0.52 0.14 162);
+  /* emerald-500/10 surface + emerald-700 glyph */
+  --success-subtle: oklch(0.696 0.17 162.48 / 0.10);
+  --success-subtle-foreground: oklch(0.508 0.118 165.612);
   /* amber-500 warning */
   --warning: oklch(0.769 0.188 70.08);
   --warning-foreground: oklch(0.216 0.006 56.043);
-  /* amber-700 subtle pair */
-  --warning-subtle: oklch(0.55 0.14 70 / 0.10);
-  --warning-subtle-foreground: oklch(0.55 0.14 70);
+  /* amber-500/10 surface + amber-700 glyph */
+  --warning-subtle: oklch(0.769 0.188 70.08 / 0.10);
+  --warning-subtle-foreground: oklch(0.555 0.163 48.998);
   /* sky-500 info */
   --info: oklch(0.685 0.169 237.323);
   --info-foreground: oklch(1 0 0);
-  /* sky-700 subtle pair */
-  --info-subtle: oklch(0.52 0.15 238 / 0.10);
-  --info-subtle-foreground: oklch(0.52 0.15 238);
-  /* rose-600 destructive subtle pair */
+  /* sky-500/10 surface + sky-700 glyph */
+  --info-subtle: oklch(0.685 0.169 237.323 / 0.10);
+  --info-subtle-foreground: oklch(0.5 0.134 242.749);
+  /* rose-600/10 surface + rose-700 glyph */
   --destructive-subtle: oklch(0.586 0.253 17.585 / 0.10);
-  --destructive-subtle-foreground: oklch(0.586 0.253 17.585);
+  --destructive-subtle-foreground: oklch(0.514 0.222 16.935);
   /* sidebar */
   --sidebar: oklch(0.985 0.001 106.423);
   --sidebar-foreground: oklch(0.216 0.006 56.043);
@@ -238,6 +250,9 @@ html, body {
   /* teal-500 primary */
   --primary: oklch(0.704 0.14 182.503);
   --primary-foreground: oklch(1 0 0);
+  /* teal-500/15 surface + teal-300 glyph, hue-locked to --primary */
+  --primary-subtle: oklch(0.704 0.14 182.503 / 0.15);
+  --primary-subtle-foreground: oklch(0.855 0.138 182.503);
   /* stone-800 secondary */
   --secondary: oklch(0.268 0.007 34.298);
   --secondary-foreground: oklch(0.985 0.001 106.423);
@@ -256,6 +271,9 @@ html, body {
   --input: oklch(0.268 0.007 34.298);
   /* teal-400 ring */
   --ring: oklch(0.777 0.152 181.912);
+  /* Dark mode — no card shadow, rely on border */
+  --shadow-card: none;
+  --shadow-card-hover: none;
   /* chart colors */
   --chart-1: oklch(0.777 0.152 181.912);
   --chart-2: oklch(0.704 0.14 182.503);
@@ -265,22 +283,22 @@ html, body {
   /* semantic status colors */
   --success: oklch(0.696 0.17 162.48);
   --success-foreground: oklch(1 0 0);
-  /* emerald subtle pair — higher alpha on warm-dark, lighter glyph */
-  --success-subtle: oklch(0.72 0.14 162 / 0.20);
-  --success-subtle-foreground: oklch(0.80 0.14 162);
+  /* emerald-500/15 surface + emerald-300 glyph */
+  --success-subtle: oklch(0.696 0.17 162.48 / 0.15);
+  --success-subtle-foreground: oklch(0.844 0.143 164.978);
   --warning: oklch(0.769 0.188 70.08);
   --warning-foreground: oklch(0.216 0.006 56.043);
-  /* honey subtle pair — warm-on-warm needs punched alpha + lifted glyph */
-  --warning-subtle: oklch(0.77 0.058 87 / 0.25);
-  --warning-subtle-foreground: oklch(0.83 0.063 89);
+  /* amber-500/15 surface + amber-300 glyph */
+  --warning-subtle: oklch(0.769 0.188 70.08 / 0.15);
+  --warning-subtle-foreground: oklch(0.879 0.169 91.605);
   --info: oklch(0.685 0.169 237.323);
   --info-foreground: oklch(1 0 0);
-  /* sky subtle pair */
-  --info-subtle: oklch(0.72 0.15 238 / 0.20);
-  --info-subtle-foreground: oklch(0.80 0.15 238);
-  /* rose subtle pair */
-  --destructive-subtle: oklch(0.70 0.20 20 / 0.20);
-  --destructive-subtle-foreground: oklch(0.80 0.15 20);
+  /* sky-500/15 surface + sky-300 glyph */
+  --info-subtle: oklch(0.685 0.169 237.323 / 0.15);
+  --info-subtle-foreground: oklch(0.828 0.111 230.318);
+  /* rose-500/15 surface + rose-300 glyph */
+  --destructive-subtle: oklch(0.645 0.246 16.439 / 0.15);
+  --destructive-subtle-foreground: oklch(0.81 0.117 11.638);
   /* sidebar */
   --sidebar: oklch(0.216 0.006 56.043);
   --sidebar-foreground: oklch(0.985 0.001 106.423);

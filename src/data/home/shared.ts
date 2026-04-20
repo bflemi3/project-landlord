@@ -29,6 +29,13 @@ export interface HomeProperty {
   tenantCount: number
   chargeCount: number
   pendingInviteCount: number
+  // Operational fields — populated once the property has an active billing cycle.
+  firstStatementPublished?: boolean
+  billingCycle?: string | null
+  expectedRevenueMinor?: number | null
+  pendingBillCount?: number
+  nextDueDate?: string | null
+  currency?: string | null
 }
 
 export async function fetchHomeProperties(supabase: TypedSupabaseClient): Promise<HomeProperty[]> {

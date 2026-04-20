@@ -4,6 +4,7 @@ import { useState, type MutableRefObject } from 'react'
 import { useTranslations } from 'next-intl'
 import { X, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cardShellClassName } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { isValidEmail } from '@/lib/validation'
@@ -99,7 +100,10 @@ export function InviteTenantsForm({
             return (
               <div
                 key={tenant.email}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card px-3 py-2.5 shadow-sm dark:shadow-none"
+                className={cardShellClassName({
+                  size: 'none',
+                  className: 'flex items-center gap-3 !rounded-xl px-3 py-2.5',
+                })}
               >
                 <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-semibold text-primary-foreground">
                   {initial}

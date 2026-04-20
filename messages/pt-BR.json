@@ -147,12 +147,15 @@
     "noBillingData": "Sem dados de cobrança ainda",
     "statusAllPaid": "Tudo pago",
     "statusUnpaid": "{count, plural, one {# não pago} other {# não pagos}}",
-    "statusBillsPending": "{count, plural, one {# conta pendente} other {# contas pendentes}}"
+    "statusBillsPending": "{count, plural, one {# conta pendente} other {# contas pendentes}}",
+    "awaitingBillsWithDueDate": "{count, plural, one {Aguardando # conta} other {Aguardando # contas}} · vence {date}",
+    "allPaidThisCycle": "Tudo pago neste ciclo"
   },
   "properties": {
     "createProperty": "Criar imóvel",
     "step": "Passo {current} de {total}",
     "setupSteps": "{completed} de {total} passos",
+    "gettingStarted": "Primeiros passos",
     "whereIsProperty": "Onde fica seu imóvel?",
     "whereIsPropertyDescription": "Usaremos este endereço para organizar suas cobranças.",
     "propertyName": "Nome do imóvel",

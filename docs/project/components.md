@@ -70,70 +70,67 @@ The greeting header used on the home screen. Adapts based on context.
 
 **File:** `src/components/property-card.tsx`
 
-Two card types sharing a consistent shell: same border, padding, shadow, hover, and header structure. The content below the header differs.
+Compound primitives for property cards. Two product variants — operating (fully set up) and onboarding (still being configured) — are composed from the same primitives so card shells stay visually consistent across surfaces.
 
-### OperatingPropertyCard
+### Primitives
 
-For properties that are fully set up and have billing data.
+All parts expose `data-slot="property-card-*"` and forward their native props through `cn()`.
 
-**Props:** `membership: MembershipWithProperty`, `opData?: PropertyOperationalData`
+| Primitive | Purpose |
+|---|---|
+| `PropertyCard` | Card shell. Renders `<Link prefetch>` when `href` is set, else a `<div>`. Accepts `size` (defaults `md`, use `xl` for operating). |
+| `PropertyCardHead` | `flex items-start justify-between gap-4` container for header row. |
+| `PropertyCardBody` | `min-w-0 flex-1` column for title/subtitle text. |
+| `PropertyCardEyebrow` | Uppercase micro-label above the title (e.g. billing cycle). |
+| `PropertyCardTitle` | `text-xl font-semibold tracking-tight` with `first:mt-0`. Override `text-base` for compact onboarding variant. |
+| `PropertyCardSubtitle` | `text-sm text-muted-foreground` line below title. |
+| `PropertyCardChevron` | `ChevronRight` with hover translate-x animation via parent `group`. |
+| `PropertyCardAmount` | Large `text-3xl tabular-nums` revenue number. |
+| `PropertyCardStatus` | Status line with `tone`: `muted` / `success` / `warning` / `destructive` / `info`. |
+| `PropertyCardProgress` | Progress bar with `completed`, `total`, optional `label`. |
+| `PropertyCardSteps` | Vertical stack container for `PropertyCardStep` children. |
+| `PropertyCardStep` | Single step with `state`: `done` / `inProgress` / `pending`. Auto-renders Check / Clock / empty circle. |
 
-**Layout:**
-```
-┌──────────────────────────────────────┐
-│  Property Name                    >  │  ← truncate, chevron right
-│  City, State                         │  ← text-sm muted
-│                                      │
-│  R$ 4.850              March 2026    │  ← text-xl bold left, cycle right
-│  ● All paid                          │  ← status dot + label
-└──────────────────────────────────────┘
-```
+### Operating variant (fully set up)
 
-**Status variants:**
-| Status | Dot color | Text color | Label |
-|---|---|---|---|
-| Healthy | `bg-emerald-500` | `text-emerald-600` | "All paid" |
-| Attention | `bg-amber-500` | `text-amber-600` | "N bills pending" |
-| Overdue | `bg-rose-500` | `text-rose-600` | "N unpaid" |
-
-**Card styles:** `rounded-2xl border border-border bg-card p-5 shadow-sm` with `hover:border-primary/20 hover:shadow-md`. Dark mode: `dark:bg-zinc-800/80 dark:shadow-none dark:hover:border-primary/30`.
-
-### SetupPropertyCard
-
-For properties still going through onboarding. Uses the same card shell as operating cards.
-
-**Props:** `membership: MembershipWithProperty`, `progress: PropertySetupProgress`, `pendingInvites: PendingInvite[]`
-
-**Layout:**
-```
-┌──────────────────────────────────────┐
-│  Property Name                    >  │  ← same header as operating
-│  City, State                         │
-│                                      │
-│  1 of 4 steps                  25%   │  ← progress label + percentage
-│  ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░   │  ← progress bar
-│                                      │
-│  ✓ Property created                  │  ← step checklist
-│  ◷ Tenants invited                   │  ← in-progress = amber clock
-│  ○ Charges configured                │  ← incomplete = empty circle
-│  ○ First statement published         │
-└──────────────────────────────────────┘
+```tsx
+<PropertyCard href={href} size="xl">
+  <PropertyCardHead>
+    <PropertyCardBody>
+      <PropertyCardEyebrow>{billingCycle}</PropertyCardEyebrow>
+      <PropertyCardTitle>{name}</PropertyCardTitle>
+      <PropertyCardSubtitle>{address}</PropertyCardSubtitle>
+    </PropertyCardBody>
+    <PropertyCardChevron />
+  </PropertyCardHead>
+  <PropertyCardAmount>{formatCurrency(...)}</PropertyCardAmount>
+  <PropertyCardStatus tone="warning">{awaitingBillsLabel}</PropertyCardStatus>
+</PropertyCard>
 ```
 
-**Step states:**
-| State | Icon | Text style |
-|---|---|---|
-| Done | Teal check in `bg-primary/10` circle | `text-muted-foreground` |
-| In progress | Amber clock in `bg-amber-500/10` circle | `font-medium text-foreground` |
-| Incomplete | Empty circle with `border-zinc-300` | `text-muted-foreground/60` |
+### Onboarding variant (setup in progress)
 
-**Same card styles as OperatingPropertyCard** — identical border, padding, shadow, hover. The two card types should be visually siblings in a list.
+```tsx
+<PropertyCard href={href}>
+  <PropertyCardHead className="gap-2">
+    <PropertyCardBody>
+      <PropertyCardTitle className="mt-0 text-base">{name}</PropertyCardTitle>
+      <PropertyCardSubtitle className="mt-0.5">{address}</PropertyCardSubtitle>
+    </PropertyCardBody>
+    <PropertyCardChevron className="mt-0.5" />
+  </PropertyCardHead>
+  <PropertyCardProgress completed={done} total={total} label={setupLabel} className="mb-3" />
+  <PropertyCardSteps className="mt-0">
+    {steps.map((s) => <PropertyCardStep key={s.key} state={s.state}>{s.label}</PropertyCardStep>)}
+  </PropertyCardSteps>
+</PropertyCard>
+```
 
 ### Helpers
 
 - `getCompletionSteps(progress)` — returns the 4-step checklist array
 - `isPropertyComplete(progress)` — boolean check
-- `getStatusBadge(opData)` — returns `{ label, dot, text }` for operating status
+- `getStatusBadge(opData)` — returns `{ labelKey, labelParams?, dot, text }` for operating status, using semantic `bg-destructive` / `bg-warning` / `bg-success` dots
 
 ---
 
@@ -217,6 +214,41 @@ Contextual message container for inline alerts, instructions, or status messages
 | `destructive` | `bg-destructive/10` | `border-destructive/20` | `text-destructive` |
 
 **Styles:** `rounded-2xl border px-5 py-5 text-sm`. Use `InfoBoxDivider` between multiple messages inside one box.
+
+---
+
+## Empty State
+
+**File:** `src/components/empty-state.tsx`
+
+Centered icon + title + description + optional actions. Used for "no records yet" / "coming soon" / first-run states inside a section or page body.
+
+### Primitives
+
+| Primitive | Purpose |
+|---|---|
+| `EmptyState` | Container. `flex flex-col items-center justify-center py-16 text-center`. |
+| `EmptyStateIcon` | Renders the glyph inside a circle `IconTile` (size `lg`). Accepts `tone` (defaults `muted`). Pass the lucide icon as children. |
+| `EmptyStateTitle` | `text-lg font-semibold tracking-tight`. |
+| `EmptyStateDescription` | `text-sm leading-relaxed text-muted-foreground` with `max-w-sm`. |
+| `EmptyStateActions` | Container for buttons. `mt-6 flex gap-3`. Omit when no action. |
+
+### Example
+
+```tsx
+<EmptyState>
+  <EmptyStateIcon><Building2 /></EmptyStateIcon>
+  <EmptyStateTitle>No providers yet</EmptyStateTitle>
+  <EmptyStateDescription>Add your first provider to get started.</EmptyStateDescription>
+  <EmptyStateActions>
+    <Button render={<Link href="/eng/providers/new" />} nativeButton={false}>
+      Add provider
+    </Button>
+  </EmptyStateActions>
+</EmptyState>
+```
+
+Use `tone="primary"` on `EmptyStateIcon` when the empty state represents an inviting first action (e.g. "Add your first X"); keep `muted` for neutral "nothing here" states.
 
 ---
 

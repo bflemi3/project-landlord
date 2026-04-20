@@ -1,30 +1,86 @@
-import type { LucideIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
+import * as React from 'react'
+import { IconTile } from '@/components/icon-tile'
+import { cn } from '@/lib/utils'
 
-interface EmptyStateProps {
-  icon: LucideIcon
-  heading: string
-  description: string
-  action?: {
-    label: string
-    href: string
-  }
-}
+type EmptyStateTone = React.ComponentProps<typeof IconTile>['tone']
 
-export function EmptyState({ icon: Icon, heading, description, action }: EmptyStateProps) {
+function EmptyState({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center">
-      <div className="mb-4 rounded-full bg-muted p-3">
-        <Icon className="size-6 text-muted-foreground" />
-      </div>
-      <h2 className="text-lg font-semibold">{heading}</h2>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{description}</p>
-      {action && (
-        <Button render={<Link href={action.href} />} nativeButton={false} className="mt-6">
-          {action.label}
-        </Button>
+    <div
+      data-slot="empty-state"
+      className={cn(
+        'flex flex-col items-center justify-center py-16 text-center',
+        className,
       )}
-    </div>
+      {...props}
+    />
   )
 }
+
+function EmptyStateIcon({
+  tone = 'muted',
+  className,
+  children,
+  ...props
+}: Omit<React.ComponentProps<'div'>, 'children'> & {
+  tone?: EmptyStateTone
+  children?: React.ReactNode
+}) {
+  return (
+    <IconTile
+      data-slot="empty-state-icon"
+      size="lg"
+      shape="circle"
+      tone={tone}
+      className={cn('mb-5', className)}
+      {...props}
+    >
+      {children}
+    </IconTile>
+  )
+}
+
+function EmptyStateTitle({ className, ...props }: React.ComponentProps<'h2'>) {
+  return (
+    <h2
+      data-slot="empty-state-title"
+      className={cn(
+        'text-lg font-semibold tracking-tight text-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function EmptyStateDescription({ className, ...props }: React.ComponentProps<'p'>) {
+  return (
+    <p
+      data-slot="empty-state-description"
+      className={cn(
+        'mt-1 max-w-sm text-sm leading-relaxed text-muted-foreground',
+        className,
+      )}
+      {...props}
+    />
+  )
+}
+
+function EmptyStateActions({ className, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="empty-state-actions"
+      className={cn('mt-6 flex items-center justify-center gap-3', className)}
+      {...props}
+    />
+  )
+}
+
+export {
+  EmptyState,
+  EmptyStateIcon,
+  EmptyStateTitle,
+  EmptyStateDescription,
+  EmptyStateActions,
+}
+export type { EmptyStateTone }

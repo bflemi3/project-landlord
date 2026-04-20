@@ -1,5 +1,5 @@
 import { getHomeProperties } from '@/data/home/server'
-import { PropertyCard } from './home-content'
+import { HomePropertyCard } from './home-property-card'
 
 /**
  * Server component that fetches all landlord properties in one DB call
@@ -11,7 +11,7 @@ export async function PropertyCardList() {
   return (
     <div className="grid gap-3 md:grid-cols-2">
       {properties.map((p) => (
-        <PropertyCard key={p.propertyId} property={p} />
+        <HomePropertyCard key={p.propertyId} property={p} />
       ))}
     </div>
   )

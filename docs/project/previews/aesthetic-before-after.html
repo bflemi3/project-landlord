@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mabenn — aesthetic before / after</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            },
+            fontFeatureSettings: {
+              tnum: '"tnum"',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      html, body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+      .tnum { font-feature-settings: 'tnum' 1; }
+      .panel-before { --tw-panel: 'before'; }
+      .panel-after  { --tw-panel: 'after'; }
+      /* Subtle light-mode card shadow to match "shadow in light" philosophy */
+      .card-shadow-light { box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 1px 3px rgb(0 0 0 / 0.03); }
+      .card-shadow-light-after { box-shadow: 0 1px 2px rgb(0 0 0 / 0.035), 0 8px 24px -12px rgb(0 0 0 / 0.06); }
+      /* Hairline for dark after */
+      .hairline-dark { box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.04); }
+    </style>
+  </head>
+  <body class="bg-neutral-100 text-stone-900">
+    <div class="mx-auto max-w-[1400px] px-6 py-10 md:py-14">
+      <!-- Page header -->
+      <header class="mb-10">
+        <p class="mb-2 text-sm font-medium uppercase tracking-widest text-stone-500">mabenn</p>
+        <h1 class="text-4xl font-semibold tracking-tight text-stone-900 md:text-5xl">
+          Aesthetic, before &amp; after
+        </h1>
+        <p class="mt-3 max-w-2xl text-base leading-relaxed text-stone-600">
+          Same home screen content — single property, operating, two bills pending — rendered in
+          the current design tokens and the proposed ones. Light and dark for each.
+          Inter stays. Teal stays. Spacing, warmth, and type scale change.
+        </p>
+      </header>
+
+      <!-- Grid of 4 panels: rows = theme, columns = before/after -->
+      <div class="grid gap-6 lg:grid-cols-2">
+        <!-- =================== LIGHT — BEFORE =================== -->
+        <section>
+          <div class="mb-3 flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-stone-500">Light · current</p>
+              <p class="text-xs text-stone-400">zinc · rounded-2xl · p-5 cards · text-[17px] titles</p>
+            </div>
+          </div>
+          <div class="rounded-[28px] bg-zinc-50 p-6 ring-1 ring-zinc-200">
+            <!-- phone viewport -->
+            <div class="mx-auto w-full max-w-[390px]">
+              <!-- header -->
+              <div class="flex items-start justify-between pb-1">
+                <div>
+                  <h2 class="text-2xl font-bold text-zinc-900">Good afternoon, Brandon</h2>
+                  <p class="mt-1.5 text-[17px] tabular-nums text-zinc-600">
+                    <span class="font-bold text-zinc-900">R$&nbsp;4.800</span> expected ·
+                    <span class="text-amber-600">2 bills pending</span>
+                  </p>
+                </div>
+                <svg class="mt-1 size-4 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+
+              <!-- operating card -->
+              <div class="mt-8 rounded-2xl border border-zinc-200 bg-white p-5 card-shadow-light">
+                <div class="flex items-start justify-between">
+                  <div class="min-w-0 flex-1">
+                    <h3 class="truncate text-[17px] font-semibold text-zinc-900">Rua Oscar Freire, 123</h3>
+                    <p class="mt-0.5 text-sm text-zinc-500">Apt 401 · São Paulo</p>
+                  </div>
+                  <svg class="mt-0.5 size-5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                  <p class="text-xl font-bold tabular-nums text-zinc-900">R$&nbsp;4.800</p>
+                  <span class="text-sm text-zinc-500">Apr 2026</span>
+                </div>
+                <div class="mt-2 flex items-center gap-1.5">
+                  <div class="size-1.5 rounded-full bg-amber-500"></div>
+                  <span class="text-sm font-medium text-amber-600">Awaiting 2 bills</span>
+                </div>
+              </div>
+
+              <!-- what's next -->
+              <div class="mt-6">
+                <h3 class="mb-3 text-base font-semibold text-zinc-900">What's next</h3>
+                <div class="space-y-2">
+                  <button class="flex w-full items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-left">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-teal-600">
+                      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-zinc-900">Review April bills</p>
+                      <p class="mt-0.5 text-xs text-zinc-500">2 utility bills ready to match</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                  <button class="flex w-full items-center gap-3 rounded-xl border border-zinc-200 bg-white px-4 py-3.5 text-left">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-100 text-amber-600">
+                      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-zinc-900">Remind Maria about rent</p>
+                      <p class="mt-0.5 text-xs text-zinc-500">Payment due in 3 days</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- bottom bar -->
+              <div class="mt-10 flex justify-center border-t border-zinc-200 pt-4">
+                <button class="flex items-center gap-1.5 rounded-2xl px-6 py-2.5 text-sm font-medium text-zinc-500">
+                  <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add property
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================== LIGHT — AFTER =================== -->
+        <section>
+          <div class="mb-3 flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-stone-500">Light · proposed</p>
+              <p class="text-xs text-stone-400">stone · rounded-[20px] · p-7 cards · text-xl titles · larger money</p>
+            </div>
+          </div>
+          <div class="rounded-[28px] bg-stone-50 p-6 ring-1 ring-stone-200/80">
+            <div class="mx-auto w-full max-w-[390px]">
+              <!-- header -->
+              <div class="flex items-start justify-between pb-2">
+                <div>
+                  <h2 class="text-3xl font-semibold tracking-tight text-stone-900">Good afternoon, Brandon</h2>
+                  <p class="mt-2 text-base tabular-nums text-stone-500">
+                    <span class="font-semibold text-stone-900">R$&nbsp;4.800</span>
+                    expected this cycle
+                  </p>
+                </div>
+                <svg class="mt-2 size-[18px] text-stone-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+
+              <!-- operating card — larger padding, bigger money, simpler chrome -->
+              <div class="mt-10 rounded-[20px] bg-white p-7 card-shadow-light-after">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium uppercase tracking-wider text-stone-400">Apr 2026</p>
+                    <h3 class="mt-1.5 truncate text-xl font-semibold tracking-tight text-stone-900">Rua Oscar Freire, 123</h3>
+                    <p class="mt-1 text-sm text-stone-500">Apt 401 · São Paulo</p>
+                  </div>
+                  <svg class="mt-1 size-5 shrink-0 text-stone-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                <div class="mt-7">
+                  <p class="text-3xl font-semibold tracking-tight tabular-nums text-stone-900">R$&nbsp;4.800</p>
+                  <p class="mt-2 text-sm text-amber-700">Awaiting 2 bills · due Apr 5</p>
+                </div>
+              </div>
+
+              <!-- what's next — no border rows, just spacing + hairline dividers -->
+              <div class="mt-10">
+                <p class="mb-4 text-sm font-medium text-stone-500">What's next</p>
+                <div class="divide-y divide-stone-200/70 rounded-[20px] bg-white card-shadow-light-after">
+                  <button class="flex w-full items-center gap-4 px-6 py-5 text-left">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-500/10 text-teal-700">
+                      <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-base font-medium text-stone-900">Review April bills</p>
+                      <p class="mt-0.5 text-sm text-stone-500">2 utility bills ready to match</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-stone-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                  <button class="flex w-full items-center gap-4 px-6 py-5 text-left">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-700">
+                      <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-base font-medium text-stone-900">Remind Maria about rent</p>
+                      <p class="mt-0.5 text-sm text-stone-500">Payment due in 3 days</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-stone-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- bottom bar -->
+              <div class="mt-12 flex justify-center pt-2">
+                <button class="flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-stone-500 ring-1 ring-stone-200 hover:text-stone-900">
+                  <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add property
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================== DARK — BEFORE =================== -->
+        <section>
+          <div class="mb-3 flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-stone-500">Dark · current</p>
+              <p class="text-xs text-stone-400">zinc-950 · cool · rounded-2xl · p-5 cards</p>
+            </div>
+          </div>
+          <div class="rounded-[28px] bg-zinc-950 p-6 ring-1 ring-zinc-900">
+            <div class="mx-auto w-full max-w-[390px]">
+              <div class="flex items-start justify-between pb-1">
+                <div>
+                  <h2 class="text-2xl font-bold text-zinc-50">Good afternoon, Brandon</h2>
+                  <p class="mt-1.5 text-[17px] tabular-nums text-zinc-400">
+                    <span class="font-bold text-zinc-50">R$&nbsp;4.800</span> expected ·
+                    <span class="text-amber-400">2 bills pending</span>
+                  </p>
+                </div>
+                <svg class="mt-1 size-4 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+
+              <div class="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900 p-5">
+                <div class="flex items-start justify-between">
+                  <div class="min-w-0 flex-1">
+                    <h3 class="truncate text-[17px] font-semibold text-zinc-50">Rua Oscar Freire, 123</h3>
+                    <p class="mt-0.5 text-sm text-zinc-400">Apt 401 · São Paulo</p>
+                  </div>
+                  <svg class="mt-0.5 size-5 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                <div class="mt-3 flex items-baseline justify-between">
+                  <p class="text-xl font-bold tabular-nums text-zinc-50">R$&nbsp;4.800</p>
+                  <span class="text-sm text-zinc-400">Apr 2026</span>
+                </div>
+                <div class="mt-2 flex items-center gap-1.5">
+                  <div class="size-1.5 rounded-full bg-amber-500"></div>
+                  <span class="text-sm font-medium text-amber-400">Awaiting 2 bills</span>
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <h3 class="mb-3 text-base font-semibold text-zinc-50">What's next</h3>
+                <div class="space-y-2">
+                  <button class="flex w-full items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-left">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-teal-400">
+                      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-zinc-50">Review April bills</p>
+                      <p class="mt-0.5 text-xs text-zinc-400">2 utility bills ready to match</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                  <button class="flex w-full items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-3.5 text-left">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-zinc-800 text-amber-400">
+                      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-medium text-zinc-50">Remind Maria about rent</p>
+                      <p class="mt-0.5 text-xs text-zinc-400">Payment due in 3 days</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-zinc-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-10 flex justify-center border-t border-zinc-800 pt-4">
+                <button class="flex items-center gap-1.5 rounded-2xl px-6 py-2.5 text-sm font-medium text-zinc-400">
+                  <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add property
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================== DARK — AFTER =================== -->
+        <section>
+          <div class="mb-3 flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-stone-500">Dark · proposed</p>
+              <p class="text-xs text-stone-400">stone-950 (warm) · hairline borders · p-7 cards · larger money</p>
+            </div>
+          </div>
+          <div class="rounded-[28px] bg-stone-950 p-6 ring-1 ring-stone-900">
+            <div class="mx-auto w-full max-w-[390px]">
+              <div class="flex items-start justify-between pb-2">
+                <div>
+                  <h2 class="text-3xl font-semibold tracking-tight text-stone-50">Good afternoon, Brandon</h2>
+                  <p class="mt-2 text-base tabular-nums text-stone-400">
+                    <span class="font-semibold text-stone-50">R$&nbsp;4.800</span>
+                    expected this cycle
+                  </p>
+                </div>
+                <svg class="mt-2 size-[18px] text-stone-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              </div>
+
+              <div class="mt-10 rounded-[20px] bg-stone-900 p-7 hairline-dark">
+                <div class="flex items-start justify-between gap-4">
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-medium uppercase tracking-wider text-stone-500">Apr 2026</p>
+                    <h3 class="mt-1.5 truncate text-xl font-semibold tracking-tight text-stone-50">Rua Oscar Freire, 123</h3>
+                    <p class="mt-1 text-sm text-stone-400">Apt 401 · São Paulo</p>
+                  </div>
+                  <svg class="mt-1 size-5 shrink-0 text-stone-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+                <div class="mt-7">
+                  <p class="text-3xl font-semibold tracking-tight tabular-nums text-stone-50">R$&nbsp;4.800</p>
+                  <p class="mt-2 text-sm text-[#d4b483]">Awaiting 2 bills · due Apr 5</p>
+                </div>
+              </div>
+
+              <div class="mt-10">
+                <p class="mb-4 text-sm font-medium text-stone-400">What's next</p>
+                <div class="divide-y divide-stone-800/80 rounded-[20px] bg-stone-900 hairline-dark">
+                  <button class="flex w-full items-center gap-4 px-6 py-5 text-left">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-teal-500/15 text-teal-300">
+                      <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-base font-medium text-stone-50">Review April bills</p>
+                      <p class="mt-0.5 text-sm text-stone-400">2 utility bills ready to match</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-stone-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                  <button class="flex w-full items-center gap-4 px-6 py-5 text-left">
+                    <div class="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#d4b483]/25 text-[#e5c99a]">
+                      <svg class="size-[18px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <p class="text-base font-medium text-stone-50">Remind Maria about rent</p>
+                      <p class="mt-0.5 text-sm text-stone-400">Payment due in 3 days</p>
+                    </div>
+                    <svg class="size-4 shrink-0 text-stone-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <div class="mt-12 flex justify-center pt-2">
+                <button class="flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium text-stone-400 ring-1 ring-stone-800 hover:text-stone-50">
+                  <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Add property
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Legend -->
+      <section class="mt-12 rounded-[20px] bg-white p-8 ring-1 ring-stone-200/80">
+        <h2 class="text-xl font-semibold tracking-tight text-stone-900">What changed, at a glance</h2>
+        <dl class="mt-6 grid gap-x-10 gap-y-5 md:grid-cols-2">
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Palette</dt>
+            <dd class="mt-1 text-sm text-stone-600">zinc (cool) → stone (warm). Teal unchanged.</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Type scale</dt>
+            <dd class="mt-1 text-sm text-stone-600">Retire <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">text-[17px]</code> / <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">text-[28px]</code>. Use <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">text-xl</code> card titles, <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">text-3xl</code> page / amounts, never <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">text-xs</code> on mobile.</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Card padding</dt>
+            <dd class="mt-1 text-sm text-stone-600"><code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">p-5</code> → <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">p-7</code>. Section rhythm <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">mt-8</code> → <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">mt-10</code>.</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Radius</dt>
+            <dd class="mt-1 text-sm text-stone-600"><code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">rounded-2xl</code> (16px) → <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">rounded-[20px]</code>. Softer, more editorial.</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Chrome</dt>
+            <dd class="mt-1 text-sm text-stone-600">Per-row borders → grouped card with hairline dividers. Status dot + pill → inline tone-coloured text.</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Money hierarchy</dt>
+            <dd class="mt-1 text-sm text-stone-600">Amount is the visual anchor. <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">text-3xl</code> on the card, not <code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">text-xl</code>. Context (<code class="rounded bg-stone-100 px-1.5 py-0.5 text-xs">Apr 2026</code>) moves above the title as a quiet eyebrow.</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Shadow / border</dt>
+            <dd class="mt-1 text-sm text-stone-600">Light: soft shadow, no border — unchanged philosophy, just warmer cast. Dark: hairline (inset 1px, 4% white) over a half-step lighter surface.</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-semibold text-stone-900">Font</dt>
+            <dd class="mt-1 text-sm text-stone-600">Inter, unchanged. Larger sizes, tighter tracking on display, two text colours per surface instead of four.</dd>
+          </div>
+        </dl>
+      </section>
+    </div>
+  </body>
+</html>

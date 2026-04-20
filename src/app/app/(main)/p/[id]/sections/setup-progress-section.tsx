@@ -1,6 +1,12 @@
 import { getTranslations } from 'next-intl/server'
-import { Check, Clock } from 'lucide-react'
-import { getCompletionSteps, isPropertyComplete } from '@/components/property-card'
+import {
+  getCompletionSteps,
+  isPropertyComplete,
+  PropertyCardProgress,
+  PropertyCardSteps,
+  PropertyCardStep,
+} from '@/components/property-card'
+import { Card } from '@/components/ui/card'
 import { getProperty } from '@/data/properties/server'
 import { getUnitCharges, getUnitTenants, getUnitInvites } from '@/data/units/server'
 
@@ -34,46 +40,23 @@ export async function SetupProgressSection({ propertyId }: { propertyId: string 
   const total = steps.length
 
   return (
-    <div>
-      <div className="rounded-2xl border border-border bg-card p-5 shadow-sm dark:shadow-none">
-        <div className="mb-3">
-          <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">
-              {tP('setupSteps', { completed, total })}
-            </span>
-            <span className="text-xs font-semibold text-primary">
-              {Math.round((completed / total) * 100)}%
-            </span>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-full bg-border">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${(completed / total) * 100}%` }}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          {steps.map((step) => (
-            <div key={step.key} className="flex items-center gap-2.5">
-              {step.done ? (
-                <div className="flex size-5 items-center justify-center rounded-full bg-primary/10">
-                  <Check className="size-3 text-primary" />
-                </div>
-              ) : step.inProgress ? (
-                <div className="flex size-5 items-center justify-center rounded-full bg-amber-500/10">
-                  <Clock className="size-3 text-amber-500" />
-                </div>
-              ) : (
-                <div className="size-5 rounded-full border border-border" />
-              )}
-              <span className={`text-sm ${step.done ? 'text-muted-foreground' : step.inProgress ? 'font-medium text-foreground' : 'text-muted-foreground/60'}`}>
-                {tP(step.label)}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
+    <Card>
+      <PropertyCardProgress
+        className="mt-0"
+        completed={completed}
+        total={total}
+        label={tP('setupSteps', { completed, total })}
+      />
+      <PropertyCardSteps>
+        {steps.map((step) => (
+          <PropertyCardStep
+            key={step.key}
+            state={step.done ? 'done' : step.inProgress ? 'inProgress' : 'pending'}
+          >
+            {tP(step.label)}
+          </PropertyCardStep>
+        ))}
+      </PropertyCardSteps>
+    </Card>
   )
 }
