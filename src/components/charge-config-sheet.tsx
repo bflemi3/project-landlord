@@ -8,7 +8,11 @@ const animatedSplitPromise = import('@/components/animated-split-section')
 const AnimatedSplitSection = lazy(() =>
   animatedSplitPromise.then(m => ({ default: m.AnimatedSplitSection }))
 )
-import { ResponsiveModal } from '@/components/responsive-modal'
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalFooter,
+} from '@/components/responsive-modal'
 import {
   ChargeNameInput,
   AmountInput,
@@ -64,15 +68,18 @@ export function ChargeConfigSheet({
   const formKey = `${open}-${existingConfig?.name ?? chargeName}-${existingConfig?.amountMinor ?? ''}`
 
   const isEditing = existingConfig != null
-  const title = isEditing ? undefined : chargeName
 
   return (
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title={title}
       className="sm:max-w-lg"
     >
+      <ResponsiveModal.Header>
+        <ResponsiveModal.Title className={isEditing ? 'sr-only' : undefined}>
+          {isEditing ? (existingConfig?.name ?? chargeName) : chargeName}
+        </ResponsiveModal.Title>
+      </ResponsiveModal.Header>
       <ChargeConfigForm
         key={formKey}
         chargeName={chargeName}
@@ -169,64 +176,64 @@ function ChargeConfigForm({
 
   return (
     <>
-      {/* Editable name for custom charges */}
-      {isCustom && (
-        <ChargeNameInput
-          value={editableName}
-          onChange={setEditableName}
-          placeholder={t('customChargeNamePlaceholder')}
-          autoFocus={!existingConfig}
-        />
-      )}
-
-      <div className="space-y-4">
-        {/* Amount or variable placeholder */}
-        {isFixed ? (
-          <AmountInput
-            amount={amount}
-            onAmountChange={setAmount}
-            canSave={canSave}
-            onSave={handleSave}
-            onSwitchType={handleSwitchType}
-            switchLabel={t('switchToVariable')}
-            switchContext={t('switchToVariableContext')}
-            currencySymbol={currencySymbol}
-            autoFocus={!isCustom || !!existingConfig}
-          />
-        ) : (
-          <VariablePlaceholder
-            onSwitchType={handleSwitchType}
-            switchLabel={t('switchToFixed')}
-            switchContext={t('switchToFixedContext')}
+      <ResponsiveModalContent>
+        {/* Editable name for custom charges */}
+        {isCustom && (
+          <ChargeNameInput
+            value={editableName}
+            onChange={setEditableName}
+            placeholder={t('customChargeNamePlaceholder')}
+            autoFocus={!existingConfig}
           />
         )}
 
-        {/* Who pays */}
-        <PayerToggle value={payer} onChange={setPayer} />
-
-        {/* Split slider */}
-        <Suspense fallback={null}>
-          <AnimatedSplitSection show={payer === 'split'}>
-            <SplitSlider
-              splitMode={splitMode}
-              onSplitModeChange={setSplitMode}
-              tenantPercent={Number(tenantPercent) || 0}
-              onTenantPercentChange={(pct) => setTenantPercent(String(pct))}
-              tenantFixedAmount={tenantFixedAmount}
-              onTenantFixedAmountChange={setTenantFixedAmount}
-              totalAmount={Number(amount?.replace(',', '.') || '0')}
+        <div className="space-y-4">
+          {/* Amount or variable placeholder */}
+          {isFixed ? (
+            <AmountInput
+              amount={amount}
+              onAmountChange={setAmount}
+              canSave={canSave}
+              onSave={handleSave}
+              onSwitchType={handleSwitchType}
+              switchLabel={t('switchToVariable')}
+              switchContext={t('switchToVariableContext')}
               currencySymbol={currencySymbol}
+              autoFocus={!isCustom || !!existingConfig}
             />
-          </AnimatedSplitSection>
-        </Suspense>
-      </div>
+          ) : (
+            <VariablePlaceholder
+              onSwitchType={handleSwitchType}
+              switchLabel={t('switchToFixed')}
+              switchContext={t('switchToFixedContext')}
+            />
+          )}
+
+          {/* Who pays */}
+          <PayerToggle value={payer} onChange={setPayer} />
+
+          {/* Split slider */}
+          <Suspense fallback={null}>
+            <AnimatedSplitSection show={payer === 'split'}>
+              <SplitSlider
+                splitMode={splitMode}
+                onSplitModeChange={setSplitMode}
+                tenantPercent={Number(tenantPercent) || 0}
+                onTenantPercentChange={(pct) => setTenantPercent(String(pct))}
+                tenantFixedAmount={tenantFixedAmount}
+                onTenantFixedAmountChange={setTenantFixedAmount}
+                totalAmount={Number(amount?.replace(',', '.') || '0')}
+                currencySymbol={currencySymbol}
+              />
+            </AnimatedSplitSection>
+          </Suspense>
+        </div>
+      </ResponsiveModalContent>
 
       {/* Actions */}
-      <div className="mt-6 space-y-3">
+      <ResponsiveModalFooter className="space-y-3">
         <Button
           onClick={handleSave}
-          className="h-12 w-full rounded-2xl"
-          size="lg"
           disabled={!canSave}
         >
           {t('chargeSave')}
@@ -235,8 +242,7 @@ function ChargeConfigForm({
           <Button
             variant="ghost"
             onClick={onToggleActive}
-            className="h-12 w-full rounded-2xl text-muted-foreground"
-            size="lg"
+            className="text-muted-foreground"
           >
             {isActive ? t('pauseCharge') : t('resumeCharge')}
           </Button>
@@ -245,8 +251,7 @@ function ChargeConfigForm({
           <Button
             variant="ghost"
             onClick={onRemove}
-            className="h-12 w-full rounded-2xl text-destructive"
-            size="lg"
+            className="text-destructive"
           >
             {t('removeCharge')}
           </Button>
@@ -254,12 +259,10 @@ function ChargeConfigForm({
         <Button
           variant="ghost"
           onClick={onSkip}
-          className="h-12 w-full rounded-2xl"
-          size="lg"
         >
           {t('cancel')}
         </Button>
-      </div>
+      </ResponsiveModalFooter>
     </>
   )
 }

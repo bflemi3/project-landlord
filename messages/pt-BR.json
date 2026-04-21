@@ -315,9 +315,11 @@
     "confirmRemove": "Sim, remover",
     "tenantTitle": "Inquilino",
     "pendingInviteTitle": "Convite pendente",
+    "inviteTenantTitle": "Convidar inquilino",
     "invitedOn": "Convidado em {date} · {relative}",
     "joinedOn": "Entrou em {date} · {relative}",
     "editProperty": "Editar imóvel",
+    "editPropertyTitle": "Editar imóvel",
     "saveChanges": "Salvar alterações",
     "pauseCharge": "Pausar cobrança",
     "resumeCharge": "Retomar cobrança",
@@ -378,6 +380,26 @@
     "billRemovedOnSave": "A conta será removida ao salvar.",
     "incomplete": "incompleta",
     "uploadFailed": "Falha no upload. Tente novamente."
+  },
+  "propertyCreation": {
+    "back": "Voltar",
+    "exit": "Sair",
+    "step": "Etapa {current} de {total}",
+    "step1": {
+      "title": "Envie seu contrato de aluguel",
+      "description": "A gente lê o contrato e configura o resto pra você.",
+      "placeholder": "O upload de contrato chega na próxima etapa."
+    },
+    "step2": {
+      "title": "Revise o que encontramos",
+      "placeholder": "A tela de revisão chega em uma etapa futura."
+    },
+    "exitPrompt": {
+      "title": "Guardar seu progresso?",
+      "description": "Seu trabalho fica salvo neste aparelho. Continue de onde parou a qualquer momento, ou descarte e comece de novo.",
+      "saveForLater": "Guardar para depois",
+      "discard": "Descartar e sair"
+    }
   },
   "settings": {
     "title": "Configurações",

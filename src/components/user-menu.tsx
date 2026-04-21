@@ -94,66 +94,72 @@ function UserSettingsModal({
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title={t('title')}
       className="sm:max-w-2xl"
     >
-      {/* Nav — segmented on mobile, sidebar on desktop */}
-      <div className="mt-2 md:mt-4 md:flex md:gap-6">
-        <div className="flex flex-col md:w-44 md:shrink-0 md:rounded-xl md:bg-muted md:p-2">
-          {/* Mobile: pill segmented control */}
-          <div className="mb-6 flex gap-1 rounded-xl bg-secondary/60 p-1 md:mb-0 md:flex-col md:rounded-none md:bg-transparent md:p-0">
-            {sections.map((section) => {
-              const isActive = activeSection === section.key
-              return (
-                <button
-                  key={section.key}
-                  onClick={() => setActiveSection(section.key)}
-                  className={cn(
-                    'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors md:flex-none md:justify-start md:px-3',
-                    isActive
-                      ? 'bg-background text-foreground shadow-sm md:bg-primary/10 md:text-primary md:shadow-none'
-                      : 'text-muted-foreground hover:text-foreground md:hover:bg-secondary',
-                  )}
-                >
-                  <section.icon className="size-4" />
-                  <span className="md:inline">{section.label}</span>
-                </button>
-              )
-            })}
+      <ResponsiveModal.Header>
+        <ResponsiveModal.Title>{t('title')}</ResponsiveModal.Title>
+      </ResponsiveModal.Header>
+      <ResponsiveModal.Content>
+        {/* Nav — segmented on mobile, sidebar on desktop */}
+        <div className="md:flex md:gap-6">
+          <div className="flex flex-col md:w-44 md:shrink-0 md:rounded-xl md:bg-muted md:p-2">
+            {/* Mobile: pill segmented control */}
+            <div className="mb-6 flex gap-1 rounded-xl bg-secondary/60 p-1 md:mb-0 md:flex-col md:rounded-none md:bg-transparent md:p-0">
+              {sections.map((section) => {
+                const isActive = activeSection === section.key
+                return (
+                  <button
+                    key={section.key}
+                    onClick={() => setActiveSection(section.key)}
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors md:flex-none md:justify-start md:px-3',
+                      isActive
+                        ? 'bg-background text-foreground shadow-sm md:bg-primary/10 md:text-primary md:shadow-none'
+                        : 'text-muted-foreground hover:text-foreground md:hover:bg-secondary',
+                    )}
+                  >
+                    <section.icon className="size-4" />
+                    <span className="md:inline">{section.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Sign out at bottom of nav — desktop only */}
+            <div className="mt-auto hidden pt-4 md:block">
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive"
+              >
+                <LogOut className="size-4" />
+                {t('signOut')}
+              </button>
+            </div>
           </div>
 
-          {/* Sign out at bottom of nav — desktop only */}
-          <div className="mt-auto hidden pt-4 md:block">
-            <button
-              onClick={handleSignOut}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive"
-            >
-              <LogOut className="size-4" />
-              {t('signOut')}
-            </button>
+          {/* Content */}
+          <div className="min-h-[200px] flex-1 md:min-h-[280px]">
+            {activeSection === 'profile' && (
+              <ProfileSection userName={userName} avatarUrl={avatarUrl} />
+            )}
+            {activeSection === 'payment' && <PaymentSection />}
+            {activeSection === 'appearance' && <AppearanceSection />}
           </div>
         </div>
-
-        {/* Content */}
-        <div className="min-h-[200px] flex-1 md:min-h-[280px]">
-          {activeSection === 'profile' && (
-            <ProfileSection userName={userName} avatarUrl={avatarUrl} />
-          )}
-          {activeSection === 'payment' && <PaymentSection />}
-          {activeSection === 'appearance' && <AppearanceSection />}
-        </div>
-      </div>
+      </ResponsiveModal.Content>
 
       {/* Sign out — mobile only */}
-      <div className="mt-6 flex justify-center md:hidden">
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive"
-        >
-          <LogOut className="size-3.5" />
-          {t('signOut')}
-        </button>
-      </div>
+      <ResponsiveModal.Footer className="flex justify-center md:hidden">
+        <div>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive"
+          >
+            <LogOut className="size-3.5" />
+            {t('signOut')}
+          </button>
+        </div>
+      </ResponsiveModal.Footer>
     </ResponsiveModal>
   )
 }

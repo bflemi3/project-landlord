@@ -6,14 +6,12 @@ import { useMediaQuery } from '@/lib/hooks/use-media-query'
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog'
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
   SheetTitle,
   SheetDescription,
 } from '@/components/ui/sheet'
@@ -26,12 +24,16 @@ interface ResponsiveModalContextValue {
   isDesktop: boolean
   contentScrollable: boolean
   setContentScrollable: (v: boolean) => void
+  registerTitle: () => void
+  unregisterTitle: () => void
 }
 
 const ResponsiveModalContext = React.createContext<ResponsiveModalContextValue>({
   isDesktop: false,
   contentScrollable: false,
   setContentScrollable: () => {},
+  registerTitle: () => {},
+  unregisterTitle: () => {},
 })
 
 // =============================================================================
@@ -41,9 +43,6 @@ const ResponsiveModalContext = React.createContext<ResponsiveModalContextValue>(
 interface ResponsiveModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Visible title. When empty, the header is visually hidden but remains accessible. */
-  title?: string
-  description?: string
   children: React.ReactNode
   /** Dialog max-width on desktop. Default: 'sm:max-w-lg' */
   className?: string
@@ -52,16 +51,50 @@ interface ResponsiveModalProps {
 export function ResponsiveModal({
   open,
   onOpenChange,
-  title,
-  description,
   children,
   className,
 }: ResponsiveModalProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const [contentScrollable, setContentScrollable] = React.useState(false)
+  const [titleCount, setTitleCount] = React.useState(0)
+
+  const registerTitle = React.useCallback(() => setTitleCount((n) => n + 1), [])
+  const unregisterTitle = React.useCallback(() => setTitleCount((n) => Math.max(0, n - 1)), [])
+
+  // Dev-only warning when no ResponsiveModal.Title is composed while the modal is open.
+  // Radix/base-ui Dialog expects an accessible title — we emit a warning and fall back to an
+  // sr-only title so production never crashes or leaves screen-reader users stranded.
+  React.useEffect(() => {
+    if (!open) return
+    if (titleCount > 0) return
+    if (process.env.NODE_ENV === 'production') return
+    console.warn(
+      '[ResponsiveModal] No <ResponsiveModal.Title> composed. Add a Title inside a Header (use className="sr-only" to hide it visually) for accessible dialogs.',
+    )
+  }, [open, titleCount])
+
+  const contextValue = React.useMemo<ResponsiveModalContextValue>(
+    () => ({
+      isDesktop,
+      contentScrollable,
+      setContentScrollable,
+      registerTitle,
+      unregisterTitle,
+    }),
+    [isDesktop, contentScrollable, registerTitle, unregisterTitle],
+  )
+
+  const needsFallbackTitle = open && titleCount === 0
 
   const inner = (
-    <ResponsiveModalContext.Provider value={{ isDesktop, contentScrollable, setContentScrollable }}>
+    <ResponsiveModalContext.Provider value={contextValue}>
+      {needsFallbackTitle && (
+        isDesktop ? (
+          <DialogTitle className="sr-only">Dialog</DialogTitle>
+        ) : (
+          <SheetTitle className="sr-only">Dialog</SheetTitle>
+        )
+      )}
       {children}
     </ResponsiveModalContext.Provider>
   )
@@ -69,11 +102,12 @@ export function ResponsiveModal({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={cn('flex max-h-[85svh] flex-col overflow-hidden', className ?? 'sm:max-w-lg')}>
-          <DialogHeader className={title ? undefined : 'sr-only'}>
-            <DialogTitle>{title || 'Dialog'}</DialogTitle>
-            {description && <DialogDescription>{description}</DialogDescription>}
-          </DialogHeader>
+        <DialogContent
+          className={cn(
+            'flex max-h-[85svh] flex-col gap-0 overflow-hidden rounded-card bg-card p-6 text-base text-foreground shadow-card',
+            className ?? 'sm:max-w-lg',
+          )}
+        >
           {inner}
         </DialogContent>
       </Dialog>
@@ -82,15 +116,90 @@ export function ResponsiveModal({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="flex max-h-[90svh] flex-col overflow-hidden rounded-t-2xl px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
-        <SheetHeader className={title ? undefined : 'sr-only'}>
-          <SheetTitle>{title || 'Dialog'}</SheetTitle>
-          {description && <SheetDescription>{description}</SheetDescription>}
-        </SheetHeader>
-        {!title && <div className="pt-2" />}
+      <SheetContent
+        side="bottom"
+        className={cn(
+          'flex max-h-[85svh] flex-col gap-0 overflow-hidden rounded-t-3xl bg-background px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-foreground',
+          className,
+        )}
+      >
         {inner}
       </SheetContent>
     </Sheet>
+  )
+}
+
+// =============================================================================
+// Header — composes DialogHeader (desktop) or SheetHeader (mobile)
+// =============================================================================
+
+function ResponsiveModalHeader({ className, children, ...props }: React.ComponentProps<'div'>) {
+  return (
+    <div
+      data-slot="responsive-modal-header"
+      className={cn('shrink-0 space-y-1 pb-4', className)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+// =============================================================================
+// Title — wraps Dialog/Sheet Title primitive with title-scale typography
+// =============================================================================
+
+function ResponsiveModalTitle({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<'h2'>) {
+  const { isDesktop, registerTitle, unregisterTitle } = React.useContext(ResponsiveModalContext)
+
+  React.useEffect(() => {
+    registerTitle()
+    return () => unregisterTitle()
+  }, [registerTitle, unregisterTitle])
+
+  const classes = cn('text-lg font-semibold text-foreground', className)
+
+  if (isDesktop) {
+    return (
+      <DialogTitle data-slot="responsive-modal-title" className={classes} {...props}>
+        {children}
+      </DialogTitle>
+    )
+  }
+  return (
+    <SheetTitle data-slot="responsive-modal-title" className={classes} {...props}>
+      {children}
+    </SheetTitle>
+  )
+}
+
+// =============================================================================
+// Description — wraps Dialog/Sheet Description primitive with body typography
+// =============================================================================
+
+function ResponsiveModalDescription({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<'p'>) {
+  const { isDesktop } = React.useContext(ResponsiveModalContext)
+  const classes = cn('text-base text-muted-foreground', className)
+
+  if (isDesktop) {
+    return (
+      <DialogDescription data-slot="responsive-modal-description" className={classes} {...props}>
+        {children}
+      </DialogDescription>
+    )
+  }
+  return (
+    <SheetDescription data-slot="responsive-modal-description" className={classes} {...props}>
+      {children}
+    </SheetDescription>
   )
 }
 
@@ -137,7 +246,7 @@ function ResponsiveModalFooter({ className, children, ...props }: React.Componen
     <div
       data-slot="responsive-modal-footer"
       className={cn(
-        'relative shrink-0 pt-6',
+        'relative shrink-0 pt-6 [&>a]:h-12 [&>a]:w-full [&>a]:rounded-2xl [&>a]:text-base [&>button]:h-12 [&>button]:w-full [&>button]:rounded-2xl [&>button]:text-base',
         contentScrollable && 'fade-mask-top',
         className,
       )}
@@ -152,7 +261,16 @@ function ResponsiveModalFooter({ className, children, ...props }: React.Componen
 // Exports
 // =============================================================================
 
+ResponsiveModal.Header = ResponsiveModalHeader
+ResponsiveModal.Title = ResponsiveModalTitle
+ResponsiveModal.Description = ResponsiveModalDescription
 ResponsiveModal.Content = ResponsiveModalContent
 ResponsiveModal.Footer = ResponsiveModalFooter
 
-export { ResponsiveModalContent, ResponsiveModalFooter }
+export {
+  ResponsiveModalHeader,
+  ResponsiveModalTitle,
+  ResponsiveModalDescription,
+  ResponsiveModalContent,
+  ResponsiveModalFooter,
+}

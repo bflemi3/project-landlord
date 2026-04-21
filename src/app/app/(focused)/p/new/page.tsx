@@ -1,5 +1,5 @@
-import { CreatePropertyFlow } from './create-property-flow'
+import { PropertyCreationWizard } from './property-creation-wizard'
 
 export default function NewPropertyPage() {
-  return <CreatePropertyFlow />
+  return <PropertyCreationWizard />
 }

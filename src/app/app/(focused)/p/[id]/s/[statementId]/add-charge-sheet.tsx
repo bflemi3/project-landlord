@@ -12,7 +12,11 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { ResponsiveModal } from '@/components/responsive-modal'
+import {
+  ResponsiveModal,
+  ResponsiveModalContent,
+  ResponsiveModalFooter,
+} from '@/components/responsive-modal'
 import { ChargeNameInput, AmountInput, PayerToggle, SplitSlider } from '@/components/charge-form-fields'
 import { FileUpload } from '@/components/file-upload'
 import { addChargeToStatement } from '@/data/statements/actions/add-charge'
@@ -68,9 +72,13 @@ export function AddChargeSheet({
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title={title}
       className="sm:max-w-lg"
     >
+      {title && (
+        <ResponsiveModal.Header>
+          <ResponsiveModal.Title>{title}</ResponsiveModal.Title>
+        </ResponsiveModal.Header>
+      )}
       <AddChargeForm
         key={formKey}
         statementId={statementId}
@@ -335,63 +343,65 @@ function AddChargeForm({
 
   return (
     <>
-      <div className="space-y-4">
-        {isAdHoc && (
-          <ChargeNameInput
-            value={name}
-            onChange={setName}
-            placeholder={t('chargePlaceholder')}
-            autoFocus
+      <ResponsiveModalContent>
+        <div className="space-y-4">
+          {isAdHoc && (
+            <ChargeNameInput
+              value={name}
+              onChange={setName}
+              placeholder={t('chargePlaceholder')}
+              autoFocus
+            />
+          )}
+
+          <AmountInput
+            amount={amount}
+            onAmountChange={setAmount}
+            canSave={canSave}
+            onSave={handleSave}
+            currencySymbol={currencySymbol}
+            autoFocus={!isAdHoc}
           />
-        )}
 
-        <AmountInput
-          amount={amount}
-          onAmountChange={setAmount}
-          canSave={canSave}
-          onSave={handleSave}
-          currencySymbol={currencySymbol}
-          autoFocus={!isAdHoc}
-        />
+          {isAdHoc && (
+            <>
+              <PayerToggle value={payer} onChange={setPayer} />
+              {payer === 'split' && (
+                <SplitSlider
+                  splitMode={splitMode}
+                  onSplitModeChange={setSplitMode}
+                  tenantPercent={tenantPercent}
+                  onTenantPercentChange={setTenantPercent}
+                  tenantFixedAmount={tenantFixedAmount}
+                  onTenantFixedAmountChange={setTenantFixedAmount}
+                  totalAmount={numAmount}
+                  currencySymbol={currencySymbol}
+                />
+              )}
+            </>
+          )}
 
-        {isAdHoc && (
-          <>
-            <PayerToggle value={payer} onChange={setPayer} />
-            {payer === 'split' && (
-              <SplitSlider
-                splitMode={splitMode}
-                onSplitModeChange={setSplitMode}
-                tenantPercent={tenantPercent}
-                onTenantPercentChange={setTenantPercent}
-                tenantFixedAmount={tenantFixedAmount}
-                onTenantFixedAmountChange={setTenantFixedAmount}
-                totalAmount={numAmount}
-                currencySymbol={currencySymbol}
-              />
-            )}
-          </>
-        )}
+          <FileUpload
+            file={file}
+            uploadedFileName={fileUploadFileName}
+            onFileSelect={handleFileSelect}
+            onClear={handleClear}
+            onView={showExistingBill && existingInstance?.sourceDocument?.filePath
+              ? () => handleViewBill(existingInstance.sourceDocument!.filePath)
+              : undefined}
+            hint={removedExistingBill && !file
+              ? t('billRemovedOnSave')
+              : isVariable && !file && !showExistingBill ? t('billNudge') : undefined}
+            bucket="source-documents"
+            generateStoragePath={generateStoragePath}
+            authToken={authToken ?? undefined}
+            supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL}
+            uploadPromiseRef={uploadPromiseRef}
+          />
+        </div>
+      </ResponsiveModalContent>
 
-        <FileUpload
-          file={file}
-          uploadedFileName={fileUploadFileName}
-          onFileSelect={handleFileSelect}
-          onClear={handleClear}
-          onView={showExistingBill && existingInstance?.sourceDocument?.filePath
-            ? () => handleViewBill(existingInstance.sourceDocument!.filePath)
-            : undefined}
-          hint={removedExistingBill && !file
-            ? t('billRemovedOnSave')
-            : isVariable && !file && !showExistingBill ? t('billNudge') : undefined}
-          bucket="source-documents"
-          generateStoragePath={generateStoragePath}
-          authToken={authToken ?? undefined}
-          supabaseUrl={process.env.NEXT_PUBLIC_SUPABASE_URL}
-          uploadPromiseRef={uploadPromiseRef}
-        />
-      </div>
-
-      <div className="mt-6 space-y-3">
+      <ResponsiveModalFooter className="space-y-3">
         {isAdHoc && (
           <div className="rounded-2xl border border-border p-4">
             <div className="flex items-center justify-between">
@@ -441,8 +451,6 @@ function AddChargeForm({
         )}
         <Button
           onClick={handleSave}
-          className="h-12 w-full rounded-2xl"
-          size="lg"
           disabled={!canSave}
           loading={isPending}
         >
@@ -452,8 +460,7 @@ function AddChargeForm({
           <Button
             variant="ghost"
             onClick={() => setConfirmingRemove(true)}
-            className="h-12 w-full rounded-2xl text-destructive"
-            size="lg"
+            className="text-destructive"
             disabled={isPending}
           >
             {t('removeCharge')}
@@ -485,13 +492,11 @@ function AddChargeForm({
         <Button
           variant="ghost"
           onClick={onClose}
-          className="h-12 w-full rounded-2xl"
-          size="lg"
           disabled={isPending}
         >
           {t('cancel')}
         </Button>
-      </div>
+      </ResponsiveModalFooter>
     </>
   )
 }

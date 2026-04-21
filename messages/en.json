@@ -315,9 +315,11 @@
     "confirmRemove": "Yes, remove",
     "tenantTitle": "Tenant",
     "pendingInviteTitle": "Pending invite",
+    "inviteTenantTitle": "Invite tenant",
     "invitedOn": "Invited {date} · {relative}",
     "joinedOn": "Joined {date} · {relative}",
     "editProperty": "Edit property",
+    "editPropertyTitle": "Edit property",
     "saveChanges": "Save changes",
     "pauseCharge": "Pause charge",
     "resumeCharge": "Resume charge",
@@ -378,6 +380,26 @@
     "billRemovedOnSave": "Bill will be removed when you save.",
     "incomplete": "incomplete",
     "uploadFailed": "Upload failed. Please try again."
+  },
+  "propertyCreation": {
+    "back": "Back",
+    "exit": "Exit",
+    "step": "Step {current} of {total}",
+    "step1": {
+      "title": "Upload your rental contract",
+      "description": "We'll read it and set up the rest for you.",
+      "placeholder": "Contract upload coming in the next task."
+    },
+    "step2": {
+      "title": "Review what we found",
+      "placeholder": "Review screen coming in a later task."
+    },
+    "exitPrompt": {
+      "title": "Keep your progress?",
+      "description": "Your work is saved on this device. Pick up where you left off any time, or discard it and start over.",
+      "saveForLater": "Save for later",
+      "discard": "Discard and exit"
+    }
   },
   "settings": {
     "title": "Settings",

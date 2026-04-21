@@ -6,10 +6,24 @@ import { AddChargeSheet } from './add-charge-sheet'
 import type { ChargeInstance } from '@/data/statements/shared'
 
 // Mock ResponsiveModal to avoid portal/dialog complexity in tests
-vi.mock('@/components/responsive-modal', () => ({
-  ResponsiveModal: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
-    open ? <div>{children}</div> : null,
-}))
+vi.mock('@/components/responsive-modal', () => {
+  const Passthrough = ({ children }: { children?: React.ReactNode }) => <div>{children}</div>
+  const ResponsiveModal = ({ children, open }: { children: React.ReactNode; open: boolean }) =>
+    open ? <div>{children}</div> : null
+  ResponsiveModal.Header = Passthrough
+  ResponsiveModal.Title = Passthrough
+  ResponsiveModal.Description = Passthrough
+  ResponsiveModal.Content = Passthrough
+  ResponsiveModal.Footer = Passthrough
+  return {
+    ResponsiveModal,
+    ResponsiveModalHeader: Passthrough,
+    ResponsiveModalTitle: Passthrough,
+    ResponsiveModalDescription: Passthrough,
+    ResponsiveModalContent: Passthrough,
+    ResponsiveModalFooter: Passthrough,
+  }
+})
 
 // Mock framer motion to avoid animation complexity in tests
 vi.mock('motion/react', () => ({

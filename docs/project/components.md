@@ -446,20 +446,31 @@ Persistent bottom action bar for primary CTAs on mobile.
 
 **File:** `src/components/responsive-modal.tsx`
 
-Dialog on desktop (`md:` and up), bottom Sheet on mobile. The standard pattern for all modals in the app.
+Dialog on desktop (`md:` and up), bottom Sheet on mobile. The standard pattern for all modals in the app. Fully compound API — the root takes no `title`/`description` props; compose the header explicitly.
 
-**Parts:** `ResponsiveModal` (root), `ResponsiveModal.Content` (scrollable area), `ResponsiveModal.Footer` (sticky bottom with conditional fade mask)
+**Parts:**
+- `ResponsiveModal` — root, renders Dialog (desktop) or Sheet (mobile)
+- `ResponsiveModal.Header` — header container (`pb-4 space-y-1`)
+- `ResponsiveModal.Title` — `text-lg font-semibold text-foreground`; wraps `DialogTitle`/`SheetTitle`. Hide visually with `className="sr-only"` if you need an accessible title without visible chrome
+- `ResponsiveModal.Description` — `text-base text-muted-foreground`; wraps `DialogDescription`/`SheetDescription`
+- `ResponsiveModal.Content` — scrollable area with `scrollbar-gutter: stable`
+- `ResponsiveModal.Footer` — sticky bottom with conditional fade mask
 
 **Key behaviors:**
-- **Optional title** — when omitted, the header is visually hidden (`sr-only`) but remains accessible. A `pt-2` spacer is added on mobile sheets for breathing room.
+- **Accessibility fallback** — if no `Title` is composed, a dev-only `console.warn` fires and an `sr-only` `DialogTitle` is rendered so screen readers still announce the dialog. Always prefer composing a real Title.
 - **Conditional fade mask** — `ResponsiveModal.Footer` only shows the `fade-mask-top` gradient when `ResponsiveModal.Content` is actually scrollable. Uses ResizeObserver in `useLayoutEffect`, shared via context. Defaults to no mask (no flash).
 - **Consistent spacing** — `ResponsiveModal.Content` uses `scrollbar-gutter: stable` so content width is the same whether or not a scrollbar is present. No more `-mr-4 pr-4` hacks.
+- **Surfaces** — desktop uses `rounded-card bg-card shadow-card p-6`; mobile uses `rounded-t-3xl bg-background` with safe-area padding.
 
-**When to use Content/Footer parts:** For modals with scrollable content and a sticky action button (e.g., edit property, edit charge). For small modals (invite tenant, confirm dialogs), skip the parts and just render content directly inside `ResponsiveModal`.
+**When to use Content/Footer parts:** For modals with scrollable content and a sticky action button (e.g., edit property, edit charge). For small confirm/info modals, skip Content/Footer and render directly inside the root.
 
 **Usage:**
 ```tsx
-<ResponsiveModal open={open} onOpenChange={setOpen} title="Edit property">
+<ResponsiveModal open={open} onOpenChange={setOpen}>
+  <ResponsiveModal.Header>
+    <ResponsiveModal.Title>Edit property</ResponsiveModal.Title>
+    <ResponsiveModal.Description>Update this property's address.</ResponsiveModal.Description>
+  </ResponsiveModal.Header>
   <ResponsiveModal.Content className="px-0.5">
     {/* scrollable form fields */}
   </ResponsiveModal.Content>

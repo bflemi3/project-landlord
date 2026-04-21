@@ -48,6 +48,9 @@ export function PropertyInfoActions({ propertyId, property }: { propertyId: stri
         onOpenChange={setEditOpen}
         className="sm:max-w-lg"
       >
+        <ResponsiveModal.Header>
+          <ResponsiveModal.Title>{t('editPropertyTitle')}</ResponsiveModal.Title>
+        </ResponsiveModal.Header>
         <PropertyForm
           key={editOpen ? 'open' : 'closed'}
           onValidated={handleSave}

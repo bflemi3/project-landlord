@@ -206,44 +206,49 @@ function InviteTenantModal({
       onOpenChange={onOpenChange}
       className="sm:max-w-sm"
     >
-      <form onSubmit={handleSubmit}>
-        {error && (
-          <p className="mb-4 text-sm text-destructive">{error}</p>
-        )}
+      <ResponsiveModal.Header>
+        <ResponsiveModal.Title>{t('inviteTenantTitle')}</ResponsiveModal.Title>
+      </ResponsiveModal.Header>
+      <form onSubmit={handleSubmit} className="contents">
+        <ResponsiveModal.Content>
+          {error && (
+            <p className="mb-4 text-sm text-destructive">{error}</p>
+          )}
 
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="invite-email" className="mb-2">{t('tenantEmail')}</Label>
-            <Input
-              id="invite-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('tenantEmailPlaceholder')}
-              required
-              disabled={loading}
-              autoFocus
-            />
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="invite-email" className="mb-2">{t('tenantEmail')}</Label>
+              <Input
+                id="invite-email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t('tenantEmailPlaceholder')}
+                required
+                disabled={loading}
+                autoFocus
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="invite-name" className="mb-2">{t('tenantName')}</Label>
+              <Input
+                id="invite-name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder={t('tenantNamePlaceholder')}
+                disabled={loading}
+              />
+            </div>
           </div>
+        </ResponsiveModal.Content>
 
-          <div>
-            <Label htmlFor="invite-name" className="mb-2">{t('tenantName')}</Label>
-            <Input
-              id="invite-name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('tenantNamePlaceholder')}
-              disabled={loading}
-            />
-          </div>
-        </div>
-
-        <div className="pt-6">
-          <Button type="submit" loading={loading} disabled={!isValidEmail(email)} className="h-12 w-full rounded-2xl" size="lg">
+        <ResponsiveModal.Footer>
+          <Button type="submit" loading={loading} disabled={!isValidEmail(email)}>
             {t('sendInvite')}
           </Button>
-        </div>
+        </ResponsiveModal.Footer>
       </form>
     </ResponsiveModal>
   )
@@ -283,66 +288,69 @@ function TenantDetailModal({
     <ResponsiveModal
       open={open}
       onOpenChange={(isOpen) => { if (!isOpen) { setConfirming(false); onClose() } }}
-      title={t('tenantTitle')}
       className="sm:max-w-sm"
     >
+      <ResponsiveModal.Header>
+        <ResponsiveModal.Title>{t('tenantTitle')}</ResponsiveModal.Title>
+      </ResponsiveModal.Header>
       {member && (
-        <div>
-          {/* Tenant info card */}
-          <div className="rounded-xl bg-secondary/50 px-4 py-3.5">
-            <div className="flex items-center gap-3">
-              <Avatar>
-                <AvatarFallback>{getInitials(member.name, member.email)}</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                {member.name && <p className="font-semibold text-foreground">{member.name}</p>}
-                {member.email && <p className="mt-0.5 truncate text-sm text-muted-foreground">{member.email}</p>}
+        <>
+          <ResponsiveModal.Content>
+            {/* Tenant info card */}
+            <div className="rounded-xl bg-secondary/50 px-4 py-3.5">
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  <AvatarFallback>{getInitials(member.name, member.email)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  {member.name && <p className="font-semibold text-foreground">{member.name}</p>}
+                  {member.email && <p className="mt-0.5 truncate text-sm text-muted-foreground">{member.email}</p>}
+                </div>
+              </div>
+              <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock className="size-3" />
+                {t('joinedOn', {
+                  date: format(new Date(member.joinedAt), 'MMM d'),
+                  relative: formatDistanceToNow(new Date(member.joinedAt), { addSuffix: true }),
+                })}
               </div>
             </div>
-            <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="size-3" />
-              {t('joinedOn', {
-                date: format(new Date(member.joinedAt), 'MMM d'),
-                relative: formatDistanceToNow(new Date(member.joinedAt), { addSuffix: true }),
-              })}
-            </div>
-          </div>
+          </ResponsiveModal.Content>
 
           {/* Remove action */}
-          {confirming ? (
-            <div className="mt-6 space-y-3">
-              <p className="text-sm text-muted-foreground">{t('removeTenantConfirm')}</p>
-              <div className="flex gap-2">
-                <Button
-                  variant="destructive"
-                  onClick={handleRemove}
-                  loading={loading}
-                  className="flex-1 rounded-2xl"
-                >
-                  {t('confirmRemove')}
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setConfirming(false)}
-                  className="flex-1 rounded-2xl"
-                >
-                  {t('cancel')}
-                </Button>
+          <ResponsiveModal.Footer>
+            {confirming ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">{t('removeTenantConfirm')}</p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="destructive"
+                    onClick={handleRemove}
+                    loading={loading}
+                    className="flex-1 rounded-2xl"
+                  >
+                    {t('confirmRemove')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setConfirming(false)}
+                    className="flex-1 rounded-2xl"
+                  >
+                    {t('cancel')}
+                  </Button>
+                </div>
               </div>
-            </div>
-          ) : (
-            <div className="mt-6">
+            ) : (
               <Button
                 variant="ghost"
                 onClick={() => setConfirming(true)}
-                className="h-12 w-full rounded-2xl text-destructive"
-                size="lg"
+                className="text-destructive"
               >
                 {t('removeTenant')}
               </Button>
-            </div>
-          )}
-        </div>
+            )}
+          </ResponsiveModal.Footer>
+        </>
       )}
     </ResponsiveModal>
   )
@@ -392,31 +400,34 @@ function InviteDetailModal({
     <ResponsiveModal
       open={open}
       onOpenChange={(isOpen) => { if (!isOpen) { setConfirmCancel(false); onClose() } }}
-      title={t('pendingInviteTitle')}
       className="sm:max-w-sm"
     >
+      <ResponsiveModal.Header>
+        <ResponsiveModal.Title>{t('pendingInviteTitle')}</ResponsiveModal.Title>
+      </ResponsiveModal.Header>
       {invite && (
-        <div>
-          {/* Invite info card */}
-          <div className="rounded-xl bg-secondary/50 px-4 py-3.5">
-            <p className="font-semibold text-foreground">{invite.name ?? invite.email}</p>
-            {invite.name && <p className="mt-0.5 text-sm text-muted-foreground">{invite.email}</p>}
-            <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="size-3" />
-              {t('invitedOn', {
-                date: format(new Date(invite.sentAt), 'MMM d'),
-                relative: formatDistanceToNow(new Date(invite.sentAt), { addSuffix: true }),
-              })}
+        <>
+          <ResponsiveModal.Content>
+            {/* Invite info card */}
+            <div className="rounded-xl bg-secondary/50 px-4 py-3.5">
+              <p className="font-semibold text-foreground">{invite.name ?? invite.email}</p>
+              {invite.name && <p className="mt-0.5 text-sm text-muted-foreground">{invite.email}</p>}
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Clock className="size-3" />
+                {t('invitedOn', {
+                  date: format(new Date(invite.sentAt), 'MMM d'),
+                  relative: formatDistanceToNow(new Date(invite.sentAt), { addSuffix: true }),
+                })}
+              </div>
             </div>
-          </div>
+          </ResponsiveModal.Content>
 
           {/* Actions */}
-          <div className="mt-6 space-y-3">
+          <ResponsiveModal.Footer className="space-y-3">
             <Button
               variant="secondary"
               onClick={handleResend}
               loading={resending}
-              className="h-11 w-full rounded-2xl"
             >
               {t('resendInvite')}
             </Button>
@@ -446,14 +457,13 @@ function InviteDetailModal({
               <Button
                 variant="ghost"
                 onClick={() => setConfirmCancel(true)}
-                className="h-12 w-full rounded-2xl text-destructive"
-                size="lg"
+                className="text-destructive"
               >
                 {t('cancelInvite')}
               </Button>
             )}
-          </div>
-        </div>
+          </ResponsiveModal.Footer>
+        </>
       )}
     </ResponsiveModal>
   )

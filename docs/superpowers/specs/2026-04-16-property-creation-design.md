@@ -21,7 +21,7 @@ A wizard-style flow where the contract PDF drives everything. The landlord uploa
 
 The persistence utility should be reusable — not coupled to property creation. Future wizards (e.g., tenant onboarding) should be able to use the same mechanism. This spec covers the persistence mechanism only — the UI for resuming an abandoned wizard (e.g., a prompt on the dashboard) will be handled in a later spec.
 
-**Contract PDF:** Since the contract is uploaded to Supabase Storage immediately in step 1, the persisted wizard state only stores a pointer to the uploaded file (storage path/ID), not the file itself.
+**Contract PDF:** Persistence of the uploaded file depends on when Supabase Storage upload happens in the plan sequence. Before the Storage-upload plan lands, the persisted wizard state holds the raw file as a `Blob` in IndexedDB. Once Storage upload is wired, that blob is uploaded on final submit and the persisted state is replaced with a pointer (storage path/ID) so refreshes don't re-upload. Either shape is valid; the utility handles both.
 
 **Step transitions:** Steps slide in/out as the user progresses forward or goes back — slide left to advance, slide right to go back. Step 1 displays immediately on mount with no animation. Adapt the existing `SlideIn`, `StepProgress`, and composable `PropertyForm` components at `src/app/app/(focused)/p/new/` — don't rebuild these primitives from scratch.
 
@@ -284,8 +284,7 @@ All errors from the extraction engine are returned as strongly typed error codes
 | `unsupported_format` | Not PDF or DOCX | "Upload a PDF or DOCX" |
 | `corrupt_file` | Valid header but broken content | "Couldn't read this file" |
 | `empty_file` | Zero bytes or null input | "File is empty" |
-| `scanned_document` | PDF with no text layer (image-only) | "Scanned doc — upload digital version" |
-| `empty_content` | Valid file but no text | "No text found" |
+| `no_text_extractable` | PDF with no text layer (scanned) OR DOCX with empty body | "No text found — upload a digital version" |
 | `password_protected` | Encrypted file | "Remove password protection" |
 | `unsupported_language` | Language not EN/PT-BR/ES | "Language not supported yet" |
 | `not_a_contract` | LLM classifies as not a rental contract | "Doesn't appear to be a rental contract" |
