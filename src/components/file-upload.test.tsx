@@ -91,6 +91,32 @@ describe('FileUpload', () => {
     })
   })
 
+  describe('labels override', () => {
+    it('renders custom dropzone label when labels prop is provided', () => {
+      renderWithIntl(
+        <FileUpload labels={{ dropzone: 'Drop your contract here' }} />,
+      )
+      expect(screen.getByText('Drop your contract here')).toBeInTheDocument()
+      expect(screen.queryByText('Tap to attach a bill')).not.toBeInTheDocument()
+    })
+
+    it('falls back to i18n translations when labels prop is absent', () => {
+      renderWithIntl(<FileUpload />)
+      expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
+    })
+  })
+
+  describe('hint styling', () => {
+    it('uses semantic warning tokens for hint pill, not hardcoded amber', () => {
+      renderWithIntl(<FileUpload hint="Max 10MB" />)
+      const hintEl = screen.getByText('Max 10MB')
+      expect(hintEl).toBeInTheDocument()
+      expect(hintEl.className).toContain('bg-warning-subtle')
+      expect(hintEl.className).toContain('text-warning-subtle-foreground')
+      expect(hintEl.className).not.toContain('amber')
+    })
+  })
+
   describe('upload orchestration', () => {
     let mockUploadFile: ReturnType<typeof vi.fn>
 

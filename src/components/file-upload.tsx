@@ -5,8 +5,19 @@ import { useTranslations } from 'next-intl'
 import { Upload, FileText, X, Eye, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { uploadFile, type UploadFileResult } from '@/lib/storage/upload-file'
+import { IconTile } from '@/components/icon-tile'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 
 const MAX_SIZE_MB = 10
+
+export interface FileUploadLabels {
+  dropzone?: string
+  viewing?: string
+  uploaded?: string
+  uploadFailed?: string
+  fileTooLarge?: string
+}
 
 export function FileUpload({
   onFileSelect,
@@ -19,6 +30,7 @@ export function FileUpload({
   accept = 'application/pdf,image/*',
   className,
   hint,
+  labels,
   bucket,
   storagePath,
   generateStoragePath,
@@ -36,6 +48,7 @@ export function FileUpload({
   accept?: string
   className?: string
   hint?: string
+  labels?: FileUploadLabels
   bucket?: string
   storagePath?: string
   generateStoragePath?: (file: File) => string
@@ -56,6 +69,10 @@ export function FileUpload({
   const hasFile = !!activeFile || !!uploadedUrl || !!uploadedFileName
   const isUploading = progress !== undefined && progress >= 0 && progress < 100
   const isImage = activeFile?.type.startsWith('image/') ?? false
+
+  function label(key: keyof FileUploadLabels, i18nKey: string, vars?: Record<string, string | number>) {
+    return labels?.[key] ?? t(i18nKey, vars)
+  }
 
   useEffect(() => {
     return () => {
@@ -85,7 +102,7 @@ export function FileUpload({
       if (result.success) {
         setProgress(100)
       } else if (result.error !== 'Upload aborted') {
-        setError(t('uploadFailed'))
+        setError(label('uploadFailed', 'uploadFailed'))
         setProgress(undefined)
         if (inputRef.current) inputRef.current.value = ''
         onClear?.()
@@ -102,7 +119,7 @@ export function FileUpload({
     if (!selected) return
 
     if (selected.size > maxBytes) {
-      setError(t('fileTooLarge', { max: maxSizeMB }))
+      setError(label('fileTooLarge', 'fileTooLarge', { max: maxSizeMB }))
       e.target.value = ''
       return
     }
@@ -135,19 +152,19 @@ export function FileUpload({
     const previewUrl = activeFile && isImage ? URL.createObjectURL(activeFile) : uploadedUrl
 
     return (
-      <div className={cn('rounded-2xl border border-border p-3', className)}>
+      <Card variant="solid" size="none" className={cn('p-3', className)}>
         <div className="flex items-center gap-3">
           {isImage && previewUrl ? (
             /* eslint-disable-next-line @next/next/no-img-element -- blob URL from local file, not optimizable */
             <img
               src={previewUrl}
               alt={fileName}
-              className="size-12 shrink-0 rounded-lg object-cover"
+              className="size-12 shrink-0 rounded-xl object-cover"
             />
           ) : (
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-secondary">
-              <FileText className="size-5 text-muted-foreground" />
-            </div>
+            <IconTile size="lg" tone="muted">
+              <FileText />
+            </IconTile>
           )}
 
           <div className="min-w-0 flex-1">
@@ -163,7 +180,7 @@ export function FileUpload({
               </div>
             ) : (
               <p className="mt-0.5 text-sm text-muted-foreground">
-                {activeFile ? `${(activeFile.size / 1024).toFixed(0)} KB` : t('uploaded')}
+                {activeFile ? `${(activeFile.size / 1024).toFixed(0)} KB` : label('uploaded', 'uploaded')}
               </p>
             )}
           </div>
@@ -171,59 +188,65 @@ export function FileUpload({
           <div className="flex shrink-0 items-center gap-1">
             {(onView || previewUrl) && !isUploading && (
               onView ? (
-                <button
-                  type="button"
+                <Button
+                  variant="ghost"
+                  size="icon"
                   disabled={viewing}
                   onClick={async () => {
                     setViewing(true)
                     try { await onView() } finally { setViewing(false) }
                   }}
-                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                 >
-                  {viewing ? <Loader2 className="size-4 animate-spin" /> : <Eye className="size-4" />}
-                </button>
+                  {viewing ? <Loader2 className="animate-spin" /> : <Eye />}
+                </Button>
               ) : (
                 <a
                   href={previewUrl!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
+                  className={buttonVariants({ variant: 'ghost', size: 'icon' })}
                 >
-                  <Eye className="size-4" />
+                  <Eye />
                 </a>
               )
             )}
-            <button
-              type="button"
+            <Button
+              variant="ghost"
+              size="icon"
               data-testid="file-clear-btn"
               onClick={handleClear}
-              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground"
             >
-              <X className="size-4" />
-            </button>
+              <X />
+            </Button>
           </div>
         </div>
-      </div>
+      </Card>
     )
   }
 
   return (
     <div className={className}>
-      <button
-        type="button"
+      <Card
+        variant="dashed"
+        size="none"
+        className="cursor-pointer px-4 py-5 transition-colors hover:border-primary/30 hover:bg-muted/70"
         onClick={() => inputRef.current?.click()}
-        className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-muted/50 px-4 py-5 transition-colors hover:border-primary/30 hover:bg-muted/70"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click() }}
       >
-        <Upload className="size-5 text-muted-foreground" />
-        <p className="text-center text-sm text-muted-foreground">
-          {t('tapToAttachBill')}
-        </p>
-        {hint && (
-          <p className="rounded-lg bg-amber-500/10 px-3 py-1.5 text-center text-sm text-amber-600 dark:text-amber-400">
-            {hint}
+        <div className="flex flex-col items-center justify-center gap-2">
+          <Upload className="size-5 text-muted-foreground" />
+          <p className="text-center text-sm text-muted-foreground">
+            {label('dropzone', 'tapToAttachBill')}
           </p>
-        )}
-      </button>
+          {hint && (
+            <p className="rounded-2xl bg-warning-subtle px-3 py-1.5 text-center text-sm text-warning-subtle-foreground">
+              {hint}
+            </p>
+          )}
+        </div>
+      </Card>
       <input
         ref={inputRef}
         type="file"

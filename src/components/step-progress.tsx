@@ -13,7 +13,7 @@ export function StepProgress({ current, total, className }: StepProgressProps) {
   const steps = useMemo(() => Array.from({ length: total }, (_, i) => i), [total])
 
   return (
-    <div className={cn('flex gap-1.5', className)}>
+    <div className={cn('flex gap-1', className)}>
       {steps.map((i) => (
         <div
           key={i}
