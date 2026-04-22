@@ -363,7 +363,6 @@
     "statementDueIn": "Fatura de {period} vence em {days}",
     "statementDueToday": "Fatura de {period} vence hoje",
     "dueToday": "vence hoje",
-    "saveChanges": "Salvar alterações",
     "addToStatement": "Adicionar à fatura",
     "removeCharge": "Remover cobrança",
     "removeChargeConfirm": "Remover esta cobrança da fatura?",
@@ -385,11 +384,6 @@
     "back": "Voltar",
     "exit": "Sair",
     "step": "Etapa {current} de {total}",
-    "step1": {
-      "title": "Envie seu contrato de aluguel",
-      "description": "A gente lê o contrato e configura o resto pra você.",
-      "placeholder": "O upload de contrato chega na próxima etapa."
-    },
     "step2": {
       "title": "Revise o que encontramos",
       "placeholder": "A tela de revisão chega em uma etapa futura."
@@ -399,7 +393,94 @@
       "description": "Seu trabalho fica salvo neste aparelho. Continue de onde parou a qualquer momento, ou descarte e comece de novo.",
       "saveForLater": "Guardar para depois",
       "discard": "Descartar e sair"
-    }
+    },
+    "upload": {
+      "title": "Envie seu contrato de aluguel",
+      "description": "A gente lê o contrato e preenche o resto.",
+      "dropzone": "Escolha um PDF ou DOCX",
+      "dropzoneHintDesktop": "ou solte um aqui",
+      "fileTooLarge": "O arquivo precisa ter menos de {max} MB.",
+      "noContractLink": "Configurar sem contrato",
+      "noContractToast": "A configuração manual chega em breve. Por enquanto, envie seu contrato para continuar."
+    },
+    "loading": {
+      "static": "Lendo seu contrato…",
+      "line1": "Lendo seu contrato.",
+      "line2": "Encontrando endereços e datas.",
+      "line3": "Identificando as partes.",
+      "line4": "Procurando o valor do aluguel.",
+      "line5": "Conferindo as cláusulas de reajuste.",
+      "line6": "Anotando as despesas.",
+      "line7": "Juntando tudo.",
+      "sections": {
+        "property": "Imóvel",
+        "rent": "Aluguel e datas",
+        "parties": "Partes",
+        "expenses": "Despesas"
+      }
+    },
+    "errors": {
+      "file_too_large": {
+        "title": "Arquivo muito grande",
+        "message": "Seu contrato tem mais de 10 MB.",
+        "cta": "Envie um arquivo menor"
+      },
+      "unsupported_format": {
+        "title": "Formato não suportado",
+        "message": "Aceitamos apenas PDF e DOCX.",
+        "cta": "Escolha outro arquivo"
+      },
+      "corrupt_file": {
+        "title": "Não conseguimos ler este arquivo",
+        "message": "Não conseguimos ler este arquivo.",
+        "cta": "Tente outro arquivo"
+      },
+      "empty_file": {
+        "title": "Arquivo vazio",
+        "message": "Este arquivo está vazio.",
+        "cta": "Escolha outro arquivo"
+      },
+      "no_text_extractable": {
+        "title": "Sem texto legível",
+        "message": "Não encontramos nenhum texto. Este documento é escaneado?",
+        "cta": "Envie a versão digital"
+      },
+      "password_protected": {
+        "title": "Arquivo protegido por senha",
+        "message": "Este arquivo está protegido por senha.",
+        "cta": "Remova a senha e tente de novo"
+      },
+      "unsupported_language": {
+        "title": "Idioma não suportado",
+        "message": "Ainda não aceitamos contratos neste idioma.",
+        "cta": "Continuar sem um contrato"
+      },
+      "not_a_contract": {
+        "title": "Não é um contrato de aluguel",
+        "message": "Isto não parece um contrato de aluguel.",
+        "cta": "Tente outro arquivo"
+      },
+      "extraction_failed": {
+        "title": "Algo deu errado",
+        "message": "Algo deu errado do nosso lado.",
+        "cta": "Tente de novo"
+      },
+      "extraction_timeout": {
+        "title": "Demorando demais",
+        "message": "Demorou mais do que o esperado.",
+        "cta": "Tente de novo"
+      },
+      "rate_limited": {
+        "title": "Alta demanda",
+        "message": "Estamos com muita demanda no momento.",
+        "cta": "Tente de novo em instantes"
+      },
+      "api_key_missing": {
+        "title": "Extração indisponível",
+        "message": "Estamos com dificuldade de acessar o serviço de extração. Tente de novo mais tarde."
+      }
+    },
+    "resumeUnavailable": "Seu progresso pode não ser salvo neste dispositivo."
   },
   "settings": {
     "title": "Configurações",

@@ -1,6 +1,12 @@
 'use client'
 
-import { useRef, useState, useEffect, type MutableRefObject } from 'react'
+import {
+  useRef,
+  useState,
+  useEffect,
+  type MutableRefObject,
+  type ReactNode,
+} from 'react'
 import { useTranslations } from 'next-intl'
 import { Upload, FileText, X, Eye, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -13,13 +19,23 @@ const MAX_SIZE_MB = 10
 
 export interface FileUploadLabels {
   dropzone?: string
+  dropzoneDrag?: string
   viewing?: string
   uploaded?: string
   uploadFailed?: string
   fileTooLarge?: string
 }
 
-export function FileUpload({
+export type FileUploadSize = 'sm' | 'lg'
+
+export type FileUploadValidationCode = 'file_too_large'
+
+export interface FileUploadControls {
+  openPicker: () => void
+  reset: () => void
+}
+
+function FileUpload({
   onFileSelect,
   file,
   uploadedUrl,
@@ -31,12 +47,16 @@ export function FileUpload({
   className,
   hint,
   labels,
+  size = 'sm',
   bucket,
   storagePath,
   generateStoragePath,
   authToken,
   supabaseUrl,
   uploadPromiseRef,
+  controlsRef,
+  error,
+  onValidationError,
 }: {
   onFileSelect?: (file: File, storagePath?: string) => void
   file?: File | null
@@ -49,20 +69,26 @@ export function FileUpload({
   className?: string
   hint?: string
   labels?: FileUploadLabels
+  size?: FileUploadSize
   bucket?: string
   storagePath?: string
   generateStoragePath?: (file: File) => string
   authToken?: string
   supabaseUrl?: string
   uploadPromiseRef?: MutableRefObject<Promise<UploadFileResult> | null>
+  controlsRef?: MutableRefObject<FileUploadControls | null>
+  error?: ReactNode
+  onValidationError?: (code: FileUploadValidationCode, file: File) => void
 }) {
   const t = useTranslations('propertyDetail')
   const inputRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef<AbortController | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const dragDepthRef = useRef(0)
+  const [localError, setLocalError] = useState<string | null>(null)
   const [progress, setProgress] = useState<number | undefined>(undefined)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [viewing, setViewing] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
 
   const maxBytes = maxSizeMB * 1024 * 1024
   const activeFile = file ?? selectedFile
@@ -80,6 +106,21 @@ export function FileUpload({
     }
   }, [])
 
+  useEffect(() => {
+    if (!controlsRef) return
+    controlsRef.current = {
+      openPicker: () => inputRef.current?.click(),
+      reset: () => {
+        setSelectedFile(null)
+        setLocalError(null)
+        if (inputRef.current) inputRef.current.value = ''
+      },
+    }
+    return () => {
+      controlsRef.current = null
+    }
+  }, [controlsRef])
+
   function startUpload(selectedFile: File, uploadPath: string) {
     if (!bucket || !authToken || !supabaseUrl) return
 
@@ -88,7 +129,7 @@ export function FileUpload({
     abortRef.current = controller
 
     setProgress(0)
-    setError(null)
+    setLocalError(null)
 
     const promise = uploadFile({
       file: selectedFile,
@@ -102,7 +143,7 @@ export function FileUpload({
       if (result.success) {
         setProgress(100)
       } else if (result.error !== 'Upload aborted') {
-        setError(label('uploadFailed', 'uploadFailed'))
+        setLocalError(label('uploadFailed', 'uploadFailed'))
         setProgress(undefined)
         if (inputRef.current) inputRef.current.value = ''
         onClear?.()
@@ -114,17 +155,18 @@ export function FileUpload({
     if (uploadPromiseRef) uploadPromiseRef.current = promise
   }
 
-  function handleSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const selected = e.target.files?.[0]
-    if (!selected) return
-
+  function acceptFile(selected: File) {
     if (selected.size > maxBytes) {
-      setError(label('fileTooLarge', 'fileTooLarge', { max: maxSizeMB }))
-      e.target.value = ''
+      if (onValidationError) {
+        onValidationError('file_too_large', selected)
+      } else {
+        setLocalError(label('fileTooLarge', 'fileTooLarge', { max: maxSizeMB }))
+      }
+      if (inputRef.current) inputRef.current.value = ''
       return
     }
 
-    setError(null)
+    setLocalError(null)
     setSelectedFile(selected)
 
     const uploadPath = generateStoragePath?.(selected) ?? storagePath
@@ -135,16 +177,70 @@ export function FileUpload({
     }
   }
 
+  function handleSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0]
+    if (!selected) return
+    acceptFile(selected)
+  }
+
+  function handleDragEnter(e: React.DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer?.types?.includes('Files')) return
+    e.preventDefault()
+    dragDepthRef.current += 1
+    setIsDragging(true)
+  }
+
+  function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer?.types?.includes('Files')) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  function handleDragLeave(e: React.DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer?.types?.includes('Files')) return
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1)
+    if (dragDepthRef.current === 0) setIsDragging(false)
+  }
+
+  function handleDrop(e: React.DragEvent<HTMLDivElement>) {
+    if (!e.dataTransfer?.types?.includes('Files')) return
+    e.preventDefault()
+    dragDepthRef.current = 0
+    setIsDragging(false)
+
+    const dropped = e.dataTransfer.files?.[0]
+    if (!dropped) return
+    acceptFile(dropped)
+  }
+
   function handleClear() {
     abortRef.current?.abort()
     abortRef.current = null
     if (uploadPromiseRef) uploadPromiseRef.current = null
 
-    setError(null)
+    setLocalError(null)
     setProgress(undefined)
     setSelectedFile(null)
     if (inputRef.current) inputRef.current.value = ''
     onClear?.()
+  }
+
+  // `error` takes precedence over `hasFile`: when the parent sets an error it
+  // is expected to have cleared the file too. Guarantees error UI is never
+  // stacked on top of a stale file chip.
+  if (error) {
+    return (
+      <div className={className}>
+        {error}
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          onChange={handleSelect}
+          className="hidden"
+        />
+      </div>
+    )
   }
 
   if (hasFile) {
@@ -224,22 +320,41 @@ export function FileUpload({
     )
   }
 
+  const isLarge = size === 'lg'
+  const dragHint = labels?.dropzoneDrag
+
   return (
     <div className={className}>
       <Card
         variant="dashed"
         size="none"
-        className="cursor-pointer px-4 py-5 transition-colors hover:border-primary/30 hover:bg-muted/70"
+        className={cn(
+          'cursor-pointer transition-colors hover:border-primary/30 hover:bg-muted/70',
+          isLarge ? 'px-6 py-16' : 'px-4 py-5',
+          isDragging && 'border-primary bg-primary-subtle',
+        )}
         onClick={() => inputRef.current?.click()}
         role="button"
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click() }}
+        onDragEnter={handleDragEnter}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        data-dragging={isDragging ? 'true' : undefined}
       >
-        <div className="flex flex-col items-center justify-center gap-2">
-          <Upload className="size-5 text-muted-foreground" />
-          <p className="text-center text-sm text-muted-foreground">
-            {label('dropzone', 'tapToAttachBill')}
-          </p>
+        <div className={cn('flex flex-col items-center justify-center', isLarge ? 'gap-4' : 'gap-2')}>
+          <Upload className={cn('text-muted-foreground', isLarge ? 'size-8' : 'size-5')} />
+          <div className="flex flex-col items-center gap-2">
+            <p className={cn('text-center text-muted-foreground', isLarge ? 'text-base' : 'text-sm')}>
+              {label('dropzone', 'tapToAttachBill')}
+            </p>
+            {dragHint && (
+              <p className="hidden text-sm text-muted-foreground sm:block">
+                {dragHint}
+              </p>
+            )}
+          </div>
           {hint && (
             <p className="rounded-2xl bg-warning-subtle px-3 py-1.5 text-center text-sm text-warning-subtle-foreground">
               {hint}
@@ -254,9 +369,11 @@ export function FileUpload({
         onChange={handleSelect}
         className="hidden"
       />
-      {error && (
-        <p className="mt-2 text-center text-sm text-destructive">{error}</p>
+      {localError && (
+        <p className="mt-2 text-center text-sm text-destructive">{localError}</p>
       )}
     </div>
   )
 }
+
+export { FileUpload }

@@ -80,7 +80,7 @@ function WizardShellBack({ className, label, ...props }: WizardShellBackProps) {
   return (
     <div className={cn('w-20', className)} {...props}>
       {currentStep > 1 && onBack && (
-        <Button variant="ghost" size="sm" onClick={onBack} data-slot="wizard-shell-back">
+        <Button variant="ghost"  onClick={onBack} data-slot="wizard-shell-back">
           <ChevronLeft />
           {label}
         </Button>
@@ -118,7 +118,7 @@ function WizardShellStepCount({ className, label, ...props }: WizardShellStepCou
   return (
     <p
       data-slot="wizard-shell-step-count"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground', className)}
       {...props}
     >
       {label}

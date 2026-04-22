@@ -20,6 +20,10 @@ export type PropertyCreationWizardState = WizardState<PropertyCreationData>
 export const PROPERTY_CREATION_WIZARD_ID = 'property-creation'
 export const PROPERTY_CREATION_STATE_VERSION = 1
 
+export function propertyCreationWizardKey(draftId: string): string {
+  return `${PROPERTY_CREATION_WIZARD_ID}:${draftId}`
+}
+
 interface LoadOptions {
   expectedVersion?: number
 }

@@ -45,6 +45,7 @@ Always use semantic tokens from `src/app/globals.css` — never hardcode Tailwin
 - Use spacing to create hierarchy before borders or containers.
 - Scale: 4px (tight), 8px (compact), 12px (small internal), 16px (primary mobile), 24px (section), 32px (major block), 40–48px (page-level desktop).
 - Stick to the 4/8 rhythm. Avoid off-scale utilities like `mt-7`, `gap-5`.
+- **Parent owns vertical rhythm.** Containers set spacing via `flex flex-col gap-*` or `space-y-*`. Children render flush — no outer `mt-*` / `mb-*`. Children don't know their siblings; the parent does. Exceptions: a child may own margin when it's a genuinely optional inline adornment (e.g., a helper line that may or may not render). Internal padding (`p-*`) is always the child's responsibility.
 
 ## Radius, Borders, Shadows
 

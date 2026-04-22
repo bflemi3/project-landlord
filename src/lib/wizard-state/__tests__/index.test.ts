@@ -19,6 +19,8 @@ import {
   loadWizardState,
   clearWizardState,
   hasWizardState,
+  propertyCreationWizardKey,
+  PROPERTY_CREATION_WIZARD_ID,
   type WizardState,
 } from '../index'
 
@@ -272,5 +274,15 @@ describe('error propagation', () => {
     mockedGet.mockRejectedValueOnce(new DOMException('IndexedDB not available'))
 
     await expect(hasWizardState('test-wizard')).rejects.toThrow('IndexedDB not available')
+  })
+})
+
+describe('propertyCreationWizardKey', () => {
+  it('namespaces the draft id under the property-creation wizard', () => {
+    expect(propertyCreationWizardKey('abc-123')).toBe(`${PROPERTY_CREATION_WIZARD_ID}:abc-123`)
+  })
+
+  it('keeps different drafts independent', () => {
+    expect(propertyCreationWizardKey('one')).not.toBe(propertyCreationWizardKey('two'))
   })
 })

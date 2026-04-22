@@ -363,7 +363,6 @@
     "statementDueIn": "{period} statement due in {days}",
     "statementDueToday": "{period} statement is due today",
     "dueToday": "due today",
-    "saveChanges": "Save changes",
     "addToStatement": "Add to statement",
     "removeCharge": "Remove charge",
     "removeChargeConfirm": "Remove this charge from the statement?",
@@ -385,11 +384,6 @@
     "back": "Back",
     "exit": "Exit",
     "step": "Step {current} of {total}",
-    "step1": {
-      "title": "Upload your rental contract",
-      "description": "We'll read it and set up the rest for you.",
-      "placeholder": "Contract upload coming in the next task."
-    },
     "step2": {
       "title": "Review what we found",
       "placeholder": "Review screen coming in a later task."
@@ -399,7 +393,94 @@
       "description": "Your work is saved on this device. Pick up where you left off any time, or discard it and start over.",
       "saveForLater": "Save for later",
       "discard": "Discard and exit"
-    }
+    },
+    "upload": {
+      "title": "Upload your rental contract",
+      "description": "We'll read it and fill in the rest.",
+      "dropzone": "Choose a PDF or DOCX",
+      "dropzoneHintDesktop": "or drop one here",
+      "fileTooLarge": "File must be under {max} MB.",
+      "noContractLink": "Set up without a contract",
+      "noContractToast": "Manual setup is coming soon. For now, upload your contract to continue."
+    },
+    "loading": {
+      "static": "Reading your contract…",
+      "line1": "Reading your contract.",
+      "line2": "Finding addresses and dates.",
+      "line3": "Identifying the parties.",
+      "line4": "Looking for the rent amount.",
+      "line5": "Checking adjustment clauses.",
+      "line6": "Noting the expenses.",
+      "line7": "Putting it all together.",
+      "sections": {
+        "property": "Property",
+        "rent": "Rent & dates",
+        "parties": "Parties",
+        "expenses": "Expenses"
+      }
+    },
+    "errors": {
+      "file_too_large": {
+        "title": "File too large",
+        "message": "Your contract is larger than 10 MB.",
+        "cta": "Upload a smaller file"
+      },
+      "unsupported_format": {
+        "title": "Unsupported format",
+        "message": "Only PDF and DOCX are supported.",
+        "cta": "Choose another file"
+      },
+      "corrupt_file": {
+        "title": "Couldn't read this file",
+        "message": "We couldn't read this file.",
+        "cta": "Try another file"
+      },
+      "empty_file": {
+        "title": "Empty file",
+        "message": "This file is empty.",
+        "cta": "Choose another file"
+      },
+      "no_text_extractable": {
+        "title": "No readable text",
+        "message": "We couldn't find any text. Is this a scanned document?",
+        "cta": "Upload a digital version"
+      },
+      "password_protected": {
+        "title": "Password-protected file",
+        "message": "This file is password-protected.",
+        "cta": "Remove the password and try again"
+      },
+      "unsupported_language": {
+        "title": "Language not supported",
+        "message": "We don't support contracts in this language yet.",
+        "cta": "Continue without a contract"
+      },
+      "not_a_contract": {
+        "title": "Not a rental contract",
+        "message": "This doesn't look like a rental contract.",
+        "cta": "Try another file"
+      },
+      "extraction_failed": {
+        "title": "Something went wrong",
+        "message": "Something went wrong on our side.",
+        "cta": "Try again"
+      },
+      "extraction_timeout": {
+        "title": "Taking too long",
+        "message": "This took longer than expected.",
+        "cta": "Try again"
+      },
+      "rate_limited": {
+        "title": "High demand",
+        "message": "We're experiencing high demand.",
+        "cta": "Try again in a moment"
+      },
+      "api_key_missing": {
+        "title": "Extraction unavailable",
+        "message": "We're having trouble reaching our extraction service. Try again later."
+      }
+    },
+    "resumeUnavailable": "Your progress may not be saved on this device."
   },
   "settings": {
     "title": "Settings",

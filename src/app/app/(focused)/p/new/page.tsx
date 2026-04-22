@@ -1,5 +1,8 @@
-import { PropertyCreationWizard } from './property-creation-wizard'
+import { redirect } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 
 export default function NewPropertyPage() {
-  return <PropertyCreationWizard />
+  const draftId = crypto.randomUUID()
+  redirect(`/app/p/new/${draftId}`)
 }
