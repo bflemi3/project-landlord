@@ -220,7 +220,7 @@ function WizardShellExitPrompt({
         <Link
           href={exitHref}
           prefetch
-          className={cn(buttonVariants({ variant: 'default' }))}
+          className={cn(buttonVariants({ variant: 'default', size: 'wizard' }))}
           onClick={onSaveForLater}
         >
           {saveForLaterLabel}
@@ -229,7 +229,7 @@ function WizardShellExitPrompt({
           href={exitHref}
           prefetch
           className={cn(
-            buttonVariants({ variant: 'ghost' }),
+            buttonVariants({ variant: 'ghost', size: 'wizard' }),
             'text-destructive hover:text-destructive',
           )}
           onClick={onDiscard}

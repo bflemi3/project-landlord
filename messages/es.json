@@ -384,9 +384,51 @@
     "back": "Atrás",
     "exit": "Salir",
     "step": "Paso {current} de {total}",
-    "step2": {
+    "review": {
       "title": "Revisa lo que encontramos",
-      "placeholder": "La pantalla de revisión llega en un paso posterior."
+      "description": "Esto es lo que extrajimos de tu contrato. La edición viene en el siguiente paso.",
+      "sections": {
+        "property": "Propiedad",
+        "rent": "Renta y fechas",
+        "parties": "Partes",
+        "expenses": "Gastos"
+      },
+      "fields": {
+        "address": "Dirección",
+        "propertyType": "Tipo de propiedad",
+        "rentAmount": "Renta",
+        "dueDay": "Día de vencimiento",
+        "includes": "Incluye",
+        "startDate": "Fecha de inicio",
+        "endDate": "Fecha de término",
+        "adjustmentFrequency": "Frecuencia de ajuste",
+        "adjustmentMethod": "Método de ajuste",
+        "adjustmentIndex": "Índice",
+        "name": "Nombre",
+        "taxId": "RFC/CURP",
+        "email": "Correo",
+        "expenseType": "Tipo",
+        "providerName": "Proveedor",
+        "providerTaxId": "RFC del proveedor",
+        "bundledInto": "Incluido en"
+      },
+      "dueDayValue": "Día {day} de cada mes",
+      "noExpenses": "No se encontraron gastos en este contrato.",
+      "next": "Siguiente",
+      "startOver": "Empezar de nuevo",
+      "startOverConfirm": "Esto borrará todo lo que subiste. ¿Continuar?",
+      "startOverYes": "Sí, empezar de nuevo",
+      "startOverCancel": "Cancelar",
+      "recovery": {
+        "title": "No encontramos los datos de tu contrato",
+        "description": "Tu envío anterior pudo haberse borrado. Intenta subir de nuevo.",
+        "cta": "Empezar de nuevo"
+      },
+      "empty": {
+        "title": "No pudimos extraer mucho de este contrato",
+        "description": "Intenta subir un archivo diferente o continúa con la configuración manual.",
+        "cta": "Probar otro archivo"
+      }
     },
     "exitPrompt": {
       "title": "¿Conservar tu progreso?",

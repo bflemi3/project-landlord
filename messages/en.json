@@ -384,9 +384,51 @@
     "back": "Back",
     "exit": "Exit",
     "step": "Step {current} of {total}",
-    "step2": {
+    "review": {
       "title": "Review what we found",
-      "placeholder": "Review screen coming in a later task."
+      "description": "Here's what we extracted from your contract. Editing comes in the next step.",
+      "sections": {
+        "property": "Property",
+        "rent": "Rent & dates",
+        "parties": "Parties",
+        "expenses": "Expenses"
+      },
+      "fields": {
+        "address": "Address",
+        "propertyType": "Property type",
+        "rentAmount": "Rent",
+        "dueDay": "Due day",
+        "includes": "Bundled with",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "adjustmentFrequency": "Adjustment frequency",
+        "adjustmentMethod": "Adjustment method",
+        "adjustmentIndex": "Index",
+        "name": "Name",
+        "taxId": "Tax ID",
+        "email": "Email",
+        "expenseType": "Type",
+        "providerName": "Provider",
+        "providerTaxId": "Provider tax ID",
+        "bundledInto": "Bundled into"
+      },
+      "dueDayValue": "Day {day} of each month",
+      "noExpenses": "No expenses found in this contract.",
+      "next": "Next",
+      "startOver": "Start over",
+      "startOverConfirm": "This will clear everything you've uploaded. Continue?",
+      "startOverYes": "Yes, start over",
+      "startOverCancel": "Cancel",
+      "recovery": {
+        "title": "We couldn't find your contract data",
+        "description": "Your previous upload may have been cleared. Try uploading again.",
+        "cta": "Start over"
+      },
+      "empty": {
+        "title": "We couldn't extract much from this contract",
+        "description": "Try uploading a different file or continue with manual setup.",
+        "cta": "Try a different file"
+      }
     },
     "exitPrompt": {
       "title": "Keep your progress?",

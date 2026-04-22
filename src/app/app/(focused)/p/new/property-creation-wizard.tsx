@@ -15,6 +15,7 @@ import {
   type PropertyCreationData,
 } from '@/lib/wizard-state'
 import { UploadContract } from './steps/upload-contract'
+import { ReviewExtraction } from './steps/review-extraction'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 const TOTAL_STEPS = 2
@@ -163,6 +164,7 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
   const handleFileCleared = useCallback(async () => {
     setWizardData(EMPTY_DATA)
     setAutoExtractOnMount(false)
+    setStep(1)
     await clearWizardState(wizardKey)
   }, [wizardKey])
 
@@ -205,18 +207,12 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
             )}
           </WizardShell.Step>
           <WizardShell.Step step={2}>
-            <div className="pt-8">
-              <h1 className="mb-2 text-2xl font-bold text-foreground">
-                {t('step2.title')}
-              </h1>
-              <p className="text-base text-muted-foreground">
-                {wizardData.extractionResult
-                  ? `Language: ${wizardData.extractionResult.languageDetected} · ${
-                      wizardData.contractFileName ?? ''
-                    }`
-                  : t('step2.placeholder')}
-              </p>
-            </div>
+            {hydrated && (
+              <ReviewExtraction
+                wizardKey={wizardKey}
+                onStartOver={handleFileCleared}
+              />
+            )}
           </WizardShell.Step>
         </WizardShell.Steps>
       </WizardShell>

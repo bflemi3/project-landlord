@@ -5,10 +5,11 @@ import { useTranslations } from 'next-intl'
 import { useReducedMotion } from 'motion/react'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SectionLabel } from '@/components/section-label'
+import { TextShimmer } from '@/components/text-shimmer'
 import { cn } from '@/lib/utils'
 
 const LINE_KEYS = ['line1', 'line2', 'line3', 'line4', 'line5', 'line6', 'line7'] as const
-const ROTATION_MS = 2200
+const ROTATION_MS = 3500
 
 function SkeletonSection({
   title,
@@ -74,13 +75,19 @@ export function ExtractionLoading() {
         <SkeletonSection title={t('sections.expenses')} rows={2} animate={animate} />
       </div>
 
-      <p
-        className="mt-10 text-center text-base text-muted-foreground"
+      <div
+        className="mt-10 text-center text-base"
         aria-live={animate ? 'off' : 'polite'}
         data-slot="extraction-loading-copy"
       >
-        {animate ? t(LINE_KEYS[lineIndex]) : t('static')}
-      </p>
+        {animate ? (
+          <TextShimmer as="p" duration="2.5s">
+            {t(LINE_KEYS[lineIndex])}
+          </TextShimmer>
+        ) : (
+          <p className="text-muted-foreground">{t('static')}</p>
+        )}
+      </div>
     </div>
   )
 }

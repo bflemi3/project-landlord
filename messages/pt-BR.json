@@ -384,9 +384,51 @@
     "back": "Voltar",
     "exit": "Sair",
     "step": "Etapa {current} de {total}",
-    "step2": {
+    "review": {
       "title": "Revise o que encontramos",
-      "placeholder": "A tela de revisão chega em uma etapa futura."
+      "description": "Aqui está o que extraímos do seu contrato. A edição vem na próxima etapa.",
+      "sections": {
+        "property": "Imóvel",
+        "rent": "Aluguel e datas",
+        "parties": "Partes",
+        "expenses": "Despesas"
+      },
+      "fields": {
+        "address": "Endereço",
+        "propertyType": "Tipo de imóvel",
+        "rentAmount": "Aluguel",
+        "dueDay": "Dia de vencimento",
+        "includes": "Inclui",
+        "startDate": "Data de início",
+        "endDate": "Data de término",
+        "adjustmentFrequency": "Frequência de reajuste",
+        "adjustmentMethod": "Método de reajuste",
+        "adjustmentIndex": "Índice",
+        "name": "Nome",
+        "taxId": "CPF/CNPJ",
+        "email": "E-mail",
+        "expenseType": "Tipo",
+        "providerName": "Fornecedor",
+        "providerTaxId": "CNPJ do fornecedor",
+        "bundledInto": "Incluído em"
+      },
+      "dueDayValue": "Dia {day} de cada mês",
+      "noExpenses": "Nenhuma despesa encontrada neste contrato.",
+      "next": "Próximo",
+      "startOver": "Recomeçar",
+      "startOverConfirm": "Isso vai apagar tudo que você enviou. Continuar?",
+      "startOverYes": "Sim, recomeçar",
+      "startOverCancel": "Cancelar",
+      "recovery": {
+        "title": "Não encontramos os dados do seu contrato",
+        "description": "Seu envio anterior pode ter sido apagado. Tente enviar novamente.",
+        "cta": "Recomeçar"
+      },
+      "empty": {
+        "title": "Não conseguimos extrair muito deste contrato",
+        "description": "Tente enviar um arquivo diferente ou continue com a configuração manual.",
+        "cta": "Tentar outro arquivo"
+      }
     },
     "exitPrompt": {
       "title": "Guardar seu progresso?",
