@@ -152,7 +152,7 @@ export function ReviewExtraction({ wizardKey, onStartOver }: ReviewExtractionPro
       <PartiesSection result={result} />
       <ExpensesSection result={result} />
 
-      <div className="flex flex-col gap-3 pb-8">
+      <div className="flex flex-col gap-3">
         <Button
           onClick={() => toast.message('Coming in the next step.')}
           size="wizard"

@@ -32,7 +32,6 @@ export async function LandlordGreeting() {
         render={<Link href="/app/p/new" prefetch aria-label={t('addProperty')} />}
         nativeButton={false}
         variant="ghost"
-        className="size-10 rounded-full px-0 text-muted-foreground sm:size-auto sm:rounded-2xl sm:px-4"
       >
         <Plus />
         <span className="hidden sm:inline">{t('addProperty')}</span>
