@@ -415,6 +415,7 @@
       "dueDayValue": "Día {day} de cada mes",
       "noExpenses": "No se encontraron gastos en este contrato.",
       "next": "Siguiente",
+      "nextStepComingSoon": "Disponible en el siguiente paso.",
       "startOver": "Empezar de nuevo",
       "startOverConfirm": "Esto borrará todo lo que subiste. ¿Continuar?",
       "startOverYes": "Sí, empezar de nuevo",

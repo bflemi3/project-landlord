@@ -154,7 +154,7 @@ export function ReviewExtraction({ wizardKey, onStartOver }: ReviewExtractionPro
 
       <div className="flex flex-col gap-3">
         <Button
-          onClick={() => toast.message('Coming in the next step.')}
+          onClick={() => toast.message(t('nextStepComingSoon'))}
           size="wizard"
         >
           {t('next')}

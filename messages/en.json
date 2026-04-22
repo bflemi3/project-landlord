@@ -415,6 +415,7 @@
       "dueDayValue": "Day {day} of each month",
       "noExpenses": "No expenses found in this contract.",
       "next": "Next",
+      "nextStepComingSoon": "Coming in the next step.",
       "startOver": "Start over",
       "startOverConfirm": "This will clear everything you've uploaded. Continue?",
       "startOverYes": "Yes, start over",

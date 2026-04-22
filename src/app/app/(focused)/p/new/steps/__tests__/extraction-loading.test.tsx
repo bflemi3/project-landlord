@@ -52,12 +52,12 @@ describe('ExtractionLoading', () => {
     expect(screen.getByText('Reading your contract.')).toBeInTheDocument()
 
     act(() => {
-      vi.advanceTimersByTime(2200)
+      vi.advanceTimersByTime(3600)
     })
     expect(screen.getByText('Finding addresses and dates.')).toBeInTheDocument()
 
     act(() => {
-      vi.advanceTimersByTime(2200)
+      vi.advanceTimersByTime(3600)
     })
     expect(screen.getByText('Identifying the parties.')).toBeInTheDocument()
   })
