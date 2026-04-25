@@ -381,9 +381,50 @@
     "uploadFailed": "Upload failed. Please try again."
   },
   "propertyCreation": {
+    "title": "Setting up your property",
     "back": "Back",
     "exit": "Exit",
     "step": "Step {current} of {total}",
+    "checkout": {
+      "property": {
+        "title": "Property",
+        "subtitle": "Where is it and what type?",
+        "placeholder": "Property form coming soon."
+      },
+      "rent-dates": {
+        "title": "Rent & dates",
+        "subtitle": "Amount, due day, and contract period.",
+        "placeholder": "Rent and dates form coming soon."
+      },
+      "tenants": {
+        "title": "Tenants",
+        "subtitle": "Invite the people who will live here.",
+        "placeholder": "Tenant invite form coming soon."
+      },
+      "expenses": {
+        "title": "Expenses",
+        "subtitle": "Utilities, condo fees, and who pays them.",
+        "placeholder": "Expenses form coming soon."
+      },
+      "cpf": {
+        "title": "CPF",
+        "subtitle": "We need this for billing and receipts.",
+        "placeholder": "CPF form coming soon."
+      },
+      "bank": {
+        "title": "Bank account",
+        "subtitle": "Where rent payments are deposited.",
+        "placeholder": "Bank account setup coming soon."
+      },
+      "summary": {
+        "title": "Property setup",
+        "remaining": "{count} of {total} sections remaining"
+      },
+      "cta": {
+        "create": "Create property",
+        "remaining": "{count, plural, one {# section left} other {# sections left}}"
+      }
+    },
     "review": {
       "title": "Review what we found",
       "description": "Here's what we extracted from your contract. Editing comes in the next step.",

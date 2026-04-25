@@ -1,27 +1,10 @@
 import { get, set, del } from 'idb-keyval'
-import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 export interface WizardState<T = Record<string, unknown>> {
   version: number
   currentStep: number
   updatedAt: string
   data: T
-}
-
-export interface PropertyCreationData {
-  contractFile: Blob | null
-  contractFileName: string | null
-  contractFileType: 'pdf' | 'docx' | null
-  extractionResult: ContractExtractionResult | null
-}
-
-export type PropertyCreationWizardState = WizardState<PropertyCreationData>
-
-export const PROPERTY_CREATION_WIZARD_ID = 'property-creation'
-export const PROPERTY_CREATION_STATE_VERSION = 1
-
-export function propertyCreationWizardKey(draftId: string): string {
-  return `${PROPERTY_CREATION_WIZARD_ID}:${draftId}`
 }
 
 interface LoadOptions {

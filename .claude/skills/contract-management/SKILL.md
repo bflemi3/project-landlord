@@ -95,6 +95,8 @@ Both tenants and landlords earn portable reputation scores. This is the network 
 
 Many onboarding friction points (connecting bank account, confirming providers, validating extraction) can be incentivized by tying completion to the user's reputation score. Both parties get a reason to engage rather than skip.
 
+**Contract upload should be weighted higher than manual entry.** A landlord who uploads a contract provides richer, more verifiable data upfront (parties, terms, dates, expenses) compared to manual entry where they're likely to skip optional sections. The reputation system should reward this — uploading a contract earns more toward the landlord's score than creating a property manually. This incentivizes data completeness and gives the platform better information to work with (payment matching, dispute resolution, adjustment tracking).
+
 ## Related Notifications
 
 Trigger notifications at these moments (part of this domain):

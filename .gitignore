@@ -53,3 +53,6 @@ Thumbs.db
 sw.js
 workbox-*.js
 .claude/worktrees/
+
+# superpowers skill scratch (brainstorm sessions, preview servers)
+.superpowers/

@@ -25,9 +25,11 @@ The persistence utility should be reusable — not coupled to property creation.
 
 **Step transitions:** Steps slide in/out as the user progresses forward or goes back — slide left to advance, slide right to go back. Step 1 displays immediately on mount with no animation. Adapt the existing `SlideIn`, `StepProgress`, and composable `PropertyForm` components at `src/app/app/(focused)/p/new/` — don't rebuild these primitives from scratch.
 
-**With contract:** Upload → Property details → Contract terms → Tenants → Expenses → CPF (if missing) → Bank account → Success
+**With contract:** Upload → Property details → Contract terms → Tenants → Expenses → CPF → Bank account → Success
 
-**Without contract:** "I don't have a contract" → Manual address form → Manual rent/expenses (optional) → CPF (if missing) → Bank account → Success (tenants skipped)
+**Without contract:** "I don't have a contract" → Manual address form → Manual rent/expenses (optional) → CPF → Bank account → Success (tenants skipped)
+
+The CPF step is always visible; when `profiles.tax_id` is already set, the field renders read-only and the step is completed by confirmation rather than input.
 
 ---
 
@@ -109,15 +111,19 @@ Charges extracted from the contract are presented here. For each expense:
 
 **No-contract path:** Optional — landlord can add expenses manually or skip entirely.
 
-### Step 6: CPF Collection (conditional)
+### Step 6: CPF Collection
 
-Only shown if the landlord's CPF is not already on their profile. CPF is required for:
+**Always visible.** The CPF section appears in every property creation flow — both the empty case (first property, CPF missing) and the pre-filled case (subsequent properties, CPF already on profile). CPF is required for:
 
 - Automatic bill matching (bills addressed to the LL's CPF)
 - DDA registration (future — condo fee auto-discovery)
 - Open Finance bank connection
 
-Collected inline during property creation rather than as a separate onboarding flow — least friction, collected when it's actually needed. This step is required — the user cannot proceed without entering their CPF. If CPF is already on file from a previous property setup, this step is skipped.
+Collected inline during property creation rather than as a separate onboarding flow — least friction, collected when it's actually needed. This step is required — the user cannot proceed without a CPF on file.
+
+**Pre-filled case:** When `profiles.tax_id` already has a value, the field is pre-filled and rendered **read-only**. The landlord confirms "yes, that's me" rather than being asked for data the system already has. The section satisfies the required validation in this state — no input needed. Editing a CPF already on profile is handled from profile settings, not this flow.
+
+**Empty case:** Masked input with format validation (11 digits, check digits). On submit, `profiles.tax_id` is updated with the entered value.
 
 ### Step 7: Bank Account Connection
 
@@ -205,8 +211,10 @@ Summary of what was set up:
 - Providers are manually seeded in the DB for now
 - Matched by region + CNPJ or region + name
 - If no match is found, the charge is still created but with no provider associated
-- A provider request is only created if the user explicitly taps "Don't see your provider? Let us know" — we don't auto-create requests from extraction data since it may be inaccurate
-- Provider requests are stored in the existing provider request table with associated info
+- Provider-support requests are created through two paths, both writing to the same internal record so engineering reviews them from one queue:
+  1. **Auto-queued from the resolution flow** — when a provider is recognized (either already in the DB without regional support, or recognized by CNPJ lookup but not yet in the DB), an internal signal is queued automatically. Extraction noise is tolerated because engineering reviews before acting; the signal is source='auto' so reviewers can weigh it against user-initiated ones
+  2. **User-initiated** — the explicit "Don't see your provider? Let us know" action; source='user_requested'
+- Provider records are NEVER auto-created from extraction data — creation stays gated on engineering review regardless of how the request was queued
 
 ### Bank account connections
 - Users can have multiple connections (via Pluggy) — bank accounts, debit cards, credit cards

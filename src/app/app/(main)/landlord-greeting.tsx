@@ -1,8 +1,6 @@
-import Link from 'next/link'
-import { Plus } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { getProfile } from '@/data/profiles/server'
-import { Button } from '@/components/ui/button'
+import { AddPropertyButton } from './add-property-button'
 
 function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
   const hour = new Date().getHours()
@@ -28,14 +26,7 @@ export async function LandlordGreeting() {
       <h1 className="text-3xl tracking-tight font-semibold text-foreground">
         {greeting}{firstName ? `, ${firstName}` : ''}
       </h1>
-      <Button
-        render={<Link href="/app/p/new" prefetch aria-label={t('addProperty')} />}
-        nativeButton={false}
-        variant="ghost"
-      >
-        <Plus />
-        <span className="hidden sm:inline">{t('addProperty')}</span>
-      </Button>
+      <AddPropertyButton ariaLabel={t('addProperty')} label={t('addProperty')} />
     </div>
   )
 }

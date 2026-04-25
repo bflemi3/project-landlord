@@ -381,9 +381,50 @@
     "uploadFailed": "Falha no upload. Tente novamente."
   },
   "propertyCreation": {
+    "title": "Configurando seu imóvel",
     "back": "Voltar",
     "exit": "Sair",
     "step": "Etapa {current} de {total}",
+    "checkout": {
+      "property": {
+        "title": "Imóvel",
+        "subtitle": "Onde fica e qual o tipo?",
+        "placeholder": "Formulário do imóvel em breve."
+      },
+      "rent-dates": {
+        "title": "Aluguel e datas",
+        "subtitle": "Valor, dia de vencimento e período do contrato.",
+        "placeholder": "Formulário de aluguel e datas em breve."
+      },
+      "tenants": {
+        "title": "Inquilinos",
+        "subtitle": "Convide quem vai morar aqui.",
+        "placeholder": "Convite de inquilino em breve."
+      },
+      "expenses": {
+        "title": "Despesas",
+        "subtitle": "Contas de consumo, condomínio e quem paga.",
+        "placeholder": "Formulário de despesas em breve."
+      },
+      "cpf": {
+        "title": "CPF",
+        "subtitle": "Precisamos dele para cobranças e recibos.",
+        "placeholder": "Formulário de CPF em breve."
+      },
+      "bank": {
+        "title": "Conta bancária",
+        "subtitle": "Onde os aluguéis serão depositados.",
+        "placeholder": "Configuração da conta bancária em breve."
+      },
+      "summary": {
+        "title": "Configurar imóvel",
+        "remaining": "{count} de {total} seções restantes"
+      },
+      "cta": {
+        "create": "Criar imóvel",
+        "remaining": "{count, plural, one {falta # seção} other {faltam # seções}}"
+      }
+    },
     "review": {
       "title": "Revise o que encontramos",
       "description": "Aqui está o que extraímos do seu contrato. A edição vem na próxima etapa.",

@@ -381,9 +381,50 @@
     "uploadFailed": "Error al subir. Inténtelo de nuevo."
   },
   "propertyCreation": {
+    "title": "Configurando tu propiedad",
     "back": "Atrás",
     "exit": "Salir",
     "step": "Paso {current} de {total}",
+    "checkout": {
+      "property": {
+        "title": "Propiedad",
+        "subtitle": "¿Dónde está y qué tipo es?",
+        "placeholder": "Formulario de propiedad próximamente."
+      },
+      "rent-dates": {
+        "title": "Renta y fechas",
+        "subtitle": "Monto, día de vencimiento y período del contrato.",
+        "placeholder": "Formulario de renta y fechas próximamente."
+      },
+      "tenants": {
+        "title": "Inquilinos",
+        "subtitle": "Invita a quienes vivirán aquí.",
+        "placeholder": "Formulario de invitación a inquilinos próximamente."
+      },
+      "expenses": {
+        "title": "Gastos",
+        "subtitle": "Servicios, expensas y quién los paga.",
+        "placeholder": "Formulario de gastos próximamente."
+      },
+      "cpf": {
+        "title": "CPF",
+        "subtitle": "Lo necesitamos para cobros y recibos.",
+        "placeholder": "Formulario de CPF próximamente."
+      },
+      "bank": {
+        "title": "Cuenta bancaria",
+        "subtitle": "Donde se depositarán los pagos de renta.",
+        "placeholder": "Configuración de cuenta bancaria próximamente."
+      },
+      "summary": {
+        "title": "Configurar propiedad",
+        "remaining": "{count} de {total} secciones restantes"
+      },
+      "cta": {
+        "create": "Crear propiedad",
+        "remaining": "{count, plural, one {falta # sección} other {faltan # secciones}}"
+      }
+    },
     "review": {
       "title": "Revisa lo que encontramos",
       "description": "Esto es lo que extrajimos de tu contrato. La edición viene en el siguiente paso.",

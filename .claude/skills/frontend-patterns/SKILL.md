@@ -140,6 +140,15 @@ Components receive only primitive IDs as props and fetch their own data via hook
 
 Principle: stable → reactive → side-effectful → behavioral.
 
+## Props Ordering
+
+Inside `type Props = { ... }` / `interface Props`:
+
+1. Value props first, sorted alphabetically
+2. Function-typed props second, sorted alphabetically
+
+The IDE color-codes the two groups differently, so this ordering matches what you already see. Stable diffs, predictable scanning, no bikeshedding over where a new prop goes.
+
 ## Navigation
 
 Use `next/link` (`<Link>`) for all internal navigation — never `<a href>`, which triggers a full page reload and breaks prefetching. `loading.tsx` on every route enables partial prefetching for `<Link>`.

@@ -3,11 +3,16 @@
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import posthog from 'posthog-js'
-import { toast } from 'sonner'
 import { FileUpload, type FileUploadControls } from '@/components/file-upload'
+import { TextShimmer } from '@/components/text-shimmer'
+import { useReducedMotion } from 'motion/react'
 import { ContractUploadError } from './contract-upload-error'
-import { extractContractAction } from '../actions/extract-contract-action'
-import { ExtractionLoading } from './extraction-loading'
+import { extractContractAction } from '../../actions/extract-contract-action'
+import { StepOneSkeletonLayout } from './step-one-skeleton-layout'
+import {
+  usePropertyCreationActions,
+  usePropertyCreationState,
+} from '../../state/use-property-creation'
 import type {
   ContractExtractionErrorCode,
   ContractExtractionResult,
@@ -21,6 +26,9 @@ const RETRY_CODES: ReadonlySet<ContractExtractionErrorCode> = new Set([
 
 const ACCEPT =
   'application/pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+
+const LINE_KEYS = ['line1', 'line2', 'line3', 'line4', 'line5', 'line6', 'line7'] as const
+const ROTATION_MS = 3500
 
 function detectFileType(file: File): 'pdf' | 'docx' | null {
   const name = file.name.toLowerCase()
@@ -48,35 +56,38 @@ function countExtractedFields(result: ContractExtractionResult): number {
   return count
 }
 
-export interface UploadContractProps {
-  initialFile?: File | null
-  initialFileType?: 'pdf' | 'docx' | null
-  autoExtract?: boolean
-  onFileSelected?: (file: File, fileType: 'pdf' | 'docx') => void | Promise<void>
-  onExtracted: (payload: {
-    file: File
-    fileName: string
-    fileType: 'pdf' | 'docx'
-    extractionResult: ContractExtractionResult
-  }) => void
-  onFileCleared?: () => void
-}
-
-export function UploadContract({
-  initialFile = null,
-  initialFileType = null,
-  autoExtract = false,
-  onFileSelected,
-  onExtracted,
-  onFileCleared,
-}: UploadContractProps) {
+/**
+ * Store-driven contract upload step. Reads file/extraction state directly from
+ * the wizard store and writes through actions. The parent wizard no longer
+ * wires any props — page.tsx suspends on `hydrate(wizardKey)`, so by the time
+ * this component mounts the store is already seeded.
+ */
+export function UploadContract() {
   const t = useTranslations('propertyCreation')
-  const [file, setFile] = useState<File | null>(initialFile)
-  const [fileType, setFileType] = useState<'pdf' | 'docx' | null>(initialFileType)
+  const prefersReducedMotion = useReducedMotion()
+  const animate = !prefersReducedMotion
+
+  const contractFile = usePropertyCreationState((s) => s.contractFile)
+  const contractFileType = usePropertyCreationState((s) => s.contractFileType)
+  const extractionResult = usePropertyCreationState((s) => s.extractionResult)
+  const path = usePropertyCreationState((s) => s.path)
+  const actions = usePropertyCreationActions()
+
   const [errorCode, setErrorCode] = useState<ContractExtractionErrorCode | null>(null)
   const [isPending, startTransition] = useTransition()
   const autoExtractFiredRef = useRef(false)
   const controlsRef = useRef<FileUploadControls | null>(null)
+
+  // Rotating shimmer line during extraction.
+  const [lineIndex, setLineIndex] = useState(0)
+  useEffect(() => {
+    if (!isPending) return
+    if (!animate) return
+    const id = setInterval(() => {
+      setLineIndex((i) => (i + 1) % LINE_KEYS.length)
+    }, ROTATION_MS)
+    return () => clearInterval(id)
+  }, [isPending, animate])
 
   async function runExtraction(selected: File, fileType: 'pdf' | 'docx') {
     const fd = new FormData()
@@ -90,12 +101,12 @@ export function UploadContract({
         language: response.data.languageDetected,
         fieldCount: countExtractedFields(response.data),
       })
-      onExtracted({
-        file: selected,
-        fileName: selected.name,
-        fileType,
+      actions.setContractFile(selected, selected.name, fileType)
+      actions.commitContractOutput({
         extractionResult: response.data,
+        path: 'contract',
       })
+      actions.goToStep(2)
       return
     }
 
@@ -103,21 +114,24 @@ export function UploadContract({
     setErrorCode(response.error.code)
 
     // Retry codes keep the file around so the CTA can re-invoke extraction
-    // with the same upload. Terminal codes drop the file and signal the parent
-    // to clear persisted wizard state.
+    // with the same upload. Terminal codes drop the file from the store.
     if (!RETRY_CODES.has(response.error.code)) {
-      setFile(null)
-      setFileType(null)
-      onFileCleared?.()
+      actions.clearContractFile()
     }
   }
 
+  // Auto-extract on mount when we have a stored file but no extraction result
+  // and no committed path — i.e. the user reloaded mid-extraction (hydrate()
+  // already forced step back to 1 for this case).
   useEffect(() => {
-    if (!autoExtract) return
     if (autoExtractFiredRef.current) return
-    if (!initialFile || !initialFileType) return
+    if (!contractFile || !contractFileType) return
+    if (extractionResult) return
+    if (path) return
     autoExtractFiredRef.current = true
-    startTransition(() => runExtraction(initialFile, initialFileType))
+    const file = contractFile
+    const type = contractFileType
+    startTransition(() => runExtraction(file, type))
     // Fire-once on mount for mid-extraction resume — deps intentionally omitted.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -140,24 +154,18 @@ export function UploadContract({
       return
     }
 
-    setFile(selected)
-    setFileType(detected)
+    actions.setContractFile(selected, selected.name, detected)
     startTransition(async () => {
-      if (onFileSelected) {
-        await onFileSelected(selected, detected)
-      }
       await runExtraction(selected, detected)
     })
   }
 
   function handleClear() {
-    setFile(null)
-    setFileType(null)
     setErrorCode(null)
-    if (initialFile || file) {
+    if (contractFile) {
       posthog.capture('contract_upload_removed')
     }
-    onFileCleared?.()
+    actions.clearContractFile()
   }
 
   function handleNoContract() {
@@ -165,12 +173,14 @@ export function UploadContract({
     // Committing to the no-contract path: drop any in-flight upload or error
     // so nothing is left in memory or IndexedDB when Plan 9 wires the real
     // manual branch.
-    setFile(null)
-    setFileType(null)
     setErrorCode(null)
     controlsRef.current?.reset()
-    onFileCleared?.()
-    toast.message(t('upload.noContractToast'))
+    actions.clearContractFile()
+    actions.commitContractOutput({
+      extractionResult: null,
+      path: 'no_contract',
+    })
+    actions.goToStep(2)
   }
 
   function pickAnother() {
@@ -182,14 +192,16 @@ export function UploadContract({
   }
 
   function retryExtraction() {
-    if (!file || !fileType) {
+    if (!contractFile || !contractFileType) {
       // Safety net — the retry branch should only be reachable when we've
       // preserved both across the previous failure.
       pickAnother()
       return
     }
     setErrorCode(null)
-    startTransition(() => runExtraction(file, fileType))
+    const file = contractFile
+    const type = contractFileType
+    startTransition(() => runExtraction(file, type))
   }
 
   const ctaHandlers: Record<ContractExtractionErrorCode, () => void> = {
@@ -212,9 +224,26 @@ export function UploadContract({
     ctaHandlers[errorCode]()
   }
 
-
   if (isPending) {
-    return <ExtractionLoading />
+    const currentKey = LINE_KEYS[lineIndex]!
+    return (
+      <div data-slot="extraction-loading">
+        <StepOneSkeletonLayout />
+        <div
+          className="mt-6 text-center text-base"
+          aria-live={animate ? 'off' : 'polite'}
+          data-slot="extraction-loading-copy"
+        >
+          {animate ? (
+            <TextShimmer as="p" duration="2.5s">
+              {t(`loading.${currentKey}`)}
+            </TextShimmer>
+          ) : (
+            <p className="text-muted-foreground">{t('loading.static')}</p>
+          )}
+        </div>
+      </div>
+    )
   }
 
   const fileUploadError = errorCode ? (
@@ -234,7 +263,7 @@ export function UploadContract({
       </div>
 
       <FileUpload
-        file={file}
+        file={contractFile}
         onFileSelect={handleFileSelect}
         onClear={handleClear}
         onValidationError={(code) => {

@@ -80,7 +80,7 @@ function WizardShellBack({ className, label, ...props }: WizardShellBackProps) {
   return (
     <div className={cn('w-20', className)} {...props}>
       {currentStep > 1 && onBack && (
-        <Button variant="ghost"  onClick={onBack} data-slot="wizard-shell-back">
+        <Button className="text-base" size="sm" variant="ghost"  onClick={onBack} data-slot="wizard-shell-back">
           <ChevronLeft />
           {label}
         </Button>
@@ -98,7 +98,7 @@ function WizardShellClose({ className, ariaLabel, ...props }: WizardShellClosePr
   return (
     <div className={cn('flex w-20 justify-end', className)} {...props}>
       <Button
-        variant="ghost"
+        variant="secondary"
         size="icon"
         onClick={onExit}
         aria-label={ariaLabel}
@@ -220,7 +220,7 @@ function WizardShellExitPrompt({
         <Link
           href={exitHref}
           prefetch
-          className={cn(buttonVariants({ variant: 'default', size: 'wizard' }))}
+          className={cn(buttonVariants({ variant: 'default' }))}
           onClick={onSaveForLater}
         >
           {saveForLaterLabel}
@@ -229,7 +229,7 @@ function WizardShellExitPrompt({
           href={exitHref}
           prefetch
           className={cn(
-            buttonVariants({ variant: 'ghost', size: 'wizard' }),
+            buttonVariants({ variant: 'ghost' }),
             'text-destructive hover:text-destructive',
           )}
           onClick={onDiscard}

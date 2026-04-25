@@ -1,7 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import {
   Building2, DoorOpen,
@@ -34,7 +35,17 @@ interface EmptyStateProps {
 
 export function EmptyState({ firstName, greeting }: EmptyStateProps) {
   const t = useTranslations('home')
+  const router = useRouter()
   const [showComingSoon, setShowComingSoon] = useState(false)
+  const draftId = useMemo(() => crypto.randomUUID(), [])
+  const newPropertyHref = `/app/p/new/${draftId}`
+  // Re-prefetch on hover/focus to top up `<Link prefetch>`'s viewport-entry
+  // prefetch — ensures the wizard route shell is warm by the time the user
+  // commits to the click.
+  const warmPrefetch = useCallback(
+    () => router.prefetch(newPropertyHref),
+    [router, newPropertyHref],
+  )
 
   return (
     <div className="w-full max-w-2xl">
@@ -49,7 +60,11 @@ export function EmptyState({ firstName, greeting }: EmptyStateProps) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <Link
-              href="/app/p/new"
+              href={newPropertyHref}
+              prefetch
+              onMouseEnter={warmPrefetch}
+              onFocus={warmPrefetch}
+              onTouchStart={warmPrefetch}
               className={cardShellClassName({
                 interactive: true,
                 size: 'none',

@@ -7,12 +7,16 @@ import { resolve } from 'node:path'
 const enMessages = JSON.parse(
   readFileSync(resolve(process.cwd(), 'messages/en.json'), 'utf8'),
 ) as Record<string, unknown>
-import type { ContractExtractionResponse, ContractExtractionResult, ContractExtractionErrorCode } from '@/lib/contract-extraction/types'
+import type {
+  ContractExtractionResponse,
+  ContractExtractionResult,
+  ContractExtractionErrorCode,
+} from '@/lib/contract-extraction/types'
 
 // --- Mocks -------------------------------------------------------------
 
 const mockExtractContractAction = vi.fn<(fd: FormData) => Promise<ContractExtractionResponse>>()
-vi.mock('../../actions/extract-contract-action', () => ({
+vi.mock('../../../actions/extract-contract-action', () => ({
   extractContractAction: (fd: FormData) => mockExtractContractAction(fd),
 }))
 
@@ -23,10 +27,22 @@ vi.mock('posthog-js', () => ({
   },
 }))
 
-const mockToast = { message: vi.fn(), info: vi.fn(), success: vi.fn(), error: vi.fn() }
-vi.mock('sonner', () => ({
-  toast: mockToast,
-}))
+// Intercept wizard-state persistence so the store's hydrate() + save
+// subscriber don't hit real IndexedDB during tests.
+const mockLoadWizardState = vi.fn()
+const mockSaveWizardState = vi.fn()
+const mockClearWizardState = vi.fn()
+vi.mock('@/lib/wizard-state', async () => {
+  const actual = await vi.importActual<typeof import('@/lib/wizard-state')>(
+    '@/lib/wizard-state',
+  )
+  return {
+    ...actual,
+    loadWizardState: (...args: unknown[]) => mockLoadWizardState(...args),
+    saveWizardState: (...args: unknown[]) => mockSaveWizardState(...args),
+    clearWizardState: (...args: unknown[]) => mockClearWizardState(...args),
+  }
+})
 
 const mockUseReducedMotion = vi.fn(() => false)
 vi.mock('motion/react', async () => {
@@ -60,7 +76,10 @@ function makeExtractionResult(
 
 function renderWithIntl(ui: React.ReactElement) {
   return render(
-    <NextIntlClientProvider locale="en" messages={enMessages as unknown as Record<string, unknown>}>
+    <NextIntlClientProvider
+      locale="en"
+      messages={enMessages as unknown as Record<string, unknown>}
+    >
       {ui}
     </NextIntlClientProvider>,
   )
@@ -78,54 +97,85 @@ async function selectFile(file: File) {
   })
 }
 
+/**
+ * Fresh import helper — resets the wizard store singleton so each test
+ * gets a clean store. Because the store is a module singleton, we reset its
+ * internal state rather than re-importing.
+ */
+async function freshImport() {
+  const storeMod = await import('../../../state/store')
+  storeMod.__resetPropertyCreationStoreForTests()
+  const { UploadContract } = await import('../upload-contract')
+  const store = storeMod.getPropertyCreationStore()
+  return { UploadContract, store }
+}
+
 // --- Tests --------------------------------------------------------------
 
 beforeEach(() => {
   mockExtractContractAction.mockReset()
   mockCapture.mockReset()
-  mockToast.message.mockReset()
-  mockToast.info.mockReset()
-  mockToast.success.mockReset()
-  mockToast.error.mockReset()
+  mockLoadWizardState.mockReset()
+  mockLoadWizardState.mockResolvedValue(null)
+  mockSaveWizardState.mockReset()
+  mockSaveWizardState.mockResolvedValue(undefined)
+  mockClearWizardState.mockReset()
+  mockClearWizardState.mockResolvedValue(undefined)
   mockUseReducedMotion.mockReturnValue(false)
 })
 
-afterEach(cleanup)
+afterEach(() => {
+  cleanup()
+})
 
 describe('UploadContract', () => {
   describe('initial render', () => {
     it('renders hero title and description', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
       expect(screen.getByText('Upload your rental contract')).toBeInTheDocument()
       expect(screen.getByText("We'll read it and fill in the rest.")).toBeInTheDocument()
     })
 
     it('renders dropzone with contract-specific copy', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
       expect(screen.getByText('Choose a PDF or DOCX')).toBeInTheDocument()
     })
 
     it('renders the "I don\'t have a contract" link', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
       expect(screen.getByText('Set up without a contract')).toBeInTheDocument()
     })
 
-    it('renders file chip when initialFile provided', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract onExtracted={vi.fn()} initialFile={makePdfFile('existing.pdf')} />,
-      )
+    it('renders file chip when store has a contract file', async () => {
+      const { UploadContract, store } = await freshImport()
+      store.setState({
+        contractFile: makePdfFile('existing.pdf'),
+        contractFileName: 'existing.pdf',
+        contractFileType: 'pdf',
+        extractionResult: makeExtractionResult(),
+        path: 'contract',
+      })
+      renderWithIntl(<UploadContract />)
       expect(screen.getByText('existing.pdf')).toBeInTheDocument()
     })
 
-    it('initialFile does not re-trigger extraction', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract onExtracted={vi.fn()} initialFile={makePdfFile('existing.pdf')} />,
-      )
+    it('stored file with extraction result does NOT re-trigger extraction', async () => {
+      const { UploadContract, store } = await freshImport()
+      store.setState({
+        contractFile: makePdfFile('existing.pdf'),
+        contractFileName: 'existing.pdf',
+        contractFileType: 'pdf',
+        extractionResult: makeExtractionResult(),
+        path: 'contract',
+      })
+      renderWithIntl(<UploadContract />)
+      // Give effects a chance to flush.
+      await act(async () => {
+        await Promise.resolve()
+      })
       expect(mockExtractContractAction).not.toHaveBeenCalled()
     })
   })
@@ -136,8 +186,8 @@ describe('UploadContract', () => {
         success: true,
         data: makeExtractionResult(),
       })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile('c.pdf', 2048))
 
@@ -148,8 +198,8 @@ describe('UploadContract', () => {
     })
 
     it('selecting an unsupported file type shows unsupported_format without calling the action', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       const txt = new File(['content'], 'notes.txt', { type: 'text/plain' })
       await selectFile(txt)
@@ -165,8 +215,8 @@ describe('UploadContract', () => {
         success: true,
         data: makeExtractionResult(),
       })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       const docx = new File([new Uint8Array(1024)], 'c.docx', {
         type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -179,13 +229,16 @@ describe('UploadContract', () => {
       expect(fd.get('file')).toBeInstanceOf(File)
     })
 
-    it('renders ExtractionLoading while pending', async () => {
+    it('renders the extraction-loading skeleton while pending', async () => {
       let resolveAction: (r: ContractExtractionResponse) => void = () => {}
       mockExtractContractAction.mockImplementation(
-        () => new Promise<ContractExtractionResponse>((resolve) => { resolveAction = resolve }),
+        () =>
+          new Promise<ContractExtractionResponse>((resolve) => {
+            resolveAction = resolve
+          }),
       )
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -197,7 +250,7 @@ describe('UploadContract', () => {
       })
     })
 
-    it('fires contract_extraction_completed and calls onExtracted on success', async () => {
+    it('fires contract_extraction_completed and writes result + path=contract + step=2 to the store on success', async () => {
       const result = makeExtractionResult({
         address: {
           street: 'Ave',
@@ -213,25 +266,27 @@ describe('UploadContract', () => {
       })
       mockExtractContractAction.mockResolvedValue({ success: true, data: result })
 
-      const onExtracted = vi.fn()
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={onExtracted} />)
+      const { UploadContract, store } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
-      const file = makePdfFile('c.pdf')
-      await selectFile(file)
+      await selectFile(makePdfFile('c.pdf'))
 
-      await waitFor(() => expect(onExtracted).toHaveBeenCalledTimes(1))
-
-      expect(onExtracted).toHaveBeenCalledWith({
-        file,
-        fileName: 'c.pdf',
-        fileType: 'pdf',
-        extractionResult: result,
+      await waitFor(() => {
+        const s = store.getState()
+        expect(s.extractionResult).toEqual(result)
+        expect(s.path).toBe('contract')
+        expect(s.step).toBe(2)
       })
+
       expect(mockCapture).toHaveBeenCalledWith('contract_extraction_completed', {
         language: 'pt-br',
         fieldCount: expect.any(Number),
       })
+
+      const finalState = store.getState()
+      expect(finalState.contractFile).toBeInstanceOf(File)
+      expect(finalState.contractFileName).toBe('c.pdf')
+      expect(finalState.contractFileType).toBe('pdf')
     })
   })
 
@@ -251,7 +306,10 @@ describe('UploadContract', () => {
       'api_key_missing',
     ]
 
-    const expectations: Record<ContractExtractionErrorCode, { message: string; cta?: string }> = {
+    const expectations: Record<
+      ContractExtractionErrorCode,
+      { message: string; cta?: string }
+    > = {
       file_too_large: {
         message: 'Your contract is larger than 10 MB.',
         cta: 'Upload a smaller file',
@@ -297,8 +355,8 @@ describe('UploadContract', () => {
 
     it.each(codes)('renders i18n message and CTA for code %s', async (code) => {
       mockExtractContractAction.mockResolvedValue({ success: false, error: { code } })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -327,8 +385,8 @@ describe('UploadContract', () => {
         success: false,
         error: { code: 'unsupported_format' },
       })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -344,8 +402,8 @@ describe('UploadContract', () => {
         success: false,
         error: { code: 'extraction_failed' },
       })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -356,13 +414,13 @@ describe('UploadContract', () => {
       })
     })
 
-    it('unsupported_language CTA fires the no-contract path', async () => {
+    it('unsupported_language CTA fires the no-contract path (step=2, path=no_contract)', async () => {
       mockExtractContractAction.mockResolvedValue({
         success: false,
         error: { code: 'unsupported_language' },
       })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract, store } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -379,12 +437,9 @@ describe('UploadContract', () => {
       })
 
       expect(mockCapture).toHaveBeenCalledWith('no_contract_path_clicked')
-      const totalToasts =
-        mockToast.message.mock.calls.length +
-        mockToast.info.mock.calls.length +
-        mockToast.success.mock.calls.length +
-        mockToast.error.mock.calls.length
-      expect(totalToasts).toBeGreaterThan(0)
+      const s = store.getState()
+      expect(s.step).toBe(2)
+      expect(s.path).toBe('no_contract')
     })
 
     it('clicking the error CTA clears the error and restores the dropzone', async () => {
@@ -392,8 +447,8 @@ describe('UploadContract', () => {
         success: false,
         error: { code: 'corrupt_file' },
       })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -408,20 +463,16 @@ describe('UploadContract', () => {
   })
 
   describe('no-contract link', () => {
-    it('fires no_contract_path_clicked and shows toast without navigating', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+    it('fires no_contract_path_clicked and commits store (step=2, path=no_contract)', async () => {
+      const { UploadContract, store } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       fireEvent.click(screen.getByText('Set up without a contract'))
 
       expect(mockCapture).toHaveBeenCalledWith('no_contract_path_clicked')
-      // Some toast is shown
-      const totalToasts =
-        mockToast.message.mock.calls.length +
-        mockToast.info.mock.calls.length +
-        mockToast.success.mock.calls.length +
-        mockToast.error.mock.calls.length
-      expect(totalToasts).toBeGreaterThan(0)
+      const s = store.getState()
+      expect(s.step).toBe(2)
+      expect(s.path).toBe('no_contract')
     })
 
     it('remains visible when an extraction error is showing', async () => {
@@ -429,8 +480,8 @@ describe('UploadContract', () => {
         success: false,
         error: { code: 'corrupt_file' },
       })
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(<UploadContract onExtracted={vi.fn()} />)
+      const { UploadContract } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -440,23 +491,27 @@ describe('UploadContract', () => {
       expect(screen.getByText('Set up without a contract')).toBeInTheDocument()
     })
 
-    it('clears file + wizard state when clicked while a file is uploaded', async () => {
-      const onFileCleared = vi.fn()
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract
-          onExtracted={vi.fn()}
-          initialFile={makePdfFile('existing.pdf')}
-          onFileCleared={onFileCleared}
-        />,
-      )
+    it('clears store file and commits no_contract path when clicked while a file is uploaded', async () => {
+      const { UploadContract, store } = await freshImport()
+      store.setState({
+        contractFile: makePdfFile('existing.pdf'),
+        contractFileName: 'existing.pdf',
+        contractFileType: 'pdf',
+        extractionResult: makeExtractionResult(),
+        path: 'contract',
+      })
+      renderWithIntl(<UploadContract />)
 
       fireEvent.click(screen.getByText('Set up without a contract'))
 
-      expect(onFileCleared).toHaveBeenCalledTimes(1)
       expect(mockCapture).toHaveBeenCalledWith('no_contract_path_clicked')
       // Not a removal — the "no contract" intent supersedes the remove event
       expect(mockCapture).not.toHaveBeenCalledWith('contract_upload_removed')
+      const s = store.getState()
+      expect(s.step).toBe(2)
+      expect(s.path).toBe('no_contract')
+      expect(s.contractFile).toBeNull()
+      expect(s.extractionResult).toBeNull()
     })
 
     it('clears the error state when clicked while an error is showing', async () => {
@@ -464,11 +519,8 @@ describe('UploadContract', () => {
         success: false,
         error: { code: 'extraction_failed' },
       })
-      const onFileCleared = vi.fn()
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract onExtracted={vi.fn()} onFileCleared={onFileCleared} />,
-      )
+      const { UploadContract, store } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile())
 
@@ -478,105 +530,96 @@ describe('UploadContract', () => {
 
       fireEvent.click(screen.getByText('Set up without a contract'))
 
-      expect(onFileCleared).toHaveBeenCalled()
       expect(
         screen.queryByText('Something went wrong on our side.'),
       ).not.toBeInTheDocument()
+      const s = store.getState()
+      expect(s.step).toBe(2)
+      expect(s.path).toBe('no_contract')
     })
   })
 
   describe('remove flow', () => {
-    it('calls onFileCleared and fires contract_upload_removed when clearing an initial file', async () => {
-      const onFileCleared = vi.fn()
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract
-          onExtracted={vi.fn()}
-          initialFile={makePdfFile('existing.pdf')}
-          onFileCleared={onFileCleared}
-        />,
-      )
+    it('clears store file and fires contract_upload_removed when clearing the current file', async () => {
+      const { UploadContract, store } = await freshImport()
+      store.setState({
+        contractFile: makePdfFile('existing.pdf'),
+        contractFileName: 'existing.pdf',
+        contractFileType: 'pdf',
+        extractionResult: makeExtractionResult(),
+        path: 'contract',
+      })
+      renderWithIntl(<UploadContract />)
 
       const clearBtn = screen.getByTestId('file-clear-btn')
       fireEvent.click(clearBtn)
 
-      expect(onFileCleared).toHaveBeenCalledTimes(1)
       expect(mockCapture).toHaveBeenCalledWith('contract_upload_removed')
+      expect(store.getState().contractFile).toBeNull()
+      expect(store.getState().extractionResult).toBeNull()
     })
   })
 
-  describe('onFileSelected (pre-extraction persistence)', () => {
-    it('calls onFileSelected with file + type before extraction starts', async () => {
-      const onFileSelected = vi.fn().mockResolvedValue(undefined)
-      let extractionResolved = false
-      mockExtractContractAction.mockImplementation(async () => {
-        // ensure onFileSelected was called before extraction resolves
-        expect(onFileSelected).toHaveBeenCalled()
-        extractionResolved = true
-        return { success: true, data: makeExtractionResult() }
-      })
-
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract
-          onExtracted={vi.fn()}
-          onFileSelected={onFileSelected}
-        />,
+  describe('file selection writes to store before extraction resolves', () => {
+    it('sets store contractFileType before the extraction action resolves', async () => {
+      let resolveAction: (r: ContractExtractionResponse) => void = () => {}
+      mockExtractContractAction.mockImplementation(
+        () =>
+          new Promise<ContractExtractionResponse>((resolve) => {
+            resolveAction = resolve
+          }),
       )
+
+      const { UploadContract, store } = await freshImport()
+      renderWithIntl(<UploadContract />)
 
       await selectFile(makePdfFile('fresh.pdf'))
 
-      await waitFor(() => {
-        expect(onFileSelected).toHaveBeenCalledWith(
-          expect.any(File),
-          'pdf',
-        )
-      })
-      await waitFor(() => {
-        expect(extractionResolved).toBe(true)
+      // Store should already have the file type set before we resolve extraction.
+      expect(store.getState().contractFileType).toBe('pdf')
+
+      await act(async () => {
+        resolveAction({ success: true, data: makeExtractionResult() })
       })
     })
   })
 
-  describe('autoExtract (resume mid-upload)', () => {
-    it('runs extraction on mount when autoExtract + initialFile + initialFileType provided', async () => {
-      const onExtracted = vi.fn()
+  describe('auto-extract (resume mid-upload)', () => {
+    it('runs extraction on mount when the store has a file but no extraction result and no path', async () => {
       const result = makeExtractionResult()
       mockExtractContractAction.mockResolvedValue({ success: true, data: result })
 
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract
-          onExtracted={onExtracted}
-          initialFile={makePdfFile('resumed.pdf')}
-          initialFileType="pdf"
-          autoExtract
-        />,
-      )
+      const { UploadContract, store } = await freshImport()
+      store.setState({
+        contractFile: makePdfFile('resumed.pdf'),
+        contractFileName: 'resumed.pdf',
+        contractFileType: 'pdf',
+        extractionResult: null,
+        path: null,
+      })
+      renderWithIntl(<UploadContract />)
 
       await waitFor(() => {
         expect(mockExtractContractAction).toHaveBeenCalledTimes(1)
       })
       await waitFor(() => {
-        expect(onExtracted).toHaveBeenCalledWith(
-          expect.objectContaining({
-            fileName: 'resumed.pdf',
-            fileType: 'pdf',
-            extractionResult: result,
-          }),
-        )
+        const s = store.getState()
+        expect(s.extractionResult).toEqual(result)
+        expect(s.path).toBe('contract')
+        expect(s.step).toBe(2)
       })
     })
 
-    it('does NOT run extraction on mount when autoExtract is false', async () => {
-      const { UploadContract } = await import('../upload-contract')
-      renderWithIntl(
-        <UploadContract
-          onExtracted={vi.fn()}
-          initialFile={makePdfFile('idle.pdf')}
-          initialFileType="pdf"
-        />,
-      )
+    it('does NOT auto-extract on mount when the store already has an extraction result', async () => {
+      const { UploadContract, store } = await freshImport()
+      store.setState({
+        contractFile: makePdfFile('idle.pdf'),
+        contractFileName: 'idle.pdf',
+        contractFileType: 'pdf',
+        extractionResult: makeExtractionResult(),
+        path: 'contract',
+      })
+      renderWithIntl(<UploadContract />)
 
       // give effects a chance to flush
       await act(async () => {
