@@ -80,6 +80,7 @@ Wait for the user to confirm or correct before proceeding. If corrected, re-read
 1. **Files that will be modified** — understand current state, not assume it
 2. **Adjacent files** — imports, callers, tests that might be affected
 3. **Established patterns** — how does the codebase already do this kind of thing? Follow it.
+4. **Templates for new abstractions** — If the plan introduces a new component, hook, action, or other reusable abstraction, identify the closest existing equivalent in the codebase and follow its shape. Don't invent a new shape when an established one fits.
 
 Reference what you read in the plan. "The existing data layer pattern in `src/data/properties/` uses `shared.ts` + `server.ts` + `client.ts` — follow this for the new domain."
 
