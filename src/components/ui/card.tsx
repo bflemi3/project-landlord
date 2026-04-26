@@ -105,20 +105,14 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="card-content"
-      className={cn('px-5', className)}
-      {...props}
-    />
-  )
+  return <div data-slot="card-content" className={cn('px-5', className)} {...props} />
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-footer"
-      className={cn('flex items-center border-t border-border px-5 pt-4', className)}
+      className={cn('border-border flex items-center border-t px-5 pt-4', className)}
       {...props}
     />
   )
