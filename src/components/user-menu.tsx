@@ -41,7 +41,7 @@ export function UserMenuTrigger({ userName, avatarUrl }: UserMenuTriggerProps) {
         onClick={() => setOpen(true)}
         className="rounded-full transition-opacity hover:opacity-80"
       >
-        <Avatar size="default">
+        <Avatar size="lg">
           {avatarUrl && <AvatarImage src={avatarUrl} alt={userName ?? ''} />}
           <AvatarFallback>{getInitials(userName)}</AvatarFallback>
         </Avatar>
