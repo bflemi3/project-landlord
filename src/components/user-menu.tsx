@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import posthog from 'posthog-js'
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { createClient } from '@/lib/supabase/client'
+import { useHasHydrated } from '@/lib/hooks/use-has-hydrated'
 import { cn } from '@/lib/utils'
 import { type Locale, locales } from '@/i18n/routing'
 
@@ -361,9 +362,7 @@ function AppearanceSection() {
   const t = useTranslations('settings')
   const tTheme = useTranslations('theme')
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
+  const hydrated = useHasHydrated()
 
   function handleThemeChange(value: string) {
     setTheme(value)
@@ -372,7 +371,7 @@ function AppearanceSection() {
     }
   }
 
-  if (!mounted) return null
+  if (!hydrated) return null
 
   return (
     <div>
