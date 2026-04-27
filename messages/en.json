@@ -422,7 +422,18 @@
       },
       "cta": {
         "create": "Create property",
-        "remaining": "{count, plural, one {# section left} other {# sections left}}"
+        "remaining": "{count, plural, one {# section left} other {# sections left}}",
+        "hint": "Complete the required sections to create the property."
+      },
+      "actions": {
+        "back": "Back",
+        "continue": "Continue",
+        "skip": "Skip"
+      },
+      "status": {
+        "done": "Done",
+        "skipped": "Skipped",
+        "upNext": "Up next"
       }
     },
     "review": {

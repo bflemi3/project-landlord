@@ -1,11 +1,12 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { usePropertyCreationState } from '../../state/use-property-creation'
-import { getRemainingSectionCount } from '../../state/derivations'
 import { CHECKOUT_SECTIONS } from '../../state/registry'
+import { getRemainingSectionCount } from '../../state/derivations'
+import { usePropertyCreationState } from '../../state/use-property-creation'
 import { PropertySummaryRow } from './sections/property'
 import { RentDatesSummaryRow } from './sections/rent-dates'
 import { TenantsSummaryRow } from './sections/tenants'
@@ -55,6 +56,11 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
       <Button className="mt-6 w-full" disabled={remaining > 0}>
         {t('cta.create')}
       </Button>
+      {remaining > 0 && (
+        <p className="text-center text-xs text-muted-foreground -mt-3">
+          {t('cta.hint')}
+        </p>
+      )}
     </aside>
   )
 }

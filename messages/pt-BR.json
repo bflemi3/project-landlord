@@ -422,7 +422,18 @@
       },
       "cta": {
         "create": "Criar imóvel",
-        "remaining": "{count, plural, one {falta # seção} other {faltam # seções}}"
+        "remaining": "{count, plural, one {falta # seção} other {faltam # seções}}",
+        "hint": "Conclua as seções obrigatórias para criar o imóvel."
+      },
+      "actions": {
+        "back": "Voltar",
+        "continue": "Continuar",
+        "skip": "Pular"
+      },
+      "status": {
+        "done": "Concluído",
+        "skipped": "Pulado",
+        "upNext": "Próxima"
       }
     },
     "review": {

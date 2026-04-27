@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { StickyBottomBar } from '@/components/sticky-bottom-bar'
-import { cn } from '@/lib/utils'
 import { CHECKOUT_SECTIONS } from '../../state/registry'
 import { usePropertyCreationState } from '../../state/use-property-creation'
 import { getRemainingSectionCount } from '../../state/derivations'

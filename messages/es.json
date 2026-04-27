@@ -422,7 +422,18 @@
       },
       "cta": {
         "create": "Crear propiedad",
-        "remaining": "{count, plural, one {falta # sección} other {faltan # secciones}}"
+        "remaining": "{count, plural, one {falta # sección} other {faltan # secciones}}",
+        "hint": "Completa las secciones requeridas para crear la propiedad."
+      },
+      "actions": {
+        "back": "Atrás",
+        "continue": "Continuar",
+        "skip": "Omitir"
+      },
+      "status": {
+        "done": "Listo",
+        "skipped": "Omitido",
+        "upNext": "Sigue"
       }
     },
     "review": {

@@ -5,49 +5,24 @@ import {
   DetailPageLayoutMain,
   DetailPageLayoutSidebar,
 } from '@/components/detail-page-layout'
-import { Card } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { IconTile } from '@/components/icon-tile'
-import {
-  CHECKOUT_SECTIONS,
-  FIRST_SECTION_ID,
-  type CheckoutSection,
-} from '../../state/registry'
-
-function SectionSkeleton({
-  section,
-  active,
-}: {
-  section: CheckoutSection
-  active: boolean
-}) {
-  const Icon = section.icon
-  return (
-    <Card
-      size="md"
-      data-slot="checkout-section-skeleton"
-      data-section-id={section.id}
-      data-active={active ? 'true' : 'false'}
-      className="flex items-start gap-4"
-    >
-      <IconTile tone={active ? 'primary' : 'muted'} size="lg">
-        <Icon />
-      </IconTile>
-      <div className="min-w-0 flex-1 space-y-2 py-1">
-        <Skeleton className="h-4 w-40 rounded-full" />
-        <Skeleton className="h-3 w-56 rounded-full" />
-      </div>
-    </Card>
-  )
-}
+import { CHECKOUT_SECTIONS } from '../../state/registry'
+import { PropertySectionSkeleton } from '../checkout/sections/property'
+import { RentDatesSectionSkeleton } from '../checkout/sections/rent-dates'
+import { TenantsSectionSkeleton } from '../checkout/sections/tenants'
+import { ExpensesSectionSkeleton } from '../checkout/sections/expenses'
+import { CpfSectionSkeleton } from '../checkout/sections/cpf'
+import { BankSectionSkeleton } from '../checkout/sections/bank'
 
 /**
- * The full Step-2-matching skeleton: six stacked section skeletons in the main
- * column (first section rendered as active to match Step 2's initial
- * SectionShell tone), a summary-panel skeleton in the sidebar, and a mobile
- * bottom-bar skeleton. Rendered by Step 1 during extraction — layout parity
- * with Step 2 keeps the visual transition from skeleton to real content
- * seamless.
+ * Full Step-2-matching skeleton: each accordion section composes its own
+ * `*SectionSkeleton` so future per-section plans only need to update their
+ * own file when the real form layout changes — this layout picks the new
+ * skeleton up automatically. The first section renders in `active` tone to
+ * mirror Step 2's initial state.
+ *
+ * Rendered by Step 1 during contract extraction and by the route's hydration
+ * gate, so the visual transition into Step 2 is seamless.
  */
 export function StepOneSkeletonLayout() {
   return (
@@ -57,13 +32,12 @@ export function StepOneSkeletonLayout() {
     >
       <DetailPageLayoutMain>
         <div className="flex flex-col gap-4 md:gap-6">
-          {CHECKOUT_SECTIONS.map((s) => (
-            <SectionSkeleton
-              key={s.id}
-              section={s}
-              active={s.id === FIRST_SECTION_ID}
-            />
-          ))}
+          <PropertySectionSkeleton active />
+          <RentDatesSectionSkeleton />
+          <TenantsSectionSkeleton />
+          <ExpensesSectionSkeleton />
+          <CpfSectionSkeleton />
+          <BankSectionSkeleton />
         </div>
       </DetailPageLayoutMain>
 

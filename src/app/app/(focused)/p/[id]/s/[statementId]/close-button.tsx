@@ -7,7 +7,7 @@ export function CloseButton({ propertyId }: { propertyId: string }) {
     <Link
       href={`/app/p/${propertyId}`}
       prefetch
-      className={buttonVariants({ variant: 'ghost', size: 'icon' })}
+      className={buttonVariants({ variant: 'secondary', size: 'icon' })}
     >
       <X />
     </Link>

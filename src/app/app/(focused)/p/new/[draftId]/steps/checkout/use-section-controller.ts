@@ -1,0 +1,99 @@
+'use client'
+
+import posthog from 'posthog-js'
+
+import type { SectionId } from '../../state/registry'
+import {
+  useIsSectionActive,
+  useIsSectionRequired,
+  useIsSectionUpNext,
+  usePropertyCreationActions,
+  usePropertyCreationState,
+  useSectionStatus,
+} from '../../state/use-property-creation'
+import { useCheckoutContext } from './checkout-context'
+import type { SectionStatus } from './section'
+
+interface UseSectionControllerOptions {
+  /** True for the first section in checkout order — hides the Back action. */
+  isFirst?: boolean
+}
+
+export interface SectionController {
+  status: SectionStatus
+  isActive: boolean
+  isUpNext: boolean
+  isRequired: boolean
+  isFirst: boolean
+  handleContinue: () => void
+  handleSkip: () => void
+  handleBack: (() => void) | undefined
+}
+
+/**
+ * Centralizes the per-section concerns that every accordion section needs:
+ * status / active / up-next / required selectors, header ref registration,
+ * and Continue / Skip / Back handlers (with their PostHog events). Each
+ * per-section file becomes a thin wrapper over this hook + JSX.
+ *
+ * Section-specific completion / skip events fire from inside the handlers
+ * here. The shell still owns mount-once `property_checkout_entered` and the
+ * tap-driven `property_checkout_section_reopened` event.
+ */
+export function useSectionController(
+  id: SectionId,
+  { isFirst = false }: UseSectionControllerOptions = {},
+): SectionController {
+  // Context — only the scroll trigger; ref registration is intentionally NOT
+  // pulled here. Including the ref callback in the returned bag taints every
+  // property access on the bag under React Hooks `react-hooks/refs`. Sections
+  // call `useCheckoutContext()` themselves for the header ref callback.
+  const { requestTransitionScroll } = useCheckoutContext()
+
+  // Store reads (subscribed selectors).
+  const status = useSectionStatus(id)
+  const isActive = useIsSectionActive(id)
+  const isUpNext = useIsSectionUpNext(id)
+  const isRequired = useIsSectionRequired(id)
+  const path = usePropertyCreationState((s) => s.path)
+  const { completeCurrentSection, skipCurrentSection, goToPreviousSection } =
+    usePropertyCreationActions()
+
+  function handleContinue() {
+    capture('property_checkout_section_completed', { section_id: id, path })
+    requestTransitionScroll()
+    completeCurrentSection()
+  }
+
+  function handleSkip() {
+    capture('property_checkout_section_skipped', { section_id: id, path })
+    requestTransitionScroll()
+    skipCurrentSection()
+  }
+
+  function handleBack() {
+    requestTransitionScroll()
+    goToPreviousSection()
+  }
+
+  return {
+    status,
+    isActive,
+    isUpNext,
+    isRequired,
+    isFirst,
+    handleContinue,
+    handleSkip,
+    handleBack: isFirst ? undefined : handleBack,
+  }
+}
+
+// posthog.capture throws when posthog isn't initialized (e.g. tests). Swallow
+// in one place so each section file isn't repeating try/catch noise.
+function capture(event: string, properties: Record<string, unknown>) {
+  try {
+    posthog.capture(event, properties)
+  } catch {
+    // posthog unavailable — capture is best-effort.
+  }
+}

@@ -84,6 +84,21 @@ html, body {
   100% { background-position: 0% 50%; }
 }
 
+/* tw-animate-css ships `accordion-down` / `accordion-up` keyframes that read
+ * `--radix-accordion-content-height` / `--bits-...` / `--reka-...` etc. base-ui
+ * sets `--accordion-panel-height` instead, which isn't in that fallback chain
+ * — the keyframes resolved to `auto` and the height transition was effectively
+ * inert. Redefining them last means our rules win and the panel actually
+ * animates open/close. */
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--accordion-panel-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--accordion-panel-height); }
+  to { height: 0; }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

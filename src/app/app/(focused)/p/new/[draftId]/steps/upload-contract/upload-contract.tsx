@@ -106,6 +106,7 @@ export function UploadContract() {
         extractionResult: response.data,
         path: 'contract',
       })
+      posthog.capture('property_checkout_entered', { path: 'contract' })
       actions.goToStep(2)
       return
     }
@@ -180,6 +181,7 @@ export function UploadContract() {
       extractionResult: null,
       path: 'no_contract',
     })
+    posthog.capture('property_checkout_entered', { path: 'no_contract' })
     actions.goToStep(2)
   }
 

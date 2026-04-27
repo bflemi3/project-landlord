@@ -214,15 +214,28 @@ function SectionSubtitle({ className, ...props }: React.ComponentProps<'p'>) {
 }
 
 // =============================================================================
-// Section.Status — derives its content from section context.
-//   active            → nothing (the expanded body speaks for itself)
-//   completed         → "Done" badge with check icon (icon-only on mobile)
-//   skipped           → "Skipped" badge
-//   upcoming + isUpNext → muted "Up next" text
-//   upcoming + locked → nothing (header shows the section is not yet reachable)
+// Section.Status — derives its content from section context. Consumers pass
+// translated label strings so the primitive stays locale-agnostic.
+//   active              → nothing (the expanded body speaks for itself)
+//   completed           → success-subtle Badge with check icon (icon-only on mobile)
+//   skipped             → secondary Badge with skipped label
+//   upcoming + isUpNext → muted up-next text
+//   upcoming + locked   → nothing (header shows the section is not reachable)
 // =============================================================================
 
-function SectionStatus({ className }: { className?: string }) {
+interface SectionStatusProps {
+  className?: string
+  doneLabel: string
+  skippedLabel: string
+  upNextLabel: string
+}
+
+function SectionStatus({
+  className,
+  doneLabel,
+  skippedLabel,
+  upNextLabel,
+}: SectionStatusProps) {
   const { isActive, isUpNext, status } = useSection('Status')
 
   if (isActive) return null
@@ -232,11 +245,11 @@ function SectionStatus({ className }: { className?: string }) {
       <Badge
         data-slot="section-status"
         variant="success-subtle"
-        aria-label="Done"
+        aria-label={doneLabel}
         className={className}
       >
         <Check />
-        <span className="hidden md:inline">Done</span>
+        <span className="hidden md:inline">{doneLabel}</span>
       </Badge>
     )
   }
@@ -244,7 +257,7 @@ function SectionStatus({ className }: { className?: string }) {
   if (status === 'skipped') {
     return (
       <Badge data-slot="section-status" variant="secondary" className={className}>
-        Skipped
+        {skippedLabel}
       </Badge>
     )
   }
@@ -255,7 +268,7 @@ function SectionStatus({ className }: { className?: string }) {
         data-slot="section-status"
         className={cn('text-muted-foreground text-sm font-medium', className)}
       >
-        Up next
+        {upNextLabel}
       </span>
     )
   }
@@ -346,7 +359,7 @@ function SectionActions({
       )}
     >
       {onBack ? (
-        <Button variant="ghost" onClick={onBack}>
+        <Button size="sm" variant="ghost" onClick={onBack}>
           <ChevronLeft />
           {backLabel}
         </Button>
@@ -355,11 +368,11 @@ function SectionActions({
       )}
       <div className="flex items-center gap-2">
         {showSkip && onSkip && (
-          <Button variant="ghost" onClick={onSkip}>
+          <Button size="sm" variant="ghost" onClick={onSkip}>
             {skipLabel}
           </Button>
         )}
-        <Button onClick={onContinue}>
+        <Button size="sm" onClick={onContinue}>
           {continueLabel}
           <ChevronRight />
         </Button>
