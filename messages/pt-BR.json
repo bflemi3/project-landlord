@@ -161,6 +161,14 @@
     "propertyName": "Nome do imóvel",
     "propertyNamePlaceholder": "ex: Edifício Aurora",
     "propertyNameHint": "Opcional — usaremos o endereço se deixado em branco.",
+    "propertyType": "Tipo de imóvel",
+    "propertyTypeSelectPrompt": "Escolha…",
+    "propertyTypeOptions": {
+      "apartment": "Apartamento",
+      "house": "Casa",
+      "commercial": "Comercial",
+      "other": "Outro"
+    },
     "street": "Rua",
     "streetPlaceholder": "ex: Rua Augusta",
     "number": "Número",

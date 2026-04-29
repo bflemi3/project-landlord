@@ -1,56 +1,66 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { act, renderHook } from '@testing-library/react'
-import type { WizardState } from '@/lib/wizard-state'
-import type { PropertyCreationData } from '../persistence'
+import { act, renderHook, waitFor } from '@testing-library/react'
+import type { ReactNode } from 'react'
+import type { PersistedPropertyCreationState } from '../store'
 
-// --- Mocks: idb-keyval / wizard-state I/O -----------------------------------
+// --- Mocks: idb-keyval -------------------------------------------------------
+// Each test gets a fresh in-memory store. The persist middleware writes via
+// structured clone, so values flow through unchanged.
 
-const mockLoadWizardState = vi.fn<
-  (key: string, options?: { expectedVersion?: number }) => Promise<
-    WizardState<PropertyCreationData> | null
-  >
->()
-const mockSaveWizardState = vi.fn<
-  (key: string, state: WizardState<PropertyCreationData>) => Promise<void>
->()
-const mockClearWizardState = vi.fn<(key: string) => Promise<void>>()
+const idbStore = new Map<string, unknown>()
 
-vi.mock('@/lib/wizard-state', async () => {
-  const actual = await vi.importActual<typeof import('@/lib/wizard-state')>(
-    '@/lib/wizard-state',
-  )
-  return {
-    ...actual,
-    loadWizardState: (
-      ...args: Parameters<typeof mockLoadWizardState>
-    ) => mockLoadWizardState(...args),
-    saveWizardState: (
-      ...args: Parameters<typeof mockSaveWizardState>
-    ) => mockSaveWizardState(...args),
-    clearWizardState: (
-      ...args: Parameters<typeof mockClearWizardState>
-    ) => mockClearWizardState(...args),
-  }
-})
+vi.mock('idb-keyval', () => ({
+  get: vi.fn((key: string) => Promise.resolve(idbStore.get(key))),
+  set: vi.fn((key: string, value: unknown) => {
+    idbStore.set(key, value)
+    return Promise.resolve()
+  }),
+  del: vi.fn((key: string) => {
+    idbStore.delete(key)
+    return Promise.resolve()
+  }),
+}))
+
+// Imports must come after the vi.mock() call.
+import {
+  PropertyCreationStoreProvider,
+  usePropertyCreationActions,
+  usePropertyCreationState,
+  usePropertyCreationHasHydrated,
+} from '../store-provider'
+import { propertyCreationWizardKey } from '../persistence'
+import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 // --- Helpers ----------------------------------------------------------------
 
-async function freshImport() {
-  vi.resetModules()
-  const mod = await import('../use-property-creation')
-  const storeMod = await import('../store')
-  // Clean the module-level singleton so each test gets a pristine store.
-  storeMod.__resetPropertyCreationStoreForTests()
-  return mod
+function makeWrapper(draftId: string) {
+  return function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <PropertyCreationStoreProvider draftId={draftId}>
+        {children}
+      </PropertyCreationStoreProvider>
+    )
+  }
+}
+
+/**
+ * Seeds the IDB-backed store as if the user had previously persisted state
+ * under v3. Mirrors the envelope the persist middleware writes —
+ * `{ state: <PersistedPropertyCreationState>, version: 3 }`.
+ */
+function seedPersistedState(
+  draftId: string,
+  state: Partial<PersistedPropertyCreationState>,
+) {
+  const key = propertyCreationWizardKey(draftId)
+  idbStore.set(key, {
+    state,
+    version: 3,
+  })
 }
 
 beforeEach(() => {
-  mockLoadWizardState.mockReset()
-  mockSaveWizardState.mockReset()
-  mockClearWizardState.mockReset()
-  mockLoadWizardState.mockResolvedValue(null)
-  mockSaveWizardState.mockResolvedValue(undefined)
-  mockClearWizardState.mockResolvedValue(undefined)
+  idbStore.clear()
   vi.useRealTimers()
 })
 
@@ -61,168 +71,225 @@ afterEach(() => {
 // --- Tests ------------------------------------------------------------------
 
 describe('usePropertyCreationState — hydration', () => {
-  it('(a) triggers a single loadWizardState call on first render', async () => {
-    const mod = await freshImport()
-    const { hydrate, usePropertyCreationState } = mod
-
-    await act(async () => {
-      await hydrate('test-wizard-key-a')
-    })
-
-    renderHook(() => usePropertyCreationState((s) => s.hydrating))
-
-    expect(mockLoadWizardState).toHaveBeenCalledTimes(1)
-    expect(mockLoadWizardState).toHaveBeenCalledWith(
-      'test-wizard-key-a',
-      expect.objectContaining({ expectedVersion: 2 }),
+  it('starts with default state and flips hasHydrated to true after first idle', async () => {
+    const wrapper = makeWrapper('draft-fresh')
+    const { result } = renderHook(
+      () => ({
+        step: usePropertyCreationState((s) => s.step),
+        hasHydrated: usePropertyCreationHasHydrated(),
+      }),
+      { wrapper },
     )
 
-    // Re-calling hydrate with the same key is a no-op (idempotent)
-    await act(async () => {
-      await hydrate('test-wizard-key-a')
+    // Defaults are visible synchronously — the store is constructed eagerly.
+    expect(result.current.step).toBe(1)
+
+    // Hydration runs on the IDB microtask. Wait for it.
+    await waitFor(() => {
+      expect(result.current.hasHydrated).toBe(true)
     })
-    expect(mockLoadWizardState).toHaveBeenCalledTimes(1)
   })
 
-  it('(b) reflects loaded data in the store after hydration', async () => {
-    const saved: WizardState<PropertyCreationData> = {
-      version: 2,
-      currentStep: 2,
-      updatedAt: '2026-04-23T00:00:00Z',
-      data: {
-        contractFile: null,
-        contractFileName: null,
-        contractFileType: null,
-        extractionResult: null,
-        path: 'no_contract',
-        sectionStates: {
-          property: 'completed',
-          'rent-dates': 'upcoming',
-          tenants: 'upcoming',
-          expenses: 'upcoming',
-          cpf: 'upcoming',
-          bank: 'upcoming',
-        },
-        activeSectionId: 'rent-dates',
-        sectionData: {},
+  it('reflects loaded data in the store after hydration', async () => {
+    const draftId = 'draft-loaded'
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: null,
+      path: 'no_contract',
+      sectionStates: {
+        property: 'completed',
+        'rent-dates': 'upcoming',
+        tenants: 'upcoming',
+        expenses: 'upcoming',
+        cpf: 'upcoming',
+        bank: 'upcoming',
       },
-    }
-    mockLoadWizardState.mockResolvedValueOnce(saved)
-
-    const { hydrate, usePropertyCreationState } = await freshImport()
-
-    await act(async () => {
-      await hydrate('test-wizard-key-b')
+      activeSectionId: 'rent-dates',
+      sectionData: {},
     })
 
-    const { result } = renderHook(() => ({
-      step: usePropertyCreationState((s) => s.step),
-      path: usePropertyCreationState((s) => s.path),
-      sectionStates: usePropertyCreationState((s) => s.sectionStates),
-      activeSectionId: usePropertyCreationState((s) => s.activeSectionId),
-      hydrating: usePropertyCreationState((s) => s.hydrating),
-    }))
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        step: usePropertyCreationState((s) => s.step),
+        path: usePropertyCreationState((s) => s.path),
+        property: usePropertyCreationState((s) => s.sectionStates.property),
+        activeSectionId: usePropertyCreationState((s) => s.activeSectionId),
+        hasHydrated: usePropertyCreationHasHydrated(),
+      }),
+      { wrapper },
+    )
 
-    expect(result.current.hydrating).toBe(false)
+    await waitFor(() => {
+      expect(result.current.hasHydrated).toBe(true)
+    })
+
     expect(result.current.step).toBe(2)
     expect(result.current.path).toBe('no_contract')
-    expect(result.current.sectionStates.property).toBe('completed')
+    expect(result.current.property).toBe('completed')
     expect(result.current.activeSectionId).toBe('rent-dates')
   })
 
-  it('resume-extraction post-processing forces step=1 when contractFile set but extractionResult null and path null', async () => {
+  it('resume-mid-extraction merge forces step=1 when contractFile set but extractionResult null and path null', async () => {
+    const draftId = 'draft-resume'
     const blob = new Blob([new Uint8Array(8)], { type: 'application/pdf' })
-    const saved: WizardState<PropertyCreationData> = {
-      version: 2,
-      currentStep: 2,
-      updatedAt: '2026-04-23T00:00:00Z',
-      data: {
-        contractFile: blob,
-        contractFileName: 'x.pdf',
-        contractFileType: 'pdf',
-        extractionResult: null,
-        path: null,
-        sectionStates: {
-          property: 'upcoming',
-          'rent-dates': 'upcoming',
-          tenants: 'upcoming',
-          expenses: 'upcoming',
-          cpf: 'upcoming',
-          bank: 'upcoming',
-        },
-        activeSectionId: 'property',
-        sectionData: {},
+    seedPersistedState(draftId, {
+      step: 2,
+      // Persisted as Blob (structured clone preserves it). The merge
+      // reconstructs a `File` from blob + filename.
+      contractFile: blob as unknown as File,
+      contractFileName: 'x.pdf',
+      contractFileType: 'pdf',
+      extractionResult: null,
+      path: null,
+      sectionStates: {
+        property: 'upcoming',
+        'rent-dates': 'upcoming',
+        tenants: 'upcoming',
+        expenses: 'upcoming',
+        cpf: 'upcoming',
+        bank: 'upcoming',
       },
-    }
-    mockLoadWizardState.mockResolvedValueOnce(saved)
-
-    const { hydrate, usePropertyCreationState } = await freshImport()
-
-    await act(async () => {
-      await hydrate('test-wizard-key-resume')
+      activeSectionId: 'property',
+      sectionData: {},
     })
 
-    const { result } = renderHook(() => usePropertyCreationState((s) => s.step))
-    expect(result.current).toBe(1)
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        step: usePropertyCreationState((s) => s.step),
+        contractFile: usePropertyCreationState((s) => s.contractFile),
+        hasHydrated: usePropertyCreationHasHydrated(),
+      }),
+      { wrapper },
+    )
+
+    await waitFor(() => {
+      expect(result.current.hasHydrated).toBe(true)
+    })
+
+    expect(result.current.step).toBe(1)
+    // File is reconstructed from the persisted Blob.
+    expect(result.current.contractFile).toBeInstanceOf(File)
+    expect(result.current.contractFile?.name).toBe('x.pdf')
+  })
+
+  it('backfills the property slice when path=contract and extractionResult is present but slice is missing', async () => {
+    const draftId = 'draft-backfill'
+    const extraction: ContractExtractionResult = {
+      isRentalContract: true,
+      propertyType: 'apartment',
+      address: {
+        street: 'Rua A',
+        number: '123',
+        complement: null,
+        neighborhood: 'Centro',
+        city: 'São Paulo',
+        state: 'SP',
+        postalCode: '01000-000',
+        country: 'BR',
+      },
+      rent: null,
+      contractDates: null,
+      rentAdjustment: null,
+      landlords: null,
+      tenants: null,
+      expenses: null,
+      languageDetected: 'pt-br',
+      rawExtractedText: '',
+    }
+
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: extraction,
+      path: 'contract',
+      sectionStates: {
+        property: 'upcoming',
+        'rent-dates': 'upcoming',
+        tenants: 'upcoming',
+        expenses: 'upcoming',
+        cpf: 'upcoming',
+        bank: 'upcoming',
+      },
+      activeSectionId: 'property',
+      // No `property` slice — this is what backfill is for.
+      sectionData: {},
+    })
+
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        property: usePropertyCreationState(
+          (s) => s.sectionData.property as { street?: string } | undefined,
+        ),
+        hasHydrated: usePropertyCreationHasHydrated(),
+      }),
+      { wrapper },
+    )
+
+    await waitFor(() => {
+      expect(result.current.hasHydrated).toBe(true)
+    })
+
+    expect(result.current.property?.street).toBe('Rua A')
   })
 })
 
 describe('usePropertyCreationActions + state machine invariants', () => {
-  it('(c) completeCurrentSection flips status AND advances activeSectionId in one update', async () => {
-    const { hydrate, usePropertyCreationState, usePropertyCreationActions } =
-      await freshImport()
-
-    await act(async () => {
-      await hydrate('test-wizard-key-c')
-    })
+  it('completeCurrentSection flips status AND advances activeSectionId in one update', async () => {
+    const wrapper = makeWrapper('draft-complete')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        activeId: usePropertyCreationState((s) => s.activeSectionId),
+        property: usePropertyCreationState((s) => s.sectionStates.property),
+      }),
+      { wrapper },
+    )
 
     // Seed a path so the state machine can reason about required sections.
-    const { result: actionsRef } = renderHook(() => usePropertyCreationActions())
     act(() => {
-      actionsRef.current.commitContractOutput({
+      result.current.actions.commitContractOutput({
         extractionResult: null,
         path: 'no_contract',
       })
     })
 
-    let renderCount = 0
-    const { result: stateRef } = renderHook(() => {
-      renderCount++
-      return {
-        activeId: usePropertyCreationState((s) => s.activeSectionId),
-        property: usePropertyCreationState((s) => s.sectionStates.property),
-      }
-    })
-
-    const baselineRenders = renderCount
-    expect(stateRef.current.activeId).toBe('property')
-    expect(stateRef.current.property).toBe('upcoming')
+    expect(result.current.activeId).toBe('property')
+    expect(result.current.property).toBe('upcoming')
 
     act(() => {
-      actionsRef.current.completeCurrentSection()
+      result.current.actions.completeCurrentSection()
     })
 
     // Status of the just-completed section is now completed, and the active
     // id has advanced to the next upcoming section — in a single update.
-    expect(stateRef.current.property).toBe('completed')
-    expect(stateRef.current.activeId).toBe('rent-dates')
-
-    // The composite action fires exactly one re-render (Zustand batches
-    // set() calls inside one action).
-    expect(renderCount - baselineRenders).toBe(1)
+    expect(result.current.property).toBe('completed')
+    expect(result.current.activeId).toBe('rent-dates')
   })
 
-  it('(d) openSection preserves status of previously-active and newly-active sections', async () => {
-    const { hydrate, usePropertyCreationState, usePropertyCreationActions } =
-      await freshImport()
+  it('openSection preserves status of previously-active and newly-active sections', async () => {
+    const wrapper = makeWrapper('draft-open')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        activeId: usePropertyCreationState((s) => s.activeSectionId),
+        property: usePropertyCreationState((s) => s.sectionStates.property),
+        rentDates: usePropertyCreationState(
+          (s) => s.sectionStates['rent-dates'],
+        ),
+      }),
+      { wrapper },
+    )
 
-    await act(async () => {
-      await hydrate('test-wizard-key-d')
-    })
-
-    const { result: actionsRef } = renderHook(() => usePropertyCreationActions())
     act(() => {
-      actionsRef.current.commitContractOutput({
+      result.current.actions.commitContractOutput({
         extractionResult: null,
         path: 'no_contract',
       })
@@ -230,150 +297,126 @@ describe('usePropertyCreationActions + state machine invariants', () => {
 
     // Complete `property` → active becomes `rent-dates`.
     act(() => {
-      actionsRef.current.completeCurrentSection()
+      result.current.actions.completeCurrentSection()
     })
 
     // Now tap the header of `property` again — re-opens it without changing
     // its completed status.
     act(() => {
-      actionsRef.current.openSection('property')
+      result.current.actions.openSection('property')
     })
 
-    const { result: stateRef } = renderHook(() => ({
-      activeId: usePropertyCreationState((s) => s.activeSectionId),
-      property: usePropertyCreationState((s) => s.sectionStates.property),
-      rentDates: usePropertyCreationState((s) => s.sectionStates['rent-dates']),
-    }))
-
-    expect(stateRef.current.activeId).toBe('property')
-    // previously-active section's status is preserved
-    expect(stateRef.current.property).toBe('completed')
-    // newly-active section's status is preserved (still upcoming)
-    expect(stateRef.current.rentDates).toBe('upcoming')
+    expect(result.current.activeId).toBe('property')
+    expect(result.current.property).toBe('completed')
+    expect(result.current.rentDates).toBe('upcoming')
   })
 
-  it('(e) skipCurrentSection no-ops when the section is required for the current path', async () => {
-    const { hydrate, usePropertyCreationActions, usePropertyCreationState } =
-      await freshImport()
+  it('skipCurrentSection no-ops when the section is required for the current path', async () => {
+    const wrapper = makeWrapper('draft-skip-required')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        activeId: usePropertyCreationState((s) => s.activeSectionId),
+        property: usePropertyCreationState((s) => s.sectionStates.property),
+      }),
+      { wrapper },
+    )
 
-    await act(async () => {
-      await hydrate('test-wizard-key-e')
-    })
-
-    const { result: actionsRef } = renderHook(() => usePropertyCreationActions())
     act(() => {
-      actionsRef.current.commitContractOutput({
+      result.current.actions.commitContractOutput({
         extractionResult: null,
         path: 'no_contract',
       })
     })
 
-    const { result: stateRef } = renderHook(() => ({
-      activeId: usePropertyCreationState((s) => s.activeSectionId),
-      property: usePropertyCreationState((s) => s.sectionStates.property),
-    }))
-
-    // `property` is required in both paths — skip must no-op.
     act(() => {
-      actionsRef.current.skipCurrentSection()
+      result.current.actions.skipCurrentSection()
     })
 
-    expect(stateRef.current.activeId).toBe('property')
-    expect(stateRef.current.property).toBe('upcoming')
+    expect(result.current.activeId).toBe('property')
+    expect(result.current.property).toBe('upcoming')
   })
 
   it('skipCurrentSection advances past an optional section on the no_contract path', async () => {
-    const { hydrate, usePropertyCreationActions, usePropertyCreationState } =
-      await freshImport()
-    await act(async () => {
-      await hydrate('test-wizard-key-e2')
-    })
+    const wrapper = makeWrapper('draft-skip-optional')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        activeId: usePropertyCreationState((s) => s.activeSectionId),
+        tenants: usePropertyCreationState((s) => s.sectionStates.tenants),
+      }),
+      { wrapper },
+    )
 
-    const { result: actionsRef } = renderHook(() => usePropertyCreationActions())
     act(() => {
-      actionsRef.current.commitContractOutput({
+      result.current.actions.commitContractOutput({
         extractionResult: null,
         path: 'no_contract',
       })
     })
 
-    // Walk to an optional section: complete property + rent-dates (both
-    // required in no_contract only for property, let's verify by jumping
-    // active pointer to tenants which is optional).
+    // Walk forward to `tenants`.
     act(() => {
-      actionsRef.current.completeCurrentSection() // property -> rent-dates
+      result.current.actions.completeCurrentSection() // property → rent-dates
     })
     act(() => {
-      actionsRef.current.completeCurrentSection() // rent-dates -> tenants
+      result.current.actions.completeCurrentSection() // rent-dates → tenants
     })
 
-    // tenants is optional — skip should work.
     act(() => {
-      actionsRef.current.skipCurrentSection()
+      result.current.actions.skipCurrentSection()
     })
 
-    const { result: stateRef } = renderHook(() => ({
-      activeId: usePropertyCreationState((s) => s.activeSectionId),
-      tenants: usePropertyCreationState((s) => s.sectionStates.tenants),
-    }))
-
-    expect(stateRef.current.tenants).toBe('skipped')
-    expect(stateRef.current.activeId).toBe('expenses')
+    expect(result.current.tenants).toBe('skipped')
+    expect(result.current.activeId).toBe('expenses')
   })
 })
 
-describe('persistence subscriber', () => {
-  it('(f) calls saveWizardState with the expected shape after the debounce window', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
+describe('persist middleware — writes', () => {
+  it('writes the persisted slice through idb-keyval after a state change', async () => {
+    const idb = await import('idb-keyval')
+    const setSpy = vi.mocked(idb.set)
+    setSpy.mockClear()
 
-    const { hydrate, usePropertyCreationActions } = await freshImport()
-
-    await act(async () => {
-      await hydrate('test-wizard-key-f')
-    })
-
-    // Ignore any save triggered by hydration bookkeeping.
-    mockSaveWizardState.mockClear()
-
-    const { result: actionsRef } = renderHook(() => usePropertyCreationActions())
-    act(() => {
-      actionsRef.current.goToStep(2)
-    })
-
-    // Before the debounce fires, nothing is persisted.
-    expect(mockSaveWizardState).not.toHaveBeenCalled()
-
-    await act(async () => {
-      vi.advanceTimersByTime(500)
-      // Let microtasks flush
-      await Promise.resolve()
-    })
-
-    expect(mockSaveWizardState).toHaveBeenCalledTimes(1)
-    const [key, record] = mockSaveWizardState.mock.calls[0]!
-    expect(key).toBe('test-wizard-key-f')
-    expect(record.version).toBe(2)
-    expect(record.currentStep).toBe(2)
-    expect(record.data).toEqual(
-      expect.objectContaining({
-        path: null,
-        activeSectionId: 'property',
+    const wrapper = makeWrapper('draft-write')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        hasHydrated: usePropertyCreationHasHydrated(),
       }),
+      { wrapper },
     )
-    // Transient hydration flag is NOT persisted.
-    expect(record.data).not.toHaveProperty('hydrating')
+
+    await waitFor(() => {
+      expect(result.current.hasHydrated).toBe(true)
+    })
+
+    act(() => {
+      result.current.actions.goToStep(2)
+    })
+
+    // Wait for the persist write to flush.
+    await waitFor(() => {
+      const lastCall = setSpy.mock.calls.at(-1)
+      expect(lastCall?.[0]).toBe(propertyCreationWizardKey('draft-write'))
+    })
+
+    const lastCall = setSpy.mock.calls.at(-1)!
+    const [, value] = lastCall as [string, { state: PersistedPropertyCreationState; version: number }]
+    expect(value.version).toBe(3)
+    expect(value.state.step).toBe(2)
+    // `actions` is excluded by partialize.
+    expect(value.state).not.toHaveProperty('actions')
   })
 })
 
 describe('usePropertyCreationActions stability', () => {
-  it('returns the same action-bag reference across re-renders (stable ref, no re-renders on read)', async () => {
-    const { hydrate, usePropertyCreationActions } = await freshImport()
-
-    await act(async () => {
-      await hydrate('test-wizard-key-stable')
-    })
-
-    const { result, rerender } = renderHook(() => usePropertyCreationActions())
+  it('returns the same action-bag reference across re-renders', async () => {
+    const wrapper = makeWrapper('draft-stable')
+    const { result, rerender } = renderHook(
+      () => usePropertyCreationActions(),
+      { wrapper },
+    )
 
     const first = result.current
     rerender()
@@ -381,10 +424,12 @@ describe('usePropertyCreationActions stability', () => {
 
     expect(first).toBe(second)
   })
-})
 
-// Hydration is now kicked off at the route root via `use(hydrate(wizardKey))`
-// in page.tsx, not from inside any hook. The store-level hydration contract
-// (idempotency, resume-extraction post-processing, data reflection) is
-// covered by the tests above — there's no component-scoped kick-off to
-// exercise here anymore.
+  it('throws a clear error when used outside the Provider', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    expect(() =>
+      renderHook(() => usePropertyCreationActions()),
+    ).toThrow(/PropertyCreationStoreProvider/)
+    spy.mockRestore()
+  })
+})

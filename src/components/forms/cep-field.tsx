@@ -12,10 +12,29 @@ const addressProvider = getAddressProvider('BR')
 
 interface CepFieldProps {
   onAddressFound: (result: AddressLookupResult) => void
+  /**
+   * Uncontrolled initial value. Used when the parent doesn't pass a
+   * `value` / `onValueChange` pair. Mutually exclusive with controlled mode.
+   */
   defaultValue?: string
+  /**
+   * Controlled value. When BOTH `value` and `onValueChange` are supplied, the
+   * field renders as a controlled `<Input>` and `defaultValue` is ignored.
+   */
+  value?: string
+  /**
+   * Receives the formatted CEP string (`'01310-100'`) on every change. Wired
+   * by `formatPostalCode` so callers don't need to format themselves.
+   */
+  onValueChange?: (formatted: string) => void
 }
 
-export const CepField = memo(function CepField({ onAddressFound, defaultValue }: CepFieldProps) {
+export const CepField = memo(function CepField({
+  onAddressFound,
+  defaultValue,
+  value,
+  onValueChange,
+}: CepFieldProps) {
   // 1. Refs
   const abortControllerRef = useRef<AbortController | null>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
@@ -28,6 +47,9 @@ export const CepField = memo(function CepField({ onAddressFound, defaultValue }:
   const [found, setFound] = useState(false)
   const [notFound, setNotFound] = useState(false)
 
+  // 5. Derived — controlled mode active when both props are provided.
+  const isControlled = value !== undefined && onValueChange !== undefined
+
   // 7. Effects — cleanup on unmount
   useEffect(() => {
     return () => {
@@ -39,7 +61,16 @@ export const CepField = memo(function CepField({ onAddressFound, defaultValue }:
   // 8. Callbacks
   const handleChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, '')
-    e.target.value = addressProvider.formatPostalCode(raw)
+    const formatted = addressProvider.formatPostalCode(raw)
+
+    if (isControlled) {
+      onValueChange?.(formatted)
+    } else {
+      // Uncontrolled — preserve original behavior of mutating the input value
+      // so the visible value stays formatted without forcing the parent to
+      // re-render.
+      e.target.value = formatted
+    }
 
     setFound(false)
     setNotFound(false)
@@ -80,7 +111,7 @@ export const CepField = memo(function CepField({ onAddressFound, defaultValue }:
     } else {
       setLooking(false)
     }
-  }, [onAddressFound])
+  }, [isControlled, onValueChange, onAddressFound])
 
   // 10. Return
   return (
@@ -92,7 +123,9 @@ export const CepField = memo(function CepField({ onAddressFound, defaultValue }:
         type="text"
         inputMode="numeric"
         placeholder={t('postalCodePlaceholder')}
-        defaultValue={defaultValue}
+        {...(isControlled
+          ? { value: value as string }
+          : { defaultValue })}
         onChange={handleChange}
         maxLength={9}
       />

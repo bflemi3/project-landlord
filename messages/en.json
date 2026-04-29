@@ -161,6 +161,14 @@
     "propertyName": "Property name",
     "propertyNamePlaceholder": "e.g. Edifício Aurora",
     "propertyNameHint": "Optional — we'll use the address if left blank.",
+    "propertyType": "Property type",
+    "propertyTypeSelectPrompt": "Choose…",
+    "propertyTypeOptions": {
+      "apartment": "Apartment",
+      "house": "House",
+      "commercial": "Commercial",
+      "other": "Other"
+    },
     "street": "Street",
     "streetPlaceholder": "e.g. Rua Augusta",
     "number": "Number",

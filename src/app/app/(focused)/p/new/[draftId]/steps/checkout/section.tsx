@@ -314,7 +314,7 @@ function SectionBody({ children, className }: { children: React.ReactNode; class
       data-slot="section-body"
       className="data-open:animate-accordion-down data-closed:animate-accordion-up overflow-hidden"
     >
-      <div className={cn('flex flex-col gap-4 pt-4', className)}>{children}</div>
+      <div className={cn('flex flex-col gap-4 pt-6', className)}>{children}</div>
     </AccordionPrimitive.Panel>
   )
 }

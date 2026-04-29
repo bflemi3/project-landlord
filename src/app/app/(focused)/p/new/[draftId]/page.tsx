@@ -1,6 +1,5 @@
-import { Suspense } from 'react'
+import { PropertyCreationStoreProvider } from './state/store-provider'
 import { PropertyCreationWizard } from './wizard'
-import { WizardHydrationFallback } from './wizard-hydration-fallback'
 
 export default async function NewPropertyDraftPage({
   params,
@@ -9,8 +8,8 @@ export default async function NewPropertyDraftPage({
 }) {
   const { draftId } = await params
   return (
-    <Suspense fallback={<WizardHydrationFallback />}>
+    <PropertyCreationStoreProvider draftId={draftId} key={draftId}>
       <PropertyCreationWizard draftId={draftId} />
-    </Suspense>
+    </PropertyCreationStoreProvider>
   )
 }

@@ -2,7 +2,6 @@
 
 import {
   startTransition,
-  use,
   useCallback,
   useEffect,
   useMemo,
@@ -17,25 +16,26 @@ import { PropertyCreationTopBar } from './top-bar'
 import { PropertyCheckoutShell } from './steps/checkout/checkout-shell'
 import { UploadContract } from './steps/upload-contract/upload-contract'
 import {
-  hydrate,
   usePropertyCreationActions,
+  usePropertyCreationHasHydrated,
   usePropertyCreationState,
-  clearPropertyCreation,
 } from './state/use-property-creation'
 import { hasWizardWork } from './state/derivations'
+import { WizardHydrationFallback } from './wizard-hydration-fallback'
 
 const TOTAL_STEPS = 2
 const EXIT_HREF = '/app'
 
 /**
  * Thin parent shell. All wizard data lives in the Zustand store, which is
- * hydrated via `use(hydrate(wizardKey))` — the enclosing `<Suspense>` boundary
- * in page.tsx shows the hydration fallback until the promise resolves. By the
- * time this component renders, the store is already seeded, so no `hydrating`
- * branches are needed here.
+ * hydrated by the persist middleware on store creation. While the persist
+ * middleware loads from IndexedDB, `usePropertyCreationHasHydrated` returns
+ * `false` and we render the Step-1 hydration fallback inline. Once hydration
+ * finishes, the component re-renders and selects the rendered subtree by
+ * `step`.
  *
  * This component:
- *   1. Suspends on hydration via React 19 `use()`
+ *   1. Gates render on hydration via `usePropertyCreationHasHydrated()`
  *   2. Reads `step` to choose the rendered subtree
  *   3. Owns local React state for the exit prompt (route-level UI concern;
  *      not persisted)
@@ -46,13 +46,13 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
   const t = useTranslations('propertyCreation')
   const wizardKey = useMemo(() => propertyCreationWizardKey(draftId), [draftId])
 
-  use(hydrate(wizardKey))
+  const hasHydrated = usePropertyCreationHasHydrated()
 
   const [exitPromptOpen, setExitPromptOpen] = useState(false)
 
   const step = usePropertyCreationState((s) => s.step)
   const hasWork = usePropertyCreationState(hasWizardWork)
-  const { goToStep } = usePropertyCreationActions()
+  const { goToStep, clearPersisted } = usePropertyCreationActions()
 
   useEffect(() => {
     router.prefetch(EXIT_HREF)
@@ -81,14 +81,14 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
     // RSC is ready (avoiding a PageLoader flash from (main)/loading.tsx on
     // a stale prefetch).
     if (!hasWork) {
-      clearPropertyCreation()
+      clearPersisted()
       startTransition(() => {
         router.push(EXIT_HREF)
       })
       return
     }
     setExitPromptOpen(true)
-  }, [hasWork, router])
+  }, [hasWork, router, clearPersisted])
 
   const handleSaveForLater = useCallback(() => {
     posthog.capture('property_creation_wizard_exited', {
@@ -102,8 +102,12 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
       step,
       reason: 'discard',
     })
-    clearPropertyCreation()
-  }, [step])
+    clearPersisted()
+  }, [step, clearPersisted])
+
+  if (!hasHydrated) {
+    return <WizardHydrationFallback />
+  }
 
   return (
     <>
