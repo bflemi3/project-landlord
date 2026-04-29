@@ -19,7 +19,7 @@ import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
 
 import type { SectionId } from '../../../state/registry'
-import type { PropertySectionInitialValues } from '../../../state/extraction-seeding'
+import type { PropertySectionValues } from '../../../state/extraction-seeding'
 import {
   usePropertyCreationActions,
   usePropertyCreationState,
@@ -45,7 +45,7 @@ export function PropertySection() {
   const ctrl = useSectionController(SECTION_ID, { isFirst: true })
 
   const values = usePropertyCreationState(
-    (s) => s.sectionData.property as PropertySectionInitialValues,
+    (s) => s.sectionData.property as PropertySectionValues,
   )
   const { setSectionData } = usePropertyCreationActions()
 
@@ -68,8 +68,8 @@ export function PropertySection() {
   // benefit from memoization.
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
-      setSectionData<PropertySectionInitialValues>('property', (prev) => ({
-        ...(prev as PropertySectionInitialValues),
+      setSectionData<PropertySectionValues>('property', (prev) => ({
+        ...(prev as PropertySectionValues),
         postal_code: formatted,
       }))
     },
@@ -78,8 +78,8 @@ export function PropertySection() {
 
   const handleAddressFound = useCallback(
     (result: AddressLookupResult) => {
-      setSectionData<PropertySectionInitialValues>('property', (prev) => {
-        const base = prev as PropertySectionInitialValues
+      setSectionData<PropertySectionValues>('property', (prev) => {
+        const base = prev as PropertySectionValues
         return {
           ...base,
           street: result.street ?? base.street,
@@ -95,12 +95,12 @@ export function PropertySection() {
   // Per-field setter. Recreated each render — fine, since it's only consumed
   // by non-memoized children (Input / Select). Memoized children use the
   // stable callbacks above.
-  function setField<K extends keyof PropertySectionInitialValues>(
+  function setField<K extends keyof PropertySectionValues>(
     key: K,
-    next: PropertySectionInitialValues[K],
+    next: PropertySectionValues[K],
   ) {
-    setSectionData<PropertySectionInitialValues>('property', (prev) => ({
-      ...(prev as PropertySectionInitialValues),
+    setSectionData<PropertySectionValues>('property', (prev) => ({
+      ...(prev as PropertySectionValues),
       [key]: next,
     }))
   }
@@ -139,7 +139,7 @@ export function PropertySection() {
               onValueChange={(val) =>
                 setField(
                   'property_type',
-                  (val || null) as PropertySectionInitialValues['property_type'],
+                  (val || null) as PropertySectionValues['property_type'],
                 )
               }
             >

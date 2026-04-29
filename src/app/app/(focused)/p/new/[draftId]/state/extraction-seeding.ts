@@ -1,45 +1,20 @@
-import type {
-  ContractExtractionResult,
-  PropertyType,
-} from '@/lib/contract-extraction/types'
+import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
+import {
+  defaultPropertySectionValues,
+  type PropertySectionValues,
+} from '@/data/properties/property-section-schema'
 import type { SectionId } from './registry'
 
 /**
- * Initial value shape for the property section's slice of `sectionData`.
- *
- * Translation of `ContractExtractionResult` into this shape happens in the
- * store (in `commitContractOutput` and in `hydrate`'s backfill) — section
- * components never read `extractionResult` directly. They subscribe to
- * `sectionData.property` and render whatever the store has put there.
- *
- * This is a Task-1 local interface; Task 2 introduces the canonical
- * Zod-inferred replacement under `src/data/properties/property-section-schema.ts`.
+ * Re-export the canonical property-slice type + defaults so other state
+ * modules (the store, the section component) can import them from here
+ * without reaching into `@/data/properties/property-section-schema` directly.
+ * Single source of truth for the shape lives in the schema file.
  */
-export interface PropertySectionInitialValues {
-  name: string
-  postal_code: string
-  street: string
-  number: string
-  complement: string
-  neighborhood: string
-  city: string
-  state: string
-  country_code: string
-  property_type: PropertyType | null
-}
-
-export const defaultPropertySectionValues: PropertySectionInitialValues = {
-  name: '',
-  postal_code: '',
-  street: '',
-  number: '',
-  complement: '',
-  neighborhood: '',
-  city: '',
-  state: '',
-  country_code: 'BR',
-  property_type: null,
-}
+export {
+  defaultPropertySectionValues,
+  type PropertySectionValues,
+} from '@/data/properties/property-section-schema'
 
 export type SectionData = Partial<Record<SectionId, unknown>>
 
@@ -54,7 +29,7 @@ export type SectionData = Partial<Record<SectionId, unknown>>
  */
 export function defaultSectionData(): SectionData {
   return {
-    property: defaultPropertySectionValues,
+    property: defaultPropertySectionValues(),
   }
 }
 
@@ -74,7 +49,7 @@ export function mergeExtractionIntoSectionData(
   extraction: ContractExtractionResult,
 ): SectionData {
   const a = extraction.address
-  const property: PropertySectionInitialValues = {
+  const property: PropertySectionValues = {
     name: '',
     postal_code: a?.postalCode ?? '',
     street: a?.street ?? '',

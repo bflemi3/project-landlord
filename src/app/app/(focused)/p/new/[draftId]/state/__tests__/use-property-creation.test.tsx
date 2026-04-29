@@ -28,7 +28,9 @@ import {
   usePropertyCreationState,
   usePropertyCreationHasHydrated,
 } from '../store-provider'
+import { useIsExtracted } from '../use-property-creation'
 import { propertyCreationWizardKey } from '../persistence'
+import { defaultPropertySectionValues } from '@/data/properties/property-section-schema'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 // --- Helpers ----------------------------------------------------------------
@@ -431,5 +433,298 @@ describe('usePropertyCreationActions stability', () => {
       renderHook(() => usePropertyCreationActions()),
     ).toThrow(/PropertyCreationStoreProvider/)
     spy.mockRestore()
+  })
+})
+
+describe('useIsExtracted', () => {
+  function withExtractedAddress(draftId: string) {
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: {
+        isRentalContract: true,
+        propertyType: 'apartment',
+        address: {
+          street: 'Rua Augusta',
+          number: '123',
+          complement: 'Apto 4B',
+          neighborhood: 'Consolação',
+          city: 'São Paulo',
+          state: 'SP',
+          postalCode: '01310-100',
+          country: 'BR',
+        },
+        rent: null,
+        contractDates: null,
+        rentAdjustment: null,
+        landlords: null,
+        tenants: null,
+        expenses: null,
+        languageDetected: 'pt-br',
+        rawExtractedText: '',
+      } satisfies ContractExtractionResult,
+      path: 'contract',
+      // Eager-init `defaultSectionData()` populates `property` to defaults; the
+      // merge function then folds extraction values in. Mirror the post-merge
+      // shape directly so the slice values match what `useIsExtracted` reads.
+      sectionData: {
+        property: {
+          ...defaultPropertySectionValues(),
+          postal_code: '01310-100',
+          street: 'Rua Augusta',
+          number: '123',
+          complement: 'Apto 4B',
+          neighborhood: 'Consolação',
+          city: 'São Paulo',
+          state: 'SP',
+          property_type: 'apartment',
+        },
+      },
+    })
+  }
+
+  it.each([
+    'street',
+    'number',
+    'complement',
+    'neighborhood',
+    'city',
+    'state',
+  ] as const)(
+    'maps property.%s correctly to its extraction.address counterpart',
+    async (field) => {
+      const draftId = `extracted-${field}`
+      withExtractedAddress(draftId)
+      const wrapper = makeWrapper(draftId)
+      const { result } = renderHook(
+        () => ({
+          hasHydrated: usePropertyCreationHasHydrated(),
+          extracted: useIsExtracted(`property.${field}`),
+        }),
+        { wrapper },
+      )
+      await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+      expect(result.current.extracted).toBe(true)
+    },
+  )
+
+  it('returns true for property_type when slice matches extraction', async () => {
+    const draftId = 'extracted-prop-type'
+    withExtractedAddress(draftId)
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        hasHydrated: usePropertyCreationHasHydrated(),
+        propertyType: useIsExtracted('property.property_type'),
+      }),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+    expect(result.current.propertyType).toBe(true)
+  })
+
+  it('maps postalCode → postal_code via the mapping table', async () => {
+    const draftId = 'extracted-postal'
+    withExtractedAddress(draftId)
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        hasHydrated: usePropertyCreationHasHydrated(),
+        postal: useIsExtracted('property.postal_code'),
+      }),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+    expect(result.current.postal).toBe(true)
+  })
+
+  it('returns false when the slice value diverges from extraction', async () => {
+    const draftId = 'extracted-divergent'
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: {
+        isRentalContract: true,
+        propertyType: 'apartment',
+        address: {
+          street: 'Rua Augusta',
+          number: null,
+          complement: null,
+          neighborhood: null,
+          city: null,
+          state: null,
+          postalCode: null,
+          country: null,
+        },
+        rent: null,
+        contractDates: null,
+        rentAdjustment: null,
+        landlords: null,
+        tenants: null,
+        expenses: null,
+        languageDetected: 'pt-br',
+        rawExtractedText: '',
+      } satisfies ContractExtractionResult,
+      path: 'contract',
+      sectionData: {
+        property: {
+          ...defaultPropertySectionValues(),
+          street: 'Avenida Paulista', // user edited from extracted "Rua Augusta"
+          property_type: 'apartment',
+        },
+      },
+    })
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        hasHydrated: usePropertyCreationHasHydrated(),
+        street: useIsExtracted('property.street'),
+      }),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+    expect(result.current.street).toBe(false)
+  })
+
+  it('returns false when extraction has no value for the field', async () => {
+    const draftId = 'extracted-null'
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: null,
+      path: 'no_contract',
+      sectionData: {
+        property: {
+          ...defaultPropertySectionValues(),
+          street: 'Avenida Paulista',
+        },
+      },
+    })
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        hasHydrated: usePropertyCreationHasHydrated(),
+        street: useIsExtracted('property.street'),
+      }),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+    expect(result.current.street).toBe(false)
+  })
+
+  it('returns false when the slice value is empty (even if extraction is also empty)', async () => {
+    const draftId = 'extracted-both-empty'
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: {
+        isRentalContract: true,
+        propertyType: null,
+        address: {
+          street: '',
+          number: null,
+          complement: null,
+          neighborhood: null,
+          city: null,
+          state: null,
+          postalCode: null,
+          country: null,
+        },
+        rent: null,
+        contractDates: null,
+        rentAdjustment: null,
+        landlords: null,
+        tenants: null,
+        expenses: null,
+        languageDetected: 'pt-br',
+        rawExtractedText: '',
+      } satisfies ContractExtractionResult,
+      path: 'contract',
+      sectionData: { property: defaultPropertySectionValues() },
+    })
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        hasHydrated: usePropertyCreationHasHydrated(),
+        street: useIsExtracted('property.street'),
+      }),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+    expect(result.current.street).toBe(false)
+  })
+
+  it('returns false for paths with no extraction source even when slice is non-empty', async () => {
+    const draftId = 'extracted-no-source'
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: null,
+      path: 'no_contract',
+      sectionData: {
+        property: {
+          ...defaultPropertySectionValues(),
+          name: 'Edifício Aurora', // user-entered, no extraction source for name
+          country_code: 'BR', // never sourced from extraction
+        },
+      },
+    })
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        hasHydrated: usePropertyCreationHasHydrated(),
+        name: useIsExtracted('property.name'),
+        country: useIsExtracted('property.country_code'),
+      }),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+    expect(result.current.name).toBe(false)
+    expect(result.current.country).toBe(false)
+  })
+
+  it('returns false when the slice value is null (property_type unset, even if extraction is also null)', async () => {
+    const draftId = 'extracted-prop-type-null'
+    seedPersistedState(draftId, {
+      step: 2,
+      contractFile: null,
+      contractFileName: null,
+      contractFileType: null,
+      extractionResult: {
+        isRentalContract: true,
+        propertyType: null,
+        address: null,
+        rent: null,
+        contractDates: null,
+        rentAdjustment: null,
+        landlords: null,
+        tenants: null,
+        expenses: null,
+        languageDetected: 'pt-br',
+        rawExtractedText: '',
+      } satisfies ContractExtractionResult,
+      path: 'contract',
+      sectionData: { property: defaultPropertySectionValues() },
+    })
+    const wrapper = makeWrapper(draftId)
+    const { result } = renderHook(
+      () => ({
+        hasHydrated: usePropertyCreationHasHydrated(),
+        propertyType: useIsExtracted('property.property_type'),
+      }),
+      { wrapper },
+    )
+    await waitFor(() => expect(result.current.hasHydrated).toBe(true))
+    expect(result.current.propertyType).toBe(false)
   })
 })

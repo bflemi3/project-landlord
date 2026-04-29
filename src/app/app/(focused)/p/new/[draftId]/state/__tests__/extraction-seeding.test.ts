@@ -31,9 +31,9 @@ function makeExtraction(
 }
 
 describe('defaultSectionData', () => {
-  it('returns the property slice initialized to defaultPropertySectionValues', () => {
+  it('returns the property slice initialized to defaultPropertySectionValues()', () => {
     const data = defaultSectionData()
-    expect(data.property).toEqual(defaultPropertySectionValues)
+    expect(data.property).toEqual(defaultPropertySectionValues())
   })
 })
 
@@ -187,7 +187,7 @@ describe('mergeExtractionIntoSectionData', () => {
     // Ensures the merge function doesn't overwrite non-property slices when
     // future sections add their own seeded values.
     const prev: SectionData = {
-      property: defaultPropertySectionValues,
+      property: defaultPropertySectionValues(),
       // Stand-in for future sections — typed as `unknown`.
       'rent-dates': { foo: 'bar' } as unknown,
     }
@@ -209,11 +209,11 @@ describe('mergeExtractionIntoSectionData', () => {
     expect(result['rent-dates']).toEqual({ foo: 'bar' })
   })
 
-  it('exports a defaultPropertySectionValues shape compatible with PropertySectionInitialValues', () => {
+  it('re-exports defaultPropertySectionValues() with the canonical blank shape', () => {
     // Ensures the default shape stays in lock-step with the seeded shape's
     // fields and types — the store's `defaultState()` initializes every
-    // section's slice to its blank shape via this constant.
-    expect(defaultPropertySectionValues).toEqual({
+    // section's slice to its blank shape via this function.
+    expect(defaultPropertySectionValues()).toEqual({
       name: '',
       postal_code: '',
       street: '',
