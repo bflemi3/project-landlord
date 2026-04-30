@@ -2,36 +2,38 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { validateProperty, parsePropertyFormData } from './validate-property'
+import { z } from 'zod'
+
+import { propertyInfoFormDataSchema } from '@/data/properties/schema'
+import { validateProperty, type ValidatePropertyState } from './validate-property'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 
 export interface CreatePropertyState {
   success: boolean
   propertyId?: string
   unitId?: string
-  errors?: {
-    name?: string
-    postal_code?: string
-    street?: string
-    number?: string
-    complement?: string
-    neighborhood?: string
-    city?: string
-    state?: string
-    general?: string
-  }
+  errors?: ValidatePropertyState['errors']
 }
 
 export async function createProperty(
   _prevState: CreatePropertyState,
   formData: FormData,
 ): Promise<CreatePropertyState> {
-  const fields = await parsePropertyFormData(formData)
-  const validation = await validateProperty(fields)
+  const parsed = propertyInfoFormDataSchema.safeParse(formData)
+  if (!parsed.success) {
+    return {
+      success: false,
+      errors: z.flattenError(parsed.error).fieldErrors as ValidatePropertyState['errors'],
+    }
+  }
+
+  const validation = await validateProperty(parsed.data)
 
   if (!validation.valid) {
     return { success: false, errors: validation.errors }
   }
+
+  const fields = validation.fields ?? parsed.data
 
   const supabase = await createClient()
 
@@ -59,7 +61,7 @@ export async function createProperty(
   })
 
   if (error) {
-    return { success: false, errors: { general: 'createFailed' } }
+    return { success: false, errors: { general: ['createFailed'] } }
   }
 
   const result = data as { property_id: string; unit_id: string }

@@ -1,3 +1,6 @@
+import type { z } from 'zod'
+import type { PropertyInput } from '@/data/properties/schema'
+
 export interface AddressLookupResult {
   street: string | null
   neighborhood: string | null
@@ -5,28 +8,16 @@ export interface AddressLookupResult {
   state: string | null
 }
 
-export interface AddressFields {
-  postal_code?: string
-  street?: string
-  number?: string
-  complement?: string
-  neighborhood?: string
-  city?: string
-  state?: string
-}
-
-export type AddressValidationError =
-  | 'required'
-  | 'tooLong'
-  | 'invalidPostalCode'
-  | 'invalidCity'
-  | 'invalidState'
+export type AddressFields = Partial<Pick<PropertyInput,
+  'postal_code' | 'street' | 'number' | 'complement' | 'neighborhood' | 'city' | 'state'
+>>
 
 export type AddressValidationErrors = {
-  [K in keyof AddressFields]?: AddressValidationError
+  [K in keyof AddressFields]?: readonly string[]
 }
 
 export interface AddressProvider {
+  addressSchema: z.ZodObject<z.ZodRawShape>
   lookupPostalCode(code: string): Promise<AddressLookupResult | null>
   formatPostalCode(raw: string): string
   validateAddress(fields: AddressFields): AddressValidationErrors | null

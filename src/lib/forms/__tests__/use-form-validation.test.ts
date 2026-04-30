@@ -163,6 +163,36 @@ describe('useFormValidation', () => {
       expect(result.current.hasError('name')).toBeFalsy()
       expect(result.current.errors.name).toBeUndefined()
     })
+
+    it('keeps hasError consistent with errors during value changes', () => {
+      const { result, rerender } = renderForm()
+      act(() => result.current.markTouched('name'))
+
+      rerender({ values: { ...EMPTY, name: 'Ada' } })
+
+      expect(result.current.hasError('name')).toBe(false)
+      expect(result.current.errors.name).toBeUndefined()
+    })
+
+    it('keeps CEP-style field errors consistent while typing', () => {
+      const cepSchema = z.object({
+        postal_code: z.string().regex(/^\d{5}-\d{3}$/, { error: 'invalidPostalCode' }),
+      })
+      const cepValidator = zodValidator(cepSchema)
+      const { result, rerender } = renderHook(
+        ({ values }) => useFormValidation({ values, validator: cepValidator }),
+        { initialProps: { values: { postal_code: '123' } } },
+      )
+
+      act(() => result.current.markTouched('postal_code'))
+      expect(result.current.hasError('postal_code')).toBe(true)
+      expect(result.current.errors.postal_code).toEqual(['invalidPostalCode'])
+
+      rerender({ values: { postal_code: '01310-100' } })
+
+      expect(result.current.hasError('postal_code')).toBe(false)
+      expect(result.current.errors.postal_code).toBeUndefined()
+    })
   })
 
   // -------------------------------------------------------------------------

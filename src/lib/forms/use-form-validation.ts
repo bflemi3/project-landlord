@@ -70,11 +70,12 @@ export function useFormValidation<TInput, TOutput>(
   const allErrorsRef = useRef(allErrors)
   const parseResultRef = useRef(parseResult)
   
-  useEffect(() => {
-    touchedRef.current = touched
-    allErrorsRef.current = allErrors
-    parseResultRef.current = parseResult
-  })
+  // eslint-disable-next-line react-hooks/refs
+  touchedRef.current = touched
+  // eslint-disable-next-line react-hooks/refs
+  allErrorsRef.current = allErrors
+  // eslint-disable-next-line react-hooks/refs
+  parseResultRef.current = parseResult
 
   
 

@@ -272,6 +272,7 @@
     "invalidPostalCode": "Insira um CEP válido de 8 dígitos.",
     "invalidCity": "O nome da cidade não pode conter números.",
     "invalidState": "Selecione um estado válido.",
+    "invalidPropertyType": "Selecione um tipo de imóvel válido.",
     "duplicateAddress": "Você já tem um imóvel neste endereço.",
     "viewExistingProperty": "Ver imóvel existente",
     "createFailed": "Algo deu errado. Tente novamente.",

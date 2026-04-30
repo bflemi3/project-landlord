@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { formatAddress, formatAddressHtml } from '../format-address'
+import type { PropertyInput } from '@/data/properties/schema'
 
 describe('formatAddress', () => {
   // ===========================================================================
@@ -8,7 +9,8 @@ describe('formatAddress', () => {
 
   describe('BR format', () => {
     it('formats full address', () => {
-      expect(formatAddress({
+      const propertyInput: PropertyInput = {
+        name: '',
         street: 'Rua Augusta',
         number: '123',
         complement: 'Apto 4B',
@@ -16,7 +18,11 @@ describe('formatAddress', () => {
         city: 'São Paulo',
         state: 'SP',
         country_code: 'BR',
-      })).toBe('Rua Augusta, 123, Apto 4B, Consolação, São Paulo, SP')
+        postal_code: '01310-100',
+        property_type: null,
+      }
+
+      expect(formatAddress(propertyInput)).toBe('Rua Augusta, 123, Apto 4B, Consolação, São Paulo, SP')
     })
 
     it('formats without complement', () => {

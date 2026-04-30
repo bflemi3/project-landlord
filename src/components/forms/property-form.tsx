@@ -12,21 +12,12 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { cn } from '@/lib/utils'
 import { getAddressProvider } from '@/lib/address/provider'
 import { validateProperty, type ValidatePropertyState } from '@/data/properties/actions/validate-property'
+import type { PropertyInput } from '@/data/properties/schema'
 import { CepField } from './cep-field'
 
 const addressProvider = getAddressProvider('BR')
 
-export interface PropertyFormValues {
-  name: string
-  postal_code: string
-  street: string
-  number: string
-  complement: string
-  neighborhood: string
-  city: string
-  state: string
-  country_code: string
-}
+export type PropertyFormValues = PropertyInput
 
 // =============================================================================
 // Context — shares form state between parts
@@ -34,7 +25,7 @@ export interface PropertyFormValues {
 
 interface PropertyFormContext {
   initialValues?: PropertyFormValues
-  errors: Record<string, string>
+  errors: Record<string, readonly string[]>
   street: string
   setStreet: (v: string) => void
   neighborhood: string
@@ -89,7 +80,7 @@ export function PropertyForm({ onValidated, initialValues, initialErrors, exclud
   const [neighborhood, setNeighborhood] = useState(initialValues?.neighborhood ?? '')
   const [city, setCity] = useState(initialValues?.city ?? '')
   const [addressState, setAddressState] = useState(initialValues?.state ?? '')
-  const [errors, setErrors] = useState<Record<string, string>>(initialErrors ?? {})
+  const [errors, setErrors] = useState<Record<string, readonly string[]>>(initialErrors ?? {})
 
   useEffect(() => {
     return () => clearTimeout(checkTimerRef.current)
@@ -135,6 +126,7 @@ export function PropertyForm({ onValidated, initialValues, initialErrors, exclud
       city: val('city'),
       state: addressState,
       country_code: 'BR',
+      property_type: null,
     }
 
     startChecking(async () => {
@@ -196,8 +188,8 @@ function PropertyFormName({ className, ...props }: React.ComponentProps<'div'>) 
         autoFocus
       />
       <p className="mt-1.5 text-xs text-muted-foreground">{t('propertyNameHint')}</p>
-      {errors.name && (
-        <p className="mt-1.5 text-sm text-destructive">{t(errors.name)}</p>
+      {errors.name?.[0] && (
+        <p className="mt-1.5 text-sm text-destructive">{t(errors.name[0])}</p>
       )}
     </div>
   )
@@ -221,8 +213,8 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
           onAddressFound={handleAddressFound}
           defaultValue={initialValues?.postal_code}
         />
-        {errors.postal_code && (
-          <p className="-mt-3 text-sm text-destructive">{t(errors.postal_code)}</p>
+        {errors.postal_code?.[0] && (
+          <p className="-mt-3 text-sm text-destructive">{t(errors.postal_code[0])}</p>
         )}
       </fieldset>
 
@@ -245,8 +237,8 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
                 value={street}
                 onChange={(e) => setStreet(e.target.value)}
               />
-              {errors.street && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.street)}</p>
+              {errors.street?.[0] && (
+                <p className="mt-1.5 text-sm text-destructive">{t(errors.street[0])}</p>
               )}
             </div>
             <div>
@@ -258,8 +250,8 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
                 placeholder={t('numberPlaceholder')}
                 defaultValue={initialValues?.number}
               />
-              {errors.number && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.number)}</p>
+              {errors.number?.[0] && (
+                <p className="mt-1.5 text-sm text-destructive">{t(errors.number[0])}</p>
               )}
             </div>
           </div>
@@ -298,8 +290,8 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
               />
-              {errors.city && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.city)}</p>
+              {errors.city?.[0] && (
+                <p className="mt-1.5 text-sm text-destructive">{t(errors.city[0])}</p>
               )}
             </div>
             <div>
@@ -314,15 +306,15 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
                   ))}
                 </SelectContent>
               </Select>
-              {errors.state && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.state)}</p>
+              {errors.state?.[0] && (
+                <p className="mt-1.5 text-sm text-destructive">{t(errors.state[0])}</p>
               )}
             </div>
           </div>
         </div>
 
-        {errors.general && errors.general !== 'duplicateAddress' && (
-          <p className="mt-4 text-sm text-destructive">{t(errors.general)}</p>
+        {errors.general?.[0] && errors.general[0] !== 'duplicateAddress' && (
+          <p className="mt-4 text-sm text-destructive">{t(errors.general[0])}</p>
         )}
       </fieldset>
     </div>

@@ -65,6 +65,7 @@ export function PropertyInfoActions({ propertyId, property }: { propertyId: stri
             city: property.city ?? '',
             state: property.state ?? '',
             country_code: property.country_code,
+            property_type: property.property_type ?? null,
           }}
         >
           <PropertyForm.Name className="mb-4" />

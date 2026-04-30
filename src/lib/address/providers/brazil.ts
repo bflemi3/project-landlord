@@ -1,10 +1,6 @@
-import type { AddressProvider, AddressLookupResult, AddressFields, AddressValidationErrors, AddressValidationError } from '../types'
-
-const VALID_STATE_CODES = new Set([
-  'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS',
-  'MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC',
-  'SP','SE','TO',
-])
+import { z } from 'zod'
+import type { AddressProvider, AddressLookupResult, AddressFields, AddressValidationErrors } from '../types'
+import { propertyAddressShapeSchema } from '@/data/properties/schema'
 
 const BRAZILIAN_STATES = [
   { code: 'AC', name: 'Acre' },
@@ -38,7 +34,40 @@ const BRAZILIAN_STATES = [
 
 const cache = new Map<string, AddressLookupResult | null>()
 
+export const BRAZILIAN_POSTAL_CODE_RE = /^(?:\d{5}-\d{3}|\d{8})$/
+export const BRAZILIAN_STATE_CODES = new Set([
+  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
+  'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC',
+  'SP', 'SE', 'TO',
+])
+
+export const addressSchema = propertyAddressShapeSchema.extend({
+  postal_code: propertyAddressShapeSchema.shape.postal_code.superRefine((value, ctx) => {
+    if (value.length === 0) {
+      return
+    }
+    if (!BRAZILIAN_POSTAL_CODE_RE.test(value)) {
+      ctx.addIssue({ code: 'custom', message: 'invalidPostalCode' })
+    }
+  }),
+  city: propertyAddressShapeSchema.shape.city.superRefine((value, ctx) => {
+    if (value.length === 0 || value.length > 100) {
+      return
+    }
+    if (/\d/.test(value)) {
+      ctx.addIssue({ code: 'custom', message: 'invalidCity' })
+    }
+  }),
+  state: propertyAddressShapeSchema.shape.state.superRefine((value, ctx) => {
+    if (value.length === 0 || value.length > 100) return
+    if (!BRAZILIAN_STATE_CODES.has(value.toUpperCase())) {
+      ctx.addIssue({ code: 'custom', message: 'invalidState' })
+    }
+  }),
+})
+
 export const brazilProvider: AddressProvider = {
+  addressSchema,
   postalCodePattern: /^\d{5}-?\d{3}$/,
   postalCodePlaceholder: '01310-100',
   postalCodeLabel: 'CEP',
@@ -83,56 +112,11 @@ export const brazilProvider: AddressProvider = {
   },
 
   validateAddress(fields: AddressFields): AddressValidationErrors | null {
-    const errors: Record<string, AddressValidationError> = {}
+    const result = addressSchema.safeParse(fields)
 
-    // Postal code: exactly 8 digits
-    const cepDigits = (fields.postal_code ?? '').replace(/\D/g, '')
-    if (!cepDigits) {
-      errors.postal_code = 'required'
-    } else if (cepDigits.length !== 8) {
-      errors.postal_code = 'invalidPostalCode'
-    }
+    if (result.success) return null
 
-    // Street: required, max 200, no HTML
-    if (!fields.street) {
-      errors.street = 'required'
-    } else if (fields.street.length > 200) {
-      errors.street = 'tooLong'
-    }
-
-    // Number: required, max 20
-    if (!fields.number) {
-      errors.number = 'required'
-    } else if (fields.number.length > 20) {
-      errors.number = 'tooLong'
-    }
-
-    // Complement: optional, max 100
-    if (fields.complement && fields.complement.length > 100) {
-      errors.complement = 'tooLong'
-    }
-
-    // Neighborhood: optional, max 100
-    if (fields.neighborhood && fields.neighborhood.length > 100) {
-      errors.neighborhood = 'tooLong'
-    }
-
-    // City: required, max 100, no digits
-    if (!fields.city) {
-      errors.city = 'required'
-    } else if (fields.city.length > 100) {
-      errors.city = 'tooLong'
-    } else if (/\d/.test(fields.city)) {
-      errors.city = 'invalidCity'
-    }
-
-    // State: required, must be valid code
-    if (!fields.state) {
-      errors.state = 'required'
-    } else if (!VALID_STATE_CODES.has(fields.state.toUpperCase())) {
-      errors.state = 'invalidState'
-    }
-
-    return Object.keys(errors).length > 0 ? errors : null
+    const fieldErrors = z.flattenError(result.error).fieldErrors as AddressValidationErrors
+    return Object.keys(fieldErrors).length > 0 ? fieldErrors : null
   },
 }

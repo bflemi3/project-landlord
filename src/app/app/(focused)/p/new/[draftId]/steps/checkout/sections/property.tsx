@@ -2,6 +2,8 @@
 
 import { useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import { Building2 } from 'lucide-react'
 
 import { CepField } from '@/components/forms/cep-field'
@@ -17,7 +19,8 @@ import {
 import { getAddressProvider } from '@/lib/address/provider'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
-import { propertySchema } from '@/data/properties/schema'
+import { getPropertyInputSchema } from '@/data/properties/schema-by-country'
+import { validateProperty } from '@/data/properties/actions/validate-property'
 import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
 import { Constants } from '@/lib/types/database'
 
@@ -40,17 +43,36 @@ const ICON = Building2
 const PROPERTY_TYPE_OPTIONS = Constants.public.Enums.property_type
 
 const brStates = getAddressProvider('BR').states
-const validator = zodValidator(propertySchema)
+const validator = zodValidator(getPropertyInputSchema('BR'))
 
 export function PropertySection() {
   const t = useTranslations('propertyCreation.checkout')
   const tProperties = useTranslations('properties')
+  const router = useRouter()
   const { registerHeaderRef } = useCheckoutContext()
-  const ctrl = useSectionController(SECTION_ID, { isFirst: true })
   const { setSectionData } = usePropertyCreationActions()
   const values = usePropertyCreationState(
     (s) => s.sectionData.property as PropertyInput,
   )
+
+  const onBeforeContinue = useCallback(async () => {
+    const result = await validateProperty(values)
+    if (result.valid) return true
+
+    if (result.existingPropertyId) {
+      toast.warning(tProperties('duplicateAddress'), {
+        position: 'top-center',
+        duration: Infinity,
+        action: {
+          label: tProperties('viewExistingProperty'),
+          onClick: () => router.push(`/app/p/${result.existingPropertyId}`),
+        },
+      })
+    }
+    return false
+  }, [values, tProperties, router])
+
+  const ctrl = useSectionController(SECTION_ID, { isFirst: true, onBeforeContinue })
 
   const form = useFormValidation({ values, validator })
 
@@ -334,6 +356,7 @@ export function PropertySection() {
           backLabel={t('actions.back')}
           continueLabel={t('actions.continue')}
           continueDisabled={!form.isValid}
+          continueLoading={ctrl.isContinuing}
           skipLabel={t('actions.skip')}
           showSkip={false}
           onBack={ctrl.handleBack}

@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback, useState } from 'react'
 import posthog from 'posthog-js'
 
 import type { SectionId } from '../../state/registry'
@@ -17,6 +18,8 @@ import type { SectionStatus } from './section'
 interface UseSectionControllerOptions {
   /** True for the first section in checkout order — hides the Back action. */
   isFirst?: boolean
+  /** Async guard that runs before advancing. Return false to block. */
+  onBeforeContinue?: () => Promise<boolean>
 }
 
 export interface SectionController {
@@ -25,6 +28,7 @@ export interface SectionController {
   isUpNext: boolean
   isRequired: boolean
   isFirst: boolean
+  isContinuing: boolean
   handleContinue: () => void
   handleSkip: () => void
   handleBack: (() => void) | undefined
@@ -42,15 +46,10 @@ export interface SectionController {
  */
 export function useSectionController(
   id: SectionId,
-  { isFirst = false }: UseSectionControllerOptions = {},
+  { isFirst = false, onBeforeContinue }: UseSectionControllerOptions = {},
 ): SectionController {
-  // Context — only the scroll trigger; ref registration is intentionally NOT
-  // pulled here. Including the ref callback in the returned bag taints every
-  // property access on the bag under React Hooks `react-hooks/refs`. Sections
-  // call `useCheckoutContext()` themselves for the header ref callback.
   const { requestTransitionScroll } = useCheckoutContext()
 
-  // Store reads (subscribed selectors).
   const status = useSectionStatus(id)
   const isActive = useIsSectionActive(id)
   const isUpNext = useIsSectionUpNext(id)
@@ -59,11 +58,23 @@ export function useSectionController(
   const { completeCurrentSection, skipCurrentSection, goToPreviousSection } =
     usePropertyCreationActions()
 
-  function handleContinue() {
+  const [isContinuing, setIsContinuing] = useState(false)
+
+  const handleContinue = useCallback(async () => {
+    if (onBeforeContinue) {
+      setIsContinuing(true)
+      try {
+        const allowed = await onBeforeContinue()
+        if (!allowed) return
+      } finally {
+        setIsContinuing(false)
+      }
+    }
+
     capture('property_checkout_section_completed', { section_id: id, path })
     requestTransitionScroll()
     completeCurrentSection()
-  }
+  }, [onBeforeContinue, id, path, requestTransitionScroll, completeCurrentSection])
 
   function handleSkip() {
     capture('property_checkout_section_skipped', { section_id: id, path })
@@ -82,6 +93,7 @@ export function useSectionController(
     isUpNext,
     isRequired,
     isFirst,
+    isContinuing,
     handleContinue,
     handleSkip,
     handleBack: isFirst ? undefined : handleBack,

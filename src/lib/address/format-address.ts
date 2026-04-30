@@ -5,17 +5,16 @@
  * - Default (US/EN): "123 Main St, Apt 4B, Downtown, Austin, TX"
  */
 
-interface AddressFields {
-  street?: string | null
-  number?: string | null
-  complement?: string | null
-  neighborhood?: string | null
-  city?: string | null
-  state?: string | null
-  country_code?: string
-}
+import type { PropertyInput } from '@/data/properties/schema'
 
-export function formatAddress(fields: AddressFields): string {
+type AddressFormatFields = Partial<{
+  [K in keyof Pick<
+    PropertyInput,
+    'street' | 'number' | 'complement' | 'neighborhood' | 'city' | 'state' | 'country_code'
+  >]: PropertyInput[K] | null
+}>
+
+export function formatAddress(fields: AddressFormatFields): string {
   const street = fields.street?.trim() || undefined
   const number = fields.number?.trim() || undefined
   const complement = fields.complement?.trim() || undefined
@@ -50,7 +49,7 @@ export function formatAddress(fields: AddressFields): string {
  * Line 2: Neighborhood (if present)
  * Line 3: City, State
  */
-export function formatAddressHtml(fields: AddressFields): string {
+export function formatAddressHtml(fields: AddressFormatFields): string {
   const street = fields.street?.trim() || undefined
   const number = fields.number?.trim() || undefined
   const complement = fields.complement?.trim() || undefined

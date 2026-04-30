@@ -1,7 +1,57 @@
 import { describe, it, expect, vi } from 'vitest'
-import { brazilProvider } from '../providers/brazil'
+import { addressSchema, brazilProvider } from '../providers/brazil'
 
 describe('brazilProvider', () => {
+  describe('addressSchema', () => {
+    const validAddress = {
+      postal_code: '01310-100',
+      street: 'Rua Augusta',
+      number: '123',
+      city: 'São Paulo',
+      state: 'SP',
+    }
+
+    function fieldErrors(input: unknown) {
+      const result = addressSchema.safeParse(input)
+      if (result.success) return null
+
+      const fieldErrors: Record<string, string[]> = {}
+      for (const issue of result.error.issues) {
+        const key = String(issue.path[0] ?? '_root')
+        fieldErrors[key] ??= []
+        fieldErrors[key]!.push(issue.message)
+      }
+      return fieldErrors
+    }
+
+    it('parses a valid Brazil address', () => {
+      expect(addressSchema.safeParse(validAddress).success).toBe(true)
+    })
+
+    it('returns Brazil-specific translation keys', () => {
+      const errors = fieldErrors({
+        ...validAddress,
+        postal_code: '123',
+        city: 'São Paulo 123',
+        state: 'XX',
+      })
+
+      expect(errors?.postal_code).toEqual(['invalidPostalCode'])
+      expect(errors?.city).toEqual(['invalidCity'])
+      expect(errors?.state).toEqual(['invalidState'])
+    })
+
+    it('returns translation-key errors for missing required keys', () => {
+      const errors = fieldErrors({})
+
+      expect(errors?.postal_code).toEqual(['required'])
+      expect(errors?.street).toEqual(['required'])
+      expect(errors?.number).toEqual(['required'])
+      expect(errors?.city).toEqual(['required'])
+      expect(errors?.state).toEqual(['required'])
+    })
+  })
+
   describe('formatPostalCode', () => {
     it('formats 5 digits without hyphen', () => {
       expect(brazilProvider.formatPostalCode('01310')).toBe('01310')
@@ -48,44 +98,44 @@ describe('brazilProvider', () => {
     // Required fields
     it('requires postal_code', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, postal_code: undefined })
-      expect(result?.postal_code).toBe('required')
+      expect(result?.postal_code).toEqual(['required'])
     })
 
     it('requires street', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, street: undefined })
-      expect(result?.street).toBe('required')
+      expect(result?.street).toEqual(['required'])
     })
 
     it('requires number', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, number: undefined })
-      expect(result?.number).toBe('required')
+      expect(result?.number).toEqual(['required'])
     })
 
     it('requires city', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, city: undefined })
-      expect(result?.city).toBe('required')
+      expect(result?.city).toEqual(['required'])
     })
 
     it('requires state', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, state: undefined })
-      expect(result?.state).toBe('required')
+      expect(result?.state).toEqual(['required'])
     })
 
     it('returns all errors for empty address', () => {
       const result = brazilProvider.validateAddress({})
       expect(result).toEqual({
-        postal_code: 'required',
-        street: 'required',
-        number: 'required',
-        city: 'required',
-        state: 'required',
+        postal_code: ['required'],
+        street: ['required'],
+        number: ['required'],
+        city: ['required'],
+        state: ['required'],
       })
     })
 
     // Postal code validation
     it('rejects postal code with wrong length', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, postal_code: '123' })
-      expect(result?.postal_code).toBe('invalidPostalCode')
+      expect(result?.postal_code).toEqual(['invalidPostalCode'])
     })
 
     it('accepts postal code with hyphen', () => {
@@ -99,33 +149,33 @@ describe('brazilProvider', () => {
     // Max length validation
     it('rejects street over 200 chars', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, street: 'a'.repeat(201) })
-      expect(result?.street).toBe('tooLong')
+      expect(result?.street).toEqual(['tooLong'])
     })
 
     it('rejects number over 20 chars', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, number: '1'.repeat(21) })
-      expect(result?.number).toBe('tooLong')
+      expect(result?.number).toEqual(['tooLong'])
     })
 
     it('rejects complement over 100 chars', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, complement: 'a'.repeat(101) })
-      expect(result?.complement).toBe('tooLong')
+      expect(result?.complement).toEqual(['tooLong'])
     })
 
     it('rejects neighborhood over 100 chars', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, neighborhood: 'a'.repeat(101) })
-      expect(result?.neighborhood).toBe('tooLong')
+      expect(result?.neighborhood).toEqual(['tooLong'])
     })
 
     it('rejects city over 100 chars', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, city: 'a'.repeat(101) })
-      expect(result?.city).toBe('tooLong')
+      expect(result?.city).toEqual(['tooLong'])
     })
 
     // City validation
     it('rejects city with digits', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, city: 'São Paulo 123' })
-      expect(result?.city).toBe('invalidCity')
+      expect(result?.city).toEqual(['invalidCity'])
     })
 
     it('accepts city with accents and hyphens', () => {
@@ -135,7 +185,7 @@ describe('brazilProvider', () => {
     // State validation
     it('rejects invalid state code', () => {
       const result = brazilProvider.validateAddress({ ...validAddress, state: 'XX' })
-      expect(result?.state).toBe('invalidState')
+      expect(result?.state).toEqual(['invalidState'])
     })
 
     it('accepts lowercase state code', () => {

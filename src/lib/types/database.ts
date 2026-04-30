@@ -904,6 +904,7 @@ export type Database = {
           neighborhood: string | null
           number: string | null
           postal_code: string | null
+          property_type: Database["public"]["Enums"]["property_type"] | null
           state: string | null
           street: string | null
           updated_at: string
@@ -920,6 +921,7 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           postal_code?: string | null
+          property_type?: Database["public"]["Enums"]["property_type"] | null
           state?: string | null
           street?: string | null
           updated_at?: string
@@ -936,6 +938,7 @@ export type Database = {
           neighborhood?: string | null
           number?: string | null
           postal_code?: string | null
+          property_type?: Database["public"]["Enums"]["property_type"] | null
           state?: string | null
           street?: string | null
           updated_at?: string
