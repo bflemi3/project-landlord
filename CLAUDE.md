@@ -22,6 +22,13 @@ See `docs/project/product-pivot-long-term-rentals.md` for the full product shape
 6. `docs/project/product-pivot-long-term-rentals.md` — product spec
 7. Existing codebase — what is already implemented
 
+**Precedence on conflict:**
+1. `.claude/rules/*` (security-lgpd, database-migrations) override everything below.
+2. Skill invariants override CLAUDE.md prose.
+3. CLAUDE.md overrides codebase conventions.
+4. Codebase conventions win over personal preference.
+5. When two skills disagree, the more specific domain skill wins (e.g., `billing-automation` over `frontend-patterns` on a charge form).
+
 When ambiguous, choose the option that keeps the product simple, preserves trust, avoids overbuilding, and keeps future expansion possible.
 
 ---
@@ -34,7 +41,7 @@ When ambiguous, choose the option that keeps the product simple, preserves trust
 - **Passive by design** — payment detection, bill discovery, and reminders run in the background; surface only when action is needed
 - **Mobile first for real** — core workflows comfortable on a phone
 - **Summary first, detail second** — show the answer first, let users drill in
-- **Brazil-first in product flows; multi-country-ready in the data model** — optimize UX for Brazil today, but never bake country/currency assumptions into schemas or domain types
+- **Brazil-first UX, multi-country data model.** Schemas MUST use `amount_minor integer` + `currency text` columns (canonical: `supabase/migrations/20260318120000_data_model_foundation.sql`). NEVER bake country/currency assumptions into domain types or Zod schemas. Anti-example: a `charges.amount_brl numeric` column.
 - **Trust marketplace** — both tenants and landlords carry portable reputation scores; the platform rewards responsible behavior on both sides
 
 ---
@@ -82,11 +89,22 @@ Do not optimize prematurely for: hypothetical scale, extreme customization, comp
 
 - Prefer editing existing patterns over inventing new ones
 - Avoid introducing libraries unless they clearly earn their keep
-- Domain logic lives close to where it is used — organize around product domains (auth, properties, memberships, charges, contracts, ledger, ingestion, providers, bank-accounts, payments, reputation, disputes, notifications, analytics)
+- Domain logic lives in `src/data/<domain>/` per the four-file split (`shared.ts`, `server.ts`, `client.ts`, `actions/`). Organize around product domains (auth, properties, memberships, charges, contracts, ledger, ingestion, providers, bank-accounts, payments, reputation, disputes, notifications, analytics). See `frontend-patterns` Data Layer table for the canonical shape.
 
 ### Performance is a product feature
 
-Navigation must feel instant. The user clicks, and within tens of ms they see the page shell + per-section skeletons that structurally match the final content. Content streams in section by section. `loading.tsx` on every route + `'use client'` pushed to leaves + per-section `<SuspenseFadeIn>` boundaries is the recipe. See `frontend-patterns` for the full pattern.
+Navigation must feel instant. The user clicks, and within tens of ms they see the page shell + per-section skeletons that structurally match the final content. Content streams in section by section. The recipe: `loading.tsx` on every route, `'use client'` pushed to leaves, per-section `<SuspenseFadeIn fallback={<SectionSkeleton />}>`. Canonical examples: `src/components/suspense-fade-in.tsx` (boundary primitive); `src/data/properties/server.ts` (`React.cache()` server fetcher pattern); `src/app/app/(focused)/p/new/[draftId]/page.tsx` (route shell). See `frontend-patterns` for the full pattern.
+
+### Red flags — stop if you're thinking any of these
+
+| Thought | Reality |
+|---|---|
+| "Just this once, AI extraction for one provider — we can do a profile later" | Violates "never AI-first for core billing." Build a provider profile via Mabenn engineering. |
+| "I'll add a service-role call from TS, it's faster than a SECURITY DEFINER RPC" | Violates `auth/SKILL.md` invariant 7. Write the RPC. |
+| "Float is fine for one money field, this is just display" | Violates `data-modeling`. Use `amount_minor integer` + `currency text`. Aggregations leak through display. |
+| "This component already exists but is slightly wrong, I'll make a new one next to it" | Violates `component-library`. Edit the existing component or extend it with a variant. |
+| "I'll skip the audit row, the mutation is obvious" | No silent mutation of financial records. Insert the audit event in the same transaction as the mutation. |
+| "I'll hardcode this string in English for now and translate later" | Violates `Localization`. Add the key to `messages/{en,es,pt-BR}.json` and read via `useTranslations`. |
 
 ### Before implementing
 
