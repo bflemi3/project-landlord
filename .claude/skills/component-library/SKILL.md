@@ -1,6 +1,6 @@
 ---
 name: component-library
-description: Component catalog and selection rules for UI consistency and reuse. Use when building any UI to check for existing components before creating new ones.
+description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/InfoBox, or when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel.
 paths:
   - "src/**/*.tsx"
   - "src/components/**"
@@ -8,7 +8,7 @@ paths:
 
 # Component Library Rules
 
-**Before building any UI, check the component catalog.** Use existing components before creating new ones. If a component needs a variant that doesn't exist, add the variant — don't create a parallel component.
+**Before building any UI, check the component catalog.** MUST use existing components before creating new ones. MUST NOT create a parallel component when an existing one is close — extend it with a variant. Anti-example: adding `src/components/property-card-onboarding.tsx` next to `property-card.tsx` instead of a `size` or `variant` prop.
 
 ## Component Selection Process
 
@@ -16,6 +16,18 @@ paths:
 2. Compose screens from existing components — don't reinvent layouts
 3. Check shadcn first: `npx shadcn@latest add <component>` before building manually
 4. If you create a new reusable component, update `docs/project/components.md`
+
+**Precedence on conflict:** when this skill conflicts with `frontend-patterns` (e.g., performance push-to-leaves vs. compound composition), `frontend-patterns` wins for `'use client'` placement; this skill wins for markup/variant choices. When it conflicts with `design-system`, `design-system` wins for tokens/spacing/motion; this skill wins for component selection.
+
+## Red flags — stop if you're thinking this
+
+| Thought | Reality |
+|---|---|
+| "It's almost the same as `<X>` but slightly different — I'll just copy it." | Extend the existing component with a variant. A parallel file diverges immediately. |
+| "I just need a small wrapper for this one screen." | It'll be reinvented in 3+ files. Compose existing primitives or extract now. |
+| "Tailwind utilities are faster than reaching for `IconTile`." | Tokens drift. Use the primitive. |
+| "I'll skip `data-slot` for this one part — no one targets it yet." | Then someone does, and styling/tests break. Add `data-slot` from the start. |
+| "I'll write my own modal — `ResponsiveModal` doesn't quite fit." | First check whether you can extend `ResponsiveModal` with a prop. Forking creates two modals to maintain. |
 
 ## Editorial Primitives
 
@@ -79,7 +91,7 @@ Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as t
 
 1. Check shadcn first
 2. Use composable/compound pattern (named sub-components, not prop soup)
-3. Add `data-slot` attributes to every compound component part
+3. MUST add `data-slot` attributes to every compound component part. Anti-pattern: a `CardHeader` rendering `<div className="...">` without `data-slot="card-header"`. Canonical example: `src/components/ui/card.tsx`.
 4. Extract to shared component when markup appears in 3+ files
 5. Product components: `src/components/`, shadcn primitives: `src/components/ui/`
 6. Always reach for semantic tokens + editorial primitives — never hardcode color utilities or reinvent `EyebrowLabel` / `SectionLabel` / `IconTile` / `ListRow`

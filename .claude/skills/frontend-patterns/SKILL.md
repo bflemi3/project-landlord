@@ -1,6 +1,6 @@
 ---
 name: frontend-patterns
-description: Performance rules, data fetching architecture, component conventions, and form patterns. Use when writing any React component, hook, page, or server action.
+description: Use when adding 'use client', wrapping a section in Suspense, writing a server fetcher, configuring React Query, adding a form, or noticing a slow navigation.
 paths:
   - "src/**/*.tsx"
   - "src/**/*.ts"
@@ -9,6 +9,17 @@ paths:
 # Frontend Patterns
 
 The app must feel fast. Click → content visible within tens of milliseconds. Every rule in this skill serves that goal, or the goal of keeping the UI consistent as the product grows.
+
+## Red flags — stop if you're thinking this
+
+| Thought | Reality |
+|---|---|
+| "I'll just put `'use client'` at the page level for now" | Defeats streaming and prefetching. Push `'use client'` to leaves; only interactive components get it. |
+| "One Suspense at the top of the page is simpler" | The whole page waits on the slowest query. Wrap each independent section in its own `<SuspenseFadeIn>`. |
+| "I'll await these two in sequence, the second is fast anyway" | Adds a network round trip. Use `Promise.all`. |
+| "Framer Motion at the top of the file, I'll optimize later" | Blocks first paint. Lazy-load via top-level `import()` + `React.lazy`. |
+| "I'll skip `staleTime` for now" | Forces a loading state on every back-nav. Always set explicit `staleTime` (default 30s). |
+| "This page needs a useEffect to fetch data" | Server-render or use `useSuspenseQuery` + `HydrationBoundary`. `useEffect` for data is a defeat. |
 
 ## Performance — The App Must Feel Fast
 
@@ -43,11 +54,11 @@ Rule: fetch sibling data in parallel at the page/wrapper level, then pass IDs (o
 
 ### `React.cache()` on every server fetcher
 
-Server fetchers in `src/data/<domain>/server.ts` are wrapped in `React.cache()` for per-request deduplication. Multiple components calling the same fetcher in a single render share one DB hit. Without this, a page that reads the property in three sections does three DB trips.
+Canonical example: `src/data/properties/server.ts` (search for `cache(`). Server fetchers in `src/data/<domain>/server.ts` MUST wrap their fetch function in `React.cache()` for per-request deduplication. Without it, a page that reads the property in three sections does three DB trips.
 
 ### React Query `staleTime` for back-nav feeling instant
 
-React Query hooks must configure `staleTime` (typically 30s–5min depending on data volatility). When the user hits back after a navigation, cached data renders immediately and a refetch runs in the background. `staleTime: 0` forces a loading state on every back-nav — never the right default.
+React Query hooks MUST set explicit `staleTime`. Anti-pattern: `useSuspenseQuery({ queryKey, queryFn })` without `staleTime` in the same options object — forces a loading state on every back-nav. NEVER use `staleTime: 0`. Default to 30s; 5min for slowly-changing data.
 
 ### Dynamic import anything heavy and below-the-fold
 
