@@ -57,7 +57,7 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
         {t('cta.create')}
       </Button>
       {remaining > 0 && (
-        <p className="text-center text-xs text-muted-foreground -mt-3">
+        <p className="text-center text-sm text-muted-foreground -mt-3">
           {t('cta.hint')}
         </p>
       )}

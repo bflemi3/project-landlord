@@ -111,11 +111,12 @@ export function PropertyCheckoutShell() {
         <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
           <DetailPageLayoutBody className="mt-8">
             <DetailPageLayoutMain>
-              <ExtractionLegend className="mb-4" />
-              <SectionGroup
-                activeId={activeSectionId}
-                onActiveChange={handleActiveChange}
-              >
+              <div className="flex flex-col gap-4">
+                <ExtractionLegend />
+                <SectionGroup
+                  activeId={activeSectionId}
+                  onActiveChange={handleActiveChange}
+                >
                 <PropertySection />
                 <RentDatesSection />
                 <TenantsSection />
@@ -123,6 +124,7 @@ export function PropertyCheckoutShell() {
                 <CpfSection />
                 <BankSection />
               </SectionGroup>
+              </div>
             </DetailPageLayoutMain>
 
             <DetailPageLayoutSidebar className="md:sticky md:top-6 md:self-start">

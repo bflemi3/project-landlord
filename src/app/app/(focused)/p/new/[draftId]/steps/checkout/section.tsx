@@ -291,14 +291,12 @@ function SectionSummary({
   const { isActive, status } = useSection('Summary')
   if (!(status === 'completed' && !isActive)) return null
   return (
-    <div
+    <p
       data-slot="section-summary"
-      // Left padding clears the icon column (size-10 IconTile + gap-4 header
-      // gap = 56px) so summary text aligns under the title.
-      className={cn('text-muted-foreground mt-3 pl-14 text-sm', className)}
+      className={cn('text-muted-foreground mt-0.5 text-sm', className)}
     >
       {children}
-    </div>
+    </p>
   )
 }
 

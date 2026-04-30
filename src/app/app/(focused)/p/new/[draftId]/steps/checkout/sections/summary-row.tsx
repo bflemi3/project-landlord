@@ -15,6 +15,7 @@ const dotClasses: Record<SectionStatus, string> = {
 }
 
 interface SummaryRowProps {
+  detail?: string | null
   sectionId: SectionId
   title: string
 }
@@ -26,13 +27,10 @@ interface SummaryRowProps {
  * what `CheckoutSummary` renders, so each section continues to own its own
  * panel-side surface even though the JSX lives here.
  */
-export function SummaryRow({ sectionId, title }: SummaryRowProps) {
+export function SummaryRow({ detail, sectionId, title }: SummaryRowProps) {
   const status = useSectionStatus(sectionId)
   const isActive = useIsSectionActive(sectionId)
 
-  // Active beats `upcoming` so the currently-expanded section glows primary,
-  // but never overrides `completed` / `skipped` — those carry their own
-  // semantic color even when re-opened from the summary.
   const dotClass =
     isActive && status === 'upcoming' ? 'bg-primary' : dotClasses[status]
 
@@ -42,15 +40,20 @@ export function SummaryRow({ sectionId, title }: SummaryRowProps) {
       data-section-id={sectionId}
       data-status={status}
       className={cn(
-        'flex items-center gap-3',
+        'flex items-start gap-3',
         isActive ? 'text-foreground font-medium' : 'text-muted-foreground',
       )}
     >
       <span
         data-status={status}
-        className={cn('size-2 shrink-0 rounded-full', dotClass)}
+        className={cn('mt-1.5 size-2 shrink-0 rounded-full', dotClass)}
       />
-      <span className="flex-1">{title}</span>
+      <div className="flex-1">
+        <span>{title}</span>
+        {status === 'completed' && detail && (
+          <p className="text-muted-foreground text-sm font-normal">{detail}</p>
+        )}
+      </div>
     </li>
   )
 }

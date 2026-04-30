@@ -116,6 +116,19 @@ export function PropertySection() {
     return derived.length > 0 ? derived : tProperties('propertyNamePlaceholder')
   }, [values.street, values.number, values.complement, values.country_code, tProperties])
 
+  const sectionSummary = useMemo(() => {
+    const address = formatPropertyName({
+      street: values.street,
+      number: values.number,
+      complement: values.complement,
+      country_code: values.country_code,
+    })
+    const type = values.property_type
+      ? tProperties(`propertyTypeOptions.${values.property_type}`)
+      : null
+    return [type, address].filter(Boolean).join(' · ')
+  }, [values.street, values.number, values.complement, values.country_code, values.property_type, tProperties])
+
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
       setSectionData<PropertyInput>('property', (prev) => ({
@@ -171,6 +184,7 @@ export function PropertySection() {
         <Section.HeaderContent>
           <Section.Title>{t('property.title')}</Section.Title>
           <Section.Subtitle>{t('property.subtitle')}</Section.Subtitle>
+          <Section.Summary>{sectionSummary}</Section.Summary>
         </Section.HeaderContent>
         <Section.Status
           doneLabel={t('status.done')}
@@ -400,5 +414,21 @@ export function PropertySectionSkeleton({ active = false }: { active?: boolean }
 
 export function PropertySummaryRow() {
   const t = useTranslations('propertyCreation.checkout.property')
-  return <SummaryRow sectionId={SECTION_ID} title={t('title')} />
+  const values = usePropertyCreationState(
+    (s) => s.sectionData.property as PropertyInput,
+  )
+  
+  const detail = formatPropertyName({
+    street: values.street,
+    number: values.number,
+    country_code: values.country_code,
+  })
+
+  return (
+    <SummaryRow
+      sectionId={SECTION_ID}
+      title={t('title')}
+      detail={detail || null}
+    />
+  )
 }

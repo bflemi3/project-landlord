@@ -331,13 +331,17 @@ export function createPropertyCreationStore(draftId: string) {
             // "this is the new extraction" and overwrites the affected
             // slices. The no-contract path or a null extraction leaves
             // `sectionData` untouched.
+            const switchingAwayFromContract =
+              state.path === 'contract' && next.path !== 'contract'
             const sectionData =
               next.extractionResult !== null && next.path === 'contract'
                 ? mergeExtractionIntoSectionData(
                     state.sectionData,
                     next.extractionResult,
                   )
-                : defaultSectionData()
+                : switchingAwayFromContract
+                  ? defaultSectionData()
+                  : state.sectionData
             set({
               extractionResult: next.extractionResult,
               path: next.path,
