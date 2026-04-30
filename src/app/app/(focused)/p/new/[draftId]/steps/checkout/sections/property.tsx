@@ -233,46 +233,48 @@ export function PropertySection() {
           </div>
 
           {/* 4. Street + Number */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="street">
-              {tProperties('street')}
-              <AutoFilledIndicator path="property.street" />
-            </Label>
-            <Input
-              id="street"
-              name="street"
-              type="text"
-              placeholder={tProperties('streetPlaceholder')}
-              value={values.street}
-              onChange={(e) => setField('street', e.target.value)}
-              onBlur={() => form.markTouched('street')}
-              aria-invalid={form.hasError('street')}
-              aria-describedby={form.hasError('street') ? 'street-error' : undefined}
-            />
-            {form.hasError('street') && (
-              <ErrorHint field="street" error={tProperties(form.errors.street![0])} />
-            )}
-          </div>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="flex flex-col gap-2 md:col-span-2">
+              <Label htmlFor="street">
+                {tProperties('street')}
+                <AutoFilledIndicator path="property.street" />
+              </Label>
+              <Input
+                id="street"
+                name="street"
+                type="text"
+                placeholder={tProperties('streetPlaceholder')}
+                value={values.street}
+                onChange={(e) => setField('street', e.target.value)}
+                onBlur={() => form.markTouched('street')}
+                aria-invalid={form.hasError('street')}
+                aria-describedby={form.hasError('street') ? 'street-error' : undefined}
+              />
+              {form.hasError('street') && (
+                <ErrorHint field="street" error={tProperties(form.errors.street![0])} />
+              )}
+            </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="number">
-              {tProperties('number')}
-              <AutoFilledIndicator path="property.number" />
-            </Label>
-            <Input
-              id="number"
-              name="number"
-              type="text"
-              placeholder={tProperties('numberPlaceholder')}
-              value={values.number}
-              onChange={(e) => setField('number', e.target.value)}
-              onBlur={() => form.markTouched('number')}
-              aria-invalid={form.hasError('number')}
-              aria-describedby={form.hasError('number') ? 'number-error' : undefined}
-            />
-            {form.hasError('number') && (
-              <ErrorHint field="number" error={tProperties(form.errors.number![0])} />
-            )}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="number">
+                {tProperties('number')}
+                <AutoFilledIndicator path="property.number" />
+              </Label>
+              <Input
+                id="number"
+                name="number"
+                type="text"
+                placeholder={tProperties('numberPlaceholder')}
+                value={values.number}
+                onChange={(e) => setField('number', e.target.value)}
+                onBlur={() => form.markTouched('number')}
+                aria-invalid={form.hasError('number')}
+                aria-describedby={form.hasError('number') ? 'number-error' : undefined}
+              />
+              {form.hasError('number') && (
+                <ErrorHint field="number" error={tProperties(form.errors.number![0])} />
+              )}
+            </div>
           </div>
 
           {/* 5. Complement */}
@@ -320,58 +322,60 @@ export function PropertySection() {
           </div>
 
           {/* 7. City + State */}
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="city">
-              {tProperties('city')}
-              <AutoFilledIndicator path="property.city" />
-            </Label>
-            <Input
-              id="city"
-              name="city"
-              type="text"
-              placeholder={tProperties('cityPlaceholder')}
-              value={values.city}
-              onChange={(e) => setField('city', e.target.value)}
-              onBlur={() => form.markTouched('city')}
-              aria-invalid={form.hasError('city')}
-              aria-describedby={form.hasError('city') ? 'city-error' : undefined}
-            />
-            {form.hasError('city') && (
-              <ErrorHint field="city" error={tProperties(form.errors.city![0])} />
-            )}
-          </div>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="flex flex-col gap-2 md:col-span-2">
+              <Label htmlFor="city">
+                {tProperties('city')}
+                <AutoFilledIndicator path="property.city" />
+              </Label>
+              <Input
+                id="city"
+                name="city"
+                type="text"
+                placeholder={tProperties('cityPlaceholder')}
+                value={values.city}
+                onChange={(e) => setField('city', e.target.value)}
+                onBlur={() => form.markTouched('city')}
+                aria-invalid={form.hasError('city')}
+                aria-describedby={form.hasError('city') ? 'city-error' : undefined}
+              />
+              {form.hasError('city') && (
+                <ErrorHint field="city" error={tProperties(form.errors.city![0])} />
+              )}
+            </div>
 
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="state">
-              {tProperties('state')}
-              <AutoFilledIndicator path="property.state" />
-            </Label>
-            <Select
-              value={values.state}
-              onValueChange={(val) => {
-                setField('state', val ?? '')
-                form.markTouched('state')
-              }}
-            >
-              <SelectTrigger
-                id="state"
-                onBlur={() => form.markTouched('state')}
-                aria-invalid={form.hasError('state')}
-                aria-describedby={form.hasError('state') ? 'state-error' : undefined}
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="state">
+                {tProperties('state')}
+                <AutoFilledIndicator path="property.state" />
+              </Label>
+              <Select
+                value={values.state}
+                onValueChange={(val) => {
+                  setField('state', val ?? '')
+                  form.markTouched('state')
+                }}
               >
-                <SelectValue placeholder={tProperties('statePlaceholder')} />
-              </SelectTrigger>
-              <SelectContent>
-                {brStates.map((s) => (
-                  <SelectItem key={s.code} value={s.code}>
-                    {s.code} — {s.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {form.hasError('state') && (
-              <ErrorHint field="state" error={tProperties(form.errors.state![0])} />
-            )}
+                <SelectTrigger
+                  id="state"
+                  onBlur={() => form.markTouched('state')}
+                  aria-invalid={form.hasError('state')}
+                  aria-describedby={form.hasError('state') ? 'state-error' : undefined}
+                >
+                  <SelectValue placeholder={tProperties('statePlaceholder')} />
+                </SelectTrigger>
+                <SelectContent>
+                  {brStates.map((s) => (
+                    <SelectItem key={s.code} value={s.code}>
+                      {s.code} — {s.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {form.hasError('state') && (
+                <ErrorHint field="state" error={tProperties(form.errors.state![0])} />
+              )}
+            </div>
           </div>
         </div>
         <Section.Actions
