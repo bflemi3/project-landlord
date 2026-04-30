@@ -25,6 +25,7 @@ import { TenantsSection } from './sections/tenants'
 import { ExpensesSection } from './sections/expenses'
 import { CpfSection } from './sections/cpf'
 import { BankSection } from './sections/bank'
+import { ExtractionLegend } from './sections/extraction-legend'
 
 /**
  * Step 2 root. Pure composition layer: renders one component per section,
@@ -110,6 +111,7 @@ export function PropertyCheckoutShell() {
         <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
           <DetailPageLayoutBody className="mt-8">
             <DetailPageLayoutMain>
+              <ExtractionLegend className="mb-4" />
               <SectionGroup
                 activeId={activeSectionId}
                 onActiveChange={handleActiveChange}

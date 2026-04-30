@@ -443,7 +443,8 @@
         "done": "Done",
         "skipped": "Skipped",
         "upNext": "Up next"
-      }
+      },
+      "extractionLegend": "Auto-filled from your contract"
     },
     "review": {
       "title": "Review what we found",

@@ -337,7 +337,7 @@ export function createPropertyCreationStore(draftId: string) {
                     state.sectionData,
                     next.extractionResult,
                   )
-                : state.sectionData
+                : defaultSectionData()
             set({
               extractionResult: next.extractionResult,
               path: next.path,

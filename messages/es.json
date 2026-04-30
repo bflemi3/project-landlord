@@ -443,7 +443,8 @@
         "done": "Listo",
         "skipped": "Omitido",
         "upNext": "Sigue"
-      }
+      },
+      "extractionLegend": "Completado automáticamente desde tu contrato"
     },
     "review": {
       "title": "Revisa lo que encontramos",

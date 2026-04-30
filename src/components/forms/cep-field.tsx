@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useState, useCallback, useRef, useEffect } from 'react'
+import { memo, useState, useCallback, useRef, useEffect, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { Loader2, Check } from 'lucide-react'
 import { Input } from '@/components/ui/input'
@@ -27,6 +27,7 @@ interface CepFieldProps {
    * by `formatPostalCode` so callers don't need to format themselves.
    */
   onValueChange?: (formatted: string) => void
+  labelExtra?: ReactNode
 }
 
 export const CepField = memo(function CepField({
@@ -34,6 +35,7 @@ export const CepField = memo(function CepField({
   defaultValue,
   value,
   onValueChange,
+  labelExtra,
 }: CepFieldProps) {
   // 1. Refs
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -115,8 +117,8 @@ export const CepField = memo(function CepField({
 
   // 10. Return
   return (
-    <div>
-      <Label htmlFor="postal_code" className="mb-2">{t('postalCode')}</Label>
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="postal_code">{t('postalCode')}{labelExtra}</Label>
       <Input
         id="postal_code"
         name="postal_code"

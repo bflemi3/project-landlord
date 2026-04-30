@@ -28,6 +28,7 @@ paths:
 | "Tailwind utilities are faster than reaching for `IconTile`." | Tokens drift. Use the primitive. |
 | "I'll skip `data-slot` for this one part — no one targets it yet." | Then someone does, and styling/tests break. Add `data-slot` from the start. |
 | "I'll write my own modal — `ResponsiveModal` doesn't quite fit." | First check whether you can extend `ResponsiveModal` with a prop. Forking creates two modals to maintain. |
+| "Only one file uses this pattern — I'll extract when a second consumer appears." | If the pattern applies to every member of a system (every checkout section, every form, every card), it's cross-cutting. Extract immediately — don't wait for duplication. |
 
 ## Editorial Primitives
 
@@ -95,6 +96,7 @@ Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as t
 4. Extract to shared component when markup appears in 3+ files
 5. Product components: `src/components/`, shadcn primitives: `src/components/ui/`
 6. Always reach for semantic tokens + editorial primitives — never hardcode color utilities or reinvent `EyebrowLabel` / `SectionLabel` / `IconTile` / `ListRow`
+7. Reusable components MUST NOT set outer margin. Spacing between siblings is the parent's job via flex/grid `gap-*` or margin. Components accept `className?: string` merged via `cn()` so the parent can override when gap alone isn't sufficient.
 
 ## Full Catalog
 

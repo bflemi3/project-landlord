@@ -29,12 +29,14 @@ import type { PropertyInput } from '../../../state/extraction-seeding'
 import {
   usePropertyCreationActions,
   usePropertyCreationState,
+  useIsExtracted,
 } from '../../../state/use-property-creation'
 import { useCheckoutContext } from '../checkout-context'
 import { Section } from '../section'
 import { useSectionController } from '../use-section-controller'
 import { SectionSkeleton } from './section-skeleton'
 import { SummaryRow } from './summary-row'
+import { AutoFilledIndicator } from './auto-filled-indicator'
 import { ErrorHint } from '@/components/forms/error-hint'
 
 const SECTION_ID: SectionId = 'property'
@@ -75,6 +77,13 @@ export function PropertySection() {
   const ctrl = useSectionController(SECTION_ID, { isFirst: true, onBeforeContinue })
 
   const form = useFormValidation({ values, validator })
+  const { markTouched } = form
+
+  const isPostalCodeExtracted = useIsExtracted('property.postal_code')
+  const cepLabelExtra = useMemo(
+    () => (isPostalCodeExtracted ? <AutoFilledIndicator path="property.postal_code" /> : null),
+    [isPostalCodeExtracted],
+  )
 
   const namePlaceholder = useMemo(() => {
     const derived = formatPropertyName({
@@ -92,8 +101,9 @@ export function PropertySection() {
         ...(prev as PropertyInput),
         postal_code: formatted,
       }))
+      markTouched('postal_code')
     },
-    [setSectionData],
+    [setSectionData, markTouched],
   )
 
   const handleAddressFound = useCallback(
@@ -148,11 +158,12 @@ export function PropertySection() {
         />
       </Section.Header>
       <Section.Body>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-8">
           {/* 1. Property type */}
-          <div>
-            <Label htmlFor="property_type" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="property_type">
               {tProperties('propertyType')}
+              <AutoFilledIndicator path="property.property_type" />
             </Label>
             <Select
               value={values.property_type ?? ''}
@@ -177,8 +188,8 @@ export function PropertySection() {
           </div>
 
           {/* 2. Property name */}
-          <div>
-            <Label htmlFor="name" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="name">
               {tProperties('propertyName')}
             </Label>
             <Input
@@ -202,13 +213,11 @@ export function PropertySection() {
           </div>
 
           {/* 3. CEP */}
-          <div>
+          <div className="flex flex-col gap-2">
             <CepField
+              labelExtra={cepLabelExtra}
               value={values.postal_code}
-              onValueChange={(formatted) => {
-                handlePostalCodeChange(formatted)
-                form.markTouched('postal_code')
-              }}
+              onValueChange={handlePostalCodeChange}
               onAddressFound={handleAddressFound}
             />
             {form.hasError('postal_code') && (
@@ -217,9 +226,10 @@ export function PropertySection() {
           </div>
 
           {/* 4. Street + Number */}
-          <div>
-            <Label htmlFor="street" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="street">
               {tProperties('street')}
+              <AutoFilledIndicator path="property.street" />
             </Label>
             <Input
               id="street"
@@ -237,9 +247,10 @@ export function PropertySection() {
             )}
           </div>
 
-          <div>
-            <Label htmlFor="number" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="number">
               {tProperties('number')}
+              <AutoFilledIndicator path="property.number" />
             </Label>
             <Input
               id="number"
@@ -258,9 +269,10 @@ export function PropertySection() {
           </div>
 
           {/* 5. Complement */}
-          <div>
-            <Label htmlFor="complement" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="complement">
               {tProperties('complement')}
+              <AutoFilledIndicator path="property.complement" />
             </Label>
             <Input
               id="complement"
@@ -279,9 +291,10 @@ export function PropertySection() {
           </div>
 
           {/* 6. Neighborhood */}
-          <div>
-            <Label htmlFor="neighborhood" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="neighborhood">
               {tProperties('neighborhood')}
+              <AutoFilledIndicator path="property.neighborhood" />
             </Label>
             <Input
               id="neighborhood"
@@ -300,9 +313,10 @@ export function PropertySection() {
           </div>
 
           {/* 7. City + State */}
-          <div>
-            <Label htmlFor="city" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="city">
               {tProperties('city')}
+              <AutoFilledIndicator path="property.city" />
             </Label>
             <Input
               id="city"
@@ -320,9 +334,10 @@ export function PropertySection() {
             )}
           </div>
 
-          <div>
-            <Label htmlFor="state" className="mb-2">
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="state">
               {tProperties('state')}
+              <AutoFilledIndicator path="property.state" />
             </Label>
             <Select
               value={values.state}
