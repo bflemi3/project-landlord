@@ -17,6 +17,9 @@ import {
 import { getAddressProvider } from '@/lib/address/provider'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
+import { propertySectionSchema } from '@/data/properties/property-section-schema'
+import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
+import { Constants } from '@/lib/types/database'
 
 import type { SectionId } from '../../../state/registry'
 import type { PropertySectionValues } from '../../../state/extraction-seeding'
@@ -29,29 +32,28 @@ import { Section } from '../section'
 import { useSectionController } from '../use-section-controller'
 import { SectionSkeleton } from './section-skeleton'
 import { SummaryRow } from './summary-row'
+import { ErrorHint } from '@/components/forms/error-hint'
 
 const SECTION_ID: SectionId = 'property'
 const ICON = Building2
 
-const PROPERTY_TYPE_OPTIONS = ['apartment', 'house', 'commercial', 'other'] as const
+const PROPERTY_TYPE_OPTIONS = Constants.public.Enums.property_type
 
 const brStates = getAddressProvider('BR').states
+const validator = zodValidator(propertySectionSchema)
 
 export function PropertySection() {
-  // 2. Context
   const t = useTranslations('propertyCreation.checkout')
   const tProperties = useTranslations('properties')
   const { registerHeaderRef } = useCheckoutContext()
   const ctrl = useSectionController(SECTION_ID, { isFirst: true })
-
+  const { setSectionData } = usePropertyCreationActions()
   const values = usePropertyCreationState(
     (s) => s.sectionData.property as PropertySectionValues,
   )
-  const { setSectionData } = usePropertyCreationActions()
 
-  // 5. Derived — memoized so the placeholder string only recomputes when one
-  // of its inputs changes (and so its identity is stable across unrelated
-  // re-renders, e.g., a sibling section completing).
+  const form = useFormValidation({ values, validator })
+
   const namePlaceholder = useMemo(() => {
     const derived = formatPropertyName({
       street: values.street,
@@ -62,10 +64,6 @@ export function PropertySection() {
     return derived.length > 0 ? derived : tProperties('propertyNamePlaceholder')
   }, [values.street, values.number, values.complement, values.country_code, tProperties])
 
-  // 8. Callbacks. Pass-through to `setSectionData` (whose action ref is
-  // stable across renders) — that keeps the dep array trivial. The CepField
-  // is wrapped in `React.memo`, so its props need stable references to
-  // benefit from memoization.
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
       setSectionData<PropertySectionValues>('property', (prev) => ({
@@ -168,18 +166,33 @@ export function PropertySection() {
               placeholder={namePlaceholder}
               value={values.name}
               onChange={(e) => setField('name', e.target.value)}
+              onBlur={() => form.markTouched('name')}
+              aria-invalid={form.hasError('name')}
+              aria-describedby={form.hasError('name') ? 'name-error' : undefined}
             />
-            <p className="text-muted-foreground mt-1.5 text-sm">
-              {tProperties('propertyNameHint')}
-            </p>
+            {form.hasError('name') ? (
+              <ErrorHint className="mt-1.5" field="name" error={tProperties(form.errors.name![0])} />
+            ) : (
+              <p className="text-muted-foreground mt-1.5 text-sm">
+                {tProperties('propertyNameHint')}
+              </p>
+            )}
           </div>
 
           {/* 3. CEP */}
-          <CepField
-            value={values.postal_code}
-            onValueChange={handlePostalCodeChange}
-            onAddressFound={handleAddressFound}
-          />
+          <div>
+            <CepField
+              value={values.postal_code}
+              onValueChange={(formatted) => {
+                handlePostalCodeChange(formatted)
+                form.markTouched('postal_code')
+              }}
+              onAddressFound={handleAddressFound}
+            />
+            {form.hasError('postal_code') && (
+              <ErrorHint className="mt-1.5" field="postal_code" error={tProperties(form.errors.postal_code![0])} />
+            )}
+          </div>
 
           {/* 4. Street + Number */}
           <div>
@@ -193,7 +206,13 @@ export function PropertySection() {
               placeholder={tProperties('streetPlaceholder')}
               value={values.street}
               onChange={(e) => setField('street', e.target.value)}
+              onBlur={() => form.markTouched('street')}
+              aria-invalid={form.hasError('street')}
+              aria-describedby={form.hasError('street') ? 'street-error' : undefined}
             />
+            {form.hasError('street') && (
+              <ErrorHint className="mt-1.5" field="street" error={tProperties(form.errors.street![0])} />
+            )}
           </div>
 
           <div>
@@ -207,7 +226,13 @@ export function PropertySection() {
               placeholder={tProperties('numberPlaceholder')}
               value={values.number}
               onChange={(e) => setField('number', e.target.value)}
+              onBlur={() => form.markTouched('number')}
+              aria-invalid={form.hasError('number')}
+              aria-describedby={form.hasError('number') ? 'number-error' : undefined}
             />
+            {form.hasError('number') && (
+              <ErrorHint className="mt-1.5" field="number" error={tProperties(form.errors.number![0])} />
+            )}
           </div>
 
           {/* 5. Complement */}
@@ -222,7 +247,13 @@ export function PropertySection() {
               placeholder={tProperties('complementPlaceholder')}
               value={values.complement}
               onChange={(e) => setField('complement', e.target.value)}
+              onBlur={() => form.markTouched('complement')}
+              aria-invalid={form.hasError('complement')}
+              aria-describedby={form.hasError('complement') ? 'complement-error' : undefined}
             />
+            {form.hasError('complement') && (
+              <ErrorHint className="mt-1.5" field="complement" error={tProperties(form.errors.complement![0])} />
+            )}
           </div>
 
           {/* 6. Neighborhood */}
@@ -237,7 +268,13 @@ export function PropertySection() {
               placeholder={tProperties('neighborhoodPlaceholder')}
               value={values.neighborhood}
               onChange={(e) => setField('neighborhood', e.target.value)}
+              onBlur={() => form.markTouched('neighborhood')}
+              aria-invalid={form.hasError('neighborhood')}
+              aria-describedby={form.hasError('neighborhood') ? 'neighborhood-error' : undefined}
             />
+            {form.hasError('neighborhood') && (
+              <ErrorHint className="mt-1.5" field="neighborhood" error={tProperties(form.errors.neighborhood![0])} />
+            )}
           </div>
 
           {/* 7. City + State */}
@@ -252,16 +289,32 @@ export function PropertySection() {
               placeholder={tProperties('cityPlaceholder')}
               value={values.city}
               onChange={(e) => setField('city', e.target.value)}
+              onBlur={() => form.markTouched('city')}
+              aria-invalid={form.hasError('city')}
+              aria-describedby={form.hasError('city') ? 'city-error' : undefined}
             />
+            {form.hasError('city') && (
+              <ErrorHint className="mt-1.5" field="city" error={tProperties(form.errors.city![0])} />
+            )}
           </div>
 
           <div>
-            <Label className="mb-2">{tProperties('state')}</Label>
+            <Label htmlFor="state" className="mb-2">
+              {tProperties('state')}
+            </Label>
             <Select
               value={values.state}
-              onValueChange={(val) => setField('state', val ?? '')}
+              onValueChange={(val) => {
+                setField('state', val ?? '')
+                form.markTouched('state')
+              }}
             >
-              <SelectTrigger>
+              <SelectTrigger
+                id="state"
+                onBlur={() => form.markTouched('state')}
+                aria-invalid={form.hasError('state')}
+                aria-describedby={form.hasError('state') ? 'state-error' : undefined}
+              >
                 <SelectValue placeholder={tProperties('statePlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -272,11 +325,15 @@ export function PropertySection() {
                 ))}
               </SelectContent>
             </Select>
+            {form.hasError('state') && (
+              <ErrorHint className="mt-1.5" field="state" error={tProperties(form.errors.state![0])} />
+            )}
           </div>
         </div>
         <Section.Actions
           backLabel={t('actions.back')}
           continueLabel={t('actions.continue')}
+          continueDisabled={!form.isValid}
           skipLabel={t('actions.skip')}
           showSkip={false}
           onBack={ctrl.handleBack}

@@ -329,7 +329,9 @@ function SectionBody({ children, className }: { children: React.ReactNode; class
 interface SectionActionsProps {
   backLabel?: string
   className?: string
+  continueDisabled?: boolean
   continueLabel: string
+  continueLoading?: boolean
   showSkip?: boolean
   skipLabel?: string
   onBack?: () => void
@@ -340,7 +342,9 @@ interface SectionActionsProps {
 function SectionActions({
   backLabel,
   className,
+  continueDisabled = false,
   continueLabel,
+  continueLoading = false,
   showSkip = false,
   skipLabel,
   onBack,
@@ -372,7 +376,12 @@ function SectionActions({
             {skipLabel}
           </Button>
         )}
-        <Button size="sm" onClick={onContinue}>
+        <Button
+          disabled={continueDisabled}
+          loading={continueLoading}
+          size="sm"
+          onClick={onContinue}
+        >
           {continueLabel}
           <ChevronRight />
         </Button>
