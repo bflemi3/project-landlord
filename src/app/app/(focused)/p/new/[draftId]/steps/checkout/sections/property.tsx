@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { Building2 } from 'lucide-react'
+import { Building2, Home, Briefcase, MoreHorizontal } from 'lucide-react'
 
 import { CepField } from '@/components/forms/cep-field'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { RadioCardGroup, type RadioCardOption } from '@/components/radio-card-group'
 import { getAddressProvider } from '@/lib/address/provider'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
@@ -38,11 +39,21 @@ import { SectionSkeleton } from './section-skeleton'
 import { SummaryRow } from './summary-row'
 import { AutoFilledIndicator } from './auto-filled-indicator'
 import { ErrorHint } from '@/components/forms/error-hint'
+import { FieldHint } from '@/components/forms/field-hint'
 
 const SECTION_ID: SectionId = 'property'
 const ICON = Building2
 
 const PROPERTY_TYPE_OPTIONS = Constants.public.Enums.property_type
+
+const PROPERTY_TYPE_ICONS: Record<(typeof PROPERTY_TYPE_OPTIONS)[number], React.ComponentType<{ className?: string }>> = {
+  apartment: Building2,
+  house: Home,
+  commercial: Briefcase,
+  other: MoreHorizontal,
+}
+
+type PropertyTypeValue = (typeof PROPERTY_TYPE_OPTIONS)[number]
 
 const brStates = getAddressProvider('BR').states
 const validator = zodValidator(getPropertyInputSchema('BR'))
@@ -83,6 +94,16 @@ export function PropertySection() {
   const cepLabelExtra = useMemo(
     () => (isPostalCodeExtracted ? <AutoFilledIndicator path="property.postal_code" /> : null),
     [isPostalCodeExtracted],
+  )
+
+  const propertyTypeOptions = useMemo<RadioCardOption<PropertyTypeValue>[]>(
+    () =>
+      PROPERTY_TYPE_OPTIONS.map((opt) => ({
+        value: opt,
+        label: tProperties(`propertyTypeOptions.${opt}`),
+        icon: PROPERTY_TYPE_ICONS[opt],
+      })),
+    [tProperties],
   )
 
   const namePlaceholder = useMemo(() => {
@@ -161,30 +182,18 @@ export function PropertySection() {
         <div className="flex flex-col gap-8">
           {/* 1. Property type */}
           <div className="flex flex-col gap-2">
-            <Label htmlFor="property_type">
+            <Label>
               {tProperties('propertyType')}
               <AutoFilledIndicator path="property.property_type" />
             </Label>
-            <Select
-              value={values.property_type ?? ''}
+            <RadioCardGroup
+              options={propertyTypeOptions}
+              value={values.property_type}
+              aria-label={tProperties('propertyType')}
               onValueChange={(val) =>
-                setField(
-                  'property_type',
-                  (val || null) as PropertyInput['property_type'],
-                )
+                setField('property_type', val as PropertyInput['property_type'])
               }
-            >
-              <SelectTrigger id="property_type">
-                <SelectValue placeholder={tProperties('propertyTypeSelectPrompt')} />
-              </SelectTrigger>
-              <SelectContent>
-                {PROPERTY_TYPE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt} value={opt}>
-                    {tProperties(`propertyTypeOptions.${opt}`)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            />
           </div>
 
           {/* 2. Property name */}
@@ -204,11 +213,9 @@ export function PropertySection() {
               aria-describedby={form.hasError('name') ? 'name-error' : undefined}
             />
             {form.hasError('name') ? (
-              <ErrorHint className="mt-1.5" field="name" error={tProperties(form.errors.name![0])} />
+              <ErrorHint field="name" error={tProperties(form.errors.name![0])} />
             ) : (
-              <p className="text-muted-foreground mt-1.5 text-sm">
-                {tProperties('propertyNameHint')}
-              </p>
+              <FieldHint>{tProperties('propertyNameHint')}</FieldHint>
             )}
           </div>
 
@@ -221,7 +228,7 @@ export function PropertySection() {
               onAddressFound={handleAddressFound}
             />
             {form.hasError('postal_code') && (
-              <ErrorHint className="mt-1.5" field="postal_code" error={tProperties(form.errors.postal_code![0])} />
+              <ErrorHint field="postal_code" error={tProperties(form.errors.postal_code![0])} />
             )}
           </div>
 
@@ -243,7 +250,7 @@ export function PropertySection() {
               aria-describedby={form.hasError('street') ? 'street-error' : undefined}
             />
             {form.hasError('street') && (
-              <ErrorHint className="mt-1.5" field="street" error={tProperties(form.errors.street![0])} />
+              <ErrorHint field="street" error={tProperties(form.errors.street![0])} />
             )}
           </div>
 
@@ -264,7 +271,7 @@ export function PropertySection() {
               aria-describedby={form.hasError('number') ? 'number-error' : undefined}
             />
             {form.hasError('number') && (
-              <ErrorHint className="mt-1.5" field="number" error={tProperties(form.errors.number![0])} />
+              <ErrorHint field="number" error={tProperties(form.errors.number![0])} />
             )}
           </div>
 
@@ -286,7 +293,7 @@ export function PropertySection() {
               aria-describedby={form.hasError('complement') ? 'complement-error' : undefined}
             />
             {form.hasError('complement') && (
-              <ErrorHint className="mt-1.5" field="complement" error={tProperties(form.errors.complement![0])} />
+              <ErrorHint field="complement" error={tProperties(form.errors.complement![0])} />
             )}
           </div>
 
@@ -308,7 +315,7 @@ export function PropertySection() {
               aria-describedby={form.hasError('neighborhood') ? 'neighborhood-error' : undefined}
             />
             {form.hasError('neighborhood') && (
-              <ErrorHint className="mt-1.5" field="neighborhood" error={tProperties(form.errors.neighborhood![0])} />
+              <ErrorHint field="neighborhood" error={tProperties(form.errors.neighborhood![0])} />
             )}
           </div>
 
@@ -330,7 +337,7 @@ export function PropertySection() {
               aria-describedby={form.hasError('city') ? 'city-error' : undefined}
             />
             {form.hasError('city') && (
-              <ErrorHint className="mt-1.5" field="city" error={tProperties(form.errors.city![0])} />
+              <ErrorHint field="city" error={tProperties(form.errors.city![0])} />
             )}
           </div>
 
@@ -363,7 +370,7 @@ export function PropertySection() {
               </SelectContent>
             </Select>
             {form.hasError('state') && (
-              <ErrorHint className="mt-1.5" field="state" error={tProperties(form.errors.state![0])} />
+              <ErrorHint field="state" error={tProperties(form.errors.state![0])} />
             )}
           </div>
         </div>

@@ -125,7 +125,7 @@ export function PropertyCheckoutShell() {
               </SectionGroup>
             </DetailPageLayoutMain>
 
-            <DetailPageLayoutSidebar className="md:sticky md:top-6">
+            <DetailPageLayoutSidebar className="md:sticky md:top-6 md:self-start">
               <CheckoutSummary className="hidden md:flex" />
             </DetailPageLayoutSidebar>
           </DetailPageLayoutBody>

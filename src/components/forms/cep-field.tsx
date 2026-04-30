@@ -3,6 +3,7 @@
 import { memo, useState, useCallback, useRef, useEffect, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { Loader2, Check } from 'lucide-react'
+import { FieldHint } from '@/components/forms/field-hint'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getAddressProvider } from '@/lib/address/provider'
@@ -132,22 +133,22 @@ export const CepField = memo(function CepField({
         maxLength={9}
       />
       {looking && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <FieldHint className="flex items-center gap-1.5">
           <Loader2 className="size-3 animate-spin" />
           {t('postalCodeLooking')}
-        </p>
+        </FieldHint>
       )}
       {found && (
-        <p className="mt-1.5 flex items-center gap-1.5 text-xs text-primary">
+        <FieldHint className="flex items-center gap-1.5 text-primary">
           <Check className="size-3" />
           {t('postalCodeFound')}
-        </p>
+        </FieldHint>
       )}
       {notFound && (
-        <p className="mt-1.5 text-xs text-muted-foreground">{t('postalCodeNotFound')}</p>
+        <FieldHint>{t('postalCodeNotFound')}</FieldHint>
       )}
       {!looking && !found && !notFound && (
-        <p className="mt-1.5 text-xs text-muted-foreground">{t('addressHint')}</p>
+        <FieldHint>{t('addressHint')}</FieldHint>
       )}
     </div>
   )
