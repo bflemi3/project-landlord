@@ -1,20 +1,14 @@
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 import {
-  defaultPropertySectionValues,
-  type PropertySectionValues,
-} from '@/data/properties/property-section-schema'
+  defaultPropertyInput,
+  type PropertyInput,
+} from '@/data/properties/schema'
 import type { SectionId } from './registry'
 
-/**
- * Re-export the canonical property-slice type + defaults so other state
- * modules (the store, the section component) can import them from here
- * without reaching into `@/data/properties/property-section-schema` directly.
- * Single source of truth for the shape lives in the schema file.
- */
 export {
-  defaultPropertySectionValues,
-  type PropertySectionValues,
-} from '@/data/properties/property-section-schema'
+  defaultPropertyInput,
+  type PropertyInput,
+} from '@/data/properties/schema'
 
 export type SectionData = Partial<Record<SectionId, unknown>>
 
@@ -29,7 +23,7 @@ export type SectionData = Partial<Record<SectionId, unknown>>
  */
 export function defaultSectionData(): SectionData {
   return {
-    property: defaultPropertySectionValues(),
+    property: defaultPropertyInput(),
   }
 }
 
@@ -49,7 +43,7 @@ export function mergeExtractionIntoSectionData(
   extraction: ContractExtractionResult,
 ): SectionData {
   const a = extraction.address
-  const property: PropertySectionValues = {
+  const property: PropertyInput = {
     name: '',
     postal_code: a?.postalCode ?? '',
     street: a?.street ?? '',

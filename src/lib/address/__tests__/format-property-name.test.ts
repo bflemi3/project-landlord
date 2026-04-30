@@ -12,7 +12,7 @@ describe('formatPropertyName', () => {
       street: 'Rua Augusta',
       number: '123',
       complement: 'Apto 4B',
-      countryCode: 'BR',
+      country_code: 'BR',
     })).toBe('Beach House')
   })
 
@@ -25,7 +25,7 @@ describe('formatPropertyName', () => {
       name: '   ',
       street: 'Rua X',
       number: '1',
-      countryCode: 'BR',
+      country_code: 'BR',
     })).toBe('Rua X, 1')
   })
 
@@ -39,7 +39,7 @@ describe('formatPropertyName', () => {
         street: 'Avenida Campeche',
         number: '533',
         complement: '7127',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Avenida Campeche, 533, 7127')
     })
 
@@ -47,28 +47,28 @@ describe('formatPropertyName', () => {
       expect(formatPropertyName({
         street: 'Rua Augusta',
         number: '123',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, 123')
     })
 
     it('formats street only (no number, no complement)', () => {
       expect(formatPropertyName({
         street: 'Rua Augusta',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta')
     })
 
     it('formats number only', () => {
       expect(formatPropertyName({
         number: '42',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('42')
     })
 
     it('formats complement only', () => {
       expect(formatPropertyName({
         complement: 'Bloco B',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Bloco B')
     })
 
@@ -76,7 +76,7 @@ describe('formatPropertyName', () => {
       expect(formatPropertyName({
         street: 'Rua Augusta',
         complement: 'Bloco B',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, Bloco B')
     })
 
@@ -91,7 +91,7 @@ describe('formatPropertyName', () => {
       expect(formatPropertyName({
         street: 'Rua Augusta',
         number: '123',
-        countryCode: 'br',
+        country_code: 'br',
       })).toBe('Rua Augusta, 123')
     })
   })
@@ -106,7 +106,7 @@ describe('formatPropertyName', () => {
         street: 'Main St',
         number: '123',
         complement: 'Apt 4B',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('123 Main St, Apt 4B')
     })
 
@@ -114,21 +114,21 @@ describe('formatPropertyName', () => {
       expect(formatPropertyName({
         street: 'Main St',
         number: '456',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('456 Main St')
     })
 
     it('formats street only', () => {
       expect(formatPropertyName({
         street: 'Main St',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('Main St')
     })
 
     it('formats number only', () => {
       expect(formatPropertyName({
         number: '789',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('789')
     })
   })
@@ -156,7 +156,7 @@ describe('formatPropertyName', () => {
         street: '  Rua Augusta  ',
         number: ' 123 ',
         complement: ' Apto 4B ',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, 123, Apto 4B')
     })
 
@@ -165,7 +165,7 @@ describe('formatPropertyName', () => {
         street: undefined,
         number: undefined,
         complement: undefined,
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('')
     })
 
@@ -174,7 +174,7 @@ describe('formatPropertyName', () => {
         street: '',
         number: '42',
         complement: '',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('42')
     })
   })

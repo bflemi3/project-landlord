@@ -11,7 +11,7 @@ interface PropertyNameFields {
   street?: string
   number?: string
   complement?: string
-  countryCode?: string
+  country_code?: string
 }
 
 export function formatPropertyName(fields: PropertyNameFields): string {
@@ -21,7 +21,7 @@ export function formatPropertyName(fields: PropertyNameFields): string {
   const street = fields.street?.trim()
   const number = fields.number?.trim()
   const complement = fields.complement?.trim()
-  const country = (fields.countryCode ?? 'BR').toUpperCase()
+  const country = (fields.country_code ?? 'BR').toUpperCase()
 
   let base: string
 

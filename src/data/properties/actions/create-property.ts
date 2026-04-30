@@ -40,7 +40,7 @@ export async function createProperty(
     street: fields.street,
     number: fields.number,
     complement: fields.complement,
-    countryCode: fields.country_code,
+    country_code: fields.country_code,
   })
 
   const dueDay = Number(formData.get('due_day')) || 10

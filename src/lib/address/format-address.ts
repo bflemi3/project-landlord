@@ -12,7 +12,7 @@ interface AddressFields {
   neighborhood?: string | null
   city?: string | null
   state?: string | null
-  countryCode?: string
+  country_code?: string
 }
 
 export function formatAddress(fields: AddressFields): string {
@@ -22,7 +22,7 @@ export function formatAddress(fields: AddressFields): string {
   const neighborhood = fields.neighborhood?.trim() || undefined
   const city = fields.city?.trim() || undefined
   const state = fields.state?.trim() || undefined
-  const country = (fields.countryCode ?? 'BR').toUpperCase()
+  const country = (fields.country_code ?? 'BR').toUpperCase()
 
   let streetLine: string
 
@@ -57,7 +57,7 @@ export function formatAddressHtml(fields: AddressFields): string {
   const neighborhood = fields.neighborhood?.trim() || undefined
   const city = fields.city?.trim() || undefined
   const state = fields.state?.trim() || undefined
-  const country = (fields.countryCode ?? 'BR').toUpperCase()
+  const country = (fields.country_code ?? 'BR').toUpperCase()
 
   let streetLine: string
   if (country === 'BR') {

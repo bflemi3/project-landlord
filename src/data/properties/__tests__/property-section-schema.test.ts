@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 
 import {
-  defaultPropertySectionValues,
-  propertySectionSchema,
-  type PropertySectionValues,
-} from '../property-section-schema'
+  defaultPropertyInput,
+  propertySchema,
+  type PropertyInput,
+} from '../schema'
 
 const VALID_MINIMUM = {
   postal_code: '01310-100',
@@ -15,7 +15,7 @@ const VALID_MINIMUM = {
 }
 
 function fieldErrors(input: unknown) {
-  const result = propertySectionSchema.safeParse(input)
+  const result = propertySchema.safeParse(input)
   if (result.success) return null
   return z_flatten(result.error)
 }
@@ -33,39 +33,39 @@ function z_flatten(error: { issues: ReadonlyArray<{ path: ReadonlyArray<Property
   return fieldErrors
 }
 
-describe('propertySectionSchema — happy path', () => {
+describe('propertySchema — happy path', () => {
   it('parses a valid minimum input (required fields populated; name + complement omitted)', () => {
-    const result = propertySectionSchema.safeParse(VALID_MINIMUM)
+    const result = propertySchema.safeParse(VALID_MINIMUM)
     expect(result.success).toBe(true)
   })
 
   it('applies country_code default of "BR" when omitted', () => {
-    const result = propertySectionSchema.parse(VALID_MINIMUM)
+    const result = propertySchema.parse(VALID_MINIMUM)
     expect(result.country_code).toBe('BR')
   })
 
   it('applies name default of "" when omitted', () => {
-    const result = propertySectionSchema.parse(VALID_MINIMUM)
+    const result = propertySchema.parse(VALID_MINIMUM)
     expect(result.name).toBe('')
   })
 
   it('applies complement default of "" when omitted', () => {
-    const result = propertySectionSchema.parse(VALID_MINIMUM)
+    const result = propertySchema.parse(VALID_MINIMUM)
     expect(result.complement).toBe('')
   })
 
   it('applies neighborhood default of "" when omitted', () => {
-    const result = propertySectionSchema.parse(VALID_MINIMUM)
+    const result = propertySchema.parse(VALID_MINIMUM)
     expect(result.neighborhood).toBe('')
   })
 
   it('applies property_type default of null when omitted', () => {
-    const result = propertySectionSchema.parse(VALID_MINIMUM)
+    const result = propertySchema.parse(VALID_MINIMUM)
     expect(result.property_type).toBeNull()
   })
 })
 
-describe('propertySectionSchema — required field errors', () => {
+describe('propertySchema — required field errors', () => {
   it('flags missing postal_code with "required"', () => {
     const errors = fieldErrors({ ...VALID_MINIMUM, postal_code: '' })
     expect(errors?.postal_code).toEqual(['required'])
@@ -92,9 +92,9 @@ describe('propertySectionSchema — required field errors', () => {
   })
 })
 
-describe('propertySectionSchema — length boundaries', () => {
+describe('propertySchema — length boundaries', () => {
   it('accepts a name at the boundary (100 chars)', () => {
-    const result = propertySectionSchema.safeParse({
+    const result = propertySchema.safeParse({
       ...VALID_MINIMUM,
       name: 'a'.repeat(100),
     })
@@ -132,9 +132,9 @@ describe('propertySectionSchema — length boundaries', () => {
   })
 })
 
-describe('propertySectionSchema — type guards', () => {
+describe('propertySchema — type guards', () => {
   it('rejects a non-string postal_code', () => {
-    const result = propertySectionSchema.safeParse({
+    const result = propertySchema.safeParse({
       ...VALID_MINIMUM,
       postal_code: 12345,
     })
@@ -142,7 +142,7 @@ describe('propertySectionSchema — type guards', () => {
   })
 
   it('rejects a null required field (string expected)', () => {
-    const result = propertySectionSchema.safeParse({
+    const result = propertySchema.safeParse({
       ...VALID_MINIMUM,
       street: null,
     })
@@ -150,9 +150,9 @@ describe('propertySectionSchema — type guards', () => {
   })
 })
 
-describe('propertySectionSchema — postal_code format', () => {
+describe('propertySchema — postal_code format', () => {
   it('accepts the masked Brazilian format "01310-100"', () => {
-    const result = propertySectionSchema.safeParse({
+    const result = propertySchema.safeParse({
       ...VALID_MINIMUM,
       postal_code: '01310-100',
     })
@@ -160,7 +160,7 @@ describe('propertySectionSchema — postal_code format', () => {
   })
 
   it('accepts the bare 8-digit form "01310100"', () => {
-    const result = propertySectionSchema.safeParse({
+    const result = propertySchema.safeParse({
       ...VALID_MINIMUM,
       postal_code: '01310100',
     })
@@ -183,7 +183,7 @@ describe('propertySectionSchema — postal_code format', () => {
   })
 })
 
-describe('propertySectionSchema — city + state', () => {
+describe('propertySchema — city + state', () => {
   it('rejects a city containing digits with "invalidCity"', () => {
     const errors = fieldErrors({ ...VALID_MINIMUM, city: 'São Paulo 2' })
     expect(errors?.city).toEqual(['invalidCity'])
@@ -195,11 +195,11 @@ describe('propertySectionSchema — city + state', () => {
   })
 })
 
-describe('propertySectionSchema — property_type', () => {
+describe('propertySchema — property_type', () => {
   it.each(['apartment', 'house', 'commercial', 'other'] as const)(
     'accepts %s as a valid enum value',
     (value) => {
-      const result = propertySectionSchema.safeParse({
+      const result = propertySchema.safeParse({
         ...VALID_MINIMUM,
         property_type: value,
       })
@@ -208,7 +208,7 @@ describe('propertySectionSchema — property_type', () => {
   )
 
   it('accepts null', () => {
-    const result = propertySectionSchema.safeParse({
+    const result = propertySchema.safeParse({
       ...VALID_MINIMUM,
       property_type: null,
     })
@@ -216,7 +216,7 @@ describe('propertySectionSchema — property_type', () => {
   })
 
   it('rejects any other string', () => {
-    const result = propertySectionSchema.safeParse({
+    const result = propertySchema.safeParse({
       ...VALID_MINIMUM,
       property_type: 'condo',
     })
@@ -224,9 +224,9 @@ describe('propertySectionSchema — property_type', () => {
   })
 })
 
-describe('defaultPropertySectionValues', () => {
+describe('defaultPropertyInput', () => {
   it('returns the canonical blank shape', () => {
-    expect(defaultPropertySectionValues()).toEqual({
+    expect(defaultPropertyInput()).toEqual({
       name: '',
       postal_code: '',
       street: '',
@@ -241,22 +241,22 @@ describe('defaultPropertySectionValues', () => {
   })
 
   it('returns a fresh object on each call (no shared reference)', () => {
-    expect(defaultPropertySectionValues()).not.toBe(defaultPropertySectionValues())
+    expect(defaultPropertyInput()).not.toBe(defaultPropertyInput())
   })
 
   it('does NOT pass schema validation (required fields are empty)', () => {
     // The defaults are the UI's blank-slate shape, not a valid submit. The
     // schema rejects them so Continue stays gated until the user fills in
     // the required fields.
-    const result = propertySectionSchema.safeParse(defaultPropertySectionValues())
+    const result = propertySchema.safeParse(defaultPropertyInput())
     expect(result.success).toBe(false)
   })
 
-  it('returns a value typed as PropertySectionValues at compile time', () => {
+  it('returns a value typed as PropertyInput at compile time', () => {
     // Type-level assertion: the inferred return type matches the schema's
     // z.infer output. If the schema gains/loses a field and the defaults
     // aren't updated, this line stops compiling.
-    const _check: PropertySectionValues = defaultPropertySectionValues()
+    const _check: PropertyInput = defaultPropertyInput()
     expect(_check).toBeDefined()
   })
 })

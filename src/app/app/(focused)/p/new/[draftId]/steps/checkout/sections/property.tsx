@@ -17,12 +17,12 @@ import {
 import { getAddressProvider } from '@/lib/address/provider'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
-import { propertySectionSchema } from '@/data/properties/property-section-schema'
+import { propertySchema } from '@/data/properties/schema'
 import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
 import { Constants } from '@/lib/types/database'
 
 import type { SectionId } from '../../../state/registry'
-import type { PropertySectionValues } from '../../../state/extraction-seeding'
+import type { PropertyInput } from '../../../state/extraction-seeding'
 import {
   usePropertyCreationActions,
   usePropertyCreationState,
@@ -40,7 +40,7 @@ const ICON = Building2
 const PROPERTY_TYPE_OPTIONS = Constants.public.Enums.property_type
 
 const brStates = getAddressProvider('BR').states
-const validator = zodValidator(propertySectionSchema)
+const validator = zodValidator(propertySchema)
 
 export function PropertySection() {
   const t = useTranslations('propertyCreation.checkout')
@@ -49,7 +49,7 @@ export function PropertySection() {
   const ctrl = useSectionController(SECTION_ID, { isFirst: true })
   const { setSectionData } = usePropertyCreationActions()
   const values = usePropertyCreationState(
-    (s) => s.sectionData.property as PropertySectionValues,
+    (s) => s.sectionData.property as PropertyInput,
   )
 
   const form = useFormValidation({ values, validator })
@@ -59,15 +59,15 @@ export function PropertySection() {
       street: values.street,
       number: values.number,
       complement: values.complement,
-      countryCode: values.country_code,
+      country_code: values.country_code,
     })
     return derived.length > 0 ? derived : tProperties('propertyNamePlaceholder')
   }, [values.street, values.number, values.complement, values.country_code, tProperties])
 
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
-      setSectionData<PropertySectionValues>('property', (prev) => ({
-        ...(prev as PropertySectionValues),
+      setSectionData<PropertyInput>('property', (prev) => ({
+        ...(prev as PropertyInput),
         postal_code: formatted,
       }))
     },
@@ -76,8 +76,8 @@ export function PropertySection() {
 
   const handleAddressFound = useCallback(
     (result: AddressLookupResult) => {
-      setSectionData<PropertySectionValues>('property', (prev) => {
-        const base = prev as PropertySectionValues
+      setSectionData<PropertyInput>('property', (prev) => {
+        const base = prev as PropertyInput
         return {
           ...base,
           street: result.street ?? base.street,
@@ -93,12 +93,12 @@ export function PropertySection() {
   // Per-field setter. Recreated each render — fine, since it's only consumed
   // by non-memoized children (Input / Select). Memoized children use the
   // stable callbacks above.
-  function setField<K extends keyof PropertySectionValues>(
+  function setField<K extends keyof PropertyInput>(
     key: K,
-    next: PropertySectionValues[K],
+    next: PropertyInput[K],
   ) {
-    setSectionData<PropertySectionValues>('property', (prev) => ({
-      ...(prev as PropertySectionValues),
+    setSectionData<PropertyInput>('property', (prev) => ({
+      ...(prev as PropertyInput),
       [key]: next,
     }))
   }
@@ -137,7 +137,7 @@ export function PropertySection() {
               onValueChange={(val) =>
                 setField(
                   'property_type',
-                  (val || null) as PropertySectionValues['property_type'],
+                  (val || null) as PropertyInput['property_type'],
                 )
               }
             >

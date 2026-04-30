@@ -14,8 +14,8 @@ export interface UpdatePropertyInput {
   neighborhood: string
   city: string
   state: string
-  postalCode: string
-  countryCode: string
+  postal_code: string
+  country_code: string
 }
 
 export async function updatePropertyCore(
@@ -27,7 +27,7 @@ export async function updatePropertyCore(
     street: input.street,
     number: input.number,
     complement: input.complement,
-    countryCode: input.countryCode,
+    country_code: input.country_code,
   })
 
   const { error } = await supabase
@@ -40,7 +40,7 @@ export async function updatePropertyCore(
       neighborhood: input.neighborhood,
       city: input.city,
       state: input.state,
-      postal_code: input.postalCode,
+      postal_code: input.postal_code,
       updated_at: new Date().toISOString(),
     })
     .eq('id', input.propertyId)

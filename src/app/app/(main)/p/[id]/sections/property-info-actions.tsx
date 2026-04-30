@@ -28,8 +28,8 @@ export function PropertyInfoActions({ propertyId, property }: { propertyId: stri
       neighborhood: values.neighborhood,
       city: values.city,
       state: values.state,
-      postalCode: values.postal_code,
-      countryCode: values.country_code,
+      postal_code: values.postal_code,
+      country_code: values.country_code,
     })
     queryClient.invalidateQueries({ queryKey: propertyQueryKey(propertyId) })
     setSaving(false)
@@ -57,14 +57,14 @@ export function PropertyInfoActions({ propertyId, property }: { propertyId: stri
           excludePropertyId={propertyId}
           initialValues={{
             name: property.name,
-            postal_code: property.postalCode ?? '',
+            postal_code: property.postal_code ?? '',
             street: property.street ?? '',
             number: property.number ?? '',
             complement: property.complement ?? '',
             neighborhood: property.neighborhood ?? '',
             city: property.city ?? '',
             state: property.state ?? '',
-            country_code: property.countryCode,
+            country_code: property.country_code,
           }}
         >
           <PropertyForm.Name className="mb-4" />

@@ -12,7 +12,7 @@ export async function PropertyInfoSection({ propertyId }: { propertyId: string }
     property.complement,
     property.neighborhood,
     [property.city, property.state].filter(Boolean).join(', '),
-    property.postalCode,
+    property.postal_code,
   ].filter(Boolean)
 
   return (

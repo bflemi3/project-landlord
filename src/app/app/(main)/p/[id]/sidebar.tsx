@@ -11,7 +11,7 @@ import {
 } from './sections/skeletons'
 
 /**
- * Sidebar — calls cached getProperty() for unitIds (instant if already fetched),
+ * Sidebar — calls cached getProperty() for unit_ids (instant if already fetched),
  * then renders sections each streaming independently.
  */
 export async function Sidebar({ propertyId }: { propertyId: string }) {
@@ -30,7 +30,7 @@ export async function Sidebar({ propertyId }: { propertyId: string }) {
         <PropertyInfoSection propertyId={propertyId} />
       </FadeIn>
 
-      {property.unitIds.map((unitId) => (
+      {property.unit_ids.map((unitId) => (
         <SuspenseFadeIn key={unitId} fallback={<TenantsSkeleton />}>
           <TenantsSectionWrapper propertyId={propertyId} unitId={unitId} />
         </SuspenseFadeIn>

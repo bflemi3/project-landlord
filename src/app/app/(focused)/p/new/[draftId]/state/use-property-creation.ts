@@ -1,6 +1,6 @@
 'use client'
 
-import type { PropertySectionValues } from '@/data/properties/property-section-schema'
+import type { PropertyInput } from '@/data/properties/schema'
 import {
   CHECKOUT_SECTIONS,
   getRequiredSectionIds,
@@ -97,7 +97,7 @@ export function useIsSectionRequired(id: SectionId): boolean {
 
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
-export type ExtractedFieldPath = `property.${keyof PropertySectionValues}`
+export type ExtractedFieldPath = `property.${keyof PropertyInput}`
 // Future sections extend the union, e.g.:
 //   | `rent-dates.${keyof RentDatesSectionValues}`
 //   | `tenants.${number}.${keyof TenantInviteValues}`

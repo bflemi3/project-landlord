@@ -125,7 +125,7 @@ export async function inviteTenant(
     .eq('id', propertyId)
     .single()
 
-  const addressFields = property ? { ...property, countryCode: property.country_code } : null
+  const addressFields = property
   const addressOneLine = addressFields ? formatAddress(addressFields) : ''
   const addressHtml = addressFields ? formatAddressHtml(addressFields) : ''
   const propertyName = addressOneLine || property?.name || ''

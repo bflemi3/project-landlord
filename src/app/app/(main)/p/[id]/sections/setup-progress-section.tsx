@@ -15,7 +15,7 @@ export async function SetupProgressSection({ propertyId }: { propertyId: string 
   const property = await getProperty(propertyId)
 
   // For setup progress, check the first unit (MVP: single unit per property)
-  const firstUnitId = property.unitIds[0] ?? ''
+  const firstUnitId = property.unit_ids[0] ?? ''
   const [charges, members, invites] = await Promise.all([
     getUnitCharges(firstUnitId),
     getUnitTenants(firstUnitId),

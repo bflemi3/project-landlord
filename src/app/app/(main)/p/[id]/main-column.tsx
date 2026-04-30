@@ -11,7 +11,7 @@ import {
 } from './sections/skeletons'
 
 /**
- * Main column — calls cached getProperty() for unitIds (instant if header already fetched),
+ * Main column — calls cached getProperty() for unit_ids (instant if header already fetched),
  * then renders per-unit sections each streaming independently.
  */
 export async function MainColumn({ propertyId }: { propertyId: string }) {
@@ -19,7 +19,7 @@ export async function MainColumn({ propertyId }: { propertyId: string }) {
 
   return (
     <DetailPageLayoutMain>
-      {property.unitIds.map((unitId) => (
+      {property.unit_ids.map((unitId) => (
         <SuspenseFadeIn key={`billing-${unitId}`} fallback={<BillingSummarySkeleton />}>
           <BillingSummaryCard unitId={unitId} propertyId={propertyId} />
         </SuspenseFadeIn>
@@ -32,7 +32,7 @@ export async function MainColumn({ propertyId }: { propertyId: string }) {
         </SuspenseFadeIn>
       </div>
 
-      {property.unitIds.map((unitId) => (
+      {property.unit_ids.map((unitId) => (
         <SuspenseFadeIn key={unitId} fallback={<UnitSectionSkeleton />}>
           <UnitSection unitId={unitId} propertyId={propertyId} />
         </SuspenseFadeIn>

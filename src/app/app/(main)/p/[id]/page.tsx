@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
  * Property detail page — synchronous, no blocking awaits.
  *
  * Header streams independently (fetches property for name/address).
- * MainColumn and Sidebar call cached getProperty() for unitIds (instant
+ * MainColumn and Sidebar call cached getProperty() for unit_ids (instant
  * if header already fetched via React.cache). Sections within each
  * stream independently via their own Suspense boundaries.
  */

@@ -17,7 +17,7 @@ export async function UnitSection({ unitId, propertyId }: { unitId: string; prop
   queryClient.setQueryData(unitQueryKey(unitId), unit)
   queryClient.setQueryData(unitChargesQueryKey(unitId), charges)
 
-  const showUnitHeader = property.unitIds.length > 1
+  const showUnitHeader = property.unit_ids.length > 1
 
   return (
     <div>

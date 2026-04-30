@@ -32,10 +32,14 @@ describe('fetchProperty', () => {
       state: 'SP',
       postal_code: '01001-000',
       country_code: 'BR',
+      created_at: '2026-01-01T00:00:00Z',
+      created_by: 'user-1',
+      updated_at: '2026-01-01T00:00:00Z',
+      deleted_at: null,
       units: [{ id: 'u1' }, { id: 'u2' }],
     }
     const result = await fetchProperty(mockSupabase({ data: row }), 'p1')
-    expect(result).toEqual({
+    expect(result).toMatchObject({
       id: 'p1',
       name: 'Casa Verde',
       street: 'Rua A',
@@ -44,9 +48,9 @@ describe('fetchProperty', () => {
       neighborhood: 'Centro',
       city: 'São Paulo',
       state: 'SP',
-      postalCode: '01001-000',
-      countryCode: 'BR',
-      unitIds: ['u1', 'u2'],
+      postal_code: '01001-000',
+      country_code: 'BR',
+      unit_ids: ['u1', 'u2'],
     })
   })
 

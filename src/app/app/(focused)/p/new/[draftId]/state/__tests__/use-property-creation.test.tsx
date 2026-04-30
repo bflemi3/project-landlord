@@ -30,7 +30,7 @@ import {
 } from '../store-provider'
 import { useIsExtracted } from '../use-property-creation'
 import { propertyCreationWizardKey } from '../persistence'
-import { defaultPropertySectionValues } from '@/data/properties/property-section-schema'
+import { defaultPropertyInput } from '@/data/properties/schema'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 // --- Helpers ----------------------------------------------------------------
@@ -471,7 +471,7 @@ describe('useIsExtracted', () => {
       // shape directly so the slice values match what `useIsExtracted` reads.
       sectionData: {
         property: {
-          ...defaultPropertySectionValues(),
+          ...defaultPropertyInput(),
           postal_code: '01310-100',
           street: 'Rua Augusta',
           number: '123',
@@ -572,7 +572,7 @@ describe('useIsExtracted', () => {
       path: 'contract',
       sectionData: {
         property: {
-          ...defaultPropertySectionValues(),
+          ...defaultPropertyInput(),
           street: 'Avenida Paulista', // user edited from extracted "Rua Augusta"
           property_type: 'apartment',
         },
@@ -601,7 +601,7 @@ describe('useIsExtracted', () => {
       path: 'no_contract',
       sectionData: {
         property: {
-          ...defaultPropertySectionValues(),
+          ...defaultPropertyInput(),
           street: 'Avenida Paulista',
         },
       },
@@ -648,7 +648,7 @@ describe('useIsExtracted', () => {
         rawExtractedText: '',
       } satisfies ContractExtractionResult,
       path: 'contract',
-      sectionData: { property: defaultPropertySectionValues() },
+      sectionData: { property: defaultPropertyInput() },
     })
     const wrapper = makeWrapper(draftId)
     const { result } = renderHook(
@@ -673,7 +673,7 @@ describe('useIsExtracted', () => {
       path: 'no_contract',
       sectionData: {
         property: {
-          ...defaultPropertySectionValues(),
+          ...defaultPropertyInput(),
           name: 'Edifício Aurora', // user-entered, no extraction source for name
           country_code: 'BR', // never sourced from extraction
         },
@@ -714,7 +714,7 @@ describe('useIsExtracted', () => {
         rawExtractedText: '',
       } satisfies ContractExtractionResult,
       path: 'contract',
-      sectionData: { property: defaultPropertySectionValues() },
+      sectionData: { property: defaultPropertyInput() },
     })
     const wrapper = makeWrapper(draftId)
     const { result } = renderHook(

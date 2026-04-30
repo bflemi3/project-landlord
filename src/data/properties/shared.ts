@@ -1,26 +1,17 @@
+import type { Database } from '@/lib/types/database'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
-export interface Property {
-  id: string
-  name: string
-  street: string | null
-  number: string | null
-  complement: string | null
-  neighborhood: string | null
-  city: string | null
-  state: string | null
-  postalCode: string | null
-  countryCode: string
-  unitIds: string[]
+type PropertyRow = Database['public']['Tables']['properties']['Row']
+
+export type Property = PropertyRow & {
+  unit_ids: string[]
 }
 
 export async function fetchProperty(supabase: TypedSupabaseClient, propertyId: string): Promise<Property> {
   const { data, error } = await supabase
     .from('properties')
     .select(`
-      id, name, street, number, complement, neighborhood,
-      city, state, postal_code, country_code,
-      units!inner ( id )
+      *, units!inner ( id )
     `)
     .eq('id', propertyId)
     .is('deleted_at', null)
@@ -31,17 +22,8 @@ export async function fetchProperty(supabase: TypedSupabaseClient, propertyId: s
   const units = data.units as unknown as { id: string }[]
 
   return {
-    id: data.id,
-    name: data.name,
-    street: data.street,
-    number: data.number,
-    complement: data.complement,
-    neighborhood: data.neighborhood,
-    city: data.city,
-    state: data.state,
-    postalCode: data.postal_code,
-    countryCode: data.country_code,
-    unitIds: units.map((u) => u.id),
+    ...data,
+    unit_ids: units.map((u) => u.id),
   }
 }
 

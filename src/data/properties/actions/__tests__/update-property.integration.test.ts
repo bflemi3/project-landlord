@@ -40,8 +40,8 @@ describe('updatePropertyCore', () => {
       neighborhood: 'Centro',
       city: 'Rio de Janeiro',
       state: 'RJ',
-      postalCode: '20040020',
-      countryCode: 'BR',
+      postal_code: '20040020',
+      country_code: 'BR',
     })
 
     expect(result.success).toBe(true)
@@ -74,8 +74,8 @@ describe('updatePropertyCore', () => {
       neighborhood: '',
       city: '',
       state: '',
-      postalCode: '',
-      countryCode: 'BR',
+      postal_code: '',
+      country_code: 'BR',
     })
 
     // RLS silently filters — Supabase returns no error even if 0 rows matched

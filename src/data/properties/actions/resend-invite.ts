@@ -38,7 +38,7 @@ export async function resendInvite(inviteId: string): Promise<{ success: boolean
 
   const locale = (profile?.preferred_locale as EmailLocale) ?? 'en'
   const landlordName = profile?.full_name ?? ''
-  const addressFields = property ? { ...property, countryCode: property.country_code } : null
+  const addressFields = property
   const addressOneLine = addressFields ? formatAddress(addressFields) : ''
   const addressHtml = addressFields ? formatAddressHtml(addressFields) : ''
   const propertyName = addressOneLine || property?.name || ''

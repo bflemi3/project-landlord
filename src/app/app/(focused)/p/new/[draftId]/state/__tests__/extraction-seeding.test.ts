@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 import {
-  defaultPropertySectionValues,
+  defaultPropertyInput,
   defaultSectionData,
   mergeExtractionIntoSectionData,
   type SectionData,
@@ -31,9 +31,9 @@ function makeExtraction(
 }
 
 describe('defaultSectionData', () => {
-  it('returns the property slice initialized to defaultPropertySectionValues()', () => {
+  it('returns the property slice initialized to defaultPropertyInput()', () => {
     const data = defaultSectionData()
-    expect(data.property).toEqual(defaultPropertySectionValues())
+    expect(data.property).toEqual(defaultPropertyInput())
   })
 })
 
@@ -187,7 +187,7 @@ describe('mergeExtractionIntoSectionData', () => {
     // Ensures the merge function doesn't overwrite non-property slices when
     // future sections add their own seeded values.
     const prev: SectionData = {
-      property: defaultPropertySectionValues(),
+      property: defaultPropertyInput(),
       // Stand-in for future sections — typed as `unknown`.
       'rent-dates': { foo: 'bar' } as unknown,
     }
@@ -209,11 +209,11 @@ describe('mergeExtractionIntoSectionData', () => {
     expect(result['rent-dates']).toEqual({ foo: 'bar' })
   })
 
-  it('re-exports defaultPropertySectionValues() with the canonical blank shape', () => {
+  it('re-exports defaultPropertyInput() with the canonical blank shape', () => {
     // Ensures the default shape stays in lock-step with the seeded shape's
     // fields and types — the store's `defaultState()` initializes every
     // section's slice to its blank shape via this function.
-    expect(defaultPropertySectionValues()).toEqual({
+    expect(defaultPropertyInput()).toEqual({
       name: '',
       postal_code: '',
       street: '',
