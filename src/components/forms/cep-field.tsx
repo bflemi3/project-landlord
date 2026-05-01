@@ -133,22 +133,22 @@ export const CepField = memo(function CepField({
         maxLength={9}
       />
       {looking && (
-        <FieldHint className="flex items-center gap-1.5">
+        <FieldHint field="postal_code" className="flex items-center gap-1.5">
           <Loader2 className="size-3 animate-spin" />
           {t('postalCodeLooking')}
         </FieldHint>
       )}
       {found && (
-        <FieldHint className="flex items-center gap-1.5 text-primary">
+        <FieldHint field="postal_code" className="flex items-center gap-1.5 text-primary">
           <Check className="size-3" />
           {t('postalCodeFound')}
         </FieldHint>
       )}
       {notFound && (
-        <FieldHint>{t('postalCodeNotFound')}</FieldHint>
+        <FieldHint field="postal_code">{t('postalCodeNotFound')}</FieldHint>
       )}
       {!looking && !found && !notFound && (
-        <FieldHint>{t('addressHint')}</FieldHint>
+        <FieldHint field="postal_code">{t('addressHint')}</FieldHint>
       )}
     </div>
   )

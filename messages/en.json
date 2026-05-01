@@ -403,6 +403,7 @@
       "rent-dates": {
         "title": "Rent & dates",
         "subtitle": "Amount, due day, and contract period.",
+        "rentAmount": "Monthly rent",
         "placeholder": "Rent and dates form coming soon."
       },
       "tenants": {

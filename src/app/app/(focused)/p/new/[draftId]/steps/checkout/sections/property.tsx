@@ -7,6 +7,9 @@ import { toast } from 'sonner'
 import { Building2, Home, Briefcase, MoreHorizontal } from 'lucide-react'
 
 import { CepField } from '@/components/forms/cep-field'
+import { ErrorHint } from '@/components/forms/error-hint'
+import { FieldHint } from '@/components/forms/field-hint'
+import { FormRoot, FormFieldset, FormField } from '@/components/forms/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -38,8 +41,6 @@ import { useSectionController } from '../use-section-controller'
 import { SectionSkeleton } from './section-skeleton'
 import { SummaryRow } from './summary-row'
 import { AutoFilledIndicator } from './auto-filled-indicator'
-import { ErrorHint } from '@/components/forms/error-hint'
-import { FieldHint } from '@/components/forms/field-hint'
 
 const SECTION_ID: SectionId = 'property'
 const ICON = Building2
@@ -193,9 +194,9 @@ export function PropertySection() {
         />
       </Section.Header>
       <Section.Body>
-        <div className="flex flex-col gap-8">
+        <FormRoot>
           {/* 1. Property type */}
-          <div className="flex flex-col gap-2">
+          <FormField>
             <Label>
               {tProperties('propertyType')}
               <AutoFilledIndicator path="property.property_type" />
@@ -208,10 +209,10 @@ export function PropertySection() {
                 setField('property_type', val as PropertyInput['property_type'])
               }
             />
-          </div>
+          </FormField>
 
           {/* 2. Property name */}
-          <div className="flex flex-col gap-2">
+          <FormField>
             <Label htmlFor="name">
               {tProperties('propertyName')}
             </Label>
@@ -224,17 +225,17 @@ export function PropertySection() {
               onChange={(e) => setField('name', e.target.value)}
               onBlur={() => form.markTouched('name')}
               aria-invalid={form.hasError('name')}
-              aria-describedby={form.hasError('name') ? 'name-error' : undefined}
+              aria-describedby={form.hasError('name') ? 'name-error' : 'name-hint'}
             />
             {form.hasError('name') ? (
               <ErrorHint field="name" error={tProperties(form.errors.name![0])} />
             ) : (
-              <FieldHint>{tProperties('propertyNameHint')}</FieldHint>
+              <FieldHint field="name">{tProperties('propertyNameHint')}</FieldHint>
             )}
-          </div>
+          </FormField>
 
           {/* 3. CEP */}
-          <div className="flex flex-col gap-2">
+          <FormField>
             <CepField
               labelExtra={cepLabelExtra}
               value={values.postal_code}
@@ -244,11 +245,11 @@ export function PropertySection() {
             {form.hasError('postal_code') && (
               <ErrorHint field="postal_code" error={tProperties(form.errors.postal_code![0])} />
             )}
-          </div>
+          </FormField>
 
           {/* 4. Street + Number */}
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="flex flex-col gap-2 md:col-span-2">
+          <FormFieldset legend="Street address" columns={3}>
+            <FormField className="md:col-span-2">
               <Label htmlFor="street">
                 {tProperties('street')}
                 <AutoFilledIndicator path="property.street" />
@@ -267,9 +268,9 @@ export function PropertySection() {
               {form.hasError('street') && (
                 <ErrorHint field="street" error={tProperties(form.errors.street![0])} />
               )}
-            </div>
+            </FormField>
 
-            <div className="flex flex-col gap-2">
+            <FormField>
               <Label htmlFor="number">
                 {tProperties('number')}
                 <AutoFilledIndicator path="property.number" />
@@ -288,11 +289,11 @@ export function PropertySection() {
               {form.hasError('number') && (
                 <ErrorHint field="number" error={tProperties(form.errors.number![0])} />
               )}
-            </div>
-          </div>
+            </FormField>
+          </FormFieldset>
 
           {/* 5. Complement */}
-          <div className="flex flex-col gap-2">
+          <FormField>
             <Label htmlFor="complement">
               {tProperties('complement')}
               <AutoFilledIndicator path="property.complement" />
@@ -311,10 +312,10 @@ export function PropertySection() {
             {form.hasError('complement') && (
               <ErrorHint field="complement" error={tProperties(form.errors.complement![0])} />
             )}
-          </div>
+          </FormField>
 
           {/* 6. Neighborhood */}
-          <div className="flex flex-col gap-2">
+          <FormField>
             <Label htmlFor="neighborhood">
               {tProperties('neighborhood')}
               <AutoFilledIndicator path="property.neighborhood" />
@@ -333,11 +334,11 @@ export function PropertySection() {
             {form.hasError('neighborhood') && (
               <ErrorHint field="neighborhood" error={tProperties(form.errors.neighborhood![0])} />
             )}
-          </div>
+          </FormField>
 
           {/* 7. City + State */}
-          <div className="grid gap-8 md:grid-cols-3">
-            <div className="flex flex-col gap-2 md:col-span-2">
+          <FormFieldset legend="City and state" columns={3}>
+            <FormField className="md:col-span-2">
               <Label htmlFor="city">
                 {tProperties('city')}
                 <AutoFilledIndicator path="property.city" />
@@ -356,9 +357,9 @@ export function PropertySection() {
               {form.hasError('city') && (
                 <ErrorHint field="city" error={tProperties(form.errors.city![0])} />
               )}
-            </div>
+            </FormField>
 
-            <div className="flex flex-col gap-2">
+            <FormField>
               <Label htmlFor="state">
                 {tProperties('state')}
                 <AutoFilledIndicator path="property.state" />
@@ -389,9 +390,9 @@ export function PropertySection() {
               {form.hasError('state') && (
                 <ErrorHint field="state" error={tProperties(form.errors.state![0])} />
               )}
-            </div>
-          </div>
-        </div>
+            </FormField>
+          </FormFieldset>
+        </FormRoot>
         <Section.Actions
           backLabel={t('actions.back')}
           continueLabel={t('actions.continue')}

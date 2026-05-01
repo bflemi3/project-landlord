@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils'
 
-export function FieldHint({ className, children }: { className?: string; children: React.ReactNode }) {
+export function FieldHint({ className, children, field }: { className?: string; children: React.ReactNode; field: string }) {
   return (
-    <p data-slot="field-hint" className={cn('text-muted-foreground text-sm', className)}>
+    <p id={`${field}-hint`} data-slot="field-hint" className={cn('text-muted-foreground text-sm', className)}>
       {children}
     </p>
   )

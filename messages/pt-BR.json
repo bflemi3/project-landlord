@@ -403,6 +403,7 @@
       "rent-dates": {
         "title": "Aluguel e datas",
         "subtitle": "Valor, dia de vencimento e período do contrato.",
+        "rentAmount": "Aluguel mensal",
         "placeholder": "Formulário de aluguel e datas em breve."
       },
       "tenants": {

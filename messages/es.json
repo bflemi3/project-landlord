@@ -403,6 +403,7 @@
       "rent-dates": {
         "title": "Renta y fechas",
         "subtitle": "Monto, día de vencimiento y período del contrato.",
+        "rentAmount": "Renta mensual",
         "placeholder": "Formulario de renta y fechas próximamente."
       },
       "tenants": {
