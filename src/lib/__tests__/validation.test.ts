@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { isValidEmail } from '../validation'
+import { isValidEmail, zodIssuesToFieldErrors } from '../validation'
 
 describe('isValidEmail', () => {
   it('accepts standard email', () => {
@@ -56,5 +56,21 @@ describe('isValidEmail', () => {
 
   it('rejects multiple @ signs', () => {
     expect(isValidEmail('user@@example.com')).toBe(false)
+  })
+})
+
+describe('zodIssuesToFieldErrors', () => {
+  it('maps zod issue paths to reusable validation field errors', () => {
+    const errors = zodIssuesToFieldErrors<{ amount_minor: number | undefined }>(
+      [
+        { path: ['amount_minor'], message: 'invalidAmount' },
+        { path: [], message: 'generalError' },
+      ],
+    )
+
+    expect(errors).toEqual({
+      amount_minor: ['invalidAmount'],
+      general: ['generalError'],
+    })
   })
 })

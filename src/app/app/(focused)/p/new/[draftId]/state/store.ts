@@ -25,6 +25,11 @@ import {
 
 type UpdaterOrValue<T> = T | ((prev: T) => T)
 
+const EXTRACTION_SEEDED_SECTION_IDS = [
+  'property',
+  'rent-dates',
+] as const satisfies readonly SectionId[]
+
 export interface PropertyCreationStateShape {
   step: 1 | 2
   contractFile: File | null
@@ -141,6 +146,33 @@ function isRequired(id: SectionId, path: CheckoutPath | null): boolean {
   return getRequiredSectionIds(path).includes(id)
 }
 
+function backfillMissingExtractionSections(
+  baseSectionData: PropertyCreationStateShape['sectionData'],
+  persisted: Partial<PersistedPropertyCreationState>,
+): PropertyCreationStateShape['sectionData'] {
+  if (persisted.path !== 'contract' || persisted.extractionResult == null) {
+    return baseSectionData
+  }
+
+  const missingSectionIds = EXTRACTION_SEEDED_SECTION_IDS.filter(
+    (id) => persisted.sectionData?.[id] === undefined,
+  )
+  if (missingSectionIds.length === 0) return baseSectionData
+
+  const seededSectionData = mergeExtractionIntoSectionData(
+    baseSectionData,
+    persisted.extractionResult,
+  )
+
+  return missingSectionIds.reduce<PropertyCreationStateShape['sectionData']>(
+    (next, id) => ({
+      ...next,
+      [id]: seededSectionData[id],
+    }),
+    baseSectionData,
+  )
+}
+
 // ---------------------------------------------------------------------------
 // Persist options
 // ---------------------------------------------------------------------------
@@ -201,23 +233,13 @@ function buildPersistOptions(
         ...(persisted.sectionData ?? {}),
       }
 
-      // Backfill: persisted state from before the seeding logic shipped won't
-      // have a property slice (or only has the eager-init defaults). Whenever
-      // `path === 'contract'` and `extractionResult` is non-null AND the
-      // persisted payload had no property slice, fold extraction-derived
-      // values in now via the same merge function `commitContractOutput`
-      // uses. Persisted user edits (slice exists in `persisted.sectionData`)
-      // are preserved — re-seeding is a backfill, not an overwrite.
-      const shouldBackfillProperty =
-        persisted.path === 'contract' &&
-        persisted.extractionResult != null &&
-        persisted.sectionData?.property === undefined
-      const sectionData = shouldBackfillProperty
-        ? mergeExtractionIntoSectionData(
-            baseSectionData,
-            persisted.extractionResult!,
-          )
-        : baseSectionData
+      // Backfill: persisted state from before extraction seeding shipped may
+      // be missing slices populated from contract extraction. Seed only absent
+      // slices so existing user-edited slices are preserved.
+      const sectionData = backfillMissingExtractionSections(
+        baseSectionData,
+        persisted,
+      )
 
       // Resume-mid-extraction sanity check: if persisted state shows the
       // user reached step 2 with a contract file but no extractionResult

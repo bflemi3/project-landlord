@@ -1,6 +1,7 @@
 'use client'
 
 import type { PropertyInput } from '@/data/properties/schema'
+import { coerceCurrency } from '@/data/shared/currency'
 import {
   CHECKOUT_SECTIONS,
   getRequiredSectionIds,
@@ -8,6 +9,7 @@ import {
 } from './registry'
 import type { SectionStatus } from './persistence'
 import { usePropertyCreationState } from './store-provider'
+import type { RentDatesInput } from './rent-dates-schema'
 
 // ---------------------------------------------------------------------------
 // Re-export the public hook surface from the Provider module so existing
@@ -97,7 +99,9 @@ export function useIsSectionRequired(id: SectionId): boolean {
 
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
-export type ExtractedFieldPath = `property.${keyof PropertyInput}`
+export type ExtractedFieldPath =
+  | `property.${Extract<keyof PropertyInput, string>}`
+  | `rent-dates.${Extract<keyof RentDatesInput, string>}`
 // Future sections extend the union, e.g.:
 //   | `rent-dates.${keyof RentDatesSectionValues}`
 //   | `tenants.${number}.${keyof TenantInviteValues}`
@@ -117,6 +121,8 @@ const EXTRACTION_GETTERS: Record<
   'property.state': (e) => e.address?.state,
   'property.country_code': null,
   'property.property_type': (e) => e.propertyType,
+  'rent-dates.amount_minor': (e) => e.rent?.amount,
+  'rent-dates.currency': (e) => coerceCurrency(e.rent?.currency),
 }
 
 /** Walks a dot-notation path into a possibly-nested value. Returns

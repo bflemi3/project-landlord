@@ -26,6 +26,7 @@ import type { AddressLookupResult } from '@/lib/address/types'
 import { getPropertyInputSchema } from '@/data/properties/schema-by-country'
 import { validateProperty } from '@/data/properties/actions/validate-property'
 import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
+import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'
 import { Constants } from '@/lib/types/database'
 
 import type { SectionId } from '../../../state/registry'
@@ -68,10 +69,23 @@ export function PropertySection() {
   const values = usePropertyCreationState(
     (s) => s.sectionData.property as PropertyInput,
   )
+  const form = useFormValidation({ values, validator })
+  const { markTouched } = form
+  const {
+    setServerErrors,
+    clearServerErrors,
+    hasFieldError,
+    getFieldError,
+  } = useServerValidationErrors<PropertyInput>()
 
   const onBeforeContinue = useCallback(async () => {
     const result = await validateProperty(values)
-    if (result.valid) return true
+    if (result.valid) {
+      clearServerErrors()
+      return true
+    }
+
+    setServerErrors(result.errors ?? {})
 
     if (result.existingPropertyId) {
       toast.warning(tProperties('duplicateAddress'), {
@@ -84,12 +98,9 @@ export function PropertySection() {
       })
     }
     return false
-  }, [values, tProperties, router])
+  }, [values, tProperties, router, clearServerErrors, setServerErrors])
 
   const ctrl = useSectionController(SECTION_ID, { isFirst: true, onBeforeContinue })
-
-  const form = useFormValidation({ values, validator })
-  const { markTouched } = form
 
   const isPostalCodeExtracted = useIsExtracted('property.postal_code')
   const cepLabelExtra = useMemo(
@@ -132,17 +143,19 @@ export function PropertySection() {
 
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
+      clearServerErrors('postal_code')
       setSectionData<PropertyInput>('property', (prev) => ({
         ...(prev as PropertyInput),
         postal_code: formatted,
       }))
       markTouched('postal_code')
     },
-    [setSectionData, markTouched],
+    [setSectionData, markTouched, clearServerErrors],
   )
 
   const handleAddressFound = useCallback(
     (result: AddressLookupResult) => {
+      clearServerErrors('street', 'neighborhood', 'city', 'state')
       setSectionData<PropertyInput>('property', (prev) => {
         const base = prev as PropertyInput
         return {
@@ -154,7 +167,7 @@ export function PropertySection() {
         }
       })
     },
-    [setSectionData],
+    [setSectionData, clearServerErrors],
   )
 
   // Per-field setter. Recreated each render — fine, since it's only consumed
@@ -164,6 +177,7 @@ export function PropertySection() {
     key: K,
     next: PropertyInput[K],
   ) {
+    clearServerErrors(key)
     setSectionData<PropertyInput>('property', (prev) => ({
       ...(prev as PropertyInput),
       [key]: next,
@@ -224,11 +238,11 @@ export function PropertySection() {
               value={values.name}
               onChange={(e) => setField('name', e.target.value)}
               onBlur={() => form.markTouched('name')}
-              aria-invalid={form.hasError('name')}
-              aria-describedby={form.hasError('name') ? 'name-error' : 'name-hint'}
+              aria-invalid={hasFieldError(form, 'name')}
+              aria-describedby={hasFieldError(form, 'name') ? 'name-error' : 'name-hint'}
             />
-            {form.hasError('name') ? (
-              <ErrorHint field="name" error={tProperties(form.errors.name![0])} />
+            {hasFieldError(form, 'name') ? (
+              <ErrorHint field="name" error={tProperties(getFieldError(form, 'name')!)} />
             ) : (
               <FieldHint field="name">{tProperties('propertyNameHint')}</FieldHint>
             )}
@@ -242,8 +256,8 @@ export function PropertySection() {
               onValueChange={handlePostalCodeChange}
               onAddressFound={handleAddressFound}
             />
-            {form.hasError('postal_code') && (
-              <ErrorHint field="postal_code" error={tProperties(form.errors.postal_code![0])} />
+            {hasFieldError(form, 'postal_code') && (
+              <ErrorHint field="postal_code" error={tProperties(getFieldError(form, 'postal_code')!)} />
             )}
           </FormField>
 
@@ -262,11 +276,11 @@ export function PropertySection() {
                 value={values.street}
                 onChange={(e) => setField('street', e.target.value)}
                 onBlur={() => form.markTouched('street')}
-                aria-invalid={form.hasError('street')}
-                aria-describedby={form.hasError('street') ? 'street-error' : undefined}
+                aria-invalid={hasFieldError(form, 'street')}
+                aria-describedby={hasFieldError(form, 'street') ? 'street-error' : undefined}
               />
-              {form.hasError('street') && (
-                <ErrorHint field="street" error={tProperties(form.errors.street![0])} />
+              {hasFieldError(form, 'street') && (
+                <ErrorHint field="street" error={tProperties(getFieldError(form, 'street')!)} />
               )}
             </FormField>
 
@@ -283,11 +297,11 @@ export function PropertySection() {
                 value={values.number}
                 onChange={(e) => setField('number', e.target.value)}
                 onBlur={() => form.markTouched('number')}
-                aria-invalid={form.hasError('number')}
-                aria-describedby={form.hasError('number') ? 'number-error' : undefined}
+                aria-invalid={hasFieldError(form, 'number')}
+                aria-describedby={hasFieldError(form, 'number') ? 'number-error' : undefined}
               />
-              {form.hasError('number') && (
-                <ErrorHint field="number" error={tProperties(form.errors.number![0])} />
+              {hasFieldError(form, 'number') && (
+                <ErrorHint field="number" error={tProperties(getFieldError(form, 'number')!)} />
               )}
             </FormField>
           </FormFieldset>
@@ -306,11 +320,11 @@ export function PropertySection() {
               value={values.complement}
               onChange={(e) => setField('complement', e.target.value)}
               onBlur={() => form.markTouched('complement')}
-              aria-invalid={form.hasError('complement')}
-              aria-describedby={form.hasError('complement') ? 'complement-error' : undefined}
+              aria-invalid={hasFieldError(form, 'complement')}
+              aria-describedby={hasFieldError(form, 'complement') ? 'complement-error' : undefined}
             />
-            {form.hasError('complement') && (
-              <ErrorHint field="complement" error={tProperties(form.errors.complement![0])} />
+            {hasFieldError(form, 'complement') && (
+              <ErrorHint field="complement" error={tProperties(getFieldError(form, 'complement')!)} />
             )}
           </FormField>
 
@@ -328,11 +342,11 @@ export function PropertySection() {
               value={values.neighborhood}
               onChange={(e) => setField('neighborhood', e.target.value)}
               onBlur={() => form.markTouched('neighborhood')}
-              aria-invalid={form.hasError('neighborhood')}
-              aria-describedby={form.hasError('neighborhood') ? 'neighborhood-error' : undefined}
+              aria-invalid={hasFieldError(form, 'neighborhood')}
+              aria-describedby={hasFieldError(form, 'neighborhood') ? 'neighborhood-error' : undefined}
             />
-            {form.hasError('neighborhood') && (
-              <ErrorHint field="neighborhood" error={tProperties(form.errors.neighborhood![0])} />
+            {hasFieldError(form, 'neighborhood') && (
+              <ErrorHint field="neighborhood" error={tProperties(getFieldError(form, 'neighborhood')!)} />
             )}
           </FormField>
 
@@ -351,11 +365,11 @@ export function PropertySection() {
                 value={values.city}
                 onChange={(e) => setField('city', e.target.value)}
                 onBlur={() => form.markTouched('city')}
-                aria-invalid={form.hasError('city')}
-                aria-describedby={form.hasError('city') ? 'city-error' : undefined}
+                aria-invalid={hasFieldError(form, 'city')}
+                aria-describedby={hasFieldError(form, 'city') ? 'city-error' : undefined}
               />
-              {form.hasError('city') && (
-                <ErrorHint field="city" error={tProperties(form.errors.city![0])} />
+              {hasFieldError(form, 'city') && (
+                <ErrorHint field="city" error={tProperties(getFieldError(form, 'city')!)} />
               )}
             </FormField>
 
@@ -374,8 +388,8 @@ export function PropertySection() {
                 <SelectTrigger
                   id="state"
                   onBlur={() => form.markTouched('state')}
-                  aria-invalid={form.hasError('state')}
-                  aria-describedby={form.hasError('state') ? 'state-error' : undefined}
+                  aria-invalid={hasFieldError(form, 'state')}
+                  aria-describedby={hasFieldError(form, 'state') ? 'state-error' : undefined}
                 >
                   <SelectValue placeholder={tProperties('statePlaceholder')} />
                 </SelectTrigger>
@@ -387,8 +401,8 @@ export function PropertySection() {
                   ))}
                 </SelectContent>
               </Select>
-              {form.hasError('state') && (
-                <ErrorHint field="state" error={tProperties(form.errors.state![0])} />
+              {hasFieldError(form, 'state') && (
+                <ErrorHint field="state" error={tProperties(getFieldError(form, 'state')!)} />
               )}
             </FormField>
           </FormFieldset>

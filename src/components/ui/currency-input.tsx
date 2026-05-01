@@ -9,13 +9,16 @@ import {
   SelectItem,
   SelectTrigger,
 } from '@/components/ui/select'
+import {
+  MAX_MINOR_UNITS,
+  SUPPORTED_CURRENCIES,
+  type SupportedCurrency,
+} from '@/data/shared/currency'
 import { cn } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
 // Currency config
 // ---------------------------------------------------------------------------
-
-type SupportedCurrency = 'BRL' | 'USD'
 
 const CURRENCY_CONFIG: Record<
   SupportedCurrency,
@@ -42,11 +45,6 @@ const CURRENCY_CONFIG: Record<
     symbol: '$',
   },
 }
-
-const SUPPORTED_CURRENCIES: SupportedCurrency[] = ['BRL', 'USD']
-
-// 10-digit cap in minor units: R$99.999.999,99 / $99,999,999.99.
-const MAX_MINOR_UNITS = 99_999_999_99
 
 // ---------------------------------------------------------------------------
 // Formatting helpers
@@ -235,6 +233,7 @@ interface CurrencyInputProps {
   size?: CurrencyInputSize
   value: number | undefined
   variant?: CurrencyInputVariant
+  onBlur?: () => void
   onCurrencyChange?: (currency: SupportedCurrency) => void
   onValueChange: (minorUnits: number | undefined) => void
 }
@@ -252,6 +251,7 @@ function CurrencyInput({
   size = 'default',
   value,
   variant = 'card',
+  onBlur,
   onCurrencyChange,
   onValueChange,
 }: CurrencyInputProps) {
@@ -321,6 +321,8 @@ function CurrencyInput({
   }
 
   function handleBlur() {
+    onBlur?.()
+
     if (
       inputState.lastParsedValue !== undefined &&
       inputState.lastParsedValue > 0

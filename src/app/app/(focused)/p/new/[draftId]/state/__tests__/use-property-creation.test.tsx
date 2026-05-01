@@ -339,6 +339,69 @@ describe('usePropertyCreationActions + state machine invariants', () => {
     expect(result.current.property).toBe('upcoming')
   })
 
+  it('resets sectionData when commitContractOutput switches path away from contract', async () => {
+    // Branch under test: store.ts:356–366 — when the user had committed the
+    // contract path (so sectionData was seeded from extraction) and then
+    // commits a different path, the slice should be wiped to defaults so
+    // the no-contract path doesn't inherit stale extraction values.
+    const wrapper = makeWrapper('draft-switch-path')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        property: usePropertyCreationState(
+          (s) => s.sectionData.property as { street?: string } | undefined,
+        ),
+        path: usePropertyCreationState((s) => s.path),
+      }),
+      { wrapper },
+    )
+
+    const extraction: ContractExtractionResult = {
+      isRentalContract: true,
+      propertyType: 'apartment',
+      address: {
+        street: 'Rua Teste',
+        number: '99',
+        complement: null,
+        neighborhood: 'Centro',
+        city: 'São Paulo',
+        state: 'SP',
+        postalCode: '01000-000',
+        country: 'BR',
+      },
+      rent: null,
+      contractDates: null,
+      rentAdjustment: null,
+      landlords: null,
+      tenants: null,
+      expenses: null,
+      languageDetected: 'pt-br',
+      rawExtractedText: '',
+    }
+
+    // Phase 1: commit the contract path with extraction. sectionData.property
+    // gets seeded from `extraction.address`.
+    act(() => {
+      result.current.actions.commitContractOutput({
+        extractionResult: extraction,
+        path: 'contract',
+      })
+    })
+    expect(result.current.property?.street).toBe('Rua Teste')
+
+    // Phase 2: switch to no_contract. sectionData should reset so the user
+    // starts the manual-entry flow with blank fields.
+    act(() => {
+      result.current.actions.commitContractOutput({
+        extractionResult: null,
+        path: 'no_contract',
+      })
+    })
+    expect(result.current.path).toBe('no_contract')
+    expect(result.current.property?.street).toBe('')
+    expect(result.current.property).toEqual(defaultPropertyInput())
+  })
+
   it('skipCurrentSection advances past an optional section on the no_contract path', async () => {
     const wrapper = makeWrapper('draft-skip-optional')
     const { result } = renderHook(

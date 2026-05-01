@@ -4,6 +4,7 @@ import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 import {
   defaultPropertyInput,
+  defaultRentDatesInput,
   defaultSectionData,
   mergeExtractionIntoSectionData,
   type SectionData,
@@ -34,6 +35,11 @@ describe('defaultSectionData', () => {
   it('returns the property slice initialized to defaultPropertyInput()', () => {
     const data = defaultSectionData()
     expect(data.property).toEqual(defaultPropertyInput())
+  })
+
+  it('returns the rent-dates slice initialized to defaultRentDatesInput()', () => {
+    const data = defaultSectionData()
+    expect(data['rent-dates']).toEqual(defaultRentDatesInput())
   })
 })
 
@@ -157,6 +163,41 @@ describe('mergeExtractionIntoSectionData', () => {
     )
   })
 
+  it('seeds rent-dates fields needed by the currency input from rent extraction', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        rent: {
+          amount: 450_000,
+          currency: 'USD',
+          dueDay: 10,
+          includes: ['rent', 'condo'],
+        },
+      }),
+    )
+
+    expect(result['rent-dates']).toEqual({
+      amount_minor: 450_000,
+      currency: 'USD',
+    })
+  })
+
+  it('falls back to BRL when extracted rent currency is unsupported', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        rent: {
+          amount: 300_000,
+          currency: 'EUR',
+          dueDay: null,
+          includes: [],
+        },
+      }),
+    )
+
+    expect((result['rent-dates'] as { currency: string }).currency).toBe('BRL')
+  })
+
   it('always seeds property.name as an empty string regardless of extraction shape', () => {
     const fromFull = mergeExtractionIntoSectionData(
       defaultSectionData(),
@@ -184,12 +225,11 @@ describe('mergeExtractionIntoSectionData', () => {
   })
 
   it('preserves other section keys in prev unchanged', () => {
-    // Ensures the merge function doesn't overwrite non-property slices when
-    // future sections add their own seeded values.
+    // Ensures the merge function doesn't overwrite slices that are unrelated
+    // to extraction seeding for this plan.
     const prev: SectionData = {
       property: defaultPropertyInput(),
-      // Stand-in for future sections — typed as `unknown`.
-      'rent-dates': { foo: 'bar' } as unknown,
+      tenants: { foo: 'bar' } as unknown,
     }
     const result = mergeExtractionIntoSectionData(
       prev,
@@ -206,7 +246,7 @@ describe('mergeExtractionIntoSectionData', () => {
         },
       }),
     )
-    expect(result['rent-dates']).toEqual({ foo: 'bar' })
+    expect(result.tenants).toEqual({ foo: 'bar' })
   })
 
   it('re-exports defaultPropertyInput() with the canonical blank shape', () => {

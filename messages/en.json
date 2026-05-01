@@ -151,6 +151,14 @@
     "awaitingBillsWithDueDate": "{count, plural, one {Awaiting # bill} other {Awaiting # bills}} · due {date}",
     "allPaidThisCycle": "All paid this cycle"
   },
+  "rentDates": {
+    "rentAmount": "Monthly rent",
+    "rentAmountHint": "How much rent the tenant owes each month.",
+    "invalidAmount": "Enter a valid amount.",
+    "tooLarge": "Amount is too large.",
+    "invalidCurrency": "Choose a supported currency.",
+    "required": "This field is required."
+  },
   "properties": {
     "createProperty": "Create property",
     "step": "Step {current} of {total}",

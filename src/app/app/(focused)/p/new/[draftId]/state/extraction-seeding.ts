@@ -1,14 +1,23 @@
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
+import { coerceCurrency } from '@/data/shared/currency'
 import {
   defaultPropertyInput,
   type PropertyInput,
 } from '@/data/properties/schema'
+import {
+  defaultRentDatesInput,
+  type RentDatesInput,
+} from './rent-dates-schema'
 import type { SectionId } from './registry'
 
 export {
   defaultPropertyInput,
   type PropertyInput,
 } from '@/data/properties/schema'
+export {
+  defaultRentDatesInput,
+  type RentDatesInput,
+} from './rent-dates-schema'
 
 export type SectionData = Partial<Record<SectionId, unknown>>
 
@@ -24,6 +33,7 @@ export type SectionData = Partial<Record<SectionId, unknown>>
 export function defaultSectionData(): SectionData {
   return {
     property: defaultPropertyInput(),
+    'rent-dates': defaultRentDatesInput(),
   }
 }
 
@@ -55,5 +65,11 @@ export function mergeExtractionIntoSectionData(
     country_code: 'BR',
     property_type: extraction.propertyType,
   }
-  return { ...prev, property }
+  const rent = extraction.rent
+  const rentDates: RentDatesInput = {
+    ...defaultRentDatesInput(),
+    amount_minor: rent?.amount,
+    currency: coerceCurrency(rent?.currency),
+  }
+  return { ...prev, property, 'rent-dates': rentDates }
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { useState } from 'react'
-import { render, screen, cleanup, fireEvent, within } from '@testing-library/react'
+import { act, render, screen, cleanup, fireEvent, within } from '@testing-library/react'
 import { CurrencyInput } from '../currency-input'
 
 afterEach(cleanup)
@@ -141,33 +141,45 @@ describe('CurrencyInput formatting', () => {
   it('at default size, blurred display keeps integer and cents visually matched', () => {
     render(<CurrencyInput value={15099} onValueChange={vi.fn()} />)
 
-    expect(getAmountInteger()?.textContent).toBe('150')
-    expect(getAmountDecimal()?.textContent).toBe(',99')
-    expect(getAmountInteger()?.className).toContain('text-base')
-    expect(getAmountDecimal()?.className).toContain('text-base')
-    expect(getAmountDecimal()?.className).toContain('text-foreground')
+    const integer = getAmountInteger()!
+    const decimal = getAmountDecimal()!
+    expect(integer.textContent).toBe('150')
+    expect(decimal.textContent).toBe(',99')
+    // Exact-token (classList) checks rather than substring `toContain` —
+    // `text-foreground` is a substring of `text-foreground/40`, so a
+    // future opacity drift would silently pass a substring assertion.
+    expect(integer.classList.contains('text-base')).toBe(true)
+    expect(decimal.classList.contains('text-base')).toBe(true)
+    expect(decimal.classList.contains('text-foreground')).toBe(true)
+    expect(decimal.classList.contains('text-muted-foreground')).toBe(false)
   })
 
   it('at lg size, blurred display renders cents smaller and muted', () => {
     render(<CurrencyInput value={15099} size="lg" onValueChange={vi.fn()} />)
 
-    expect(getAmountInteger()?.textContent).toBe('150')
-    expect(getAmountDecimal()?.textContent).toBe(',99')
-    expect(getAmountInteger()?.className).toContain('text-xl')
-    expect(getAmountInteger()?.className).toContain('text-foreground')
-    expect(getAmountDecimal()?.className).toContain('text-base')
-    expect(getAmountDecimal()?.className).toContain('text-muted-foreground')
+    const integer = getAmountInteger()!
+    const decimal = getAmountDecimal()!
+    expect(integer.textContent).toBe('150')
+    expect(decimal.textContent).toBe(',99')
+    expect(integer.classList.contains('text-xl')).toBe(true)
+    expect(integer.classList.contains('text-foreground')).toBe(true)
+    expect(decimal.classList.contains('text-base')).toBe(true)
+    expect(decimal.classList.contains('text-muted-foreground')).toBe(true)
+    expect(decimal.classList.contains('text-foreground')).toBe(false)
   })
 
   it('at xl size, blurred display renders cents smaller and muted', () => {
     render(<CurrencyInput value={15099} size="xl" onValueChange={vi.fn()} />)
 
-    expect(getAmountInteger()?.textContent).toBe('150')
-    expect(getAmountDecimal()?.textContent).toBe(',99')
-    expect(getAmountInteger()?.className).toContain('text-4xl')
-    expect(getAmountInteger()?.className).toContain('text-foreground')
-    expect(getAmountDecimal()?.className).toContain('text-2xl')
-    expect(getAmountDecimal()?.className).toContain('text-muted-foreground')
+    const integer = getAmountInteger()!
+    const decimal = getAmountDecimal()!
+    expect(integer.textContent).toBe('150')
+    expect(decimal.textContent).toBe(',99')
+    expect(integer.classList.contains('text-4xl')).toBe(true)
+    expect(integer.classList.contains('text-foreground')).toBe(true)
+    expect(decimal.classList.contains('text-2xl')).toBe(true)
+    expect(decimal.classList.contains('text-muted-foreground')).toBe(true)
+    expect(decimal.classList.contains('text-foreground')).toBe(false)
   })
 
   it('reformats display when currency switches mid-flow', () => {
@@ -260,6 +272,44 @@ describe('CurrencyInput native editing', () => {
     expect(onChange).toHaveBeenLastCalledWith(123400)
   })
 
+  // Decimal vs. group-separator ambiguity for BRL when the user types `,`:
+  // the parser interprets `,` as decimal only when fraction-digit count
+  // ≤ fractionDigits (2). At/below the boundary it's a decimal; over it,
+  // the same `,` is treated as a thousands separator.
+  it('parses BRL "1,2" (1 fraction digit) as 1.20 reais (120 minor)', () => {
+    const onChange = vi.fn()
+    render(<CurrencyInput value={undefined} onValueChange={onChange} />)
+
+    changeInput('1,2')
+    expect(onChange).toHaveBeenLastCalledWith(120)
+  })
+
+  it('parses BRL "1,23" (2 fraction digits, at the boundary) as 1.23 reais', () => {
+    const onChange = vi.fn()
+    render(<CurrencyInput value={undefined} onValueChange={onChange} />)
+
+    changeInput('1,23')
+    expect(onChange).toHaveBeenLastCalledWith(123)
+  })
+
+  it('parses BRL "1,234" (3 fraction digits) as whole units 1234 reais', () => {
+    // Over the 2-digit boundary `,` falls back to a group separator; the
+    // string parses as the whole-unit value 1234 → 123400 minor.
+    const onChange = vi.fn()
+    render(<CurrencyInput value={undefined} onValueChange={onChange} />)
+
+    changeInput('1,234')
+    expect(onChange).toHaveBeenLastCalledWith(123400)
+  })
+
+  it('parses BRL "1,2345" (4 fraction digits) as whole units 12345 reais', () => {
+    const onChange = vi.fn()
+    render(<CurrencyInput value={undefined} onValueChange={onChange} />)
+
+    changeInput('1,2345')
+    expect(onChange).toHaveBeenLastCalledWith(1234500)
+  })
+
   it('parses decimal input to minor units', () => {
     const onChange = vi.fn()
     render(<CurrencyInput value={undefined} onValueChange={onChange} />)
@@ -317,6 +367,21 @@ describe('CurrencyInput native editing', () => {
     changeInput('abc')
     fireEvent.blur(getInput())
     expect((getInput() as HTMLInputElement).value).toBe('')
+  })
+
+  it('calls onBlur when the amount input blurs', () => {
+    const onBlur = vi.fn()
+    render(
+      <CurrencyInput
+        value={undefined}
+        onBlur={onBlur}
+        onValueChange={vi.fn()}
+      />,
+    )
+
+    fireEvent.focus(getInput())
+    fireEvent.blur(getInput())
+    expect(onBlur).toHaveBeenCalledOnce()
   })
 
   it('requests clearing the controlled value when invalid focused text blurs', () => {
@@ -398,6 +463,21 @@ describe('CurrencyInput native editing', () => {
 
     expect(getAmountDisplay()).toBeNull()
     expect(input.className).not.toContain('opacity-0')
+  })
+
+  it('does not re-emit onValueChange on focus→blur when starting at value=0', () => {
+    // value=0 is treated as empty by the component (placeholder shown).
+    // A bare focus/blur cycle with no typing should NOT trigger an
+    // onValueChange(undefined) call — that would mark consumer forms dirty
+    // for free and cause spurious re-validation.
+    const onChange = vi.fn()
+    render(<CurrencyInput value={0} onValueChange={onChange} />)
+
+    fireEvent.focus(getInput())
+    fireEvent.blur(getInput())
+
+    expect(onChange).not.toHaveBeenCalled()
+    expect((getInput() as HTMLInputElement).value).toBe('')
   })
 
   it('syncs external controlled value when not focused', () => {
@@ -703,6 +783,32 @@ describe('CurrencyInput currency selector', () => {
 
     fireEvent.click(screen.getByRole('combobox'))
     expect(wrapper.getAttribute('data-active')).toBe('true')
+  })
+
+  it('fires onCurrencyChange when the user picks a different currency', () => {
+    const onCurrencyChange = vi.fn()
+    render(
+      <CurrencyInput
+        value={undefined}
+        onCurrencyChange={onCurrencyChange}
+        onValueChange={vi.fn()}
+      />,
+    )
+
+    // Open the menu, focus the USD option, press Enter. base-ui Select
+    // doesn't fire onValueChange on a synthetic click in jsdom — its item
+    // selection runs through internal pointer/keyboard tracking — so we
+    // drive selection via the keyboard path the listbox supports.
+    fireEvent.click(screen.getByRole('combobox'))
+    const usdOption = screen
+      .getAllByRole('option')
+      .find((o) => o.textContent?.includes('USD'))!
+    act(() => {
+      ;(usdOption as HTMLElement).focus()
+    })
+    fireEvent.keyDown(usdOption, { key: 'Enter' })
+
+    expect(onCurrencyChange).toHaveBeenCalledWith('USD')
   })
 })
 

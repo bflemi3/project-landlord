@@ -4,32 +4,13 @@ import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { getAddressProvider } from '@/lib/address/provider'
 import { propertySchema, type PropertyInput } from '@/data/properties/schema'
+import {
+  zodIssuesToFieldErrors,
+  type ValidateState,
+} from '@/lib/validation'
 
-type PropertyFieldErrors = {
-  [K in keyof PropertyInput]?: readonly string[]
-}
-
-export interface ValidatePropertyState {
-  valid: boolean
-  fields?: PropertyInput
+export interface ValidatePropertyState extends ValidateState<PropertyInput> {
   existingPropertyId?: string
-  errors?: PropertyFieldErrors & {
-    general?: readonly string[]
-  }
-}
-
-function zodIssuesToFieldErrors(
-  issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }>,
-): NonNullable<ValidatePropertyState['errors']> {
-  const fieldErrors: Record<string, string[]> = {}
-
-  for (const issue of issues) {
-    const key = String(issue.path[0] ?? 'general')
-    fieldErrors[key] ??= []
-    fieldErrors[key]!.push(issue.message)
-  }
-
-  return fieldErrors as NonNullable<ValidatePropertyState['errors']>
 }
 
 export async function validatePropertyCore(
@@ -41,7 +22,12 @@ export async function validatePropertyCore(
 
   const propertyResult = propertySchema.safeParse(fields)
   if (!propertyResult.success) {
-    return { valid: false, errors: zodIssuesToFieldErrors(propertyResult.error.issues) }
+    return {
+      valid: false,
+      errors: zodIssuesToFieldErrors<PropertyInput>(
+        propertyResult.error.issues,
+      ),
+    }
   }
 
   const validatedFields = propertyResult.data

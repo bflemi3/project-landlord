@@ -151,6 +151,14 @@
     "awaitingBillsWithDueDate": "{count, plural, one {Esperando # factura} other {Esperando # facturas}} · vence {date}",
     "allPaidThisCycle": "Todo pagado este ciclo"
   },
+  "rentDates": {
+    "rentAmount": "Alquiler mensual",
+    "rentAmountHint": "Cuánto alquiler debe pagar el inquilino cada mes.",
+    "invalidAmount": "Ingresa un monto válido.",
+    "tooLarge": "El monto es demasiado alto.",
+    "invalidCurrency": "Elige una moneda compatible.",
+    "required": "Este campo es obligatorio."
+  },
   "properties": {
     "createProperty": "Crear propiedad",
     "step": "Paso {current} de {total}",
