@@ -154,9 +154,12 @@
   "rentDates": {
     "rentAmount": "Alquiler mensual",
     "rentAmountHint": "Cuánto alquiler debe pagar el inquilino cada mes.",
+    "dueDay": "Día de vencimiento",
+    "dueDayHint": "Día del mes en que vence el alquiler — entre 1 y 31.",
     "invalidAmount": "Ingresa un monto válido.",
     "tooLarge": "El monto es demasiado alto.",
     "invalidCurrency": "Elige una moneda compatible.",
+    "invalidDueDay": "El día debe estar entre 1 y 31.",
     "required": "Este campo es obligatorio."
   },
   "properties": {

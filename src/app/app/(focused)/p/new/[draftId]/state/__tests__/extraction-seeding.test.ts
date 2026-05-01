@@ -179,7 +179,33 @@ describe('mergeExtractionIntoSectionData', () => {
     expect(result['rent-dates']).toEqual({
       amount_minor: 450_000,
       currency: 'USD',
+      due_day: 10,
     })
+  })
+
+  it('keeps the default due_day when extraction returns dueDay: null', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        rent: {
+          amount: 300_000,
+          currency: 'BRL',
+          dueDay: null,
+          includes: [],
+        },
+      }),
+    )
+
+    expect((result['rent-dates'] as { due_day: number }).due_day).toBe(5)
+  })
+
+  it('keeps the default due_day when extraction has no rent block', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({ rent: null }),
+    )
+
+    expect((result['rent-dates'] as { due_day: number }).due_day).toBe(5)
   })
 
   it('falls back to BRL when extracted rent currency is unsupported', () => {

@@ -70,6 +70,9 @@ export function mergeExtractionIntoSectionData(
     ...defaultRentDatesInput(),
     amount_minor: rent?.amount,
     currency: coerceCurrency(rent?.currency),
+    // Override the default (5) only when extraction actually produced a value;
+    // otherwise the spread above keeps the default in place.
+    ...(rent?.dueDay != null && { due_day: rent.dueDay }),
   }
   return { ...prev, property, 'rent-dates': rentDates }
 }

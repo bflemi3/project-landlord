@@ -123,6 +123,7 @@ const EXTRACTION_GETTERS: Record<
   'property.property_type': (e) => e.propertyType,
   'rent-dates.amount_minor': (e) => e.rent?.amount,
   'rent-dates.currency': (e) => coerceCurrency(e.rent?.currency),
+  'rent-dates.due_day': (e) => e.rent?.dueDay ?? undefined,
 }
 
 /** Walks a dot-notation path into a possibly-nested value. Returns

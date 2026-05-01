@@ -9,7 +9,7 @@ import {
 
 import type { CheckoutPath } from '../registry'
 import {
-  rentDatesSchema,
+  rentDatesSchemaFor,
   type RentDatesInput,
 } from '../rent-dates-schema'
 
@@ -20,7 +20,8 @@ export async function validateRentDatesCore(
   fields: RentDatesInput,
   path: CheckoutPath,
 ): Promise<ValidateRentDatesState> {
-  const result = rentDatesSchema.safeParse(fields)
+  const schema = rentDatesSchemaFor(path)
+  const result = schema.safeParse(fields)
   if (!result.success) {
     return {
       valid: false,
@@ -28,20 +29,7 @@ export async function validateRentDatesCore(
     }
   }
 
-  const validatedFields = result.data
-  const errors: ValidateRentDatesState['errors'] = {}
-
-  if (path === 'contract') {
-    if (validatedFields.amount_minor == null) {
-      errors.amount_minor = ['required']
-    }
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { valid: false, errors }
-  }
-
-  return { valid: true, fields: validatedFields }
+  return { valid: true, fields: result.data }
 }
 
 export async function validateRentDates(

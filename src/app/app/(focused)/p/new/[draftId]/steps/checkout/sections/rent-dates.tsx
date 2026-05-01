@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { CalendarDays } from 'lucide-react'
 
@@ -23,15 +23,15 @@ import { AutoFilledIndicator } from './auto-filled-indicator'
 import { ErrorHint } from '@/components/forms/error-hint'
 import { FieldHint } from '@/components/forms/field-hint'
 import { FormField, FormRoot } from '@/components/forms/form'
+import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
 import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'
-import { rentDatesSchema } from '../../../state/rent-dates-schema'
+import { rentDatesSchemaFor } from '../../../state/rent-dates-schema'
 
 const SECTION_ID: SectionId = 'rent-dates'
 const ICON = CalendarDays
-const validator = zodValidator(rentDatesSchema)
 
 export function RentDatesSection() {
   const t = useTranslations('propertyCreation.checkout')
@@ -42,6 +42,16 @@ export function RentDatesSection() {
     (s) => s.sectionData['rent-dates'] as RentDatesInput,
   )
   const path = usePropertyCreationState((s) => s.path)
+
+  // Path-aware validator: contract path makes amount_minor + due_day
+  // required; no-contract path keeps them optional. Switching paths after
+  // the section has rendered is uncommon, but useMemo keeps the validator
+  // referentially stable per path so useFormValidation doesn't re-parse on
+  // every render.
+  const validator = useMemo(
+    () => zodValidator(rentDatesSchemaFor(path)),
+    [path],
+  )
 
   const form = useFormValidation({ values, validator })
   const { markTouched } = form
@@ -78,6 +88,8 @@ export function RentDatesSection() {
 
   const amountError = getFieldError(form, 'amount_minor')
   const hasAmountError = hasFieldError(form, 'amount_minor')
+  const dueDayError = getFieldError(form, 'due_day')
+  const hasDueDayError = hasFieldError(form, 'due_day')
 
   return (
     <Section
@@ -118,7 +130,6 @@ export function RentDatesSection() {
               currency={values.currency}
               value={values.amount_minor}
               size="lg"
-              variant="page"
               onBlur={() => markTouched('amount_minor')}
               onCurrencyChange={(currency: SupportedCurrency) => {
                 setField('currency', currency)
@@ -136,6 +147,43 @@ export function RentDatesSection() {
             ) : (
               <FieldHint field="amount_minor">
                 {tRentDates('rentAmountHint')}
+              </FieldHint>
+            )}
+          </FormField>
+
+          <FormField>
+            <Label htmlFor="rent-due-day">
+              {tRentDates('dueDay')}
+              <AutoFilledIndicator path="rent-dates.due_day" />
+            </Label>
+            <Input
+              id="rent-due-day"
+              name="due_day"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={2}
+              value={values.due_day != null ? String(values.due_day) : ''}
+              onChange={(e) => {
+                const raw = e.target.value.trim()
+                if (raw === '') {
+                  setField('due_day', undefined)
+                  return
+                }
+                const n = Number(raw)
+                if (Number.isFinite(n)) setField('due_day', n)
+              }}
+              onBlur={() => markTouched('due_day')}
+              aria-invalid={hasDueDayError}
+              aria-describedby={
+                hasDueDayError ? 'due_day-error' : 'due_day-hint'
+              }
+            />
+            {hasDueDayError && dueDayError ? (
+              <ErrorHint field="due_day" error={tRentDates(dueDayError)} />
+            ) : (
+              <FieldHint field="due_day">
+                {tRentDates('dueDayHint')}
               </FieldHint>
             )}
           </FormField>
