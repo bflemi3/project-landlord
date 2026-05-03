@@ -66,6 +66,7 @@ export function mergeExtractionIntoSectionData(
     property_type: extraction.propertyType,
   }
   const rent = extraction.rent
+  const dates = extraction.contractDates
   const rentDates: RentDatesInput = {
     ...defaultRentDatesInput(),
     amount_minor: rent?.amount,
@@ -73,6 +74,11 @@ export function mergeExtractionIntoSectionData(
     // Override the default (5) only when extraction actually produced a value;
     // otherwise the spread above keeps the default in place.
     ...(rent?.dueDay != null && { due_day: rent.dueDay }),
+    // ContractDates already arrives as ISO YYYY-MM-DD or null. Coerce null
+    // (and a missing block) to undefined so the slice keeps its "absent"
+    // sentinel uniform — the picker renders empty when undefined.
+    start_date: dates?.start ?? undefined,
+    end_date: dates?.end ?? undefined,
   }
   return { ...prev, property, 'rent-dates': rentDates }
 }

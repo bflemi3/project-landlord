@@ -6,8 +6,17 @@ import { defaultRentDatesInput } from '../../rent-dates-schema'
 
 const supabase = {} as TypedSupabaseClient
 
+// Minimum slice that satisfies start_date + end_date on the contract path.
+// Tests that target a single OTHER required field layer this in so the
+// schema's date requirements don't leak unrelated `required` issues into
+// their assertions.
+const VALID_DATES = {
+  start_date: '2026-01-01',
+  end_date: '2026-12-31',
+} as const
+
 describe('validateRentDatesCore', () => {
-  it('requires rent amount on the contract path', async () => {
+  it('requires rent amount, start_date, and end_date on the contract path', async () => {
     const result = await validateRentDatesCore(
       supabase,
       defaultRentDatesInput(),
@@ -18,6 +27,8 @@ describe('validateRentDatesCore', () => {
       valid: false,
       errors: {
         amount_minor: ['required'],
+        start_date: ['required'],
+        end_date: ['required'],
       },
     })
   })
@@ -40,6 +51,7 @@ describe('validateRentDatesCore', () => {
       supabase,
       {
         ...defaultRentDatesInput(),
+        ...VALID_DATES,
         amount_minor: 100_000_000_00,
       },
       'contract',
@@ -53,16 +65,27 @@ describe('validateRentDatesCore', () => {
     })
   })
 
-  it('returns valid + fields on the contract path when amount and due_day are provided', async () => {
+  it('returns valid + fields on the contract path when every required field is set', async () => {
     const result = await validateRentDatesCore(
       supabase,
-      { ...defaultRentDatesInput(), amount_minor: 250_000 },
+      {
+        ...defaultRentDatesInput(),
+        amount_minor: 250_000,
+        start_date: '2026-01-01',
+        end_date: '2026-12-31',
+      },
       'contract',
     )
 
     expect(result).toEqual({
       valid: true,
-      fields: { amount_minor: 250_000, currency: 'BRL', due_day: 5 },
+      fields: {
+        amount_minor: 250_000,
+        currency: 'BRL',
+        due_day: 5,
+        start_date: '2026-01-01',
+        end_date: '2026-12-31',
+      },
     })
   })
 
@@ -75,7 +98,71 @@ describe('validateRentDatesCore', () => {
 
     expect(result).toEqual({
       valid: true,
-      fields: { amount_minor: 1_000, currency: 'USD', due_day: 5 },
+      fields: {
+        amount_minor: 1_000,
+        currency: 'USD',
+        due_day: 5,
+        start_date: undefined,
+        end_date: undefined,
+      },
+    })
+  })
+
+  it('surfaces endDateBeforeStart on the contract path when end < start', async () => {
+    const result = await validateRentDatesCore(
+      supabase,
+      {
+        ...defaultRentDatesInput(),
+        amount_minor: 250_000,
+        start_date: '2026-06-01',
+        end_date: '2026-01-01',
+      },
+      'contract',
+    )
+
+    expect(result).toEqual({
+      valid: false,
+      errors: { end_date: ['endDateBeforeStart'] },
+    })
+  })
+
+  it('surfaces endDateBeforeStart on the no-contract path when end < start', async () => {
+    const result = await validateRentDatesCore(
+      supabase,
+      {
+        ...defaultRentDatesInput(),
+        start_date: '2026-06-01',
+        end_date: '2026-01-01',
+      },
+      'no_contract',
+    )
+
+    expect(result).toEqual({
+      valid: false,
+      errors: { end_date: ['endDateBeforeStart'] },
+    })
+  })
+
+  it('surfaces invalidDate from the schema regex up through the action', async () => {
+    // Locks in the error-pipeline contract: schema regex code → field-error
+    // shape produced by zodIssuesToFieldErrors → translated by the form via
+    // tRentDates(error). Regression guard against any of those layers
+    // dropping or renaming the code in transit. The field is bypassing the
+    // RentDatesInput type to feed the schema a malformed string — the picker
+    // can't produce this state, but extraction-seeded persisted data could.
+    const result = await validateRentDatesCore(
+      supabase,
+      {
+        ...defaultRentDatesInput(),
+        start_date: '01/01/2026' as unknown as string,
+        end_date: '2026-12-31',
+      },
+      'no_contract',
+    )
+
+    expect(result).toEqual({
+      valid: false,
+      errors: { start_date: ['invalidDate'] },
     })
   })
 
@@ -84,6 +171,7 @@ describe('validateRentDatesCore', () => {
       supabase,
       {
         ...defaultRentDatesInput(),
+        ...VALID_DATES,
         amount_minor: 250_000,
         due_day: undefined,
       },
@@ -99,7 +187,7 @@ describe('validateRentDatesCore', () => {
   it('surfaces both amount_minor and due_day required errors when both are missing', async () => {
     const result = await validateRentDatesCore(
       supabase,
-      { ...defaultRentDatesInput(), due_day: undefined },
+      { ...defaultRentDatesInput(), ...VALID_DATES, due_day: undefined },
       'contract',
     )
 
@@ -115,7 +203,12 @@ describe('validateRentDatesCore', () => {
   it('surfaces invalidDueDay when due_day is out of range on the contract path', async () => {
     const result = await validateRentDatesCore(
       supabase,
-      { ...defaultRentDatesInput(), amount_minor: 250_000, due_day: 32 },
+      {
+        ...defaultRentDatesInput(),
+        ...VALID_DATES,
+        amount_minor: 250_000,
+        due_day: 32,
+      },
       'contract',
     )
 

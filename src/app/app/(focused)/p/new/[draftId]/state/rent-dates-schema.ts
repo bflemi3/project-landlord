@@ -12,11 +12,18 @@ export interface RentDatesInput {
   amount_minor: number | undefined
   currency: SupportedCurrency
   due_day: number | undefined
+  start_date: string | undefined
+  end_date: string | undefined
 }
 
 // Default rent due day. Brazilian rentals most commonly use the 5th of the
 // month — a soft pre-fill the user can override.
 export const DEFAULT_DUE_DAY = 5
+
+// ISO calendar-date format the slice stores: YYYY-MM-DD. Anything else is
+// rejected with `invalidDate` so the picker (which always emits ISO) is the
+// only sanctioned input path.
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
 // Inner field validators — pure structural rules (type, range, integer-ness).
 // Composed into a path-specific schema below by adding `.optional()` for the
@@ -35,20 +42,48 @@ const dueDayInner = z
   .min(1, { error: 'invalidDueDay' })
   .max(31, { error: 'invalidDueDay' })
 
+const startDateInner = z
+  .string({ error: 'required' })
+  .regex(ISO_DATE, { error: 'invalidDate' })
+
+const endDateInner = z
+  .string({ error: 'required' })
+  .regex(ISO_DATE, { error: 'invalidDate' })
+
 const currencyField = z
   .enum(SUPPORTED_CURRENCIES, { error: 'invalidCurrency' })
   .default('BRL')
 
-// Path-specific schemas. The contract path makes amount_minor + due_day
-// required (the form gates Continue on schema validity, so the user must
-// fill them before advancing). The no-contract path keeps both optional so
-// a partial / empty section still parses.
+// Cross-field: when both dates are present, end must be ≥ start. Lexicographic
+// comparison is sound because the format is fixed-width ISO YYYY-MM-DD. The
+// refine sits BEFORE `.transform` below so it sees raw input (no defaults
+// folded in) and the issue path matches the original field name.
+function refineEndAfterStart(
+  data: { start_date?: string; end_date?: string },
+  ctx: z.RefinementCtx,
+) {
+  if (data.start_date && data.end_date && data.end_date < data.start_date) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['end_date'],
+      message: 'endDateBeforeStart',
+    })
+  }
+}
+
+// Path-specific schemas. The contract path makes amount_minor + due_day +
+// start_date + end_date required (the form gates Continue on schema validity,
+// so the user must fill them before advancing). The no-contract path keeps
+// every field optional so a partial / empty section still parses.
 export const rentDatesContractSchema: z.ZodType<RentDatesInput> = z
   .object({
     amount_minor: amountMinorInner,
     currency: currencyField,
     due_day: dueDayInner,
+    start_date: startDateInner,
+    end_date: endDateInner,
   })
+  .superRefine(refineEndAfterStart)
   .transform((data) => ({ ...defaultRentDatesInput(), ...data }))
 
 export const rentDatesNoContractSchema: z.ZodType<RentDatesInput> = z
@@ -56,7 +91,10 @@ export const rentDatesNoContractSchema: z.ZodType<RentDatesInput> = z
     amount_minor: amountMinorInner.optional(),
     currency: currencyField,
     due_day: dueDayInner.optional(),
+    start_date: startDateInner.optional(),
+    end_date: endDateInner.optional(),
   })
+  .superRefine(refineEndAfterStart)
   .transform((data) => ({ ...defaultRentDatesInput(), ...data }))
 
 /**
@@ -78,6 +116,8 @@ export function defaultRentDatesInput(): RentDatesInput {
     amount_minor: undefined,
     currency: 'BRL',
     due_day: DEFAULT_DUE_DAY,
+    start_date: undefined,
+    end_date: undefined,
   }
 }
 

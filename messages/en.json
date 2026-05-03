@@ -153,13 +153,15 @@
   },
   "rentDates": {
     "rentAmount": "Monthly rent",
-    "rentAmountHint": "How much rent the tenant owes each month.",
-    "dueDay": "Due day",
-    "dueDayHint": "Day of the month rent is due — between 1 and 31.",
+    "dueDay": "Day rent is due",
+    "startDate": "Contract start",
+    "endDate": "Contract end",
     "invalidAmount": "Enter a valid amount.",
     "tooLarge": "Amount is too large.",
     "invalidCurrency": "Choose a supported currency.",
     "invalidDueDay": "Day must be between 1 and 31.",
+    "invalidDate": "Use the date picker.",
+    "endDateBeforeStart": "End date must be on or after the start date.",
     "required": "This field is required."
   },
   "properties": {

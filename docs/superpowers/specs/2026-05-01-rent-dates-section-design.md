@@ -384,12 +384,12 @@ Unit-test in `src/lib/__tests__/rent-adjustment.test.ts` — covers each frequen
 
 The planner should slice this into ordered tasks. Suggested cut points (each independently shippable):
 
-1. **Shared currency module + `SupportedCurrency` move.** Create `src/data/shared/currency.ts`. Update `currency-input.tsx` to import from it; re-export for backwards compatibility. Update existing consumers. Tests still pass.
-2. **`RentDatesInput` schema + slice registration.** New schema file; re-export through `extraction-seeding.ts`; add `'rent-dates'` to `defaultSectionData()`. Translation keys (English) added.
-3. **Wire `rent-dates.tsx` to the store.** Replace local `useState` with `usePropertyCreationState` + `setSectionData`. Just rent amount + currency for now; the form fields land in slice 6.
-4. **Extraction seeding.** Extend `mergeExtractionIntoSectionData` to build the slice. Add the persist `merge` backfill guard. Extend `EXTRACTION_GETTERS` + `ExtractedFieldPath`.
-5. **`nextAdjustmentDate` helper + tests.** Pure module, unit-tested.
-6. **Full form fields.** Due day, dates (shadcn date picker), bundled-rent InfoBox, adjustment collapsible with method-aware value control, auto-filled indicators, section-level required-to-continue.
-7. **`pt-BR` and `es` translations.** Fill in non-English copy.
+1. ✅ **Shared currency module + `SupportedCurrency` move.** Create `src/data/shared/currency.ts`. Update `currency-input.tsx` to import from it; re-export for backwards compatibility. Update existing consumers. Tests still pass.
+2. ✅ **`RentDatesInput` schema + slice registration.** New schema file; re-export through `extraction-seeding.ts`; add `'rent-dates'` to `defaultSectionData()`. Translation keys (English) added.
+3. ✅ **Wire `rent-dates.tsx` to the store.** Replace local `useState` with `usePropertyCreationState` + `setSectionData`. Just rent amount + currency for now; the form fields land in slice 6.
+4. ✅ **Extraction seeding (rent + dates).** Extend `mergeExtractionIntoSectionData` to build the slice. Persist `merge` backfill guard. Extend `EXTRACTION_GETTERS` + `ExtractedFieldPath`. Dates seeded from `extraction.contractDates`.
+5. **`nextAdjustmentDate` helper + tests.** Pure module, unit-tested. (Lands with the adjustment subform.)
+6. **Full form fields.** Due day ✅, dates ✅ (shadcn Calendar+Popover via `IsoDatePicker` wrapper, side-by-side, end-date `min` bound to start, cross-field `endDateBeforeStart` schema rule). Still pending: bundled-rent InfoBox, adjustment collapsible with method-aware value control, section-level required-to-continue for adjustment fields.
+7. **`pt-BR` and `es` translations.** ✅ for shipped fields (rent amount, due day, start/end date, validation codes). Future copy added per slice.
 
 Slice 1 unblocks 2–6. Slice 2 unblocks 3–4. Slices 3, 4, 5 are independent of each other and can land in any order.

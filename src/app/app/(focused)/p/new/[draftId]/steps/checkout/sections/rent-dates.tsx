@@ -21,9 +21,9 @@ import { SectionSkeleton } from './section-skeleton'
 import { SummaryRow } from './summary-row'
 import { AutoFilledIndicator } from './auto-filled-indicator'
 import { ErrorHint } from '@/components/forms/error-hint'
-import { FieldHint } from '@/components/forms/field-hint'
 import { FormField, FormRoot } from '@/components/forms/form'
 import { Input } from '@/components/ui/input'
+import { IsoDatePicker } from '@/components/ui/iso-date-picker'
 import { Label } from '@/components/ui/label'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
@@ -90,6 +90,10 @@ export function RentDatesSection() {
   const hasAmountError = hasFieldError(form, 'amount_minor')
   const dueDayError = getFieldError(form, 'due_day')
   const hasDueDayError = hasFieldError(form, 'due_day')
+  const startDateError = getFieldError(form, 'start_date')
+  const hasStartDateError = hasFieldError(form, 'start_date')
+  const endDateError = getFieldError(form, 'end_date')
+  const hasEndDateError = hasFieldError(form, 'end_date')
 
   return (
     <Section
@@ -125,7 +129,7 @@ export function RentDatesSection() {
               aria-label={tRentDates('rentAmount')}
               aria-invalid={hasAmountError}
               aria-describedby={
-                hasAmountError ? 'amount_minor-error' : 'amount_minor-hint'
+                hasAmountError ? 'amount_minor-error' : undefined
               }
               currency={values.currency}
               value={values.amount_minor}
@@ -139,15 +143,11 @@ export function RentDatesSection() {
                 setField('amount_minor', amount)
               }}
             />
-            {hasAmountError && amountError ? (
+            {hasAmountError && amountError && (
               <ErrorHint
                 field="amount_minor"
                 error={tRentDates(amountError)}
               />
-            ) : (
-              <FieldHint field="amount_minor">
-                {tRentDates('rentAmountHint')}
-              </FieldHint>
             )}
           </FormField>
 
@@ -176,17 +176,73 @@ export function RentDatesSection() {
               onBlur={() => markTouched('due_day')}
               aria-invalid={hasDueDayError}
               aria-describedby={
-                hasDueDayError ? 'due_day-error' : 'due_day-hint'
+                hasDueDayError ? 'due_day-error' : undefined
               }
             />
-            {hasDueDayError && dueDayError ? (
+            {hasDueDayError && dueDayError && (
               <ErrorHint field="due_day" error={tRentDates(dueDayError)} />
-            ) : (
-              <FieldHint field="due_day">
-                {tRentDates('dueDayHint')}
-              </FieldHint>
             )}
           </FormField>
+
+          {/* Side-by-side dates on every viewport — the two pickers stay
+              visually paired so the user reads "from / to" as one field
+              group regardless of screen size. */}
+          <div className="grid grid-cols-2 gap-4">
+            <FormField>
+              <Label htmlFor="rent-start-date">
+                {tRentDates('startDate')}
+                <AutoFilledIndicator path="rent-dates.start_date" />
+              </Label>
+              <IsoDatePicker
+                id="rent-start-date"
+                name="start_date"
+                value={values.start_date}
+                invalid={hasStartDateError}
+                describedBy={
+                  hasStartDateError ? 'start_date-error' : undefined
+                }
+                onValueChange={(next) => {
+                  setField('start_date', next)
+                  markTouched('start_date')
+                }}
+                onBlur={() => markTouched('start_date')}
+              />
+              {hasStartDateError && startDateError && (
+                <ErrorHint
+                  field="start_date"
+                  error={tRentDates(startDateError)}
+                />
+              )}
+            </FormField>
+
+            <FormField>
+              <Label htmlFor="rent-end-date">
+                {tRentDates('endDate')}
+                <AutoFilledIndicator path="rent-dates.end_date" />
+              </Label>
+              <IsoDatePicker
+                id="rent-end-date"
+                name="end_date"
+                value={values.end_date}
+                min={values.start_date}
+                invalid={hasEndDateError}
+                describedBy={
+                  hasEndDateError ? 'end_date-error' : undefined
+                }
+                onValueChange={(next) => {
+                  setField('end_date', next)
+                  markTouched('end_date')
+                }}
+                onBlur={() => markTouched('end_date')}
+              />
+              {hasEndDateError && endDateError && (
+                <ErrorHint
+                  field="end_date"
+                  error={tRentDates(endDateError)}
+                />
+              )}
+            </FormField>
+          </div>
         </FormRoot>
         <Section.Actions
           backLabel={t('actions.back')}

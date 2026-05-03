@@ -8,11 +8,13 @@ import {
 } from '../rent-dates-schema'
 
 describe('defaultRentDatesInput', () => {
-  it('returns the canonical blank rent-dates slice with default due_day=5', () => {
+  it('returns the canonical blank rent-dates slice with default due_day=5 and undefined dates', () => {
     expect(defaultRentDatesInput()).toEqual({
       amount_minor: undefined,
       currency: 'BRL',
       due_day: 5,
+      start_date: undefined,
+      end_date: undefined,
     })
   })
 })
@@ -115,6 +117,50 @@ describe('rentDatesNoContractSchema — structural validation', () => {
     const result = rentDatesNoContractSchema.parse({ amount_minor: undefined })
     expect(result.amount_minor).toBeUndefined()
   })
+
+  it('accepts start_date in ISO YYYY-MM-DD format', () => {
+    const parsed = rentDatesNoContractSchema.parse({ start_date: '2026-01-01' })
+    expect(parsed.start_date).toBe('2026-01-01')
+  })
+
+  it('accepts end_date in ISO YYYY-MM-DD format', () => {
+    const parsed = rentDatesNoContractSchema.parse({ end_date: '2026-12-31' })
+    expect(parsed.end_date).toBe('2026-12-31')
+  })
+
+  it('rejects start_date in non-ISO format with invalidDate', () => {
+    const result = rentDatesNoContractSchema.safeParse({
+      start_date: '01/01/2026',
+    })
+    expect(result.success).toBe(false)
+    expect(
+      result.error?.issues.some(
+        (i) => i.path[0] === 'start_date' && i.message === 'invalidDate',
+      ),
+    ).toBe(true)
+  })
+
+  it('rejects end_date in non-ISO format with invalidDate', () => {
+    const result = rentDatesNoContractSchema.safeParse({
+      end_date: '2026/12/31',
+    })
+    expect(result.success).toBe(false)
+    expect(
+      result.error?.issues.some(
+        (i) => i.path[0] === 'end_date' && i.message === 'invalidDate',
+      ),
+    ).toBe(true)
+  })
+
+  it('treats explicit start_date=undefined as valid (cleared)', () => {
+    const result = rentDatesNoContractSchema.parse({ start_date: undefined })
+    expect(result.start_date).toBeUndefined()
+  })
+
+  it('treats explicit end_date=undefined as valid (cleared)', () => {
+    const result = rentDatesNoContractSchema.parse({ end_date: undefined })
+    expect(result.end_date).toBeUndefined()
+  })
 })
 
 // ---------------------------------------------------------------------------
@@ -171,12 +217,44 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
     const result = rentDatesContractSchema.parse({
       amount_minor: 250_000,
       due_day: 10,
+      start_date: '2026-01-01',
+      end_date: '2026-12-31',
     })
     expect(result).toEqual({
       amount_minor: 250_000,
       currency: 'BRL',
       due_day: 10,
+      start_date: '2026-01-01',
+      end_date: '2026-12-31',
     })
+  })
+
+  it('rejects a missing start_date with "required"', () => {
+    const result = rentDatesContractSchema.safeParse({
+      amount_minor: 250_000,
+      due_day: 10,
+      end_date: '2026-12-31',
+    })
+    expect(result.success).toBe(false)
+    expect(
+      result.error?.issues.some(
+        (i) => i.path[0] === 'start_date' && i.message === 'required',
+      ),
+    ).toBe(true)
+  })
+
+  it('rejects a missing end_date with "required"', () => {
+    const result = rentDatesContractSchema.safeParse({
+      amount_minor: 250_000,
+      due_day: 10,
+      start_date: '2026-01-01',
+    })
+    expect(result.success).toBe(false)
+    expect(
+      result.error?.issues.some(
+        (i) => i.path[0] === 'end_date' && i.message === 'required',
+      ),
+    ).toBe(true)
   })
 
   it('still applies structural validation when required fields are present', () => {
@@ -192,5 +270,65 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
         (i) => i.path[0] === 'amount_minor' && i.message === 'invalidAmount',
       ),
     ).toBe(true)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Cross-field rule: end_date must be ≥ start_date when BOTH are present.
+// Same superRefine on both schemas, so the suite parameterizes over them.
+// ---------------------------------------------------------------------------
+
+describe.each([
+  ['rentDatesContractSchema', rentDatesContractSchema],
+  ['rentDatesNoContractSchema', rentDatesNoContractSchema],
+] as const)('%s — cross-field endDateBeforeStart', (_name, schema) => {
+  // Contract path requires amount_minor + due_day; supply minimum valid
+  // values so the only failure under test is the cross-field rule.
+  const baseValid = { amount_minor: 250_000, due_day: 10 }
+
+  it('flags end_date with "endDateBeforeStart" when end < start', () => {
+    const result = schema.safeParse({
+      ...baseValid,
+      start_date: '2026-06-01',
+      end_date: '2026-01-01',
+    })
+    expect(result.success).toBe(false)
+    expect(
+      result.error?.issues.some(
+        (i) =>
+          i.path[0] === 'end_date' && i.message === 'endDateBeforeStart',
+      ),
+    ).toBe(true)
+  })
+
+  it('does not fire when end equals start', () => {
+    const result = schema.safeParse({
+      ...baseValid,
+      start_date: '2026-06-01',
+      end_date: '2026-06-01',
+    })
+    expect(
+      result.error?.issues.some((i) => i.message === 'endDateBeforeStart'),
+    ).toBeFalsy()
+  })
+
+  it('does not fire when only start_date is present', () => {
+    const result = schema.safeParse({
+      ...baseValid,
+      start_date: '2026-06-01',
+    })
+    expect(
+      result.error?.issues.some((i) => i.message === 'endDateBeforeStart'),
+    ).toBeFalsy()
+  })
+
+  it('does not fire when only end_date is present', () => {
+    const result = schema.safeParse({
+      ...baseValid,
+      end_date: '2026-06-01',
+    })
+    expect(
+      result.error?.issues.some((i) => i.message === 'endDateBeforeStart'),
+    ).toBeFalsy()
   })
 })

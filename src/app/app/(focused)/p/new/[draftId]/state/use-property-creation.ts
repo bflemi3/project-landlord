@@ -124,6 +124,8 @@ const EXTRACTION_GETTERS: Record<
   'rent-dates.amount_minor': (e) => e.rent?.amount,
   'rent-dates.currency': (e) => coerceCurrency(e.rent?.currency),
   'rent-dates.due_day': (e) => e.rent?.dueDay ?? undefined,
+  'rent-dates.start_date': (e) => e.contractDates?.start ?? undefined,
+  'rent-dates.end_date': (e) => e.contractDates?.end ?? undefined,
 }
 
 /** Walks a dot-notation path into a possibly-nested value. Returns

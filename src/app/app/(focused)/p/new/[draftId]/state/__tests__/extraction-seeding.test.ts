@@ -180,7 +180,71 @@ describe('mergeExtractionIntoSectionData', () => {
       amount_minor: 450_000,
       currency: 'USD',
       due_day: 10,
+      start_date: undefined,
+      end_date: undefined,
     })
+  })
+
+  it('seeds start_date and end_date from extraction.contractDates', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        contractDates: { start: '2026-01-15', end: '2027-01-14' },
+      }),
+    )
+
+    expect((result['rent-dates'] as { start_date: string }).start_date).toBe(
+      '2026-01-15',
+    )
+    expect((result['rent-dates'] as { end_date: string }).end_date).toBe(
+      '2027-01-14',
+    )
+  })
+
+  it('coerces null contractDates fields to undefined on the slice', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        contractDates: { start: null, end: null },
+      }),
+    )
+
+    expect(
+      (result['rent-dates'] as { start_date: unknown }).start_date,
+    ).toBeUndefined()
+    expect(
+      (result['rent-dates'] as { end_date: unknown }).end_date,
+    ).toBeUndefined()
+  })
+
+  it('keeps both date slots undefined when contractDates is null', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({ contractDates: null }),
+    )
+
+    expect(
+      (result['rent-dates'] as { start_date: unknown }).start_date,
+    ).toBeUndefined()
+    expect(
+      (result['rent-dates'] as { end_date: unknown }).end_date,
+    ).toBeUndefined()
+  })
+
+  it('seeds only the present side when contractDates supplies one date', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        contractDates: { start: '2026-03-01', end: null },
+      }),
+    )
+
+    expect((result['rent-dates'] as { start_date: string }).start_date).toBe(
+      '2026-03-01',
+    )
+    expect(
+      (result['rent-dates'] as { end_date: unknown }).end_date,
+    ).toBeUndefined()
   })
 
   it('keeps the default due_day when extraction returns dueDay: null', () => {
