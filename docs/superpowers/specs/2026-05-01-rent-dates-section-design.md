@@ -393,3 +393,55 @@ The planner should slice this into ordered tasks. Suggested cut points (each ind
 7. **`pt-BR` and `es` translations.** ✅ for shipped fields (rent amount, due day, start/end date, validation codes). Future copy added per slice.
 
 Slice 1 unblocks 2–6. Slice 2 unblocks 3–4. Slices 3, 4, 5 are independent of each other and can land in any order.
+
+---
+
+## Deferred Work — Pick Up Later
+
+The following slice fields and UX details from this spec are **not yet implemented**. Work moved on to the `tenants` section (next in `CHECKOUT_SECTIONS`) before completing them. Pick up here when looping back to finish rent-dates.
+
+### Slice fields not yet on `RentDatesInput`
+
+These are listed in the "Slice Shape" table above but were never added to `rent-dates-schema.ts`, `defaultRentDatesInput()`, `mergeExtractionIntoSectionData`, or `EXTRACTION_GETTERS`:
+
+| Field | Type | Required when |
+|---|---|---|
+| `includes` | `string[]` | Optional, default `[]` |
+| `adjustment_frequency` | `'monthly' \| 'quarterly' \| 'biannual' \| 'annual' \| 'other' \| undefined` | Optional |
+| `adjustment_method` | `'index' \| 'fixed_amount' \| 'fixed_percentage' \| 'other' \| undefined` | Optional, paired with `adjustment_frequency` |
+| `adjustment_index_name` | `string \| undefined` | Required when `method === 'index'` |
+| `adjustment_fixed_amount_minor` | `number \| undefined` | Required when `method === 'fixed_amount'` |
+| `adjustment_fixed_percentage` | `number \| undefined` (0–100) | Required when `method === 'fixed_percentage'` |
+
+### Cross-field rules not yet in `superRefine`
+
+- `adjustment_frequency` ↔ `adjustment_method` paired (both or neither) → `methodRequired` / `frequencyRequired`
+- `method === 'index'` ⇒ `adjustment_index_name` set → `indexNameRequired`
+- `method === 'fixed_amount'` ⇒ `adjustment_fixed_amount_minor` set → `fixedAmountRequired`
+- `method === 'fixed_percentage'` ⇒ `adjustment_fixed_percentage` set → `fixedPercentageRequired`
+
+### Form / UX pieces not yet built
+
+- **Bundled-rent InfoBox.** When `extraction.rent.includes` has `> 0` items, render an `<InfoBox>` listing what the rent covers, with edit affordance. Empty `includes` → no box.
+- **Adjustment block (collapsible).** Default collapsed. Opens automatically when extraction populated any adjustment field.
+- **Method-aware value control.** Form swaps the value input based on `adjustment_method`:
+  - `index` → text input for index name
+  - `fixed_amount` → CurrencyInput
+  - `fixed_percentage` → number input (0–100, 2 decimals)
+  - `other` → no value input
+- **Next-adjustment label.** Derived from `start_date + adjustment_frequency` via `nextAdjustmentDate(...)` helper. Shown only when both are set.
+
+### Helper module not yet created
+
+- `src/lib/rent-adjustment.ts` — `nextAdjustmentDate(start, frequency, today?)`. Pure helper, unit-tested at `src/lib/__tests__/rent-adjustment.test.ts`. Spec for the helper is in the "Helper: `nextAdjustmentDate`" section above.
+
+### Translation keys not yet added
+
+Missing under `rentDates.*` in `messages/{en,pt-BR,es}.json`:
+
+- `includes`, `includesHint`
+- `adjustmentDetails`
+- `adjustmentFrequency`, `adjustmentMethod`, `adjustmentIndexName`, `adjustmentFixedAmount`, `adjustmentFixedPercentage`, `nextAdjustment`
+- `frequencyOptions.{monthly,quarterly,biannual,annual,other}`
+- `methodOptions.{index,fixed_amount,fixed_percentage,other}`
+- Error codes: `invalidFrequency`, `invalidMethod`, `frequencyRequired`, `methodRequired`, `indexNameRequired`, `fixedAmountRequired`, `fixedPercentageRequired`, `tooLong`, `invalidPercentage`
