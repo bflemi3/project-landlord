@@ -7,11 +7,17 @@ import { toast } from 'sonner'
 import { Building2, Home, Briefcase, MoreHorizontal } from 'lucide-react'
 
 import { CepField } from '@/components/forms/cep-field'
-import { ErrorHint } from '@/components/forms/error-hint'
-import { FieldHint } from '@/components/forms/field-hint'
-import { FormRoot, FormFieldset, FormField } from '@/components/forms/form'
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldLegend,
+  FieldRow,
+  FieldSet,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -208,13 +214,13 @@ export function PropertySection() {
         />
       </Section.Header>
       <Section.Body>
-        <FormRoot>
+        <FieldGroup>
           {/* 1. Property type */}
-          <FormField>
-            <Label>
+          <Field>
+            <FieldLabel>
               {tProperties('propertyType')}
               <AutoFilledIndicator path="property.property_type" />
-            </Label>
+            </FieldLabel>
             <RadioCardGroup
               options={propertyTypeOptions}
               value={values.property_type}
@@ -223,13 +229,16 @@ export function PropertySection() {
                 setField('property_type', val as PropertyInput['property_type'])
               }
             />
-          </FormField>
+          </Field>
 
           {/* 2. Property name */}
-          <FormField>
-            <Label htmlFor="name">
+          <Field data-invalid={hasFieldError(form, 'name') || undefined}>
+            <FieldLabel htmlFor="name">
               {tProperties('propertyName')}
-            </Label>
+            </FieldLabel>
+            <FieldDescription id="name-hint">
+                {tProperties('propertyNameHint')}
+            </FieldDescription>
             <Input
               id="name"
               name="name"
@@ -241,15 +250,15 @@ export function PropertySection() {
               aria-invalid={hasFieldError(form, 'name')}
               aria-describedby={hasFieldError(form, 'name') ? 'name-error' : 'name-hint'}
             />
-            {hasFieldError(form, 'name') ? (
-              <ErrorHint field="name" error={tProperties(getFieldError(form, 'name')!)} />
-            ) : (
-              <FieldHint field="name">{tProperties('propertyNameHint')}</FieldHint>
+            {hasFieldError(form, 'name') && (
+              <FieldError id="name-error">
+                {tProperties(getFieldError(form, 'name')!)}
+              </FieldError>
             )}
-          </FormField>
+          </Field>
 
           {/* 3. CEP */}
-          <FormField>
+          <Field data-invalid={hasFieldError(form, 'postal_code') || undefined}>
             <CepField
               labelExtra={cepLabelExtra}
               value={values.postal_code}
@@ -257,61 +266,75 @@ export function PropertySection() {
               onAddressFound={handleAddressFound}
             />
             {hasFieldError(form, 'postal_code') && (
-              <ErrorHint field="postal_code" error={tProperties(getFieldError(form, 'postal_code')!)} />
+              <FieldError id="postal_code-error">
+                {tProperties(getFieldError(form, 'postal_code')!)}
+              </FieldError>
             )}
-          </FormField>
+          </Field>
 
           {/* 4. Street + Number */}
-          <FormFieldset legend="Street address" columns={3}>
-            <FormField className="md:col-span-2">
-              <Label htmlFor="street">
-                {tProperties('street')}
-                <AutoFilledIndicator path="property.street" />
-              </Label>
-              <Input
-                id="street"
-                name="street"
-                type="text"
-                placeholder={tProperties('streetPlaceholder')}
-                value={values.street}
-                onChange={(e) => setField('street', e.target.value)}
-                onBlur={() => form.markTouched('street')}
-                aria-invalid={hasFieldError(form, 'street')}
-                aria-describedby={hasFieldError(form, 'street') ? 'street-error' : undefined}
-              />
-              {hasFieldError(form, 'street') && (
-                <ErrorHint field="street" error={tProperties(getFieldError(form, 'street')!)} />
-              )}
-            </FormField>
+          <FieldSet>
+            <FieldLegend className="sr-only">
+              {tProperties('streetAddressGroupLegend')}
+            </FieldLegend>
+            <FieldRow columns={3} breakpoint="md">
+              <Field
+                className="md:col-span-2"
+                data-invalid={hasFieldError(form, 'street') || undefined}
+              >
+                <FieldLabel htmlFor="street">
+                  {tProperties('street')}
+                  <AutoFilledIndicator path="property.street" />
+                </FieldLabel>
+                <Input
+                  id="street"
+                  name="street"
+                  type="text"
+                  placeholder={tProperties('streetPlaceholder')}
+                  value={values.street}
+                  onChange={(e) => setField('street', e.target.value)}
+                  onBlur={() => form.markTouched('street')}
+                  aria-invalid={hasFieldError(form, 'street')}
+                  aria-describedby={hasFieldError(form, 'street') ? 'street-error' : undefined}
+                />
+                {hasFieldError(form, 'street') && (
+                  <FieldError id="street-error">
+                    {tProperties(getFieldError(form, 'street')!)}
+                  </FieldError>
+                )}
+              </Field>
 
-            <FormField>
-              <Label htmlFor="number">
-                {tProperties('number')}
-                <AutoFilledIndicator path="property.number" />
-              </Label>
-              <Input
-                id="number"
-                name="number"
-                type="text"
-                placeholder={tProperties('numberPlaceholder')}
-                value={values.number}
-                onChange={(e) => setField('number', e.target.value)}
-                onBlur={() => form.markTouched('number')}
-                aria-invalid={hasFieldError(form, 'number')}
-                aria-describedby={hasFieldError(form, 'number') ? 'number-error' : undefined}
-              />
-              {hasFieldError(form, 'number') && (
-                <ErrorHint field="number" error={tProperties(getFieldError(form, 'number')!)} />
-              )}
-            </FormField>
-          </FormFieldset>
+              <Field data-invalid={hasFieldError(form, 'number') || undefined}>
+                <FieldLabel htmlFor="number">
+                  {tProperties('number')}
+                  <AutoFilledIndicator path="property.number" />
+                </FieldLabel>
+                <Input
+                  id="number"
+                  name="number"
+                  type="text"
+                  placeholder={tProperties('numberPlaceholder')}
+                  value={values.number}
+                  onChange={(e) => setField('number', e.target.value)}
+                  onBlur={() => form.markTouched('number')}
+                  aria-invalid={hasFieldError(form, 'number')}
+                  aria-describedby={hasFieldError(form, 'number') ? 'number-error' : undefined}
+                />
+                {hasFieldError(form, 'number') && (
+                  <FieldError id="number-error">
+                    {tProperties(getFieldError(form, 'number')!)}
+                  </FieldError>
+                )}
+              </Field>
+            </FieldRow>
+          </FieldSet>
 
           {/* 5. Complement */}
-          <FormField>
-            <Label htmlFor="complement">
+          <Field data-invalid={hasFieldError(form, 'complement') || undefined}>
+            <FieldLabel htmlFor="complement">
               {tProperties('complement')}
               <AutoFilledIndicator path="property.complement" />
-            </Label>
+            </FieldLabel>
             <Input
               id="complement"
               name="complement"
@@ -324,16 +347,18 @@ export function PropertySection() {
               aria-describedby={hasFieldError(form, 'complement') ? 'complement-error' : undefined}
             />
             {hasFieldError(form, 'complement') && (
-              <ErrorHint field="complement" error={tProperties(getFieldError(form, 'complement')!)} />
+              <FieldError id="complement-error">
+                {tProperties(getFieldError(form, 'complement')!)}
+              </FieldError>
             )}
-          </FormField>
+          </Field>
 
           {/* 6. Neighborhood */}
-          <FormField>
-            <Label htmlFor="neighborhood">
+          <Field data-invalid={hasFieldError(form, 'neighborhood') || undefined}>
+            <FieldLabel htmlFor="neighborhood">
               {tProperties('neighborhood')}
               <AutoFilledIndicator path="property.neighborhood" />
-            </Label>
+            </FieldLabel>
             <Input
               id="neighborhood"
               name="neighborhood"
@@ -346,67 +371,81 @@ export function PropertySection() {
               aria-describedby={hasFieldError(form, 'neighborhood') ? 'neighborhood-error' : undefined}
             />
             {hasFieldError(form, 'neighborhood') && (
-              <ErrorHint field="neighborhood" error={tProperties(getFieldError(form, 'neighborhood')!)} />
+              <FieldError id="neighborhood-error">
+                {tProperties(getFieldError(form, 'neighborhood')!)}
+              </FieldError>
             )}
-          </FormField>
+          </Field>
 
           {/* 7. City + State */}
-          <FormFieldset legend="City and state" columns={3}>
-            <FormField className="md:col-span-2">
-              <Label htmlFor="city">
-                {tProperties('city')}
-                <AutoFilledIndicator path="property.city" />
-              </Label>
-              <Input
-                id="city"
-                name="city"
-                type="text"
-                placeholder={tProperties('cityPlaceholder')}
-                value={values.city}
-                onChange={(e) => setField('city', e.target.value)}
-                onBlur={() => form.markTouched('city')}
-                aria-invalid={hasFieldError(form, 'city')}
-                aria-describedby={hasFieldError(form, 'city') ? 'city-error' : undefined}
-              />
-              {hasFieldError(form, 'city') && (
-                <ErrorHint field="city" error={tProperties(getFieldError(form, 'city')!)} />
-              )}
-            </FormField>
-
-            <FormField>
-              <Label htmlFor="state">
-                {tProperties('state')}
-                <AutoFilledIndicator path="property.state" />
-              </Label>
-              <Select
-                value={values.state}
-                onValueChange={(val) => {
-                  setField('state', val ?? '')
-                  form.markTouched('state')
-                }}
+          <FieldSet>
+            <FieldLegend className="sr-only">
+              {tProperties('cityStateGroupLegend')}
+            </FieldLegend>
+            <FieldRow columns={3} breakpoint="md">
+              <Field
+                className="md:col-span-2"
+                data-invalid={hasFieldError(form, 'city') || undefined}
               >
-                <SelectTrigger
-                  id="state"
-                  onBlur={() => form.markTouched('state')}
-                  aria-invalid={hasFieldError(form, 'state')}
-                  aria-describedby={hasFieldError(form, 'state') ? 'state-error' : undefined}
+                <FieldLabel htmlFor="city">
+                  {tProperties('city')}
+                  <AutoFilledIndicator path="property.city" />
+                </FieldLabel>
+                <Input
+                  id="city"
+                  name="city"
+                  type="text"
+                  placeholder={tProperties('cityPlaceholder')}
+                  value={values.city}
+                  onChange={(e) => setField('city', e.target.value)}
+                  onBlur={() => form.markTouched('city')}
+                  aria-invalid={hasFieldError(form, 'city')}
+                  aria-describedby={hasFieldError(form, 'city') ? 'city-error' : undefined}
+                />
+                {hasFieldError(form, 'city') && (
+                  <FieldError id="city-error">
+                    {tProperties(getFieldError(form, 'city')!)}
+                  </FieldError>
+                )}
+              </Field>
+
+              <Field data-invalid={hasFieldError(form, 'state') || undefined}>
+                <FieldLabel htmlFor="state">
+                  {tProperties('state')}
+                  <AutoFilledIndicator path="property.state" />
+                </FieldLabel>
+                <Select
+                  value={values.state}
+                  onValueChange={(val) => {
+                    setField('state', val ?? '')
+                    form.markTouched('state')
+                  }}
                 >
-                  <SelectValue placeholder={tProperties('statePlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {brStates.map((s) => (
-                    <SelectItem key={s.code} value={s.code}>
-                      {s.code} — {s.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {hasFieldError(form, 'state') && (
-                <ErrorHint field="state" error={tProperties(getFieldError(form, 'state')!)} />
-              )}
-            </FormField>
-          </FormFieldset>
-        </FormRoot>
+                  <SelectTrigger
+                    id="state"
+                    onBlur={() => form.markTouched('state')}
+                    aria-invalid={hasFieldError(form, 'state')}
+                    aria-describedby={hasFieldError(form, 'state') ? 'state-error' : undefined}
+                  >
+                    <SelectValue placeholder={tProperties('statePlaceholder')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {brStates.map((s) => (
+                      <SelectItem key={s.code} value={s.code}>
+                        {s.code} — {s.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {hasFieldError(form, 'state') && (
+                  <FieldError id="state-error">
+                    {tProperties(getFieldError(form, 'state')!)}
+                  </FieldError>
+                )}
+              </Field>
+            </FieldRow>
+          </FieldSet>
+        </FieldGroup>
         <Section.Actions
           backLabel={t('actions.back')}
           continueLabel={t('actions.continue')}

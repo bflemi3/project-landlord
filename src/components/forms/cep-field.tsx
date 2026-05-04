@@ -3,7 +3,7 @@
 import { memo, useState, useCallback, useRef, useEffect, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { Loader2, Check } from 'lucide-react'
-import { FieldHint } from '@/components/forms/field-hint'
+import { FieldDescription } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { getAddressProvider } from '@/lib/address/provider'
@@ -116,10 +116,13 @@ export const CepField = memo(function CepField({
     }
   }, [isControlled, onValueChange, onAddressFound])
 
-  // 10. Return
+  // 10. Return — renders as siblings; expects a parent <Field> for layout.
   return (
-    <div className="flex flex-col gap-2">
+    <>
       <Label htmlFor="postal_code">{t('postalCode')}{labelExtra}</Label>
+      <FieldDescription id="postal_code-hint">
+          {t('addressHint')}
+      </FieldDescription>
       <Input
         id="postal_code"
         name="postal_code"
@@ -133,23 +136,28 @@ export const CepField = memo(function CepField({
         maxLength={9}
       />
       {looking && (
-        <FieldHint field="postal_code" className="flex items-center gap-1.5">
+        <FieldDescription
+          id="postal_code-hint"
+          className="flex items-center gap-2"
+        >
           <Loader2 className="size-3 animate-spin" />
           {t('postalCodeLooking')}
-        </FieldHint>
+        </FieldDescription>
       )}
       {found && (
-        <FieldHint field="postal_code" className="flex items-center gap-1.5 text-primary">
+        <FieldDescription
+          id="postal_code-hint"
+          className="flex items-center gap-2 text-primary"
+        >
           <Check className="size-3" />
           {t('postalCodeFound')}
-        </FieldHint>
+        </FieldDescription>
       )}
       {notFound && (
-        <FieldHint field="postal_code">{t('postalCodeNotFound')}</FieldHint>
+        <FieldDescription id="postal_code-hint">
+          {t('postalCodeNotFound')}
+        </FieldDescription>
       )}
-      {!looking && !found && !notFound && (
-        <FieldHint field="postal_code">{t('addressHint')}</FieldHint>
-      )}
-    </div>
+    </>
   )
 })

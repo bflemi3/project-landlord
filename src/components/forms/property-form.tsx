@@ -6,6 +6,12 @@ import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldRow,
+} from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -178,19 +184,25 @@ function PropertyFormName({ className, ...props }: React.ComponentProps<'div'>) 
 
   return (
     <div data-slot="property-form-name" className={className} {...props}>
-      <Label htmlFor="name" className="mb-2">{t('propertyName')}</Label>
-      <Input
-        id="name"
-        name="name"
-        type="text"
-        placeholder={t('propertyNamePlaceholder')}
-        defaultValue={initialValues?.name ?? ''}
-        autoFocus
-      />
-      <p className="mt-1.5 text-xs text-muted-foreground">{t('propertyNameHint')}</p>
-      {errors.name?.[0] && (
-        <p className="mt-1.5 text-sm text-destructive">{t(errors.name[0])}</p>
-      )}
+      <Field data-invalid={Boolean(errors.name?.[0]) || undefined}>
+        <Label htmlFor="name">{t('propertyName')}</Label>
+        <Input
+          id="name"
+          name="name"
+          type="text"
+          placeholder={t('propertyNamePlaceholder')}
+          defaultValue={initialValues?.name ?? ''}
+          autoFocus
+          aria-invalid={Boolean(errors.name?.[0])}
+          aria-describedby={errors.name?.[0] ? 'name-error' : 'name-hint'}
+        />
+        <FieldDescription id="name-hint">
+          {t('propertyNameHint')}
+        </FieldDescription>
+        {errors.name?.[0] && (
+          <FieldError id="name-error">{t(errors.name[0])}</FieldError>
+        )}
+      </Field>
     </div>
   )
 }
@@ -207,116 +219,140 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
   } = useFormContext()
 
   return (
-    <div data-slot="property-form-content" className={className} {...props}>
-      <fieldset className="space-y-5">
+    <div data-slot="property-form-content" className={cn('flex flex-col gap-6', className)} {...props}>
+      <Field data-invalid={Boolean(errors.postal_code?.[0]) || undefined}>
         <CepField
           onAddressFound={handleAddressFound}
           defaultValue={initialValues?.postal_code}
         />
         {errors.postal_code?.[0] && (
-          <p className="-mt-3 text-sm text-destructive">{t(errors.postal_code[0])}</p>
+          <FieldError id="postal_code-error">
+            {t(errors.postal_code[0])}
+          </FieldError>
         )}
-      </fieldset>
+      </Field>
 
-      <fieldset>
-        <div className="mt-6 mb-5 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-xs font-medium text-muted-foreground">{t('addressSection')}</span>
-          <div className="h-px flex-1 bg-border" />
-        </div>
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-sm font-medium text-muted-foreground">{t('addressSection')}</span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
 
-        <div className="space-y-5">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2">
-              <Label htmlFor="street" className="mb-2">{t('street')}</Label>
-              <Input
-                id="street"
-                name="street"
-                type="text"
-                placeholder={t('streetPlaceholder')}
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-              />
-              {errors.street?.[0] && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.street[0])}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="number" className="mb-2">{t('number')}</Label>
-              <Input
-                id="number"
-                name="number"
-                type="text"
-                placeholder={t('numberPlaceholder')}
-                defaultValue={initialValues?.number}
-              />
-              {errors.number?.[0] && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.number[0])}</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <Label htmlFor="complement" className="mb-2">{t('complement')}</Label>
+      <div className="flex flex-col gap-4">
+        <FieldRow columns={3} breakpoint="md">
+          <Field
+            className="md:col-span-2"
+            data-invalid={Boolean(errors.street?.[0]) || undefined}
+          >
+            <Label htmlFor="street">{t('street')}</Label>
             <Input
-              id="complement"
-              name="complement"
+              id="street"
+              name="street"
               type="text"
-              placeholder={t('complementPlaceholder')}
-              defaultValue={initialValues?.complement}
+              placeholder={t('streetPlaceholder')}
+              value={street}
+              onChange={(e) => setStreet(e.target.value)}
+              aria-invalid={Boolean(errors.street?.[0])}
+              aria-describedby={errors.street?.[0] ? 'street-error' : undefined}
             />
-          </div>
+            {errors.street?.[0] && (
+              <FieldError id="street-error">{t(errors.street[0])}</FieldError>
+            )}
+          </Field>
 
-          <div>
-            <Label htmlFor="neighborhood" className="mb-2">{t('neighborhood')}</Label>
+          <Field data-invalid={Boolean(errors.number?.[0]) || undefined}>
+            <Label htmlFor="number">{t('number')}</Label>
             <Input
-              id="neighborhood"
-              name="neighborhood"
+              id="number"
+              name="number"
               type="text"
-              placeholder={t('neighborhoodPlaceholder')}
-              value={neighborhood}
-              onChange={(e) => setNeighborhood(e.target.value)}
+              placeholder={t('numberPlaceholder')}
+              defaultValue={initialValues?.number}
+              aria-invalid={Boolean(errors.number?.[0])}
+              aria-describedby={errors.number?.[0] ? 'number-error' : undefined}
             />
-          </div>
+            {errors.number?.[0] && (
+              <FieldError id="number-error">{t(errors.number[0])}</FieldError>
+            )}
+          </Field>
+        </FieldRow>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="col-span-2">
-              <Label htmlFor="city" className="mb-2">{t('city')}</Label>
-              <Input
-                id="city"
-                name="city"
-                type="text"
-                placeholder={t('cityPlaceholder')}
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-              />
-              {errors.city?.[0] && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.city[0])}</p>
-              )}
-            </div>
-            <div>
-              <Label className="mb-2">{t('state')}</Label>
-              <Select value={addressState} onValueChange={(val) => { setAddressState(val ?? ''); addressStateRef.current = val ?? '' }}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('statePlaceholder')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {addressProvider.states.map((s) => (
-                    <SelectItem key={s.code} value={s.code}>{s.code} — {s.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.state?.[0] && (
-                <p className="mt-1.5 text-sm text-destructive">{t(errors.state[0])}</p>
-              )}
-            </div>
-          </div>
-        </div>
+        <Field>
+          <Label htmlFor="complement">{t('complement')}</Label>
+          <Input
+            id="complement"
+            name="complement"
+            type="text"
+            placeholder={t('complementPlaceholder')}
+            defaultValue={initialValues?.complement}
+          />
+        </Field>
 
-        {errors.general?.[0] && errors.general[0] !== 'duplicateAddress' && (
-          <p className="mt-4 text-sm text-destructive">{t(errors.general[0])}</p>
-        )}
-      </fieldset>
+        <Field>
+          <Label htmlFor="neighborhood">{t('neighborhood')}</Label>
+          <Input
+            id="neighborhood"
+            name="neighborhood"
+            type="text"
+            placeholder={t('neighborhoodPlaceholder')}
+            value={neighborhood}
+            onChange={(e) => setNeighborhood(e.target.value)}
+          />
+        </Field>
+
+        <FieldRow columns={3} breakpoint="md">
+          <Field
+            className="md:col-span-2"
+            data-invalid={Boolean(errors.city?.[0]) || undefined}
+          >
+            <Label htmlFor="city">{t('city')}</Label>
+            <Input
+              id="city"
+              name="city"
+              type="text"
+              placeholder={t('cityPlaceholder')}
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              aria-invalid={Boolean(errors.city?.[0])}
+              aria-describedby={errors.city?.[0] ? 'city-error' : undefined}
+            />
+            {errors.city?.[0] && (
+              <FieldError id="city-error">{t(errors.city[0])}</FieldError>
+            )}
+          </Field>
+
+          <Field data-invalid={Boolean(errors.state?.[0]) || undefined}>
+            <Label htmlFor="state">{t('state')}</Label>
+            <Select
+              value={addressState}
+              onValueChange={(val) => {
+                setAddressState(val ?? '')
+                addressStateRef.current = val ?? ''
+              }}
+            >
+              <SelectTrigger
+                id="state"
+                aria-invalid={Boolean(errors.state?.[0])}
+                aria-describedby={errors.state?.[0] ? 'state-error' : undefined}
+              >
+                <SelectValue placeholder={t('statePlaceholder')} />
+              </SelectTrigger>
+              <SelectContent>
+                {addressProvider.states.map((s) => (
+                  <SelectItem key={s.code} value={s.code}>{s.code} — {s.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.state?.[0] && (
+              <FieldError id="state-error">{t(errors.state[0])}</FieldError>
+            )}
+          </Field>
+        </FieldRow>
+      </div>
+
+      {errors.general?.[0] && errors.general[0] !== 'duplicateAddress' && (
+        <FieldError>{t(errors.general[0])}</FieldError>
+      )}
     </div>
   )
 }
