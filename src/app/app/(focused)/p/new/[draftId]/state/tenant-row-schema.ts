@@ -1,6 +1,8 @@
 import { z } from 'zod'
 
 import type { ContractParty } from '@/lib/contract-extraction/types'
+import { formatCpf } from '@/lib/cpf/format'
+import { isValidCpf } from '@/lib/cpf/validate'
 import { tenantInputBaseSchema } from '@/schemas/tenant'
 import { brazilTaxIdSchema, getTaxIdSchema } from '@/schemas/tax-id'
 
@@ -45,13 +47,38 @@ export function defaultTenantRow(): TenantRow {
   }
 }
 
-export function tenantRowFromContractParty(party: ContractParty): TenantRow {
+export function tenantRowFromContractParty(
+  party: ContractParty,
+  countryCode = 'BR',
+): TenantRow {
   return {
     id: crypto.randomUUID(),
-    name: party.name ?? '',
+    name: normalizeExtractedName(party.name ?? ''),
     email: party.email ?? '',
-    taxId: party.taxId ?? '',
+    taxId: sanitizeExtractedTaxId(party.taxId ?? '', countryCode),
     inviteNow: true,
     isExtracted: true,
   }
+}
+
+// LLM extraction frequently hallucinates placeholders (e.g. "XXX") for missing
+// CPFs. Drop anything that doesn't pass check-digit validation so the seeded
+// row starts clean rather than landing the landlord on an inline error.
+function sanitizeExtractedTaxId(raw: string, countryCode: string): string {
+  if (countryCode !== 'BR') return raw
+  return isValidCpf(raw) ? formatCpf(raw) : ''
+}
+
+// Always title-case extracted names so contract formatting variants ("BRANDON
+// FLEMMING", "brandon flemming", "Maria silva") all land consistently. Trades
+// off internal capitals like "McDonald" or "O'Brien", which become "Mcdonald"
+// / "O'brien" — rare in Brazilian contracts and easy for the landlord to fix.
+function normalizeExtractedName(raw: string): string {
+  const trimmed = raw.trim()
+  if (!trimmed) return ''
+  return trimmed
+    .toLowerCase()
+    .split(/\s+/)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
 }

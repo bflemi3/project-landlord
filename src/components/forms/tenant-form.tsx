@@ -69,27 +69,6 @@ function TenantFormName({
   )
 }
 
-// Placeholder for now — will swap the inner control for a country-aware
-// `<TaxId>` primitive in a follow-up piece, with masking and check-digit
-// validation driven by the country provider. The slot name and outer API stay
-// the same so consumers don't churn.
-function TenantFormTaxId({
-  value,
-  onValueChange,
-  ...props
-}: TenantFormTextFieldProps) {
-  return (
-    <Input
-      data-slot="tenant-form-tax-id"
-      type="text"
-      autoComplete="off"
-      value={value}
-      onChange={(e) => onValueChange(e.target.value)}
-      {...props}
-    />
-  )
-}
-
 function TenantFormEmail({
   value,
   onValueChange,
@@ -167,7 +146,6 @@ function TenantFormRemoveButton({
 export {
   TenantFormAvatar,
   TenantFormName,
-  TenantFormTaxId,
   TenantFormEmail,
   TenantFormInviteToggle,
   TenantFormRemoveButton,

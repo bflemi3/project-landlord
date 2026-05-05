@@ -4,7 +4,8 @@
     "loading": "Cargando...",
     "error": "Algo salió mal",
     "retry": "Intentar de nuevo",
-    "back": "Volver"
+    "back": "Volver",
+    "taxIdLabel": "Identificación fiscal"
   },
   "auth": {
     "tagline": "Facturación compartida en la que puedes confiar",
@@ -424,14 +425,27 @@
       "tenants": {
         "title": "Inquilinos",
         "subtitle": "Invita a quienes vivirán aquí.",
-        "placeholder": "Formulario de invitación a inquilinos próximamente.",
         "nameLabel": "Nombre",
         "emailLabel": "Correo",
-        "taxIdLabel": "CPF",
         "inviteToggleLabel": "Enviar invitación por correo",
         "inviteToggleHelper": "Les enviaremos un correo cuando crees la propiedad.",
         "removeAriaLabel": "Eliminar inquilino",
-        "addTenant": "Agregar inquilino"
+        "addTenant": "Agregar inquilino",
+        "required": "Obligatorio",
+        "invalidEmail": "Ingresa un correo válido",
+        "invalidTaxId": "Ingresa un CPF válido",
+        "newTenant": "Nuevo inquilino",
+        "summaryWillInvite": "Recibirá invitación",
+        "summaryNoInvite": "Sin invitación",
+        "summaryNeedsAttention": "Requiere atención",
+        "summaryAndMore": "+{count} más",
+        "emptyState": {
+          "title": "Agrega a quienes viven aquí",
+          "leadIn": "Una vez que lo hagas, mabenn:",
+          "bulletPayments": "Hará seguimiento de cada pago y mostrará lo que aún se debe",
+          "bulletReminders": "Recordará a los inquilinos cuando vence el alquiler",
+          "bulletLateNotices": "Enviará avisos de mora en tu nombre"
+        }
       },
       "expenses": {
         "title": "Gastos",

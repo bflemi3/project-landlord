@@ -41,6 +41,11 @@ describe('defaultSectionData', () => {
     const data = defaultSectionData()
     expect(data['rent-dates']).toEqual(defaultRentDatesInput())
   })
+
+  it('returns the tenants slice initialized to an empty array', () => {
+    const data = defaultSectionData()
+    expect(data.tenants).toEqual([])
+  })
 })
 
 describe('mergeExtractionIntoSectionData', () => {
@@ -316,10 +321,11 @@ describe('mergeExtractionIntoSectionData', () => {
 
   it('preserves other section keys in prev unchanged', () => {
     // Ensures the merge function doesn't overwrite slices that are unrelated
-    // to extraction seeding for this plan.
+    // to extraction seeding for this plan. Uses the `expenses` slice as the
+    // sentinel since `tenants` is now actively merged.
     const prev: SectionData = {
       property: defaultPropertyInput(),
-      tenants: { foo: 'bar' } as unknown,
+      expenses: { foo: 'bar' } as unknown,
     }
     const result = mergeExtractionIntoSectionData(
       prev,
@@ -336,7 +342,97 @@ describe('mergeExtractionIntoSectionData', () => {
         },
       }),
     )
-    expect(result.tenants).toEqual({ foo: 'bar' })
+    expect(result.expenses).toEqual({ foo: 'bar' })
+  })
+
+  it('seeds tenants from extraction.tenants with isExtracted=true on each row', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        tenants: [
+          {
+            name: 'Maria Silva',
+            email: 'maria@example.com',
+            taxId: '040.032.329-09',
+          },
+          {
+            name: 'João Santos',
+            email: null,
+            taxId: '529.982.247-25',
+          },
+        ],
+      }),
+    )
+    const tenants = result.tenants as Array<{
+      name: string
+      email: string
+      taxId: string
+      inviteNow: boolean
+      isExtracted: boolean
+      id: string
+    }>
+    expect(tenants).toHaveLength(2)
+    expect(tenants[0]).toMatchObject({
+      name: 'Maria Silva',
+      email: 'maria@example.com',
+      taxId: '040.032.329-09',
+      inviteNow: true,
+      isExtracted: true,
+    })
+    expect(tenants[0]?.id.length).toBeGreaterThan(0)
+    expect(tenants[1]).toMatchObject({
+      name: 'João Santos',
+      email: '',
+      taxId: '529.982.247-25',
+      inviteNow: true,
+      isExtracted: true,
+    })
+  })
+
+  it('coerces a null tenants block to an empty array', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({ tenants: null }),
+    )
+    expect(result.tenants).toEqual([])
+  })
+
+  it('produces an empty tenants array when extraction.tenants is an empty list', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({ tenants: [] }),
+    )
+    expect(result.tenants).toEqual([])
+  })
+
+  it('overwrites a previously-populated tenants slice with the new extraction', () => {
+    // Re-extraction (commit a different ContractExtractionResult) should
+    // replace the slice, matching how property/rent-dates behave. Manual
+    // edits between extractions are not preserved by design.
+    const prev: SectionData = {
+      ...defaultSectionData(),
+      tenants: [
+        {
+          id: 'old-1',
+          name: 'Stale',
+          email: 'stale@example.com',
+          taxId: '',
+          inviteNow: true,
+          isExtracted: true,
+        },
+      ],
+    }
+    const result = mergeExtractionIntoSectionData(
+      prev,
+      makeExtraction({
+        tenants: [
+          { name: 'Fresh', email: 'fresh@example.com', taxId: null },
+        ],
+      }),
+    )
+    const tenants = result.tenants as Array<{ name: string }>
+    expect(tenants).toHaveLength(1)
+    expect(tenants[0]?.name).toBe('Fresh')
   })
 
   it('re-exports defaultPropertyInput() with the canonical blank shape', () => {

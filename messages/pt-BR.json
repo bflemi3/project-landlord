@@ -4,7 +4,8 @@
     "loading": "Carregando...",
     "error": "Algo deu errado",
     "retry": "Tentar novamente",
-    "back": "Voltar"
+    "back": "Voltar",
+    "taxIdLabel": "ID fiscal"
   },
   "auth": {
     "tagline": "Cobrança compartilhada com confiança",
@@ -424,14 +425,27 @@
       "tenants": {
         "title": "Inquilinos",
         "subtitle": "Convide quem vai morar aqui.",
-        "placeholder": "Convite de inquilino em breve.",
         "nameLabel": "Nome",
         "emailLabel": "E-mail",
-        "taxIdLabel": "CPF",
         "inviteToggleLabel": "Enviar convite por e-mail",
         "inviteToggleHelper": "Enviaremos um e-mail quando você criar o imóvel.",
         "removeAriaLabel": "Remover inquilino",
-        "addTenant": "Adicionar inquilino"
+        "addTenant": "Adicionar inquilino",
+        "required": "Obrigatório",
+        "invalidEmail": "Informe um e-mail válido",
+        "invalidTaxId": "Informe um CPF válido",
+        "newTenant": "Novo inquilino",
+        "summaryWillInvite": "Receberá convite",
+        "summaryNoInvite": "Sem convite",
+        "summaryNeedsAttention": "Precisa de atenção",
+        "summaryAndMore": "+{count} outros",
+        "emptyState": {
+          "title": "Adicione quem mora aqui",
+          "leadIn": "Depois disso, mabenn vai automaticamente:",
+          "bulletPayments": "Acompanhar cada pagamento e mostrar o que ainda está em aberto",
+          "bulletReminders": "Lembrar os inquilinos quando o aluguel vence",
+          "bulletLateNotices": "Enviar avisos de atraso em seu nome"
+        }
       },
       "expenses": {
         "title": "Despesas",

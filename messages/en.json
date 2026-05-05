@@ -4,7 +4,8 @@
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Try again",
-    "back": "Back"
+    "back": "Back",
+    "taxIdLabel": "Tax ID"
   },
   "auth": {
     "tagline": "Shared billing you can trust",
@@ -424,14 +425,27 @@
       "tenants": {
         "title": "Tenants",
         "subtitle": "Invite the people who will live here.",
-        "placeholder": "Tenant invite form coming soon.",
         "nameLabel": "Name",
         "emailLabel": "Email",
-        "taxIdLabel": "CPF",
         "inviteToggleLabel": "Send invite email",
         "inviteToggleHelper": "We'll email them when you create the property.",
         "removeAriaLabel": "Remove tenant",
-        "addTenant": "Add tenant"
+        "addTenant": "Add tenant",
+        "required": "Required",
+        "invalidEmail": "Enter a valid email address",
+        "invalidTaxId": "Enter a valid CPF",
+        "newTenant": "New tenant",
+        "summaryWillInvite": "Will be invited",
+        "summaryNoInvite": "Invite skipped",
+        "summaryNeedsAttention": "Needs attention",
+        "summaryAndMore": "+{count} more",
+        "emptyState": {
+          "title": "Add the people who live here",
+          "leadIn": "Once you do, mabenn will automatically:",
+          "bulletPayments": "Track every payment and show what's still owed",
+          "bulletReminders": "Remind tenants when rent is due",
+          "bulletLateNotices": "Send late notices on your behalf"
+        }
       },
       "expenses": {
         "title": "Expenses",

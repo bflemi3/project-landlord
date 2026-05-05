@@ -28,6 +28,7 @@ type UpdaterOrValue<T> = T | ((prev: T) => T)
 const EXTRACTION_SEEDED_SECTION_IDS = [
   'property',
   'rent-dates',
+  'tenants',
 ] as const satisfies readonly SectionId[]
 
 export interface PropertyCreationStateShape {

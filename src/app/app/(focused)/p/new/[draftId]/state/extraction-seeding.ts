@@ -8,6 +8,10 @@ import {
   defaultRentDatesInput,
   type RentDatesInput,
 } from './rent-dates-schema'
+import {
+  tenantRowFromContractParty,
+  type TenantRow,
+} from './tenant-row-schema'
 import type { SectionId } from './registry'
 
 export {
@@ -18,6 +22,7 @@ export {
   defaultRentDatesInput,
   type RentDatesInput,
 } from './rent-dates-schema'
+export { type TenantRow } from './tenant-row-schema'
 
 export type SectionData = Partial<Record<SectionId, unknown>>
 
@@ -34,6 +39,7 @@ export function defaultSectionData(): SectionData {
   return {
     property: defaultPropertyInput(),
     'rent-dates': defaultRentDatesInput(),
+    tenants: [] as TenantRow[],
   }
 }
 
@@ -80,5 +86,12 @@ export function mergeExtractionIntoSectionData(
     start_date: dates?.start ?? undefined,
     end_date: dates?.end ?? undefined,
   }
-  return { ...prev, property, 'rent-dates': rentDates }
+  // Each extracted ContractParty becomes a TenantRow with `isExtracted: true`.
+  // No creator-filter pass here yet — the landlord verifies and prunes the
+  // list manually in the section. A null/missing tenants block resets the
+  // slice to an empty array, mirroring the property/rent-dates behavior.
+  const tenants: TenantRow[] = (extraction.tenants ?? []).map((party) =>
+    tenantRowFromContractParty(party, property.country_code),
+  )
+  return { ...prev, property, 'rent-dates': rentDates, tenants }
 }
