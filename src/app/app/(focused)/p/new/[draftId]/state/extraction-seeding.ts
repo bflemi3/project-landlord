@@ -3,7 +3,7 @@ import { coerceCurrency } from '@/data/shared/currency'
 import {
   defaultPropertyInput,
   type PropertyInput,
-} from '@/data/properties/schema'
+} from '@/schemas/property'
 import {
   defaultRentDatesInput,
   type RentDatesInput,
@@ -13,7 +13,7 @@ import type { SectionId } from './registry'
 export {
   defaultPropertyInput,
   type PropertyInput,
-} from '@/data/properties/schema'
+} from '@/schemas/property'
 export {
   defaultRentDatesInput,
   type RentDatesInput,

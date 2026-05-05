@@ -424,7 +424,14 @@
       "tenants": {
         "title": "Tenants",
         "subtitle": "Invite the people who will live here.",
-        "placeholder": "Tenant invite form coming soon."
+        "placeholder": "Tenant invite form coming soon.",
+        "nameLabel": "Name",
+        "emailLabel": "Email",
+        "taxIdLabel": "CPF",
+        "inviteToggleLabel": "Send invite email",
+        "inviteToggleHelper": "We'll email them when you create the property.",
+        "removeAriaLabel": "Remove tenant",
+        "addTenant": "Add tenant"
       },
       "expenses": {
         "title": "Expenses",

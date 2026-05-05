@@ -18,7 +18,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@
 import { cn } from '@/lib/utils'
 import { getAddressProvider } from '@/lib/address/provider'
 import { validateProperty, type ValidatePropertyState } from '@/data/properties/actions/validate-property'
-import type { PropertyInput } from '@/data/properties/schema'
+import type { PropertyInput } from '@/schemas/property'
 import { CepField } from './cep-field'
 
 const addressProvider = getAddressProvider('BR')

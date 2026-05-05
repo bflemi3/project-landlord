@@ -424,7 +424,14 @@
       "tenants": {
         "title": "Inquilinos",
         "subtitle": "Invita a quienes vivirán aquí.",
-        "placeholder": "Formulario de invitación a inquilinos próximamente."
+        "placeholder": "Formulario de invitación a inquilinos próximamente.",
+        "nameLabel": "Nombre",
+        "emailLabel": "Correo",
+        "taxIdLabel": "CPF",
+        "inviteToggleLabel": "Enviar invitación por correo",
+        "inviteToggleHelper": "Les enviaremos un correo cuando crees la propiedad.",
+        "removeAriaLabel": "Eliminar inquilino",
+        "addTenant": "Agregar inquilino"
       },
       "expenses": {
         "title": "Gastos",

@@ -170,10 +170,10 @@ Each section exists in one of four states:
 
 ## State Persistence
 
-**Reuse the existing versioned, IndexedDB-backed wizard state utility — do not build a new persistence layer.** It lives under `src/lib/wizard-state/` and is already wired into this wizard. The only changes this spec asks for:
+**Reuse the existing versioned, IndexedDB-backed wizard state utility — do not build a new persistence layer.** It lives under `src/app/app/(focused)/p/new/[draftId]/state/` and is already wired into this wizard (Zustand + persist middleware backed by IDB; see `state/store.ts` and `state/persistence.ts`). The only changes this spec asks for:
 
-- Extend the existing `PropertyCreationData` shape to include per-section form data, active section index, and per-section completion state (completed / skipped / incomplete). Existing extraction + contract-file fields stay as-is
-- Bump the state version constant when the shape changes — old persisted states are then discarded on load (the utility already handles version mismatch)
+- Extend the existing `PropertyCreationStateShape` to include per-section form data, active section index, and per-section completion state (completed / skipped / incomplete). Existing extraction + contract-file fields stay as-is
+- Bump `PROPERTY_CREATION_STATE_VERSION` when the shape changes — old persisted states are then discarded on load (the persist middleware already handles version mismatch)
 - Save on every Continue and on section completion/skip — same save pattern as today, just more frequent
 
 ---
@@ -243,17 +243,14 @@ These notes flag non-obvious complexity within each section. The section forms t
 - **Complexity:** Medium. Currency primitive extraction, bundled rent UX, and adjustment details add nuance
 
 ### Tenants
-- **Invite toggle:** Each tenant row has an "invite now" toggle (default on). Suppressing invite still creates the tenant association.
+- **Invite toggle:** Each tenant row has a "Send invite email" toggle (default on). The toggle controls whether an invite email is sent when the landlord taps "Create property" — explained inline with helper copy on the first row only ("We'll email them when you create the property"). Suppressing the email still creates the tenant association.
 - **Add/remove:** Landlord can add or remove tenants. Minimum 0 (section is optional).
-- **Email requirement:** Email is required per tenant if "invite" is toggled on. If toggled off, email is optional.
-- **Contract pre-fill — unified candidate list:** Role classification from the LLM is unreliable, so we don't trust it as ground truth. Instead, flatten all extracted parties (`extractionResult.landlords` + `extractionResult.tenants`) into a single candidate list in this section, after filtering out the creator match. The landlord curates the list:
-  - Every extracted party (from either array) starts as a candidate tenant row
-  - The creator match is filtered out before rendering (they're the implicit landlord of record)
-  - Each row has a "Remove" / "Not a tenant" action — use this for anyone misclassified or anyone who shouldn't be a tenant (e.g., a guarantor/fiador, a witness, a co-landlord the LLM picked up)
-  - The landlord can also manually add tenants the extraction missed
-  - This approach sidesteps the role-classification reliability problem without building a role-switcher UI. Multi-landlord / co-landlord is still out of scope — this is purely about curating the tenant list from noisy extraction data.
-- **Field pre-fill per row:** Name, CPF (`taxId`), and email pre-filled from the `ContractParty` when extraction returns them. Extracted emails are rare but do happen — populated when present, left empty when absent (required to enter if the invite toggle is on).
-- **Complexity:** Medium. Dynamic list with per-row toggles, conditional validation, and creator-match filtering.
+- **Email requirement:** Email is required per tenant if the invite toggle is on. If toggled off, email is optional.
+- **Contract pre-fill — seed from `extractionResult.tenants[]`:** Each `ContractParty` in `extractionResult.tenants` becomes a pre-filled tenant row. The creator match (by name / tax_id / email against the current user's profile) is filtered out before rendering — they're the implicit landlord of record. Misclassified parties (a guarantor/fiador the LLM dropped into `tenants[]`, a witness, etc.) are handled by the per-row Remove action; the landlord can also manually add anyone extraction missed. We do not unify `landlords[]` into the candidate list — the spec previously did this to hedge against role-classification noise, but in practice trusting `tenants[]` plus easy Remove + Add covers the same ground without the cognitive overhead.
+- **Field pre-fill per row:** Name, tax ID (`taxId`), and email pre-filled from the `ContractParty` when extraction returns them. Extracted emails are rare but do happen — populated when present, left empty when absent (required to enter if the invite toggle is on).
+- **Auto-filled indicator (per row):** Each row carries an `isExtracted: boolean` flag. Set `true` when the row was seeded from extraction; flipped to `false` the first time any field on the row changes from its current value (the row's setter handles the comparison-and-flip). Manually-added rows are born `false`. The auto-filled indicator reads this boolean — no comparison against `extractionResult` at render time, no duplication of extraction values into `sectionData`. This is row-level (not field-level) on purpose: a tenant is a person, and field-level sparkles per row would be visually noisy with multiple rows.
+- **Reusable component:** Build a reusable `<TenantForm>` (single tenant, decomposed into smaller field primitives — name input, `<TaxId>`, email, invite toggle) and a `<TenantList>` that owns add/remove and renders rows. Located under `src/components/tenant-form/`. The wizard checkout section composes `<TenantList>`. The existing `InviteTenantModal` at `src/app/app/(main)/p/[id]/sections/tenants-section.tsx` is **not refactored as part of this work** — it stays as-is to keep scope tight; future work can swap its body for `<TenantForm>` if/when it needs the same fields.
+- **Complexity:** Medium. Dynamic list with per-row toggles, conditional email validation, country-aware tax ID input, and the `isExtracted` flag plumbing.
 
 ### Expenses
 
@@ -331,10 +328,11 @@ The implementation plan for this section owns the specifics. Items to work out t
   Translate these to product language — avoid the terms "DDA" and "Open Finance" in the copy itself (use "condo fees show up automatically" and "connecting your bank"). Keep the tone reassuring, not demanding: we ask because it unlocks the automation, not because we need to ID them
 - **Editing an existing CPF is out of scope here.** If the landlord wants to correct a CPF already on their profile, they do it from profile settings (or wherever profile editing lives), not from this section. The read-only field can link out to that surface, but this flow doesn't need to support in-place edits
 - **Tax ID update rule.** The server action writes `profiles.tax_id` **only when the landlord entered a new value** (empty-case path). When the section was pre-filled read-only, skip the update — the data is already correct and overwriting it with an identical value is pointless noise on the profile record
-- **UI copy** reads "CPF" for Brazilian users — the column is renamed to `tax_id` at the data layer only, per the country-agnostic data-modeling principle
-- **Validation:** CPF format (11 digits, check digits). Use a masked input
-- **Reusable primitive (planning decision):** a CPF-masked input with format validation is likely worth extracting into a shared primitive — this section, profile settings, the Tenants section, and invite redemption all need the same behavior. The plan decides whether to extract now or inline and extract later. Same pattern as the `CurrencyInput` extraction called out in Rent & dates
-- **Complexity:** Low. Masked input for the empty case, a read-only presentation for the pre-filled case, and format validation
+- **UI copy** reads "CPF" for Brazilian users — the column is renamed to `tax_id` at the data layer only, per the country-agnostic data-modeling principle. The label string is derived from the country provider, not hardcoded
+- **Validation:** Country-aware. For Brazil: CPF format (11 digits, check digits) via the existing `isValidCpf` helper. The masked input format, placeholder, and validation come from the country provider, so this section never imports CPF specifics directly
+- **Reusable primitive — `<TaxId>`:** A country-aware tax-ID input lives at `src/components/ui/tax-id.tsx` (or similar), decomposed from the existing `<Input>` primitive. It accepts a `countryCode` prop and resolves format/mask/placeholder/validation/label from the country provider (see "Country provider" architectural note below). Used here, in the Tenants section, the existing `InviteTenantModal` (future), profile settings, and invite redemption. Built as part of the Tenants section plan since both sections need it; the CPF section consumes it without needing its own primitive work
+- **Country provider direction:** The codebase consolidates per-country specialization into a single provider tree at `src/lib/country/` — `getCountryProvider('BR').address` and `.taxId`, with future room for phone, business ID, etc. The existing `getAddressProvider` becomes a thin convenience wrapper over the new shape. This direction is established by the Tenants section plan; the CPF section reads from it
+- **Complexity:** Low. Country-aware masked input for the empty case, a read-only presentation for the pre-filled case, and provider-driven validation
 
 ### Bank account
 - **Trust-critical:** This section must communicate why (automation), how (Pluggy, read-only), and safety (can't move money, regulated, etc.). All trust content from the parent spec (Step 7) must appear inline, not collapsed.

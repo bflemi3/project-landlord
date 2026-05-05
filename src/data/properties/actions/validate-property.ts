@@ -2,8 +2,10 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
-import { getAddressProvider } from '@/lib/address/provider'
-import { propertySchema, type PropertyInput } from '@/data/properties/schema'
+import {
+  getPropertyInputSchema,
+  type PropertyInput,
+} from '@/schemas/property'
 import {
   zodIssuesToFieldErrors,
   type ValidateState,
@@ -18,9 +20,8 @@ export async function validatePropertyCore(
   fields: PropertyInput,
   excludePropertyId?: string,
 ): Promise<ValidatePropertyState> {
-  const errors: ValidatePropertyState['errors'] = {}
-
-  const propertyResult = propertySchema.safeParse(fields)
+  const country = fields.country_code || 'BR'
+  const propertyResult = getPropertyInputSchema(country).safeParse(fields)
   if (!propertyResult.success) {
     return {
       valid: false,
@@ -31,26 +32,6 @@ export async function validatePropertyCore(
   }
 
   const validatedFields = propertyResult.data
-
-  // Address validation via country-specific provider
-  const addressProvider = getAddressProvider(validatedFields.country_code)
-  const addressErrors = addressProvider.validateAddress({
-    postal_code: validatedFields.postal_code || undefined,
-    street: validatedFields.street || undefined,
-    number: validatedFields.number || undefined,
-    complement: validatedFields.complement || undefined,
-    neighborhood: validatedFields.neighborhood || undefined,
-    city: validatedFields.city || undefined,
-    state: validatedFields.state || undefined,
-  })
-
-  if (addressErrors) {
-    Object.assign(errors, addressErrors)
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { valid: false, errors }
-  }
 
   // Duplicate address check
   if (validatedFields.postal_code && validatedFields.number) {

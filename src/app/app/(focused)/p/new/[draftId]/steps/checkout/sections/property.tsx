@@ -29,7 +29,7 @@ import { RadioCardGroup, type RadioCardOption } from '@/components/radio-card-gr
 import { getAddressProvider } from '@/lib/address/provider'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
-import { getPropertyInputSchema } from '@/data/properties/schema-by-country'
+import { getPropertyInputSchema } from '@/schemas/property'
 import { validateProperty } from '@/data/properties/actions/validate-property'
 import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
 import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'

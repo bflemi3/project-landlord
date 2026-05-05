@@ -6,7 +6,7 @@ import {
 } from '@/test/supabase'
 import { validatePropertyCore } from '../validate-property'
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { PropertyInput } from '@/data/properties/schema'
+import type { PropertyInput } from '@/schemas/property'
 
 function validPropertyInput(overrides: Partial<PropertyInput> = {}): PropertyInput {
   return {

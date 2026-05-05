@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
-import { propertyInfoFormDataSchema } from '@/data/properties/schema'
+import { getPropertyInputFormDataSchema } from '@/schemas/property'
 import { validateProperty, type ValidatePropertyState } from './validate-property'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 
@@ -19,7 +19,8 @@ export async function createProperty(
   _prevState: CreatePropertyState,
   formData: FormData,
 ): Promise<CreatePropertyState> {
-  const parsed = propertyInfoFormDataSchema.safeParse(formData)
+  const country = (formData.get('country_code') as string) || 'BR'
+  const parsed = getPropertyInputFormDataSchema(country).safeParse(formData)
   if (!parsed.success) {
     return {
       success: false,

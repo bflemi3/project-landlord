@@ -1,6 +1,6 @@
 'use client'
 
-import type { PropertyInput } from '@/data/properties/schema'
+import type { PropertyInput } from '@/schemas/property'
 import { coerceCurrency } from '@/data/shared/currency'
 import {
   CHECKOUT_SECTIONS,

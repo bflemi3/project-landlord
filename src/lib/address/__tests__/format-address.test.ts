@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { formatAddress, formatAddressHtml } from '../format-address'
-import type { PropertyInput } from '@/data/properties/schema'
+import type { PropertyInput } from '@/schemas/property'
 
 describe('formatAddress', () => {
   // ===========================================================================

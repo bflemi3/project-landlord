@@ -324,6 +324,11 @@ function SectionBody({ children, className }: { children: React.ReactNode; class
 // call site.
 // =============================================================================
 
+// Pair with size="sm" to render section-scoped buttons compact on mobile and
+// scale them up to the default Button size at md+. Reverses the global rule
+// that buttons grow on mobile, because three actions in a row crowd the card.
+const RESPONSIVE_BUTTON_CLASS = 'md:h-12 md:gap-2 md:px-6 md:text-base'
+
 interface SectionActionsProps {
   backLabel?: string
   className?: string
@@ -361,7 +366,12 @@ function SectionActions({
       )}
     >
       {onBack ? (
-        <Button size="sm" variant="ghost" onClick={onBack}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className={RESPONSIVE_BUTTON_CLASS}
+        >
           <ChevronLeft />
           {backLabel}
         </Button>
@@ -370,15 +380,21 @@ function SectionActions({
       )}
       <div className="flex items-center gap-2">
         {showSkip && onSkip && (
-          <Button size="sm" variant="ghost" onClick={onSkip}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onSkip}
+            className={RESPONSIVE_BUTTON_CLASS}
+          >
             {skipLabel}
           </Button>
         )}
         <Button
+          size="sm"
           disabled={continueDisabled}
           loading={continueLoading}
-          size="sm"
           onClick={onContinue}
+          className={RESPONSIVE_BUTTON_CLASS}
         >
           {continueLabel}
           <ChevronRight />
@@ -398,5 +414,5 @@ Section.Summary = SectionSummary
 Section.Body = SectionBody
 Section.Actions = SectionActions
 
-export { Section, SectionGroup }
+export { RESPONSIVE_BUTTON_CLASS, Section, SectionGroup }
 export type { SectionStatus }

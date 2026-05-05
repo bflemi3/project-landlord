@@ -30,7 +30,7 @@ import {
 } from '../store-provider'
 import { useIsExtracted } from '../use-property-creation'
 import { propertyCreationWizardKey } from '../persistence'
-import { defaultPropertyInput } from '@/data/properties/schema'
+import { defaultPropertyInput } from '@/schemas/property'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 
 // --- Helpers ----------------------------------------------------------------

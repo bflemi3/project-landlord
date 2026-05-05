@@ -5,7 +5,7 @@
  * - Default (US/EN): "123 Main St, Apt 4B, Downtown, Austin, TX"
  */
 
-import type { PropertyInput } from '@/data/properties/schema'
+import type { PropertyInput } from '@/schemas/property'
 
 type AddressFormatFields = Partial<{
   [K in keyof Pick<

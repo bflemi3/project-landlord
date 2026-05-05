@@ -1,14 +1,17 @@
 import { describe, it, expect } from 'vitest'
+import { z } from 'zod'
 
 import {
+  brazilAddressSchema,
   defaultPropertyInput,
-  propertyAddressShapeSchema,
-  propertyBaseSchema,
-  propertyInfoFormDataSchema,
-  propertySchema,
+  fallbackAddressSchema,
+  getPropertyInputSchema,
+  propertyAddressInputBaseSchema,
+  propertyInputBaseSchema,
+  propertyInputFormDataSchema,
+  propertyInputSchema,
   type PropertyInput,
-} from '../schema'
-import { getPropertyInputSchema } from '../schema-by-country'
+} from '../property'
 
 const VALID_MINIMUM = {
   postal_code: '01310-100',
@@ -19,39 +22,26 @@ const VALID_MINIMUM = {
 }
 
 function fieldErrors(input: unknown) {
-  const result = propertySchema.safeParse(input)
+  const result = propertyInputSchema.safeParse(input)
   if (result.success) return null
-  return z_flatten(result.error)
+  return z.flattenError(result.error).fieldErrors
 }
 
 function addressFieldErrors(input: unknown) {
-  const result = propertyAddressShapeSchema.safeParse(input)
+  const result = propertyAddressInputBaseSchema.safeParse(input)
   if (result.success) return null
-  return z_flatten(result.error)
+  return z.flattenError(result.error).fieldErrors
 }
 
 function formDataFieldErrors(formData: FormData) {
-  const result = propertyInfoFormDataSchema.safeParse(formData)
+  const result = propertyInputFormDataSchema.safeParse(formData)
   if (result.success) return null
-  return z_flatten(result.error)
+  return z.flattenError(result.error).fieldErrors
 }
 
-// `z.flattenError` lives at different paths across Zod minor releases. Inline
-// a tiny equivalent that buckets issues by their first path segment so tests
-// don't depend on which version exposes the helper.
-function z_flatten(error: { issues: ReadonlyArray<{ path: ReadonlyArray<PropertyKey>; message: string }> }) {
-  const fieldErrors: Record<string, string[]> = {}
-  for (const issue of error.issues) {
-    const key = String(issue.path[0] ?? '_root')
-    fieldErrors[key] ??= []
-    fieldErrors[key]!.push(issue.message)
-  }
-  return fieldErrors
-}
-
-describe('propertyBaseSchema', () => {
+describe('propertyInputBaseSchema', () => {
   it('applies base defaults', () => {
-    const result = propertyBaseSchema.parse({})
+    const result = propertyInputBaseSchema.parse({})
 
     expect(result).toEqual({
       name: '',
@@ -61,33 +51,35 @@ describe('propertyBaseSchema', () => {
   })
 
   it('rejects a long name with "tooLong"', () => {
-    const result = propertyBaseSchema.safeParse({ name: 'a'.repeat(101) })
+    const result = propertyInputBaseSchema.safeParse({ name: 'a'.repeat(101) })
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(z_flatten(result.error).name).toEqual(['tooLong'])
+      expect(z.flattenError(result.error).fieldErrors.name).toEqual(['tooLong'])
     }
   })
 
   it('rejects an invalid property type with "invalidPropertyType"', () => {
-    const result = propertyBaseSchema.safeParse({ property_type: 'condo' })
+    const result = propertyInputBaseSchema.safeParse({ property_type: 'condo' })
 
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(z_flatten(result.error).property_type).toEqual(['invalidPropertyType'])
+      expect(z.flattenError(result.error).fieldErrors.property_type).toEqual([
+        'invalidPropertyType',
+      ])
     }
   })
 })
 
-describe('propertyAddressShapeSchema', () => {
+describe('propertyAddressInputBaseSchema', () => {
   it('parses the generic persisted address shape', () => {
-    const result = propertyAddressShapeSchema.safeParse(VALID_MINIMUM)
+    const result = propertyAddressInputBaseSchema.safeParse(VALID_MINIMUM)
 
     expect(result.success).toBe(true)
   })
 
   it('applies optional address defaults', () => {
-    const result = propertyAddressShapeSchema.parse(VALID_MINIMUM)
+    const result = propertyAddressInputBaseSchema.parse(VALID_MINIMUM)
 
     expect(result.complement).toBe('')
     expect(result.neighborhood).toBe('')
@@ -120,7 +112,7 @@ describe('propertyAddressShapeSchema', () => {
   })
 
   it('keeps country-specific address semantics out of the generic shape', () => {
-    const result = propertyAddressShapeSchema.safeParse({
+    const result = propertyAddressInputBaseSchema.safeParse({
       ...VALID_MINIMUM,
       postal_code: 'not-a-cep',
       city: 'São Paulo 2',
@@ -131,39 +123,39 @@ describe('propertyAddressShapeSchema', () => {
   })
 })
 
-describe('propertySchema — happy path', () => {
-  it('parses a valid minimum input (required fields populated; name + complement omitted)', () => {
-    const result = propertySchema.safeParse(VALID_MINIMUM)
+describe('propertyInputSchema — happy path (Brazil-first default)', () => {
+  it('parses a valid minimum input', () => {
+    const result = propertyInputSchema.safeParse(VALID_MINIMUM)
     expect(result.success).toBe(true)
   })
 
   it('applies country_code default of "BR" when omitted', () => {
-    const result = propertySchema.parse(VALID_MINIMUM)
+    const result = propertyInputSchema.parse(VALID_MINIMUM)
     expect(result.country_code).toBe('BR')
   })
 
   it('applies name default of "" when omitted', () => {
-    const result = propertySchema.parse(VALID_MINIMUM)
+    const result = propertyInputSchema.parse(VALID_MINIMUM)
     expect(result.name).toBe('')
   })
 
   it('applies complement default of "" when omitted', () => {
-    const result = propertySchema.parse(VALID_MINIMUM)
+    const result = propertyInputSchema.parse(VALID_MINIMUM)
     expect(result.complement).toBe('')
   })
 
   it('applies neighborhood default of "" when omitted', () => {
-    const result = propertySchema.parse(VALID_MINIMUM)
+    const result = propertyInputSchema.parse(VALID_MINIMUM)
     expect(result.neighborhood).toBe('')
   })
 
   it('applies property_type default of null when omitted', () => {
-    const result = propertySchema.parse(VALID_MINIMUM)
+    const result = propertyInputSchema.parse(VALID_MINIMUM)
     expect(result.property_type).toBeNull()
   })
 })
 
-describe('propertySchema — required field errors', () => {
+describe('propertyInputSchema — required field errors', () => {
   it('flags missing postal_code with "required"', () => {
     const errors = fieldErrors({ ...VALID_MINIMUM, postal_code: '' })
     expect(errors?.postal_code).toEqual(['required'])
@@ -190,9 +182,9 @@ describe('propertySchema — required field errors', () => {
   })
 })
 
-describe('propertySchema — length boundaries', () => {
+describe('propertyInputSchema — length boundaries', () => {
   it('accepts a name at the boundary (100 chars)', () => {
-    const result = propertySchema.safeParse({
+    const result = propertyInputSchema.safeParse({
       ...VALID_MINIMUM,
       name: 'a'.repeat(100),
     })
@@ -235,14 +227,16 @@ describe('propertySchema — length boundaries', () => {
   })
 
   it('rejects a postal_code longer than 32 chars with "tooLong"', () => {
+    // The Brazil-specific format check also fires on this value (33 chars
+    // doesn't match the CEP regex), so multiple issues are surfaced.
     const errors = fieldErrors({ ...VALID_MINIMUM, postal_code: '1'.repeat(33) })
-    expect(errors?.postal_code).toEqual(['tooLong'])
+    expect(errors?.postal_code).toContain('tooLong')
   })
 })
 
-describe('propertySchema — type guards', () => {
+describe('propertyInputSchema — type guards', () => {
   it('rejects a non-string postal_code', () => {
-    const result = propertySchema.safeParse({
+    const result = propertyInputSchema.safeParse({
       ...VALID_MINIMUM,
       postal_code: 12345,
     })
@@ -250,7 +244,7 @@ describe('propertySchema — type guards', () => {
   })
 
   it('rejects a null required field (string expected)', () => {
-    const result = propertySchema.safeParse({
+    const result = propertyInputSchema.safeParse({
       ...VALID_MINIMUM,
       street: null,
     })
@@ -258,9 +252,9 @@ describe('propertySchema — type guards', () => {
   })
 })
 
-describe('propertySchema — generic address fields', () => {
+describe('propertyInputSchema — Brazil-specific address rules (applied by default)', () => {
   it('accepts the masked Brazilian postal code format', () => {
-    const result = propertySchema.safeParse({
+    const result = propertyInputSchema.safeParse({
       ...VALID_MINIMUM,
       postal_code: '01310-100',
     })
@@ -268,30 +262,34 @@ describe('propertySchema — generic address fields', () => {
   })
 
   it('accepts the bare 8-digit Brazilian postal code format', () => {
-    const result = propertySchema.safeParse({
+    const result = propertyInputSchema.safeParse({
       ...VALID_MINIMUM,
       postal_code: '01310100',
     })
     expect(result.success).toBe(true)
   })
 
-  it('allows provider-specific address values for provider validation later', () => {
-    const result = propertySchema.safeParse({
-      ...VALID_MINIMUM,
-      postal_code: '01310-abc',
-      city: 'São Paulo 2',
-      state: 'XX',
-    })
+  it('rejects a malformed postal_code with "invalidPostalCode"', () => {
+    const errors = fieldErrors({ ...VALID_MINIMUM, postal_code: '01310-abc' })
+    expect(errors?.postal_code).toEqual(['invalidPostalCode'])
+  })
 
-    expect(result.success).toBe(true)
+  it('rejects a city containing digits with "invalidCity"', () => {
+    const errors = fieldErrors({ ...VALID_MINIMUM, city: 'São Paulo 2' })
+    expect(errors?.city).toEqual(['invalidCity'])
+  })
+
+  it('rejects a non-Brazilian state code with "invalidState"', () => {
+    const errors = fieldErrors({ ...VALID_MINIMUM, state: 'XX' })
+    expect(errors?.state).toEqual(['invalidState'])
   })
 })
 
-describe('propertySchema — property_type', () => {
+describe('propertyInputSchema — property_type', () => {
   it.each(['apartment', 'house', 'commercial', 'other'] as const)(
     'accepts %s as a valid enum value',
     (value) => {
-      const result = propertySchema.safeParse({
+      const result = propertyInputSchema.safeParse({
         ...VALID_MINIMUM,
         property_type: value,
       })
@@ -300,7 +298,7 @@ describe('propertySchema — property_type', () => {
   )
 
   it('accepts null', () => {
-    const result = propertySchema.safeParse({
+    const result = propertyInputSchema.safeParse({
       ...VALID_MINIMUM,
       property_type: null,
     })
@@ -313,7 +311,7 @@ describe('propertySchema — property_type', () => {
   })
 })
 
-describe('propertyInfoFormDataSchema', () => {
+describe('propertyInputFormDataSchema', () => {
   it('preprocesses FormData into a PropertyInput', () => {
     const formData = new FormData()
     formData.set('name', '  <strong>Casa</strong>  ')
@@ -325,7 +323,7 @@ describe('propertyInfoFormDataSchema', () => {
     formData.set('country_code', '')
     formData.set('property_type', '')
 
-    const result = propertyInfoFormDataSchema.parse(formData)
+    const result = propertyInputFormDataSchema.parse(formData)
 
     expect(result).toEqual({
       name: 'Casa',
@@ -369,10 +367,79 @@ describe('propertyInfoFormDataSchema', () => {
     expect(errors?.city).toEqual(['required'])
     expect(errors?.state).toEqual(['required'])
   })
+
+  it('passes a plain object through the preprocess and into the schema', () => {
+    // The preprocess only rewrites FormData; non-FormData values flow straight
+    // to the inner propertyInputSchema.
+    const result = propertyInputFormDataSchema.safeParse(VALID_MINIMUM)
+    expect(result.success).toBe(true)
+  })
 })
 
-describe('getPropertyInputSchema', () => {
-  it('composes the base property schema with Brazil address validation', () => {
+describe('brazilAddressSchema', () => {
+  const validBrAddress = {
+    postal_code: '01310-100',
+    street: 'Rua Augusta',
+    number: '123',
+    city: 'São Paulo',
+    state: 'SP',
+  }
+
+  function brazilFieldErrors(input: unknown) {
+    const result = brazilAddressSchema.safeParse(input)
+    if (result.success) return null
+    return z.flattenError(result.error).fieldErrors
+  }
+
+  it('parses a valid Brazil address', () => {
+    expect(brazilAddressSchema.safeParse(validBrAddress).success).toBe(true)
+  })
+
+  it('returns Brazil-specific translation keys for malformed values', () => {
+    const errors = brazilFieldErrors({
+      ...validBrAddress,
+      postal_code: '123',
+      city: 'São Paulo 123',
+      state: 'XX',
+    })
+
+    expect(errors?.postal_code).toEqual(['invalidPostalCode'])
+    expect(errors?.city).toEqual(['invalidCity'])
+    expect(errors?.state).toEqual(['invalidState'])
+  })
+
+  it('returns translation-key errors for missing required keys', () => {
+    const errors = brazilFieldErrors({})
+
+    expect(errors?.postal_code).toEqual(['required'])
+    expect(errors?.street).toEqual(['required'])
+    expect(errors?.number).toEqual(['required'])
+    expect(errors?.city).toEqual(['required'])
+    expect(errors?.state).toEqual(['required'])
+  })
+})
+
+describe('fallbackAddressSchema', () => {
+  it('defaults optional persisted address fields', () => {
+    expect(
+      fallbackAddressSchema.parse({
+        street: '123 Main St',
+        city: 'Springfield',
+      }),
+    ).toEqual({
+      postal_code: '',
+      street: '123 Main St',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: 'Springfield',
+      state: '',
+    })
+  })
+})
+
+describe('getPropertyInputSchema — polymorphic dispatcher', () => {
+  it('returns the Brazil schema for "BR"', () => {
     const schema = getPropertyInputSchema('BR')
     const result = schema.safeParse({
       ...VALID_MINIMUM,
@@ -384,14 +451,13 @@ describe('getPropertyInputSchema', () => {
     expect(result.success).toBe(false)
     if (result.success) return
 
-    const errors = z_flatten(result.error)
-
+    const errors = z.flattenError(result.error).fieldErrors
     expect(errors.postal_code).toEqual(['invalidPostalCode'])
     expect(errors.city).toEqual(['invalidCity'])
     expect(errors.state).toEqual(['invalidState'])
   })
 
-  it('falls back to the generic provider for unsupported countries', () => {
+  it('falls back to the relaxed schema for unsupported countries', () => {
     const schema = getPropertyInputSchema('US')
     const result = schema.parse({
       street: 'Main St',
@@ -411,6 +477,29 @@ describe('getPropertyInputSchema', () => {
       country_code: 'US',
       property_type: null,
     })
+  })
+
+  it('defaults to the Brazil schema when no country code is provided', () => {
+    const schema = getPropertyInputSchema()
+    const errors = (() => {
+      const r = schema.safeParse({ ...VALID_MINIMUM, postal_code: 'not-a-cep' })
+      return r.success ? null : z.flattenError(r.error).fieldErrors
+    })()
+    expect(errors?.postal_code).toEqual(['invalidPostalCode'])
+  })
+
+  it('falls back for an empty country code', () => {
+    const schema = getPropertyInputSchema('')
+    // Fallback relaxes postal_code (optional with default ''), so the same
+    // input that fails for "BR" succeeds here.
+    const r = schema.safeParse({ ...VALID_MINIMUM, postal_code: 'not-a-cep' })
+    expect(r.success).toBe(true)
+  })
+
+  it('case-sensitively dispatches ("br" falls back, only "BR" maps to Brazil)', () => {
+    const schema = getPropertyInputSchema('br')
+    const r = schema.safeParse({ ...VALID_MINIMUM, state: 'XX' })
+    expect(r.success).toBe(true)
   })
 })
 
@@ -435,17 +524,11 @@ describe('defaultPropertyInput', () => {
   })
 
   it('does NOT pass schema validation (required fields are empty)', () => {
-    // The defaults are the UI's blank-slate shape, not a valid submit. The
-    // schema rejects them so Continue stays gated until the user fills in
-    // the required fields.
-    const result = propertySchema.safeParse(defaultPropertyInput())
+    const result = propertyInputSchema.safeParse(defaultPropertyInput())
     expect(result.success).toBe(false)
   })
 
   it('returns a value typed as PropertyInput at compile time', () => {
-    // Type-level assertion: the inferred return type matches the schema's
-    // z.infer output. If the schema gains/loses a field and the defaults
-    // aren't updated, this line stops compiling.
     const _check: PropertyInput = defaultPropertyInput()
     expect(_check).toBeDefined()
   })

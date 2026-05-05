@@ -1,6 +1,4 @@
-import { z } from 'zod'
-import type { AddressProvider, AddressLookupResult, AddressFields, AddressValidationErrors } from '../types'
-import { propertyAddressShapeSchema } from '@/data/properties/schema'
+import type { AddressLookupResult, AddressProvider } from '../types'
 
 const BRAZILIAN_STATES = [
   { code: 'AC', name: 'Acre' },
@@ -34,43 +32,7 @@ const BRAZILIAN_STATES = [
 
 const cache = new Map<string, AddressLookupResult | null>()
 
-export const BRAZILIAN_POSTAL_CODE_RE = /^(?:\d{5}-\d{3}|\d{8})$/
-export const BRAZILIAN_STATE_CODES = new Set([
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS',
-  'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC',
-  'SP', 'SE', 'TO',
-])
-
-export const addressSchema = propertyAddressShapeSchema.extend({
-  postal_code: propertyAddressShapeSchema.shape.postal_code.superRefine((value, ctx) => {
-    if (value.length === 0) {
-      return
-    }
-    if (!BRAZILIAN_POSTAL_CODE_RE.test(value)) {
-      ctx.addIssue({ code: 'custom', message: 'invalidPostalCode' })
-    }
-  }),
-  city: propertyAddressShapeSchema.shape.city.superRefine((value, ctx) => {
-    if (value.length === 0 || value.length > 100) {
-      return
-    }
-    if (/\d/.test(value)) {
-      ctx.addIssue({ code: 'custom', message: 'invalidCity' })
-    }
-  }),
-  state: propertyAddressShapeSchema.shape.state.superRefine((value, ctx) => {
-    if (value.length === 0 || value.length > 100) return
-    if (!BRAZILIAN_STATE_CODES.has(value.toUpperCase())) {
-      ctx.addIssue({ code: 'custom', message: 'invalidState' })
-    }
-  }),
-})
-
 export const brazilProvider: AddressProvider = {
-  addressSchema,
-  postalCodePattern: /^\d{5}-?\d{3}$/,
-  postalCodePlaceholder: '01310-100',
-  postalCodeLabel: 'CEP',
   states: BRAZILIAN_STATES,
 
   formatPostalCode(raw: string): string {
@@ -109,14 +71,5 @@ export const brazilProvider: AddressProvider = {
     } catch {
       return null
     }
-  },
-
-  validateAddress(fields: AddressFields): AddressValidationErrors | null {
-    const result = addressSchema.safeParse(fields)
-
-    if (result.success) return null
-
-    const fieldErrors = z.flattenError(result.error).fieldErrors as AddressValidationErrors
-    return Object.keys(fieldErrors).length > 0 ? fieldErrors : null
   },
 }

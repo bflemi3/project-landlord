@@ -88,7 +88,7 @@ Extracted from contract:
 - Tenant CPF(s) (if present)
 - Tenant email(s) (if present)
 
-Tenants are **invited by default** but the landlord can toggle "don't invite yet" per tenant. This toggle suppresses the invitation email but still creates the tenant association on the property.
+Tenants are **invited by default**. Each tenant row has a "Send invite email" toggle (default on) that controls whether an invite email is sent when the landlord taps "Create property." Toggling it off suppresses the email but still creates the tenant association on the property — the landlord can fire the invite later from the property page.
 
 If tenant email is missing from extraction, the landlord enters it here (required for invitation).
 
