@@ -54,7 +54,7 @@ export const CHECKOUT_SECTIONS: readonly CheckoutSection[] = [
     requiredInNoContractPath: false,
   },
   {
-    id: 'cpf',
+    id: 'tax-id',
     icon: CreditCard,
     requiredInContractPath: true,
     requiredInNoContractPath: true,

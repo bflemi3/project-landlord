@@ -45,6 +45,10 @@ export interface UseFormValidationReturn<TOutput> {
   isValid: boolean
   errors: FieldErrors
   markTouched: (field: string) => void
+  /** Reset the touched state so the next change doesn't immediately surface
+   *  errors. Useful after a successful save: the value is now "settled" and
+   *  any subsequent edit should start as a fresh interaction. */
+  clearTouched: (field?: string) => void
   hasError: (field: string) => boolean
   validate: () => ValidationResult<TOutput>
 }
@@ -98,6 +102,16 @@ export function useFormValidation<TInput, TOutput>(
     })
   }, [])
 
+  const clearTouched = useCallback((field?: string) => {
+    setTouched((prev) => {
+      if (!field) return Object.keys(prev).length === 0 ? prev : {}
+      if (!prev[field]) return prev
+      const next = { ...prev }
+      delete next[field]
+      return next
+    })
+  }, [])
+
   const hasError = useCallback(
     (field: string) => touchedRef.current[field] && allErrorsRef.current[field] != null,
     [],
@@ -121,6 +135,7 @@ export function useFormValidation<TInput, TOutput>(
     isValid: parseResult.success,
     errors,
     markTouched,
+    clearTouched,
     hasError,
     validate,
   }

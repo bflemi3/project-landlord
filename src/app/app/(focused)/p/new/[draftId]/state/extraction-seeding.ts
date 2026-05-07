@@ -9,6 +9,10 @@ import {
   type RentDatesInput,
 } from './rent-dates-schema'
 import {
+  defaultTaxIdInput,
+  type TaxIdInput,
+} from './tax-id-schema'
+import {
   tenantRowFromContractParty,
   type TenantRow,
 } from './tenant-row-schema'
@@ -22,6 +26,10 @@ export {
   defaultRentDatesInput,
   type RentDatesInput,
 } from './rent-dates-schema'
+export {
+  defaultTaxIdInput,
+  type TaxIdInput,
+} from './tax-id-schema'
 export { type TenantRow } from './tenant-row-schema'
 
 export type SectionData = Partial<Record<SectionId, unknown>>
@@ -40,6 +48,7 @@ export function defaultSectionData(): SectionData {
     property: defaultPropertyInput(),
     'rent-dates': defaultRentDatesInput(),
     tenants: [] as TenantRow[],
+    'tax-id': defaultTaxIdInput(),
   }
 }
 
@@ -58,6 +67,7 @@ export function mergeExtractionIntoSectionData(
   prev: SectionData,
   extraction: ContractExtractionResult,
 ): SectionData {
+  /** Property section */
   const a = extraction.address
   const property: PropertyInput = {
     name: '',
@@ -71,6 +81,8 @@ export function mergeExtractionIntoSectionData(
     country_code: 'BR',
     property_type: extraction.propertyType,
   }
+
+  /** Rent and dates section */
   const rent = extraction.rent
   const dates = extraction.contractDates
   const rentDates: RentDatesInput = {
@@ -86,6 +98,8 @@ export function mergeExtractionIntoSectionData(
     start_date: dates?.start ?? undefined,
     end_date: dates?.end ?? undefined,
   }
+
+  /** Tenants section */
   // Each extracted ContractParty becomes a TenantRow with `isExtracted: true`.
   // No creator-filter pass here yet — the landlord verifies and prunes the
   // list manually in the section. A null/missing tenants block resets the
@@ -93,5 +107,10 @@ export function mergeExtractionIntoSectionData(
   const tenants: TenantRow[] = (extraction.tenants ?? []).map((party) =>
     tenantRowFromContractParty(party, property.country_code),
   )
+
+  /** Tax ID section */
+  // Not seeded here — the section hydrates from `profile.tax_id` client-side
+  // via `useProfile()` since extraction has no notion of "the creator".
+
   return { ...prev, property, 'rent-dates': rentDates, tenants }
 }

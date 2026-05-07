@@ -268,6 +268,18 @@ describe('tenantRowFromContractParty', () => {
     expect(t.taxId).toBe('123-45-6789')
   })
 
+  it('drops a CNPJ-shaped taxId on BR (tenants are CPF-only by design)', () => {
+    // Even a check-digit-valid CNPJ should be dropped — the tenants section
+    // restricts to individual tax-ids. If someone later loosens this, we want
+    // the test to flag the change so the seeding behavior is reconsidered.
+    const t = tenantRowFromContractParty({
+      name: 'Acme Corp',
+      email: null,
+      taxId: '11.222.333/0001-81',
+    })
+    expect(t.taxId).toBe('')
+  })
+
   it('title-cases an all-uppercase extracted name', () => {
     const t = tenantRowFromContractParty({
       name: 'BRANDON FLEMMING',

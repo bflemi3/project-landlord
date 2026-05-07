@@ -5,7 +5,8 @@
     "error": "Algo salió mal",
     "retry": "Intentar de nuevo",
     "back": "Volver",
-    "taxIdLabel": "Identificación fiscal"
+    "taxIdLabel": "Identificación fiscal",
+    "taxIdLabelCpfOrCnpj": "CPF o CNPJ"
   },
   "auth": {
     "tagline": "Facturación compartida en la que puedes confiar",
@@ -452,10 +453,26 @@
         "subtitle": "Servicios, expensas y quién los paga.",
         "placeholder": "Formulario de gastos próximamente."
       },
-      "cpf": {
-        "title": "CPF",
-        "subtitle": "Lo necesitamos para cobros y recibos.",
-        "placeholder": "Formulario de CPF próximamente."
+      "tax-id": {
+        "title": "CPF/CNPJ",
+        "subtitle": "Lo usamos para mantener los cobros vinculados a ti.",
+        "editLinkPrompt": "Si no es correcto,",
+        "editLinkAction": "cambiarlo",
+        "editingDescription": "Cambiar esto actualizará tu perfil.",
+        "validation": {
+          "required": "Ingresa tu CPF o CNPJ.",
+          "invalidTaxId": "Ese CPF o CNPJ no parece válido.",
+          "tooLong": "Es más largo de lo esperado."
+        },
+        "whyWeAsk": {
+          "title": "Por qué te lo pedimos",
+          "bulletTrackingBR": "Detectamos cualquier boleto emitido a tu nombre — cuotas de condominio, impuesto predial y demás — para que nunca se te pasen.",
+          "bulletTrackingFallback": "Te ayudamos a rastrear cualquier factura emitida a tu nombre.",
+          "bulletRouting": "Cuando llega una factura, sabemos si es tuya o del inquilino.",
+          "bulletDocuments": "Aparece en los recibos de alquiler y contratos que mabenn genera para ti.",
+          "privacyLink": "Cómo protegemos tu información",
+          "privacyComingSoon": "Política de privacidad próximamente."
+        }
       },
       "bank": {
         "title": "Cuenta bancaria",
@@ -637,9 +654,21 @@
     "pixComingSoon": "Configuración de clave Pix próximamente",
     "fullName": "Nombre completo",
     "fullNamePlaceholder": "Tu nombre",
+    "email": "Email",
+    "emailDescription": "Vinculado a tu inicio de sesión. No se puede cambiar aquí.",
+    "taxIdDescription": "Se usa para reconocer facturas a tu nombre y en recibos y contratos.",
     "save": "Guardar",
     "theme": "Tema",
-    "signOut": "Cerrar sesión"
+    "signOut": "Cerrar sesión",
+    "validation": {
+      "required": "Este campo es obligatorio.",
+      "tooLong": "Es más largo de lo esperado.",
+      "invalidTaxId": "Ese CPF o CNPJ no parece válido.",
+      "cnpjNotFound": "No encontramos ese CNPJ. Verifica el número.",
+      "cnpjVerificationUnavailable": "No pudimos verificar ese CNPJ ahora. Inténtalo de nuevo en un momento.",
+      "unauthenticated": "Vuelve a iniciar sesión para continuar.",
+      "updateFailed": "No pudimos guardar. Inténtalo de nuevo."
+    }
   },
   "theme": {
     "light": "Claro",

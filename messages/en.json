@@ -5,7 +5,8 @@
     "error": "Something went wrong",
     "retry": "Try again",
     "back": "Back",
-    "taxIdLabel": "Tax ID"
+    "taxIdLabel": "Tax ID",
+    "taxIdLabelCpfOrCnpj": "CPF or CNPJ"
   },
   "auth": {
     "tagline": "Shared billing you can trust",
@@ -452,10 +453,26 @@
         "subtitle": "Utilities, condo fees, and who pays them.",
         "placeholder": "Expenses form coming soon."
       },
-      "cpf": {
-        "title": "CPF",
-        "subtitle": "We need this for billing and receipts.",
-        "placeholder": "CPF form coming soon."
+      "tax-id": {
+        "title": "Tax ID",
+        "subtitle": "We use this to keep billing tied to you.",
+        "editLinkPrompt": "If this isn't right,",
+        "editLinkAction": "change it",
+        "editingDescription": "Changing this will update your profile.",
+        "validation": {
+          "required": "Enter your CPF or CNPJ.",
+          "invalidTaxId": "That doesn't look like a valid CPF or CNPJ.",
+          "tooLong": "That's longer than expected."
+        },
+        "whyWeAsk": {
+          "title": "Why we ask",
+          "bulletTrackingBR": "We catch any boleto issued in your name — condo fees, property tax, the rest — so they never go missing.",
+          "bulletTrackingFallback": "We help track any bills issued in your name.",
+          "bulletRouting": "When a bill comes through, we know whether it's yours or the tenant's.",
+          "bulletDocuments": "It appears on the rent receipts and contracts mabenn generates for you.",
+          "privacyLink": "How we keep your information safe",
+          "privacyComingSoon": "Privacy policy coming soon."
+        }
       },
       "bank": {
         "title": "Bank account",
@@ -637,9 +654,21 @@
     "pixComingSoon": "Pix key configuration coming soon",
     "fullName": "Full name",
     "fullNamePlaceholder": "Your name",
+    "email": "Email",
+    "emailDescription": "Linked to your sign-in. Not editable here.",
+    "taxIdDescription": "Used to recognize bills issued in your name and on receipts and contracts.",
     "save": "Save",
     "theme": "Theme",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "validation": {
+      "required": "This field is required.",
+      "tooLong": "That's longer than expected.",
+      "invalidTaxId": "That doesn't look like a valid CPF or CNPJ.",
+      "cnpjNotFound": "We couldn't find that CNPJ. Double-check the number.",
+      "cnpjVerificationUnavailable": "We couldn't verify that CNPJ right now. Try again in a moment.",
+      "unauthenticated": "Sign in again to continue.",
+      "updateFailed": "We couldn't save that. Try again."
+    }
   },
   "theme": {
     "light": "Light",

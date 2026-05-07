@@ -267,8 +267,63 @@ function FieldError({
   )
 }
 
+// =============================================================================
+// FieldActionRow
+//
+// Composes `Field orientation="horizontal"` for the row layout and adds a
+// trailing slot whose visibility is animated. Used for fields that pair an
+// input with a contextual action — typically an inline Save button revealed
+// only while the field is dirty. The trailing slot transitions max-width,
+// opacity, and margin together so the input grows back into the freed space
+// without a layout jump. Container handles geometry only; the parent decides
+// what the action is (a Button, a link, a confirm + cancel pair, anything).
+// =============================================================================
+
+interface FieldActionRowProps {
+  /** The leading content — usually the input. */
+  children: React.ReactNode
+  /** The trailing action element rendered inside the revealable slot. */
+  action: React.ReactNode
+  /** When true, the action slot is fully visible. When false, it collapses
+   *  to zero width, fades out, and is removed from tab/screen-reader order. */
+  actionVisible: boolean
+  className?: string
+}
+
+function FieldActionRow({
+  action,
+  actionVisible,
+  children,
+  className,
+}: FieldActionRowProps) {
+  return (
+    // `gap-0` overrides Field's default gap-2 — the animated wrapper applies
+    // its own `ml-2` when visible, so the gap collapses with the slot.
+    // `items-start` overrides `items-center` to align the action with the
+    // top edge of the input rather than its middle.
+    <Field orientation="horizontal" className={cn('items-start gap-0', className)}>
+      <div className="flex-1">{children}</div>
+      <div
+        // `inert` removes the collapsed action from tab/click/screen-reader
+        // surface; `aria-hidden` is a defense-in-depth for older runtimes.
+        inert={!actionVisible}
+        aria-hidden={!actionVisible}
+        className={cn(
+          'overflow-hidden motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-out',
+          actionVisible
+            ? 'ml-2 max-w-32 opacity-100'
+            : 'ml-0 max-w-0 opacity-0',
+        )}
+      >
+        {action}
+      </div>
+    </Field>
+  )
+}
+
 export {
   Field,
+  FieldActionRow,
   FieldContent,
   FieldDescription,
   FieldError,

@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-import { isValidCpf } from '@/lib/cpf/validate'
+import { isValidTaxIdBR } from '@/lib/tax-id/br'
+import { isValidCpf } from '@/lib/tax-id/cpf/validate'
 
 // =============================================================================
 // Tax ID — polymorphic-by-country Zod schema for the `tax_id` column.
@@ -21,6 +22,18 @@ export const taxIdBaseSchema = z.string().trim().max(64, { error: 'tooLong' })
 export const brazilTaxIdSchema = taxIdBaseSchema.superRefine((value, ctx) => {
   if (value.length === 0) return // optional — empty is acceptable
   if (!isValidCpf(value)) {
+    ctx.addIssue({ code: 'custom', message: 'invalidTaxId' })
+  }
+})
+
+/**
+ * Accepts either a valid CPF (individual) or a valid CNPJ (business). Used by
+ * the landlord's own tax-id section, where the user may file under either.
+ * Tenant rows stay on `brazilTaxIdSchema` (CPF-only) for the residential MVP.
+ */
+export const brazilCpfOrCnpjSchema = taxIdBaseSchema.superRefine((value, ctx) => {
+  if (value.length === 0) return // optional — empty is acceptable
+  if (!isValidTaxIdBR(value)) {
     ctx.addIssue({ code: 'custom', message: 'invalidTaxId' })
   }
 })

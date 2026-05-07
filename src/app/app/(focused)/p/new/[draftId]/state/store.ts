@@ -18,6 +18,9 @@ import {
   defaultSectionData,
   mergeExtractionIntoSectionData,
 } from './extraction-seeding'
+import { fetchProfile } from '@/data/profiles/shared'
+import { createClient } from '@/lib/supabase/client'
+import type { TaxIdInput } from './tax-id-schema'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -31,6 +34,13 @@ const EXTRACTION_SEEDED_SECTION_IDS = [
   'tenants',
 ] as const satisfies readonly SectionId[]
 
+/** On the store (not local) so it survives the section's collapse/expand
+ *  cycle — base-ui unmounts panel content when collapsed. Not persisted. */
+export interface TenantsListUI {
+  mode: 'all-expanded' | 'single-active'
+  activeTenantId: string | null
+}
+
 export interface PropertyCreationStateShape {
   step: 1 | 2
   contractFile: File | null
@@ -41,6 +51,7 @@ export interface PropertyCreationStateShape {
   sectionStates: Record<SectionId, SectionStatus>
   activeSectionId: SectionId | null
   sectionData: Partial<Record<SectionId, unknown>>
+  tenantsListUI: TenantsListUI
 }
 
 export interface PropertyCreationActions {
@@ -63,6 +74,11 @@ export interface PropertyCreationActions {
   goToPreviousSection: () => void
   setSectionData: <T>(id: SectionId, next: UpdaterOrValue<T>) => void
   updateSectionData: <T>(id: SectionId, partial: Partial<T>) => void
+  setTenantsListUI: (
+    next:
+      | Partial<TenantsListUI>
+      | ((prev: TenantsListUI) => Partial<TenantsListUI>),
+  ) => void
   /** Wipes this draft's persisted IDB record. Called from the wizard's exit
    * flow (no-work close, explicit discard from the exit prompt) so abandoned
    * drafts don't accumulate. The "Save for later" branch deliberately does
@@ -74,11 +90,12 @@ export interface PropertyCreationStoreValue extends PropertyCreationStateShape {
   actions: PropertyCreationActions
 }
 
-// The persisted slice is everything except the actions bag. Functions can't
-// be cloned by structured clone (DataCloneError), and persisting them would
-// be meaningless anyway — the action callbacks are recreated by the factory
-// every time the store is constructed.
-export type PersistedPropertyCreationState = PropertyCreationStateShape
+// Excludes `actions` (functions don't survive structured clone) and
+// `tenantsListUI` (transient UI; resets to defaults on resume).
+export type PersistedPropertyCreationState = Omit<
+  PropertyCreationStateShape,
+  'tenantsListUI'
+>
 
 // ---------------------------------------------------------------------------
 // Defaults
@@ -90,6 +107,10 @@ function initialSectionStates(): Record<SectionId, SectionStatus> {
     acc[s.id] = 'upcoming'
   }
   return acc
+}
+
+function defaultTenantsListUI(): TenantsListUI {
+  return { mode: 'all-expanded', activeTenantId: null }
 }
 
 function defaultState(): PropertyCreationStateShape {
@@ -107,6 +128,7 @@ function defaultState(): PropertyCreationStateShape {
     // typed cast and never need a `??` fallback. `mergeExtractionIntoSectionData`
     // and `setSectionData` both rely on this invariant.
     sectionData: defaultSectionData(),
+    tenantsListUI: defaultTenantsListUI(),
   }
 }
 
@@ -145,6 +167,32 @@ function isRequired(id: SectionId, path: CheckoutPath | null): boolean {
   // a no-op — the user shouldn't advance past sections before path selection.
   if (!path) return true
   return getRequiredSectionIds(path).includes(id)
+}
+
+// Module-local: seeds the tax-id slice from the viewer's profile when the
+// persisted slice is empty. Runs from `onRehydrateStorage` after every
+// hydration; idempotent thanks to the early return when the slice already
+// holds a value.
+async function seedTaxIdFromProfileIfMissing(
+  state: PropertyCreationStoreValue,
+): Promise<void> {
+  const slice = state.sectionData['tax-id'] as TaxIdInput | undefined
+  if (slice?.tax_id) return
+
+  try {
+    const supabase = createClient()
+    const profile = await fetchProfile(supabase)
+    if (!profile?.tax_id) return
+
+    state.actions.setSectionData<TaxIdInput>('tax-id', (prev) => ({
+      ...prev,
+      tax_id: profile.tax_id ?? '',
+    }))
+  } catch (error) {
+    // Pre-fill is a nice-to-have — network/auth failure leaves the field
+    // empty and the user types it in. Log once for diagnostics.
+    console.warn('[property-creation] tax-id profile seed failed', error)
+  }
 }
 
 function backfillMissingExtractionSections(
@@ -278,13 +326,16 @@ function buildPersistOptions(
       // on `version` to reshape the payload.
       return persistedState as PersistedPropertyCreationState
     },
-    onRehydrateStorage: () => (_state, error) => {
+    onRehydrateStorage: () => (state, error) => {
       if (error) {
         console.error('[property-creation] rehydration failed', error)
         return
       }
-      // Place for analytics or post-hydration side effects. Do NOT mutate
-      // state here — that triggers a redundant persist write.
+      // Profile-derived seeding: the tax-id section pre-fills from
+      // `profiles.tax_id` when the persisted slice is empty. The persist
+      // write that follows the seed is intentional — next load reads the
+      // value straight from IDB and the helper short-circuits.
+      if (state) void seedTaxIdFromProfileIfMissing(state)
     },
   }
 }
@@ -365,10 +416,15 @@ export function createPropertyCreationStore(draftId: string) {
                 : switchingAwayFromContract
                   ? defaultSectionData()
                   : state.sectionData
+            // Stale activeTenantId would point at a row from the prior path.
+            const tenantsListUI = switchingAwayFromContract
+              ? defaultTenantsListUI()
+              : state.tenantsListUI
             set({
               extractionResult: next.extractionResult,
               path: next.path,
               sectionData,
+              tenantsListUI,
             })
           },
 
@@ -435,6 +491,17 @@ export function createPropertyCreationStore(draftId: string) {
                 ...state.sectionData,
                 [id]: { ...prev, ...partial },
               },
+            })
+          },
+
+          setTenantsListUI: (nextOrUpdater) => {
+            const state = get()
+            const partial =
+              typeof nextOrUpdater === 'function'
+                ? nextOrUpdater(state.tenantsListUI)
+                : nextOrUpdater
+            set({
+              tenantsListUI: { ...state.tenantsListUI, ...partial },
             })
           },
 

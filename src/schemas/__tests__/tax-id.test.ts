@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 
 import {
+  brazilCpfOrCnpjSchema,
   brazilTaxIdSchema,
   fallbackTaxIdSchema,
   getTaxIdSchema,
@@ -81,6 +82,72 @@ describe('brazilTaxIdSchema', () => {
 
   it('still enforces the 64-char base length cap', () => {
     const r = brazilTaxIdSchema.safeParse('1'.repeat(65))
+    expect(r.success).toBe(false)
+    expect(firstIssue(r)).toBe('tooLong')
+  })
+})
+
+describe('brazilCpfOrCnpjSchema', () => {
+  it('accepts an empty string (optional)', () => {
+    expect(brazilCpfOrCnpjSchema.safeParse('').success).toBe(true)
+  })
+
+  it('accepts a valid formatted CPF', () => {
+    expect(brazilCpfOrCnpjSchema.safeParse('040.032.329-09').success).toBe(true)
+  })
+
+  it('accepts a valid unformatted CPF', () => {
+    expect(brazilCpfOrCnpjSchema.safeParse('04003232909').success).toBe(true)
+  })
+
+  it('accepts a valid formatted CNPJ', () => {
+    expect(brazilCpfOrCnpjSchema.safeParse('11.222.333/0001-81').success).toBe(true)
+  })
+
+  it('accepts a valid unformatted CNPJ', () => {
+    expect(brazilCpfOrCnpjSchema.safeParse('11222333000181').success).toBe(true)
+  })
+
+  it('trims before validating', () => {
+    expect(brazilCpfOrCnpjSchema.safeParse('  11.222.333/0001-81  ').success).toBe(true)
+  })
+
+  it('accepts whitespace-only input (trimmed to empty, optional)', () => {
+    expect(brazilCpfOrCnpjSchema.safeParse('   ').success).toBe(true)
+  })
+
+  it('rejects an invalid CPF as "invalidTaxId"', () => {
+    const r = brazilCpfOrCnpjSchema.safeParse('04003232908')
+    expect(r.success).toBe(false)
+    expect(firstIssue(r)).toBe('invalidTaxId')
+  })
+
+  it('rejects an invalid CNPJ as "invalidTaxId"', () => {
+    const r = brazilCpfOrCnpjSchema.safeParse('11.222.333/0001-71')
+    expect(r.success).toBe(false)
+    expect(firstIssue(r)).toBe('invalidTaxId')
+  })
+
+  it('rejects 12-digit garbage (neither CPF nor CNPJ)', () => {
+    const r = brazilCpfOrCnpjSchema.safeParse('123456789012')
+    expect(r.success).toBe(false)
+    expect(firstIssue(r)).toBe('invalidTaxId')
+  })
+
+  it('rejects all-same-digit CPFs as "invalidTaxId"', () => {
+    const r = brazilCpfOrCnpjSchema.safeParse('111.111.111-11')
+    expect(r.success).toBe(false)
+    expect(firstIssue(r)).toBe('invalidTaxId')
+  })
+
+  it('rejects all-same-digit CNPJs as "invalidTaxId"', () => {
+    const r = brazilCpfOrCnpjSchema.safeParse('11.111.111/1111-11')
+    expect(r.success).toBe(false)
+    expect(firstIssue(r)).toBe('invalidTaxId')
+  })
+
+  it('still enforces the 64-char base length cap', () => {
+    const r = brazilCpfOrCnpjSchema.safeParse('1'.repeat(65))
     expect(r.success).toBe(false)
     expect(firstIssue(r)).toBe('tooLong')
   })

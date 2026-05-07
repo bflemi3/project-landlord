@@ -150,6 +150,64 @@ describe('useFormValidation', () => {
   })
 
   // -------------------------------------------------------------------------
+  // clearTouched
+  // -------------------------------------------------------------------------
+
+  describe('clearTouched', () => {
+    it('clears the specific field, hiding its error until re-touched', () => {
+      const { result } = renderForm()
+      act(() => result.current.markTouched('name'))
+      expect(result.current.hasError('name')).toBe(true)
+
+      act(() => result.current.clearTouched('name'))
+      expect(result.current.hasError('name')).toBeFalsy()
+      expect(result.current.errors.name).toBeUndefined()
+    })
+
+    it('does not affect other touched fields', () => {
+      const { result } = renderForm()
+      act(() => {
+        result.current.markTouched('name')
+        result.current.markTouched('email')
+      })
+
+      act(() => result.current.clearTouched('name'))
+      expect(result.current.hasError('name')).toBeFalsy()
+      expect(result.current.hasError('email')).toBe(true)
+    })
+
+    it('with no argument clears every touched field', () => {
+      const { result } = renderForm()
+      act(() => {
+        result.current.markTouched('name')
+        result.current.markTouched('email')
+      })
+
+      act(() => result.current.clearTouched())
+      expect(result.current.hasError('name')).toBeFalsy()
+      expect(result.current.hasError('email')).toBeFalsy()
+      expect(Object.keys(result.current.errors)).toHaveLength(0)
+    })
+
+    it('is a no-op when the field was never touched', () => {
+      const { result } = renderForm()
+      const errorsBefore = result.current.errors
+      act(() => result.current.clearTouched('name'))
+      expect(result.current.errors).toBe(errorsBefore)
+    })
+
+    it('lets the field be re-touched after clearing — error returns', () => {
+      const { result } = renderForm()
+      act(() => result.current.markTouched('name'))
+      act(() => result.current.clearTouched('name'))
+      expect(result.current.hasError('name')).toBeFalsy()
+
+      act(() => result.current.markTouched('name'))
+      expect(result.current.hasError('name')).toBe(true)
+    })
+  })
+
+  // -------------------------------------------------------------------------
   // Fixing a field — error disappears
   // -------------------------------------------------------------------------
 

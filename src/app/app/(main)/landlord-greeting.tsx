@@ -17,7 +17,7 @@ export async function LandlordGreeting() {
     getTranslations('home'),
   ])
 
-  const firstName = profile?.fullName?.split(' ')[0] ?? undefined
+  const firstName = profile?.full_name?.split(' ')[0] ?? undefined
   const greetingKey = getGreetingKey()
   const greeting = t(greetingKey)
 

@@ -1,4 +1,4 @@
-import { isValidCnpj } from '@/lib/cnpj/validate'
+import { isValidCnpj } from '@/lib/tax-id/cnpj/validate'
 
 /**
  * Extract all valid CNPJs from raw text.

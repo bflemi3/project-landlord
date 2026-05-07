@@ -11,7 +11,7 @@ export function PostHogIdentify() {
     if (profile?.id) {
       posthog.identify(profile.id, {
         ...(profile.email && { email: profile.email }),
-        ...(profile.fullName && { name: profile.fullName }),
+        ...(profile.full_name && { name: profile.full_name }),
       })
     }
   }, [profile])

@@ -1,8 +1,8 @@
 import { z } from 'zod'
 
 import type { ContractParty } from '@/lib/contract-extraction/types'
-import { formatCpf } from '@/lib/cpf/format'
-import { isValidCpf } from '@/lib/cpf/validate'
+import { formatCpf } from '@/lib/tax-id/cpf/format'
+import { isValidCpf } from '@/lib/tax-id/cpf/validate'
 import { tenantInputBaseSchema } from '@/schemas/tenant'
 import { brazilTaxIdSchema, getTaxIdSchema } from '@/schemas/tax-id'
 

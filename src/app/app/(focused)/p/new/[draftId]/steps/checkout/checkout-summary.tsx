@@ -11,7 +11,7 @@ import { PropertySummaryRow } from './sections/property'
 import { RentDatesSummaryRow } from './sections/rent-dates'
 import { TenantsSummaryRow } from './sections/tenants'
 import { ExpensesSummaryRow } from './sections/expenses'
-import { CpfSummaryRow } from './sections/cpf'
+import { TaxIdSummaryRow } from './sections/tax-id'
 import { BankSummaryRow } from './sections/bank'
 
 interface CheckoutSummaryProps {
@@ -50,7 +50,7 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
         <RentDatesSummaryRow />
         <TenantsSummaryRow />
         <ExpensesSummaryRow />
-        <CpfSummaryRow />
+        <TaxIdSummaryRow />
         <BankSummaryRow />
       </ul>
       <Button className="mt-6 w-full" disabled={remaining > 0}>

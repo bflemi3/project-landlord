@@ -370,7 +370,7 @@ function SectionActions({
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className={RESPONSIVE_BUTTON_CLASS}
+          // className={RESPONSIVE_BUTTON_CLASS}
         >
           <ChevronLeft />
           {backLabel}
@@ -384,7 +384,7 @@ function SectionActions({
             variant="ghost"
             size="sm"
             onClick={onSkip}
-            className={RESPONSIVE_BUTTON_CLASS}
+            // className={RESPONSIVE_BUTTON_CLASS}
           >
             {skipLabel}
           </Button>
@@ -394,7 +394,7 @@ function SectionActions({
           disabled={continueDisabled}
           loading={continueLoading}
           onClick={onContinue}
-          className={RESPONSIVE_BUTTON_CLASS}
+          // className={RESPONSIVE_BUTTON_CLASS}
         >
           {continueLabel}
           <ChevronRight />

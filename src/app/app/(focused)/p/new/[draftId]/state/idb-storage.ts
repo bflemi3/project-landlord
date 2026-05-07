@@ -18,6 +18,17 @@ import type { PersistStorage, StorageValue } from 'zustand/middleware'
  * + saved `contractFileName`.
  */
 export function createIdbStorage<S>(): PersistStorage<S> {
+  // No-op on the server — `indexedDB` is browser-only. Without this guard,
+  // zustand's persist middleware tries to read from IDB during the SSR pass,
+  // throws, and `onRehydrateStorage` logs the error on every render. Real
+  // hydration runs again on the client where IDB exists.
+  if (typeof window === 'undefined') {
+    return {
+      getItem: async () => null,
+      setItem: async () => {},
+      removeItem: async () => {},
+    }
+  }
   return {
     getItem: async (name) => (await get<StorageValue<S>>(name)) ?? null,
     setItem: async (name, value) => {

@@ -16,32 +16,24 @@ import {
   usePropertyCreationActions,
   usePropertyCreationState,
 } from '../../../state/use-property-creation'
-import { RESPONSIVE_BUTTON_CLASS } from '../section'
 import { TenantForm } from './tenant-form'
 import { TenantSummary } from './tenant-summary'
 
 const REMOVE_ANIMATION_MS = 200
 
-type ListMode = 'all-expanded' | 'single-active'
-
 export function TenantList() {
   const t = useTranslations('propertyCreation.checkout.tenants')
-  const { setSectionData } = usePropertyCreationActions()
-
-  // Shallow equality keeps this list from re-rendering on row content changes
-  // — only add/remove/reorder triggers a re-render. Each row reads its own
-  // slice from the store inside TenantForm or TenantSummary.
+  const { setSectionData, setTenantsListUI } = usePropertyCreationActions()
   const tenantIds = usePropertyCreationState(
     useShallow((s) => (s.sectionData.tenants as TenantRow[]).map((row) => row.id)),
   )
-
-  // Initial state: all tenants render as expanded forms (preserves the
-  // review-extraction-at-a-glance UX). Once the user clicks Add the first
-  // time, switch to single-active mode and stay there for the session.
-  const [mode, setMode] = useState<ListMode>('all-expanded')
-  const [activeTenantId, setActiveTenantId] = useState<string | null>(null)
+  const mode = usePropertyCreationState((s) => s.tenantsListUI.mode)
+  const activeTenantId = usePropertyCreationState(
+    (s) => s.tenantsListUI.activeTenantId,
+  )
   // Set when a row is just added — drives autoFocus on the new TenantForm's
-  // name input. AutoFocus only fires on mount; this never needs clearing.
+  // name input. AutoFocus only fires on mount; resetting on section close is
+  // correct (no auto-focus when the user reopens the section).
   const [justAddedId, setJustAddedId] = useState<string | null>(null)
   // Ids in the middle of an exit animation. Render with `animate-out` then
   // remove from the store after the animation finishes.
@@ -52,14 +44,14 @@ export function TenantList() {
   const handleAdd = useCallback(() => {
     const newRow = defaultTenantRow()
     setSectionData<TenantRow[]>('tenants', (prev) => [...prev, newRow])
-    setMode('single-active')
-    setActiveTenantId(newRow.id)
+    setTenantsListUI({ mode: 'single-active', activeTenantId: newRow.id })
     setJustAddedId(newRow.id)
-  }, [setSectionData])
+  }, [setSectionData, setTenantsListUI])
 
-  const handleActivate = useCallback((id: string) => {
-    setActiveTenantId(id)
-  }, [])
+  const handleActivate = useCallback(
+    (id: string) => setTenantsListUI({ activeTenantId: id }),
+    [setTenantsListUI],
+  )
 
   const handleRemove = useCallback(
     (id: string) => {
@@ -78,10 +70,12 @@ export function TenantList() {
           next.delete(id)
           return next
         })
-        setActiveTenantId((current) => (current === id ? null : current))
+        setTenantsListUI((current) =>
+          current.activeTenantId === id ? { activeTenantId: null } : {},
+        )
       }, REMOVE_ANIMATION_MS)
     },
-    [setSectionData],
+    [setSectionData, setTenantsListUI],
   )
 
   if (tenantIds.length === 0) {
@@ -121,7 +115,7 @@ export function TenantList() {
         onClick={handleAdd}
         className={cn(
           'text-muted-foreground hover:text-foreground self-start',
-          RESPONSIVE_BUTTON_CLASS,
+          // RESPONSIVE_BUTTON_CLASS,
         )}
       >
         <Plus />

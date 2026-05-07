@@ -32,7 +32,7 @@ vi.mock('@supabase/supabase-js', () => ({
 }))
 
 // Must import after vi.mock
-import { lookupCnpj } from '../cnpj-lookup'
+import { lookupCnpj, verifyCnpjExists } from '../cnpj-lookup'
 
 describe('lookupCnpj', () => {
   beforeEach(() => {
@@ -190,5 +190,82 @@ describe('lookupCnpj', () => {
     expect(changedFields).toContain('legal_name')
     expect(changedFields).toContain('city')
     expect(changedFields).toContain('state')
+  })
+})
+
+describe('verifyCnpjExists', () => {
+  beforeEach(() => {
+    vi.restoreAllMocks()
+    singleResults = []
+  })
+
+  it("returns 'exists' when BrasilAPI returns 200", async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ cnpj: '49449868000162' }), { status: 200 }))
+
+    const status = await verifyCnpjExists('49449868000162')
+    expect(status).toBe('exists')
+    expect(fetchSpy).toHaveBeenCalledTimes(1) // ReceitaWS not consulted on success
+  })
+
+  it("returns 'not-found' when BrasilAPI returns 404", async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
+      new Response('Not Found', { status: 404 }),
+    )
+
+    const status = await verifyCnpjExists('00000000000000')
+    expect(status).toBe('not-found')
+  })
+
+  it("falls back to ReceitaWS on BrasilAPI server error and returns 'exists' when found", async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('Error', { status: 500 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ status: 'OK', nome: 'COMPANY' }), { status: 200 }),
+      )
+
+    const status = await verifyCnpjExists('49449868000162')
+    expect(status).toBe('exists')
+  })
+
+  it("returns 'not-found' when ReceitaWS returns 200 with status: 'ERROR'", async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('Error', { status: 500 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ status: 'ERROR', message: 'CNPJ inválido' }), { status: 200 }),
+      )
+
+    const status = await verifyCnpjExists('49449868000162')
+    expect(status).toBe('not-found')
+  })
+
+  it("returns 'unreachable' when both providers fail with non-404 errors", async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('Error', { status: 500 }))
+      .mockResolvedValueOnce(new Response('Error', { status: 503 }))
+
+    const status = await verifyCnpjExists('49449868000162')
+    expect(status).toBe('unreachable')
+  })
+
+  it("returns 'not-found' when ReceitaWS 404s after BrasilAPI 5xx", async () => {
+    vi.spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response('Error', { status: 500 }))
+      .mockResolvedValueOnce(new Response('Not Found', { status: 404 }))
+
+    const status = await verifyCnpjExists('49449868000162')
+    expect(status).toBe('not-found')
+  })
+
+  it('strips formatting characters before calling the API', async () => {
+    const fetchSpy = vi
+      .spyOn(globalThis, 'fetch')
+      .mockResolvedValueOnce(new Response(JSON.stringify({ cnpj: '49449868000162' }), { status: 200 }))
+
+    await verifyCnpjExists('49.449.868/0001-62')
+    const url = (fetchSpy.mock.calls[0][0] as string) ?? ''
+    // The CNPJ portion of the URL must be the 14 digits with no separators.
+    expect(url).toMatch(/\/49449868000162$/)
   })
 })

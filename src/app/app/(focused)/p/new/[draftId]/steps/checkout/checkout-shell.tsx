@@ -23,7 +23,7 @@ import { PropertySection } from './sections/property'
 import { RentDatesSection } from './sections/rent-dates'
 import { TenantsSection } from './sections/tenants'
 import { ExpensesSection } from './sections/expenses'
-import { CpfSection } from './sections/cpf'
+import { TaxIdSection } from './sections/tax-id'
 import { BankSection } from './sections/bank'
 import { ExtractionLegend } from './sections/extraction-legend'
 
@@ -121,7 +121,7 @@ export function PropertyCheckoutShell() {
                 <RentDatesSection />
                 <TenantsSection />
                 <ExpensesSection />
-                <CpfSection />
+                <TaxIdSection />
                 <BankSection />
               </SectionGroup>
               </div>

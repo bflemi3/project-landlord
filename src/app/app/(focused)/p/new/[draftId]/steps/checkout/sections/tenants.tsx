@@ -131,4 +131,4 @@ function formatTenantsSummary(
   if (rendered.length <= SUMMARY_NAME_LIMIT) return rendered.join(', ')
   const head = rendered.slice(0, SUMMARY_NAME_LIMIT).join(', ')
   return `${head} ${labels.andMoreLabel(rendered.length - SUMMARY_NAME_LIMIT)}`
-}
+} 

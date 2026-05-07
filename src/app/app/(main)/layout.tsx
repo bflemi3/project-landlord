@@ -17,7 +17,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </Suspense>
 
       {/* Mobile header — inline, hidden on desktop */}
-      <MobileHeader />
+      <Suspense fallback={null}>
+        <MobileHeader />
+      </Suspense>
 
       <div className="min-h-0 flex-1">
         {children}

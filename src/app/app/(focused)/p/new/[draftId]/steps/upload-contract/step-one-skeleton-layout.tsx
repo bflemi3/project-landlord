@@ -11,7 +11,7 @@ import { PropertySectionSkeleton } from '../checkout/sections/property'
 import { RentDatesSectionSkeleton } from '../checkout/sections/rent-dates'
 import { TenantsSectionSkeleton } from '../checkout/sections/tenants'
 import { ExpensesSectionSkeleton } from '../checkout/sections/expenses'
-import { CpfSectionSkeleton } from '../checkout/sections/cpf'
+import { TaxIdSectionSkeleton } from '../checkout/sections/tax-id'
 import { BankSectionSkeleton } from '../checkout/sections/bank'
 
 /**
@@ -36,7 +36,7 @@ export function StepOneSkeletonLayout() {
           <RentDatesSectionSkeleton />
           <TenantsSectionSkeleton />
           <ExpensesSectionSkeleton />
-          <CpfSectionSkeleton />
+          <TaxIdSectionSkeleton />
           <BankSectionSkeleton />
         </div>
       </DetailPageLayoutMain>
