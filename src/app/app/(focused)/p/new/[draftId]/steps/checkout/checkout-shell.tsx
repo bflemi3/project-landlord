@@ -117,13 +117,13 @@ export function PropertyCheckoutShell() {
                   activeId={activeSectionId}
                   onActiveChange={handleActiveChange}
                 >
-                <PropertySection />
-                <RentDatesSection />
-                <TenantsSection />
-                <ExpensesSection />
-                <TaxIdSection />
-                <BankSection />
-              </SectionGroup>
+                  <PropertySection />
+                  <RentDatesSection />
+                  <TenantsSection />
+                  <ExpensesSection />
+                  <TaxIdSection />
+                  <BankSection />
+                </SectionGroup>
               </div>
             </DetailPageLayoutMain>
 

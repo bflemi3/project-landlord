@@ -62,16 +62,33 @@ Recommended direction:
 - Add `amount_behavior expense_amount_behavior not null`.
 - Keep `amount_minor` / `currency` for expected or known amounts.
 - Add `provider_profile_id uuid references provider_invoice_profiles(id)`.
-- Keep or add `provider_id uuid references providers(id)` for known company identity.
 - Add `provider_request_id uuid references provider_requests(id)` as a bridge to missing/unsupported provider work.
-- Add database constraints so `provider_profile_id`, when present, belongs to the same `provider_id`.
-- Eventually remove or deprecate `charge_type` after old call sites are migrated.
+- Do not add `provider_id` to `charge_definitions`. Provider identity is derived: through `provider_invoice_profiles.provider_id` when a profile is set, and through `provider_requests.provider_id` when only a request is set. This avoids three columns that can drift.
+- Add `bundled_into_rent boolean not null default false`.
+- Add `bundled_into_charge_id uuid null references charge_definitions(id)` for expenses bundled into another expense (e.g., water included in condo fee).
+- Drop `charge_type` in this slice. See "Removing `charge_type`" below for the migration approach.
+
+Every `charge_definitions` row must satisfy exactly one of three states, enforced by a check constraint:
+
+- **Tracked** — `provider_profile_id` is set, `provider_request_id` is null, and neither bundle column is set.
+- **Pending** — `provider_request_id` is set, `provider_profile_id` is null, and neither bundle column is set.
+- **Bundled** — both provider columns are null, and exactly one of `bundled_into_rent` or `bundled_into_charge_id` indicates the parent.
+
+This is what makes provider attachment effectively required for non-bundled rows: the only way to add an expense without a provider is to declare it bundled into rent or another expense, which is an explicit visibility-only state.
 
 The `expense_type` enum already exists, but it is not yet attached to `charge_definitions`. Add the missing column and use generated Supabase types throughout the codebase, following the existing database-enum pattern used by `property_type`.
 
 The codebase currently also has a separate `provider_category` enum on `provider_invoice_profiles`. For the pivot, provider profile category and expense type are the same product concept. Prefer one canonical enum for both. The implementation plan should either migrate `provider_invoice_profiles.category` to use `expense_type` or otherwise make the mapping explicit and temporary. Do not let future code assume `provider_category` and `expense_type` are different product concepts.
 
 The canonical expense enum should include every expense type the checkout can present. Add missing values such as `insurance` if they are supported in the UI. The current enum already includes `trash`; keep it in the UI/default map.
+
+#### Removing `charge_type`
+
+`charge_type` is dropped in this slice with no backfill of existing rows. There is no production user data yet, and the rent-as-charge → rent-as-its-own-table migration cannot be done cleanly because the missing rent fields aren't recoverable from existing rows.
+
+Pre-implementation gate: run `select charge_type, count(*) from charge_definitions group by charge_type` against the linked Supabase. If the table is empty (or contains only disposable test data), proceed with the column drop. If real rows exist, stop and revisit the migration approach before merging.
+
+The same PR drops the column and updates every TS reader of `charge_type` to use `expense_type` and `amount_behavior` instead. Future writes cannot keep populating a deprecated field.
 
 ### Amount Behavior
 
@@ -139,45 +156,25 @@ The "internal signal" language in earlier specs maps to `provider_requests` in t
 
 Provider requests should not be created while the landlord is still in the checkout wizard. During checkout, missing-provider draft data belongs in the existing property creation Zustand store, inside the `expenses` section data slice. The existing store persistence middleware writes that section data to IndexedDB automatically; do not add a separate IndexedDB write path for provider-request drafts. The real `provider_requests` row and any `provider_test_bills` upload/link should be created only inside the final create-property flow. If the landlord abandons property creation, no provider request is created.
 
-### Provider Request Properties
+### Linking Provider Requests To Properties And Expenses
 
-Do not put a single `property_id` directly on `provider_requests` as the only property link. Multiple properties may need the same requested provider/profile.
+Do not put a `property_id` directly on `provider_requests`. Do not introduce a `provider_request_properties` join table either.
 
-Use a join table:
+Use `charge_definitions.provider_request_id` as the single source of truth for which expenses (and therefore which properties) want a missing provider. Property-level demand is derivable: `select distinct property_id from charge_definitions where provider_request_id = $1`. Per-expense resolution and per-property demand fall out of the same column without a separate table to keep in sync.
 
-- `provider_request_properties.provider_request_id`
-- `provider_request_properties.property_id`
-- timestamps
+One provider request can link to many `charge_definitions` rows. The same missing provider used by multiple expense rows in the same checkout is collapsed into a single request on save.
 
-This lets the product dedupe "same missing provider in same region" while tracking demand across many properties.
-
-When the final create-property action creates or links a provider request, it should also create a `provider_request_properties` row for the newly-created property.
-
-Use `charge_definitions.provider_request_id` to link exact expense rows to provider requests. One provider request can link to multiple `charge_definitions` rows because many charge rows may reference the same request. `provider_request_properties` remains the property-level demand tracking table; `charge_definitions.provider_request_id` is the expense-level resolution link.
-
-If a post-create expense is later deleted and its provider request is no longer linked to any property, charge definition, correction, or engineering work item, the cleanup path may remove the request and its request-only test bill. Do not apply that cleanup to existing requests used by other properties or expenses.
+If a post-create expense is later deleted and the provider request it pointed at no longer has any other linked `charge_definitions` rows, corrections, or engineering work items, the cleanup path may remove the request and its request-only test bill. Do not apply that cleanup to requests still linked to other expenses.
 
 ### Resolving Requests
 
-Use Option A: resolve affected expense rows in place when engineering completes a request.
+The mechanics of resolving requests (the resolver function, eng-side completion flow, audit trail) are owned by the provider-request / engineering plan. This guidepost only locks in the schema affordances they need from the expenses side:
 
-Initial state:
+- A pending charge has `provider_request_id` set and `provider_profile_id` null.
+- When the request is completed, the resolver writes `provider_profile_id` onto each linked `charge_definitions` row in place, so runtime billing and payment-matching reads never need to follow the request.
+- `provider_request_id` stays set after resolution as a breadcrumb of how the provider entered the system. It is not cleared.
 
-- `provider_requests.provider_id = null`
-- `provider_requests.profile_id = null`
-- `charge_definitions.provider_request_id = <request id>`
-- `charge_definitions.provider_id = null`
-- `charge_definitions.provider_profile_id = null`
-
-When engineering completes the request:
-
-1. Engineering creates or links the real `providers` row.
-2. Engineering creates or links the relevant `provider_invoice_profiles` row.
-3. The request is updated with `provider_id`, `profile_id`, and `status = complete`.
-4. A resolver finds affected `charge_definitions` through `charge_definitions.provider_request_id` and updates those rows in place, setting `provider_id` and `provider_profile_id`.
-5. Keep `provider_request_id` on the charge for traceability.
-
-This keeps runtime billing/payment logic clean while preserving how the provider entered the system.
+The expenses plan does not implement the resolver. It only ensures the schema supports an in-place write at completion time.
 
 ---
 
@@ -222,27 +219,26 @@ If a matching request already exists, suggest that requested provider rather tha
 
 ### Missing Provider Flow
 
-The primary "provider does not exist" flow should be bill-first:
+The primary "provider does not exist" flow should be bill-first. Matching against existing provider requests is **mandatory in both the bill-upload and manual-entry paths** before the landlord can confirm a brand-new request. A new request is created only if no matches exist or the landlord declines all suggestions.
 
 1. User taps "I don't see my provider."
-2. Primary path asks them to upload a bill.
-3. The system extracts provider name and tax ID when possible.
-4. The system makes a best-effort match against existing provider requests.
-   - If CNPJ is extracted, first try direct request matching by tax ID.
-   - If no direct match exists, fuzzy-match by extracted provider name, property region, and expense type when available. Expense type is request/profile-support context, not a permanent provider-company classification.
-   - Show likely existing requests before allowing a new request.
-5. The user reviews and edits the extracted name if needed.
-6. Secondary path: "I don't have the bill" lets the user manually type the provider name and, optionally, a provider tax ID.
-7. If an existing request is selected, persist a draft link to that request in checkout state.
-8. If no existing request matches, persist a draft new-provider request in checkout state.
-9. Create or link the actual `provider_requests` row only when the property is created.
-10. Link the created expense to the request via `provider_request_id`.
+2. Primary path asks them to upload a bill. The system extracts provider name and tax ID when possible.
+3. Secondary path: "I don't have the bill" lets the user manually type the provider name and, optionally, a provider tax ID.
+4. **Required matching step**, regardless of which path produced the data:
+   - If CNPJ is available, first try direct request matching by tax ID.
+   - Otherwise, fuzzy-match by provider name, property region, and expense type when available. Expense type is request/profile-support context, not a permanent provider-company classification.
+   - Show likely existing requests to the landlord. They must select a match or explicitly decline before the flow allows a brand-new request.
+5. The user reviews and edits the extracted/entered name if needed.
+6. If an existing request is selected, persist a draft link to that request in checkout state.
+7. If no existing request matches and the landlord declines suggestions, persist a draft new-provider request in checkout state.
+8. Create or link the actual `provider_requests` row only when the property is created.
+9. Link the created expense to the request via `provider_request_id`.
 
 The expense row can then honestly show:
 
 > Enliv Energia · Requested, not supported yet
 
-If a bill is uploaded during checkout, the expense row should store enough draft file/request state in the property creation store to complete the request on final submit. Let the existing store persistence middleware handle IndexedDB persistence. On property creation, store the bill in `provider_test_bills` with source `provider_request`, linked to the request. Add a `provider_request_id` foreign key to `provider_test_bills` when the request table lands so the bill/request link is explicit. The property region should be captured automatically from the property; the landlord should not enter region details.
+If a bill is uploaded during checkout, the expense row should store enough draft file/request state in the property creation store to complete the request on final submit. Files cannot be JSON-serialized through the existing persist middleware as-is, so the expenses plan extends the same IndexedDB pattern that the contract-upload step uses for its draft file. Audit the contract-upload persistence path first and reuse it; do not invent a parallel mechanism. On property creation, store the bill in `provider_test_bills` with source `provider_request`, linked to the request. Add a `provider_request_id` foreign key to `provider_test_bills` when the request table lands so the bill/request link is explicit. The property region should be captured automatically from the property; the landlord should not enter region details.
 
 If the landlord backs out before creating the property, discard the draft request with the rest of the wizard state.
 
@@ -286,6 +282,8 @@ Expenses should follow the tenants pattern instead. Expenses are a dynamic list,
 
 Each extracted expense row should store row-level `isExtracted: true`. Manually added rows start with `isExtracted: false`. When the user edits anything within an expense row, flip the row to `false`.
 
+`isExtracted` is the only extraction-related metadata stored on an expense row. Do not add origin-confidence, original-vs-edited diffs, or any other provenance fields unless a concrete UI need is established later.
+
 This means the canonical `src/schemas` expense schema should not include `isExtracted`; it is checkout UI metadata only.
 
 ### Store Integration
@@ -307,6 +305,8 @@ If the user removes an expense row before property creation, remove it from the 
 If the user skips the Expenses section, do not write expense charge definitions on final property creation unless the user later re-opens the section and completes it. The store may still preserve draft values for editing, but skipped section state means those values are not part of the final submission payload.
 
 Keep the current section-based persisted store shape. Do not introduce a separate normalized IndexedDB persistence layer for expenses. If the expenses slice grows complex, normalize within the `expenses` slice itself, but continue writing it through the existing Zustand store and persistence middleware.
+
+Provider-request bill drafts are an exception to "section data goes through the JSON-serializable store path": files cannot be JSON-serialized. Reuse whatever IndexedDB blob/file pattern the existing contract-upload step uses for its draft file. The expenses plan must audit that pattern first and extend it for bill drafts; do not invent a parallel mechanism. The reference key for the persisted bill blob lives in the row's section data; the blob itself lives wherever contract drafts already live.
 
 ---
 
@@ -346,39 +346,50 @@ Follow the existing checkout empty-state pattern used by the Tenants section and
 
 ### Expenses Section Plan Should Own
 
-- Database migrations needed to make expense-backed charge definitions possible: `expense_amount_behavior`, `charge_definitions.expense_type`, `charge_definitions.amount_behavior`, `charge_definitions.provider_profile_id`, `charge_definitions.provider_request_id`, constraints, and any temporary compatibility notes for `charge_type`.
-- Database migrations needed to align provider profile category with expense type, including adding missing enum values such as `insurance` and ensuring `trash` is represented in the UI.
+- Pre-implementation gate: confirm `charge_definitions` is empty/disposable in the linked Supabase before proceeding.
+- Database migrations on `charge_definitions`: add `expense_type`, `amount_behavior`, `provider_profile_id`, `provider_request_id`, `bundled_into_rent`, `bundled_into_charge_id`, the 3-state check constraint, and drop `charge_type`.
+- New `expense_amount_behavior` enum.
+- Aligning `provider_invoice_profiles.category` with `expense_type`, including adding missing enum values such as `insurance` and ensuring `trash` is represented in the UI.
+- Auditing and updating every TS reader of `charge_type` in the same PR as the column drop.
+- Auditing the existing contract-upload IndexedDB persistence pattern and extending it for provider-request bill drafts.
+- Canonical `src/schemas/expense.ts` domain schema.
 - Checkout-local expense row schema.
 - Default section data and extraction seeding.
 - Expense list UI inside the checkout accordion.
 - Expense type selection.
 - Amount behavior default map and override UI.
 - Provider picker UI contract.
-- Missing-provider draft UI contract.
+- Missing-provider draft UI contract, including the mandatory existing-request match step in both bill-upload and manual-entry paths.
+- Bundled-row UI (mark a row as bundled into rent or another expense) and the bundling fields on the row schema.
 - Summary row/collapsed state.
 
 ### Provider Request / Eng Queue Plan Should Own
 
-- `provider_requests` table and enums.
-- `provider_request_properties` join table.
+- `provider_requests` table and enums (no `provider_request_properties` join table).
 - Request creation/linking server actions.
 - Request deduping rules.
 - `/eng/requests` queue implementation.
-- Request completion resolver that updates affected `charge_definitions`.
+- Request completion resolver that writes `provider_profile_id` onto linked `charge_definitions` rows in place, keeping `provider_request_id` as a breadcrumb.
 - Provider-request file upload handling for bills that become `provider_test_bills`.
 - A `provider_test_bills.provider_request_id` link so uploaded example bills can be tied directly to the request that generated them.
 
 ### Create Property Plan Should Own
 
-- Final transaction that writes expense `charge_definitions`.
+- Designing the rent + contract data model (rent table, contract table, storage bucket layout) — these are not specified by this guidepost.
+- Final transaction that writes the property, units, rent, tenants/invites, contract metadata, and expense `charge_definitions` together.
 - Mapping checkout expense rows to canonical expense inputs.
-- Linking selected `provider_id`, `provider_profile_id`, or `provider_request_id`.
-- Creating or linking `provider_requests` from checkout draft missing-provider state.
-- Creating `provider_request_properties` rows for the newly-created property.
+- Linking each expense to either `provider_profile_id` or `provider_request_id` (or marking it as bundled), per the 3-state constraint.
+- Creating or linking `provider_requests` from checkout draft missing-provider state, deduping when multiple expense rows in the same draft point at the same missing provider.
+- Moving the contract draft file from its temp location into the permanent storage bucket and linking it to the new contract row.
 - Uploading/linking provider-request bills to `provider_test_bills` after the property exists.
-- Ensuring no rent rows are inserted into `charge_definitions`.
+- Ensuring no rent rows are inserted into `charge_definitions` (rent lives in the rent table).
+- Server action shape: return the created summary payload (property id, name, unit/expense counts, anything the success screen renders) so the UI does not need a follow-up fetch.
+- IndexedDB cleanup of the wizard's persisted draft on success.
+- Success screen rendering and the redirect-to-home behavior when a stale draft URL is revisited after success.
+- Visual treatment of skipped sections in the review/summary step.
+- Cleanup/retry behavior for storage uploads that succeeded while the DB transaction failed (or vice versa).
 
-The create-property flow should be implemented as a Postgres RPC/function so property, unit, rent, tenant invites, expense charge definitions, provider request links, and related join rows are written transactionally. Storage uploads remain outside the database transaction, so the implementation plan must define cleanup/retry behavior for uploaded contract files and provider-request bills.
+The create-property DB writes should run inside a single Postgres RPC/function so property, units, rent, tenant invites, contract row, expense charge definitions, and provider request links commit transactionally. Storage uploads (contract file, provider-request bills) remain outside the DB transaction.
 
 ### Out Of Scope For This Guidepost
 
@@ -388,3 +399,6 @@ The create-property flow should be implemented as a Postgres RPC/function so pro
 - Payment matching implementation.
 - Monthly ledger implementation.
 - Tenant/landlord notification flows when a requested provider becomes supported.
+- The completion-resolver mechanics (function shape, audit logging, error handling) — owned by the provider-request plan.
+- The rent + contract table designs and contract storage layout — owned by the create-property plan.
+- The visual treatment of skipped sections in the review/summary UI — owned by the create-property plan.
