@@ -58,7 +58,7 @@ MUST use semantic tokens from `src/app/globals.css`. NEVER hardcode Tailwind col
 
 - **Radius tokens:** pills `rounded-full`; controls/inputs `rounded-2xl`; cards `rounded-card` (`--radius-card: 1.25rem`); sheets `rounded-3xl`. Base `--radius: 1rem`.
 - **Borders:** subtle, low-contrast via `border-border`. Don't stack border + shadow + tint.
-- **Shadows:** use `shadow-card` / `shadow-card-hover` tokens on cards. No heavy drop shadows. Dark mode neutralizes both to border-only chrome.
+- **Shadows:** use `shadow-card` / `shadow-card-hover` tokens on cards, `shadow-popover` on popovers (dropdown menus, date pickers, combobox). No heavy drop shadows. Dark mode neutralizes the card pair to border-only chrome.
 
 ## Status Design
 

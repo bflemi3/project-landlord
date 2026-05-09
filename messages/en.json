@@ -158,6 +158,7 @@
     "dueDay": "Day rent is due",
     "startDate": "Contract start",
     "endDate": "Contract end",
+    "summaryDueDay": "day {day}",
     "invalidAmount": "Enter a valid amount.",
     "tooLarge": "Amount is too large.",
     "invalidCurrency": "Choose a supported currency.",
@@ -451,7 +452,54 @@
       "expenses": {
         "title": "Expenses",
         "subtitle": "Utilities, condo fees, and who pays them.",
-        "placeholder": "Expenses form coming soon."
+        "addExpense": "Add expense",
+        "newExpense": "New expense",
+        "removeAriaLabel": "Remove expense",
+        "remove": "Remove",
+        "summaryNeedsAttention": "Needs attention",
+        "summaryAndMore": "+{count} more",
+        "typeLabel": "Expense type",
+        "moreOptions": "More options",
+        "amountLabel": "Expected amount",
+        "amountLabelFixed": "Monthly amount",
+        "amountHelperFixed": "How much you pay each month.",
+        "amountHelperVariable": "Optional — we'll fill it in from your bills.",
+        "amountHelperUnknown": "Optional — we'll learn the pattern as bills come in.",
+        "typeRequired": "Pick an expense type.",
+        "invalidAmount": "Enter a valid amount.",
+        "tooLarge": "Amount is too large.",
+        "typeOptions": {
+          "electricity": "Electricity",
+          "water": "Water",
+          "gas": "Gas",
+          "internet": "Internet",
+          "condo": "Condo",
+          "trash": "Trash",
+          "sewer": "Sewer",
+          "cable": "Cable",
+          "insurance": "Insurance",
+          "maintenance": "Maintenance",
+          "other": "Other"
+        },
+        "amountBehavior": {
+          "fixedLabel": "Fixed amount",
+          "fixedTrigger": "Same amount each month",
+          "fixedDescription": "Same amount each month — internet, condo, insurance.",
+          "variableLabel": "Variable amount",
+          "variableTrigger": "Tracked from each bill",
+          "variableDescription": "Amount comes from the bill — utilities like electricity, water, gas.",
+          "unknownLabel": "Not sure",
+          "unknownTrigger": "We'll detect it from your bills",
+          "unknownDescription": "We'll learn the pattern as bills come in.",
+          "changeAriaLabel": "Change amount behavior"
+        },
+        "emptyState": {
+          "title": "Track every recurring charge",
+          "leadIn": "Add every recurring charge for this property — even ones your tenant pays. mabenn will:",
+          "bulletTracking": "Watch for utility, condo, and other bills automatically",
+          "bulletPayments": "Match incoming payments to the right charge",
+          "bulletResponsibility": "Figure out who pays what once bills start coming in"
+        }
       },
       "tax-id": {
         "title": "Tax ID",
@@ -481,7 +529,8 @@
       },
       "summary": {
         "title": "Property setup",
-        "remaining": "{count} of {total} sections remaining"
+        "remaining": "{count} of {total} sections remaining",
+        "needsAttention": "Needs attention"
       },
       "cta": {
         "create": "Create property",
@@ -496,7 +545,8 @@
       "status": {
         "done": "Done",
         "skipped": "Skipped",
-        "upNext": "Up next"
+        "upNext": "Up next",
+        "needsAttention": "Needs attention"
       },
       "extractionLegend": "Auto-filled from your contract"
     },

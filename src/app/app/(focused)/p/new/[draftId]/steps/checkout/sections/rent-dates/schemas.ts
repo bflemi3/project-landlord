@@ -6,7 +6,7 @@ import {
   type SupportedCurrency,
 } from '@/data/shared/currency'
 
-import type { CheckoutPath } from './registry'
+import type { CheckoutPath } from '../../../../state/registry'
 
 export interface RentDatesInput {
   amount_minor: number | undefined
@@ -75,14 +75,21 @@ function refineEndAfterStart(
 // start_date + end_date required (the form gates Continue on schema validity,
 // so the user must fill them before advancing). The no-contract path keeps
 // every field optional so a partial / empty section still parses.
+//
+// The inner shapes are pulled out as named consts so RENT_DATES_FIELD_NAMES
+// can derive from them — single source of truth for the field list, since
+// the exported schemas have `.superRefine().transform()` chained and don't
+// expose `.shape` directly.
+const rentDatesContractShape = {
+  amount_minor: amountMinorInner,
+  currency: currencyField,
+  due_day: dueDayInner,
+  start_date: startDateInner,
+  end_date: endDateInner,
+}
+
 export const rentDatesContractSchema: z.ZodType<RentDatesInput> = z
-  .object({
-    amount_minor: amountMinorInner,
-    currency: currencyField,
-    due_day: dueDayInner,
-    start_date: startDateInner,
-    end_date: endDateInner,
-  })
+  .object(rentDatesContractShape)
   .superRefine(refineEndAfterStart)
   .transform((data) => ({ ...defaultRentDatesInput(), ...data }))
 
@@ -96,6 +103,13 @@ export const rentDatesNoContractSchema: z.ZodType<RentDatesInput> = z
   })
   .superRefine(refineEndAfterStart)
   .transform((data) => ({ ...defaultRentDatesInput(), ...data }))
+
+/** Field names derived from the schema's shape — single source of truth
+ *  for the rent-dates section's touched logic. The contract and no-contract
+ *  schemas have the same keys; this is taken from the contract shape. */
+export const RENT_DATES_FIELD_NAMES = Object.keys(
+  rentDatesContractShape,
+) as readonly (keyof RentDatesInput)[]
 
 /**
  * Picks the right schema for the current wizard path. Defaults to the

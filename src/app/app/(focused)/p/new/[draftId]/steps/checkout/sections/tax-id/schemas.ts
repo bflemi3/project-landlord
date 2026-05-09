@@ -51,6 +51,12 @@ export function getTaxIdInputSchema(countryCode = 'BR') {
 
 export type TaxIdInput = z.infer<typeof taxIdInputSchema>
 
+/** Field names derived from the schema's shape — single source of truth
+ *  for the tax-id section's touched logic. */
+export const TAX_ID_INPUT_FIELD_NAMES = Object.keys(
+  taxIdInputBaseSchema.shape,
+) as readonly (keyof TaxIdInput)[]
+
 export function defaultTaxIdInput(): TaxIdInput {
   return { tax_id: '' }
 }

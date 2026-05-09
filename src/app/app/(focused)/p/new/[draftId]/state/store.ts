@@ -5,6 +5,7 @@ import {
   propertyCreationWizardKey,
   type SectionStatus,
 } from './persistence'
+import { defaultSectionTouched } from './section-defaults'
 import { createIdbStorage } from './idb-storage'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 import {
@@ -20,11 +21,10 @@ import {
 } from './extraction-seeding'
 import { fetchProfile } from '@/data/profiles/shared'
 import { createClient } from '@/lib/supabase/client'
-import type { TaxIdInput } from './tax-id-schema'
+import type { TaxIdInput } from '../steps/checkout/sections/tax-id/schemas'
+import type { TenantRow } from '../steps/checkout/sections/tenants/schemas'
 
-// ---------------------------------------------------------------------------
 // Types
-// ---------------------------------------------------------------------------
 
 type UpdaterOrValue<T> = T | ((prev: T) => T)
 
@@ -35,10 +35,19 @@ const EXTRACTION_SEEDED_SECTION_IDS = [
 ] as const satisfies readonly SectionId[]
 
 /** On the store (not local) so it survives the section's collapse/expand
- *  cycle — base-ui unmounts panel content when collapsed. Not persisted. */
+ *  cycle — base-ui unmounts panel content when collapsed. Persisted so
+ *  resumed drafts remember which row the user was editing. Single-active
+ *  semantics: at most one row open at a time. After extraction, seeded
+ *  to the first tenant's id so the user lands on an open row. */
 export interface TenantsListUI {
-  mode: 'all-expanded' | 'single-active'
   activeTenantId: string | null
+}
+
+/** Same rationale as TenantsListUI — survives section collapse/expand. The
+ *  expenses list uses a controlled accordion: only one row open at a time,
+ *  and adding a row makes the new id active. Persisted alongside the slice. */
+export interface ExpensesListUI {
+  activeExpenseId: string | null
 }
 
 export interface PropertyCreationStateShape {
@@ -51,7 +60,19 @@ export interface PropertyCreationStateShape {
   sectionStates: Record<SectionId, SectionStatus>
   activeSectionId: SectionId | null
   sectionData: Partial<Record<SectionId, unknown>>
+  /** Per-section touched state. Each section defines its own shape (single-
+   *  form sections use `Set<string>` of field names; row sections use
+   *  `Record<rowId, Set<fieldName>>`). The store doesn't know the shape — it
+   *  just dispatches updaters via `setTouched(sectionId, updater)`, where
+   *  the updater receives only that section's touched state. */
+  sectionTouched: Partial<Record<SectionId, unknown>>
+  /** Sections the user has opened at least once. Validity surfaces (badges,
+   *  summary card dot, progress bars) stay quiet until a section is in this
+   *  set, so an extracted-invalid row in an unvisited section doesn't yell
+   *  on Step 2 landing. */
+  visitedSectionIds: ReadonlySet<SectionId>
   tenantsListUI: TenantsListUI
+  expensesListUI: ExpensesListUI
 }
 
 export interface PropertyCreationActions {
@@ -79,6 +100,21 @@ export interface PropertyCreationActions {
       | Partial<TenantsListUI>
       | ((prev: TenantsListUI) => Partial<TenantsListUI>),
   ) => void
+  setExpensesListUI: (
+    next:
+      | Partial<ExpensesListUI>
+      | ((prev: ExpensesListUI) => Partial<ExpensesListUI>),
+  ) => void
+  /** Updates a section's touched state via an opaque updater. The updater
+   * receives only that section's touched value — the store never inspects
+   * its shape. Each section's UI files own how to construct updaters
+   * (a form blur appends a field name; a list collapse marks every field
+   * for a row; section-visit/leave promote everything via the section's
+   * `setAllTouched` helper). */
+  setTouched: <T>(id: SectionId, updater: (prev: T) => T) => void
+  /** Marks the given section as visited. Called the first time a section
+   * becomes active — promotes section-level validity surfaces. */
+  markSectionVisited: (id: SectionId) => void
   /** Wipes this draft's persisted IDB record. Called from the wizard's exit
    * flow (no-work close, explicit discard from the exit prompt) so abandoned
    * drafts don't accumulate. The "Save for later" branch deliberately does
@@ -90,16 +126,12 @@ export interface PropertyCreationStoreValue extends PropertyCreationStateShape {
   actions: PropertyCreationActions
 }
 
-// Excludes `actions` (functions don't survive structured clone) and
-// `tenantsListUI` (transient UI; resets to defaults on resume).
-export type PersistedPropertyCreationState = Omit<
-  PropertyCreationStateShape,
-  'tenantsListUI'
->
+// Excludes `actions` (functions don't survive structured clone). The
+// `*ListUI` slices ARE persisted now so resumed drafts remember which rows
+// the user has already acknowledged — `Set` survives IDB structured clone.
+export type PersistedPropertyCreationState = PropertyCreationStateShape
 
-// ---------------------------------------------------------------------------
 // Defaults
-// ---------------------------------------------------------------------------
 
 function initialSectionStates(): Record<SectionId, SectionStatus> {
   const acc = {} as Record<SectionId, SectionStatus>
@@ -110,7 +142,11 @@ function initialSectionStates(): Record<SectionId, SectionStatus> {
 }
 
 function defaultTenantsListUI(): TenantsListUI {
-  return { mode: 'all-expanded', activeTenantId: null }
+  return { activeTenantId: null }
+}
+
+function defaultExpensesListUI(): ExpensesListUI {
+  return { activeExpenseId: null }
 }
 
 function defaultState(): PropertyCreationStateShape {
@@ -128,13 +164,14 @@ function defaultState(): PropertyCreationStateShape {
     // typed cast and never need a `??` fallback. `mergeExtractionIntoSectionData`
     // and `setSectionData` both rely on this invariant.
     sectionData: defaultSectionData(),
+    sectionTouched: defaultSectionTouched(),
+    visitedSectionIds: new Set(),
     tenantsListUI: defaultTenantsListUI(),
+    expensesListUI: defaultExpensesListUI(),
   }
 }
 
-// ---------------------------------------------------------------------------
 // Pure section-state helpers
-// ---------------------------------------------------------------------------
 
 // Given a current section and the latest status map, return the next section
 // that is still `upcoming`. Searches forward first, then wraps. Returns null
@@ -195,6 +232,15 @@ async function seedTaxIdFromProfileIfMissing(
   }
 }
 
+// Coerce a possibly-undefined / possibly-array persisted value into a Set.
+// Structured clone hands back a Set as-is; older payloads may be missing the
+// field or have stored an array. The branch keeps merge tolerant.
+function toSectionIdSet(value: unknown): ReadonlySet<SectionId> {
+  if (value instanceof Set) return value as Set<SectionId>
+  if (Array.isArray(value)) return new Set(value as SectionId[])
+  return new Set()
+}
+
 function backfillMissingExtractionSections(
   baseSectionData: PropertyCreationStateShape['sectionData'],
   persisted: Partial<PersistedPropertyCreationState>,
@@ -222,9 +268,7 @@ function backfillMissingExtractionSections(
   )
 }
 
-// ---------------------------------------------------------------------------
 // Persist options
-// ---------------------------------------------------------------------------
 
 function buildPersistOptions(
   draftId: string,
@@ -249,6 +293,10 @@ function buildPersistOptions(
       sectionStates: state.sectionStates,
       activeSectionId: state.activeSectionId,
       sectionData: state.sectionData,
+      sectionTouched: state.sectionTouched,
+      visitedSectionIds: state.visitedSectionIds,
+      tenantsListUI: state.tenantsListUI,
+      expensesListUI: state.expensesListUI,
     }),
     merge: (persistedStateUnknown, currentState) => {
       // Persist v5 calls `merge` on every hydration — including the
@@ -306,6 +354,25 @@ function buildPersistOptions(
       const sectionStates = persisted.sectionStates ?? initialSectionStates()
       const activeSectionId = persisted.activeSectionId ?? FIRST_SECTION_ID
 
+      // Sets pass through structured clone unchanged. Defensively coerce
+      // visitedSectionIds (older payloads or arrays from migration).
+      const visitedSectionIds = toSectionIdSet(persisted.visitedSectionIds)
+      const tenantsListUI: TenantsListUI = {
+        ...defaultTenantsListUI(),
+        ...persisted.tenantsListUI,
+      }
+      const expensesListUI: ExpensesListUI = {
+        ...defaultExpensesListUI(),
+        ...persisted.expensesListUI,
+      }
+      // Per-section touched: each section's own shape is whatever it
+      // returned from `defaultTouched()`. If the persisted blob is missing
+      // an entry (older payload), fall back to that section's default.
+      const sectionTouched: Partial<Record<SectionId, unknown>> = {
+        ...defaultSectionTouched(),
+        ...(persisted.sectionTouched ?? {}),
+      }
+
       return {
         ...currentState,
         step: resumeMidExtraction ? 1 : (persisted.step ?? currentState.step),
@@ -317,6 +384,10 @@ function buildPersistOptions(
         sectionStates,
         activeSectionId,
         sectionData,
+        sectionTouched,
+        visitedSectionIds,
+        tenantsListUI,
+        expensesListUI,
       }
     },
     migrate: (persistedState) => {
@@ -340,9 +411,7 @@ function buildPersistOptions(
   }
 }
 
-// ---------------------------------------------------------------------------
 // Store factory
-// ---------------------------------------------------------------------------
 
 /**
  * Creates a fresh wizard store keyed on `draftId`. Each call returns a new
@@ -416,15 +485,27 @@ export function createPropertyCreationStore(draftId: string) {
                 : switchingAwayFromContract
                   ? defaultSectionData()
                   : state.sectionData
-            // Stale activeTenantId would point at a row from the prior path.
-            const tenantsListUI = switchingAwayFromContract
+            // Seed `activeTenantId` to the first extracted tenant on a fresh
+            // contract extraction so the user lands on an open row. Switching
+            // away from contract resets — stale ids would point at a row from
+            // the prior path.
+            const tenantsListUI: TenantsListUI = switchingAwayFromContract
               ? defaultTenantsListUI()
-              : state.tenantsListUI
+              : next.extractionResult !== null && next.path === 'contract'
+                ? {
+                    activeTenantId:
+                      (sectionData.tenants as TenantRow[])[0]?.id ?? null,
+                  }
+                : state.tenantsListUI
+            const expensesListUI = switchingAwayFromContract
+              ? defaultExpensesListUI()
+              : state.expensesListUI
             set({
               extractionResult: next.extractionResult,
               path: next.path,
               sectionData,
               tenantsListUI,
+              expensesListUI,
             })
           },
 
@@ -503,6 +584,38 @@ export function createPropertyCreationStore(draftId: string) {
             set({
               tenantsListUI: { ...state.tenantsListUI, ...partial },
             })
+          },
+
+          setExpensesListUI: (nextOrUpdater) => {
+            const state = get()
+            const partial =
+              typeof nextOrUpdater === 'function'
+                ? nextOrUpdater(state.expensesListUI)
+                : nextOrUpdater
+            set({
+              expensesListUI: { ...state.expensesListUI, ...partial },
+            })
+          },
+
+          setTouched: (id, updater) => {
+            const state = get()
+            const prev = state.sectionTouched[id]
+            const next = updater(prev as never)
+            if (next === prev) return
+            set({
+              sectionTouched: {
+                ...state.sectionTouched,
+                [id]: next,
+              },
+            })
+          },
+
+          markSectionVisited: (id) => {
+            const state = get()
+            if (state.visitedSectionIds.has(id)) return
+            const next = new Set(state.visitedSectionIds)
+            next.add(id)
+            set({ visitedSectionIds: next })
           },
 
           clearPersisted: () => {

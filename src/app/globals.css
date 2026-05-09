@@ -151,6 +151,7 @@ html, body {
   --color-primary-subtle-foreground: var(--primary-subtle-foreground);
   --shadow-card: var(--shadow-card);
   --shadow-card-hover: var(--shadow-card-hover);
+  --shadow-popover: var(--shadow-popover);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -218,6 +219,9 @@ html, body {
   /* Editorial card shadow — soft diffused, no visible hard edge */
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.035), 0 8px 24px -12px oklch(0 0 0 / 0.06);
   --shadow-card-hover: 0 2px 4px oklch(0 0 0 / 0.05), 0 12px 32px -12px oklch(0 0 0 / 0.09);
+  /* Popover / dropdown / floating overlay elevation — stronger than card so
+     menus that float above page content read as elevated. */
+  --shadow-popover: 0 4px 12px oklch(0 0 0 / 0.08), 0 16px 40px -8px oklch(0 0 0 / 0.16);
   /* chart colors — teal/emerald spectrum */
   --chart-1: oklch(0.704 0.14 182.503);
   --chart-2: oklch(0.6 0.118 184.704);
@@ -294,6 +298,10 @@ html, body {
   /* Dark mode — no card shadow, rely on border */
   --shadow-card: none;
   --shadow-card-hover: none;
+  /* Dark mode shadows are barely visible against dark surfaces. Pair the
+     popover shadow with a subtle ring on consumers (`ring-foreground/10`)
+     so the overlay still reads as elevated. */
+  --shadow-popover: 0 4px 12px oklch(0 0 0 / 0.40), 0 16px 40px -8px oklch(0 0 0 / 0.50);
   /* chart colors */
   --chart-1: oklch(0.777 0.152 181.912);
   --chart-2: oklch(0.704 0.14 182.503);

@@ -11,7 +11,7 @@ import type { CheckoutPath } from '../registry'
 import {
   rentDatesSchemaFor,
   type RentDatesInput,
-} from '../rent-dates-schema'
+} from '../../steps/checkout/sections/rent-dates/schemas'
 
 export type ValidateRentDatesState = ValidateState<RentDatesInput>
 

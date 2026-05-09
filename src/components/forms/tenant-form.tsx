@@ -1,14 +1,11 @@
 'use client'
 
 import * as React from 'react'
-import { X } from 'lucide-react'
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { getInitials } from '@/lib/initials'
-import { cn } from '@/lib/utils'
 
 // =============================================================================
 // Avatar — initials derived from name, email as fallback when name is empty
@@ -110,36 +107,6 @@ function TenantFormInviteToggle({
 }
 
 // =============================================================================
-// Remove button — ghost icon button with destructive hover
-// =============================================================================
-
-type TenantFormRemoveButtonProps = Omit<
-  React.ComponentProps<typeof Button>,
-  'children' | 'variant' | 'size'
->
-
-function TenantFormRemoveButton({
-  className,
-  ...props
-}: TenantFormRemoveButtonProps) {
-  return (
-    <Button
-      type="button"
-      variant="ghost"
-      size="icon"
-      data-slot="tenant-form-remove-button"
-      className={cn(
-        'text-muted-foreground hover:text-destructive',
-        className,
-      )}
-      {...props}
-    >
-      <X />
-    </Button>
-  )
-}
-
-// =============================================================================
 // Exports
 // =============================================================================
 
@@ -148,5 +115,4 @@ export {
   TenantFormName,
   TenantFormEmail,
   TenantFormInviteToggle,
-  TenantFormRemoveButton,
 }

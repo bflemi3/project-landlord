@@ -9,7 +9,7 @@ function EmptyState({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="empty-state"
       className={cn(
-        'flex flex-col items-center justify-center py-16 text-center',
+        'flex flex-col items-center justify-center gap-4 py-16 text-center',
         className,
       )}
       {...props}
@@ -32,7 +32,7 @@ function EmptyStateIcon({
       size="lg"
       shape="circle"
       tone={tone}
-      className={cn('mb-5', className)}
+      className={className}
       {...props}
     >
       {children}
@@ -58,7 +58,7 @@ function EmptyStateDescription({ className, ...props }: React.ComponentProps<'p'
     <p
       data-slot="empty-state-description"
       className={cn(
-        'mt-1 max-w-sm text-sm leading-relaxed text-muted-foreground',
+        'max-w-sm text-sm leading-relaxed text-muted-foreground',
         className,
       )}
       {...props}
@@ -70,7 +70,7 @@ function EmptyStateActions({ className, ...props }: React.ComponentProps<'div'>)
   return (
     <div
       data-slot="empty-state-actions"
-      className={cn('mt-6 flex items-center justify-center gap-3', className)}
+      className={cn('flex items-center justify-center gap-2', className)}
       {...props}
     />
   )

@@ -107,7 +107,7 @@ export function PropertyCheckoutShell() {
 
   return (
     <CheckoutContextProvider value={checkoutContext}>
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto [overflow-anchor:none] [scrollbar-gutter:stable]">
         <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
           <DetailPageLayoutBody className="mt-8">
             <DetailPageLayoutMain>

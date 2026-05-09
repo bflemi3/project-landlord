@@ -147,7 +147,10 @@ function WizardShellSteps({ className, children, ...props }: React.ComponentProp
   return (
     <div
       data-slot="wizard-shell-steps"
-      className={cn('min-h-0 flex-1 overflow-y-auto', className)}
+      className={cn(
+        'min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]',
+        className,
+      )}
       {...props}
     >
       {firstStepOnly ? (

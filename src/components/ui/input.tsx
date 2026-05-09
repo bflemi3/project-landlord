@@ -21,8 +21,13 @@ const inputVariants = cva(
       // parent surface — `card` for inputs nested inside a `bg-card` surface
       // (the common case: section cards, sheets, dialogs); `page` for inputs
       // sitting directly on `bg-background`.
+      //
+      // Dark mode: `muted` and `input` collapse to the same lightness (both
+      // 0.268) and sit only 0.052 above `card` — so the default warm-stone
+      // tokens make the input nearly invisible against a card parent. Tint
+      // both bg and border with `foreground/N` to lift past that ceiling.
       variant: {
-        card: 'bg-muted',
+        card: 'bg-muted dark:bg-foreground/5 dark:border-foreground/15',
         page: 'bg-transparent dark:bg-input/30',
       },
     },

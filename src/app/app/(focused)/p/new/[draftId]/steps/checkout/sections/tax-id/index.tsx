@@ -2,9 +2,17 @@
 
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Check, CreditCard } from 'lucide-react'
+import { CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 
+import {
+  ExplainerCard,
+  ExplainerCardAction,
+  ExplainerCardContent,
+  ExplainerCardList,
+  ExplainerCardListItem,
+  ExplainerCardTitle,
+} from '@/components/explainer-card'
 import {
   Field,
   FieldDescription,
@@ -13,31 +21,24 @@ import {
 } from '@/components/ui/field'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TaxIdInput, TaxIdLabel } from '@/components/ui/tax-id'
-import {
-  useFormValidation,
-  zodValidator,
-} from '@/lib/forms/use-form-validation'
 import { detectTaxIdKindBR } from '@/lib/tax-id/br'
 
-import type { PropertyInput } from '../../../state/extraction-seeding'
-import type { SectionId } from '../../../state/registry'
+import type { PropertyInput } from '@/schemas/property'
+
+import type { SectionId } from '../../../../state/registry'
+import { type TaxIdInput as TaxIdSectionInput } from './schemas'
+import { setAllTouched, type TaxIdSectionTouched } from './state'
+import { validateTaxId as validateTaxIdParse } from './validation'
 import {
-  getTaxIdInputSchema,
-  type TaxIdInput as TaxIdSectionInput,
-} from '../../../state/tax-id-schema'
-import {
-  useIsSectionActive,
-  useIsSectionUpNext,
   usePropertyCreationActions,
   usePropertyCreationHasHydrated,
   usePropertyCreationState,
-  useSectionStatus,
-} from '../../../state/use-property-creation'
-import { useCheckoutContext } from '../checkout-context'
-import { Section } from '../section'
-import { useSectionController } from '../use-section-controller'
-import { SectionSkeleton } from './section-skeleton'
-import { SummaryRow } from './summary-row'
+} from '../../../../state/use-property-creation'
+import { useCheckoutContext } from '../../checkout-context'
+import { Section } from '../../section'
+import { SectionSkeleton } from '../section-skeleton'
+import { SummaryRow } from '../summary-row'
+import { useWizardForm } from '../../../../state/use-wizard-form'
 
 const SECTION_ID: SectionId = 'tax-id'
 const ICON = CreditCard
@@ -59,11 +60,7 @@ export function TaxIdSection() {
   const t = useTranslations('propertyCreation.checkout')
   const tTaxId = useTranslations('propertyCreation.checkout.tax-id')
   const { registerHeaderRef } = useCheckoutContext()
-  // Section primitive props read directly so the outer doesn't carry the
-  // controller's handler state (which only the body needs for Section.Actions).
-  const status = useSectionStatus(SECTION_ID)
-  const isActive = useIsSectionActive(SECTION_ID)
-  const isUpNext = useIsSectionUpNext(SECTION_ID)
+  const { setTouched } = usePropertyCreationActions()
   // Gate the form on persist hydration so the form's `useState` initializer
   // (which derives initial mode from slice value) sees the truth, not the
   // pre-hydration default.
@@ -74,10 +71,18 @@ export function TaxIdSection() {
   const countryCode = usePropertyCreationState(
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
-  const summary = formatTaxIdSummary(taxIdValue, countryCode)
+  const summary = useMemo(() => formatTaxIdSummary(taxIdValue, countryCode), [taxIdValue, countryCode])
+
+  const promoteAllTouched = useCallback(() => {
+    setTouched<TaxIdSectionTouched>(SECTION_ID, (prev) => setAllTouched(prev))
+  }, [setTouched])
 
   return (
-    <Section id={SECTION_ID} isActive={isActive} isUpNext={isUpNext} status={status}>
+    <Section
+      id={SECTION_ID}
+      onFirstVisit={promoteAllTouched}
+      onLeave={promoteAllTouched}
+    >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
           <ICON />
@@ -89,6 +94,7 @@ export function TaxIdSection() {
         </Section.HeaderContent>
         <Section.Status
           doneLabel={t('status.done')}
+          needsAttentionLabel={t('status.needsAttention')}
           skippedLabel={t('status.skipped')}
           upNextLabel={t('status.upNext')}
         />
@@ -107,7 +113,6 @@ function TaxIdFormFallback() {
 function TaxIdForm() {
   const t = useTranslations('propertyCreation.checkout')
   const tTaxId = useTranslations('propertyCreation.checkout.tax-id')
-  const ctrl = useSectionController(SECTION_ID)
   const { setSectionData } = usePropertyCreationActions()
   const values = usePropertyCreationState(
     (s) => s.sectionData['tax-id'] as TaxIdSectionInput,
@@ -116,12 +121,21 @@ function TaxIdForm() {
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
 
-  const validator = useMemo(
-    () => zodValidator(getTaxIdInputSchema(countryCode)),
-    [countryCode],
+  const touched = usePropertyCreationState(
+    (s) => s.sectionTouched['tax-id'] as TaxIdSectionTouched,
   )
-  const form = useFormValidation({ values, validator })
-  const { markTouched } = form
+  // Cached parse — shared with section status and summary panel.
+  const parseResult = usePropertyCreationState((s) =>
+    validateTaxIdParse(
+      s.sectionData['tax-id'] as TaxIdSectionInput,
+      (s.sectionData.property as PropertyInput).country_code,
+    ),
+  )
+  const { errors, isValid, setTouched } = useWizardForm({
+    sectionId: 'tax-id',
+    parseResult,
+    touched,
+  })
 
   // Mode is decided once per mount from the hydrated slice value. Mounting
   // empty → editable for the lifetime of this open; mounting with a value →
@@ -139,11 +153,21 @@ function TaxIdForm() {
     [setSectionData],
   )
 
+  const touchTaxId = useCallback(() => {
+    setTouched<TaxIdSectionTouched>((prev) => {
+      if (prev.has('tax_id')) return prev
+      const next = new Set(prev)
+      next.add('tax_id')
+      return next
+    })
+  }, [setTouched])
+
   const handleChangeIt = useCallback(() => setIsEditing(true), [])
 
   const inputId = 'tax-id-input'
-  const taxIdError = form.errors.tax_id?.[0]
-  const hasError = form.hasError('tax_id')
+  // `errors` is already touch-gated by the hook — read the field directly.
+  const taxIdError = errors.tax_id?.[0]
+  const hasError = Boolean(taxIdError)
 
   return (
     <>
@@ -167,7 +191,7 @@ function TaxIdForm() {
               hasError ? `${inputId}-error` : `${inputId}-description`
             }
             onValueChange={setTaxId}
-            onBlur={() => markTouched('tax_id')}
+            onBlur={touchTaxId}
           />
           {/* Description slot is always rendered with single-line text in both
               modes, so toggling read↔edit doesn't shift the surrounding layout. */}
@@ -197,12 +221,8 @@ function TaxIdForm() {
       <Section.Actions
         backLabel={t('actions.back')}
         continueLabel={t('actions.continue')}
-        continueDisabled={!form.isValid}
+        continueDisabled={!isValid}
         skipLabel={t('actions.skip')}
-        showSkip={!ctrl.isRequired}
-        onBack={ctrl.handleBack}
-        onContinue={ctrl.handleContinue}
-        onSkip={ctrl.handleSkip}
       />
     </>
   )
@@ -219,33 +239,25 @@ function WhyWeAskBlock({ countryCode }: { countryCode: string }) {
   }, [t])
 
   return (
-    <section
-      data-slot="why-we-ask"
-      className="bg-muted/40 flex flex-col gap-3 rounded-2xl p-4 md:p-5"
-    >
-      <h4 className="text-foreground font-semibold">{t('title')}</h4>
-      <ul className="text-foreground flex flex-col gap-2 text-sm">
-        <li className="flex items-start gap-2">
-          <Check aria-hidden className="text-primary mt-0.5 size-4 shrink-0" />
-          <span>{t(trackingKey)}</span>
-        </li>
-        <li className="flex items-start gap-2">
-          <Check aria-hidden className="text-primary mt-0.5 size-4 shrink-0" />
-          <span>{t('bulletRouting')}</span>
-        </li>
-        <li className="flex items-start gap-2">
-          <Check aria-hidden className="text-primary mt-0.5 size-4 shrink-0" />
-          <span>{t('bulletDocuments')}</span>
-        </li>
-      </ul>
-      <button
-        type="button"
-        onClick={handlePrivacyClick}
-        className="text-primary hover:text-primary/80 self-start text-sm underline-offset-2 hover:underline"
-      >
-        {t('privacyLink')}
-      </button>
-    </section>
+    <ExplainerCard>
+      <ExplainerCardTitle>{t('title')}</ExplainerCardTitle>
+      <ExplainerCardContent>
+        <ExplainerCardList>
+          <ExplainerCardListItem>{t(trackingKey)}</ExplainerCardListItem>
+          <ExplainerCardListItem>{t('bulletRouting')}</ExplainerCardListItem>
+          <ExplainerCardListItem>{t('bulletDocuments')}</ExplainerCardListItem>
+        </ExplainerCardList>
+      </ExplainerCardContent>
+      <ExplainerCardAction>
+        <button
+          type="button"
+          onClick={handlePrivacyClick}
+          className="text-primary hover:text-primary/80 text-sm underline-offset-2 hover:underline"
+        >
+          {t('privacyLink')}
+        </button>
+      </ExplainerCardAction>
+    </ExplainerCard>
   )
 }
 

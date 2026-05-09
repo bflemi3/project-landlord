@@ -120,6 +120,13 @@ export const propertyInputFormDataSchema = getPropertyInputFormDataSchema('BR')
 
 export type PropertyInput = z.infer<typeof propertyInputSchema>
 
+/** Field names derived from the BR variant — single source of truth for
+ *  the property section's touched logic. Country-specific address schemas
+ *  share the same key set, so the BR shape is canonical. */
+export const PROPERTY_INPUT_FIELD_NAMES = Object.keys(
+  propertyInputSchema.shape,
+) as readonly (keyof PropertyInput)[]
+
 export function defaultPropertyInput(): PropertyInput {
   return {
     name: '',

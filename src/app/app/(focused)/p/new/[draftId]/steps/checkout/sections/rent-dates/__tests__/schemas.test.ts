@@ -5,7 +5,7 @@ import {
   rentDatesContractSchema,
   rentDatesNoContractSchema,
   rentDatesSchemaFor,
-} from '../rent-dates-schema'
+} from '../schemas'
 
 describe('defaultRentDatesInput', () => {
   it('returns the canonical blank rent-dates slice with default due_day=5 and undefined dates', () => {
@@ -35,12 +35,10 @@ describe('rentDatesSchemaFor', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
 // rentDatesNoContractSchema — structural validation (rules that apply on both
 // paths: range, integer-ness, currency enum). Tested here because the no-
 // contract schema lets us hit individual fields in isolation without the
 // noise of "and these other fields are also required".
-// ---------------------------------------------------------------------------
 
 describe('rentDatesNoContractSchema — structural validation', () => {
   it('accepts a blank slice and fills defaults', () => {
@@ -163,12 +161,10 @@ describe('rentDatesNoContractSchema — structural validation', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
 // rentDatesContractSchema — required-field enforcement. The contract path
 // promotes amount_minor + due_day from optional to required so the form's
 // `continueDisabled={!form.isValid}` gate fires when the user hasn't filled
 // them in. Structural rules still apply on top.
-// ---------------------------------------------------------------------------
 
 describe('rentDatesContractSchema — required-field enforcement', () => {
   it('rejects a missing amount_minor with "required"', () => {
@@ -273,10 +269,8 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
   })
 })
 
-// ---------------------------------------------------------------------------
 // Cross-field rule: end_date must be ≥ start_date when BOTH are present.
 // Same superRefine on both schemas, so the suite parameterizes over them.
-// ---------------------------------------------------------------------------
 
 describe.each([
   ['rentDatesContractSchema', rentDatesContractSchema],

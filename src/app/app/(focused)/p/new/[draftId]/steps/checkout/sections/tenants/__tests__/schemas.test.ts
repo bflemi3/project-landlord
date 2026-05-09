@@ -5,7 +5,7 @@ import {
   getTenantRowSchema,
   tenantRowFromContractParty,
   tenantRowSchema,
-} from '../tenant-row-schema'
+} from '../schemas'
 
 function valid(overrides: Record<string, unknown> = {}) {
   return {

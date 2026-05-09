@@ -8,6 +8,7 @@ export type StepProgressSegmentState =
   | 'active'
   | 'upcoming'
   | 'skipped'
+  | 'invalid'
 
 interface StepProgressCurrentProps {
   current: number
@@ -34,20 +35,22 @@ const SEGMENT_CLASS: Record<StepProgressSegmentState, string> = {
   active: 'bg-primary/50',
   upcoming: 'bg-border',
   skipped: 'bg-secondary',
+  invalid: 'bg-destructive',
 }
 
 export function StepProgress(props: StepProgressProps) {
   const { className } = props
+  const { segments: segmentsProp, current, total } = props
 
   const segments = useMemo<StepProgressSegmentState[]>(() => {
-    if (props.segments) return props.segments
-    return Array.from({ length: props.total }, (_, i) =>
-      i < props.current ? 'done' : 'upcoming',
+    if (segmentsProp) return segmentsProp
+    return Array.from({ length: total }, (_, i) =>
+      i < current ? 'done' : 'upcoming',
     )
-  }, [props.segments, props.current, props.total])
+  }, [segmentsProp, current, total])
 
-  const labels = props.segments ? props.labels : undefined
-  const hideLabelsOnMobile = props.segments
+  const labels = segmentsProp ? props.labels : undefined
+  const hideLabelsOnMobile = segmentsProp
     ? (props.hideLabelsOnMobile ?? true)
     : true
   const doneCount = useMemo(

@@ -9,8 +9,8 @@ import {
 } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import posthog from 'posthog-js'
 import { WizardShell } from '@/components/wizard-shell'
+import { captureEvent } from '@/lib/analytics/capture'
 import { propertyCreationWizardKey } from './state/persistence'
 import { PropertyCreationTopBar } from './top-bar'
 import { PropertyCheckoutShell } from './steps/checkout/checkout-shell'
@@ -19,6 +19,7 @@ import {
   usePropertyCreationActions,
   usePropertyCreationHasHydrated,
   usePropertyCreationState,
+  usePropertyCreationStoreApi,
 } from './state/use-property-creation'
 import { hasWizardWork } from './state/derivations'
 import { WizardHydrationFallback } from './wizard-hydration-fallback'
@@ -51,7 +52,7 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
   const [exitPromptOpen, setExitPromptOpen] = useState(false)
 
   const step = usePropertyCreationState((s) => s.step)
-  const hasWork = usePropertyCreationState(hasWizardWork)
+  const storeApi = usePropertyCreationStoreApi()
   const { goToStep, clearPersisted } = usePropertyCreationActions()
 
   useEffect(() => {
@@ -79,8 +80,9 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
     // wipe IDB + reset store, then navigate. Wrapping the push in
     // startTransition lets React keep the wizard on screen until the home
     // RSC is ready (avoiding a PageLoader flash from (main)/loading.tsx on
-    // a stale prefetch).
-    if (!hasWork) {
+    // a stale prefetch). Reading via `storeApi.getState()` keeps this off
+    // the render path — it runs once per click, not per keystroke.
+    if (!hasWizardWork(storeApi.getState())) {
       clearPersisted()
       startTransition(() => {
         router.push(EXIT_HREF)
@@ -88,17 +90,17 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
       return
     }
     setExitPromptOpen(true)
-  }, [hasWork, router, clearPersisted])
+  }, [storeApi, router, clearPersisted])
 
   const handleSaveForLater = useCallback(() => {
-    posthog.capture('property_creation_wizard_exited', {
+    captureEvent('property_creation_wizard_exited', {
       step,
       reason: 'save_for_later',
     })
   }, [step])
 
   const handleDiscard = useCallback(() => {
-    posthog.capture('property_creation_wizard_exited', {
+    captureEvent('property_creation_wizard_exited', {
       step,
       reason: 'discard',
     })
@@ -123,7 +125,7 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
           exitLabel={t('exit')}
         />
         {step === 1 ? (
-          <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
             <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
               <UploadContract />
             </div>

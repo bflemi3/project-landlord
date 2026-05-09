@@ -59,6 +59,8 @@ interface IsoDatePickerProps {
   describedBy?: string
   disabled?: boolean
   className?: string
+  /** Mirrors `Input`'s variant. Defaults to `card`. */
+  variant?: 'card' | 'page'
   onValueChange: (next: string | undefined) => void
   onBlur?: () => void
 }
@@ -74,6 +76,7 @@ export function IsoDatePicker({
   describedBy,
   disabled,
   className,
+  variant,
   onValueChange,
   onBlur,
 }: IsoDatePickerProps) {
@@ -134,7 +137,7 @@ export function IsoDatePicker({
   )
 
   return (
-    <InputGroup className={className}>
+    <InputGroup variant={variant} className={className}>
       <InputGroupInput
         id={id}
         name={name}

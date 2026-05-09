@@ -187,6 +187,13 @@ Use `next/link` (`<Link>`) for all internal navigation — never `<a href>`, whi
 - Use the country-adaptive provider pattern (`src/lib/address/`) — the data model supports other countries even though BR is the only live locale
 - State as select dropdown, separate number and complement fields
 
+## List-row helper hooks (`src/lib/hooks/`)
+
+Two small hooks are paired with `AccordionItem` (`src/components/ui/accordion.tsx`) for animated row lists. Reach for them whenever a section renders a list the user can add/remove from (tenants, expenses).
+
+- **`useDelayedRemoval`** (`src/lib/hooks/use-delayed-removal.ts`) — `{ isRemoving, remove }`. Call `remove(id, commit)` to trigger a row's exit animation; `commit` runs after the duration (default 200ms) to drop the row from the data. The hook owns the timeout cleanup, an idempotent guard (rapid clicks no-op), a `try/finally` around `commit` so a throwing callback still cleans bookkeeping, and a mounted-ref so the post-timeout state update doesn't fire on an unmounted parent. Pair `isRemoving(id)` with `<AccordionItem isRemoving={...}>`.
+- **`useRecentlyAdded`** (`src/lib/hooks/use-recently-added.ts`) — `{ markAdded, isJustAdded }`. Tracks ids the user added during the current mount of the list. The flag drives `<AccordionItem animateEntrance={isJustAdded(id)}>` (so only newly-added rows fade in — required because all-rows-fade-in confuses parent measurement when the list mounts as part of a section opening) and `autoFocus` on the new row's first input.
+
 ## General Rules
 
 - Prefer shadcn components: `npx shadcn@latest add <component>` before building manually

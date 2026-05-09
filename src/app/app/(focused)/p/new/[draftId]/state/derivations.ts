@@ -1,3 +1,4 @@
+import { hasAnyUserSectionData } from './section-defaults'
 import type { PropertyCreationStateShape } from './store'
 
 /**
@@ -18,11 +19,13 @@ export function getRemainingSectionCount(
 
 /**
  * True when the user has any artifact worth warning about on exit — an
- * uploaded contract file, an extraction result, any section data entry, or
- * any section moved past `upcoming`. Picking the no-contract path alone does
- * not count: if the user hasn't touched a section, there's nothing to save.
+ * uploaded contract file, an extraction result, any non-default section
+ * slice, or any section moved past `upcoming`. Picking the no-contract path
+ * alone does not count: if the user hasn't touched a section, there's
+ * nothing to save.
  *
- * Drives the Close button's exit-prompt branch.
+ * Drives the Close button's exit-prompt branch. Called once per exit click
+ * via `storeApi.getState()` — not subscribed.
  */
 export function hasWizardWork(
   state: Pick<
@@ -32,7 +35,7 @@ export function hasWizardWork(
 ): boolean {
   if (state.contractFile !== null) return true
   if (state.extractionResult !== null) return true
-  if (Object.keys(state.sectionData).length > 0) return true
+  if (hasAnyUserSectionData(state.sectionData)) return true
   for (const status of Object.values(state.sectionStates)) {
     if (status !== 'upcoming') return true
   }

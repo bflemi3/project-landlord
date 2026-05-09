@@ -8,20 +8,23 @@ import {
   type SectionId,
 } from './registry'
 import type { SectionStatus } from './persistence'
+import {
+  deriveSectionValidity,
+  type SectionValidity,
+} from './section-validity'
 import { usePropertyCreationState } from './store-provider'
-import type { RentDatesInput } from './rent-dates-schema'
+import type { RentDatesInput } from '../steps/checkout/sections/rent-dates/schemas'
 
-// ---------------------------------------------------------------------------
 // Re-export the public hook surface from the Provider module so existing
 // section-component imports keep working (`import { usePropertyCreationState,
 // usePropertyCreationActions } from '.../state/use-property-creation'`).
-// ---------------------------------------------------------------------------
 
 export {
   PropertyCreationStoreProvider,
   usePropertyCreationState,
   usePropertyCreationActions,
   usePropertyCreationHasHydrated,
+  usePropertyCreationStoreApi,
 } from './store-provider'
 
 export type {
@@ -31,16 +34,25 @@ export type {
   PropertyCreationStore,
 } from './store'
 
-// ---------------------------------------------------------------------------
 // Per-section selectors. Each section component (property, rent-dates, etc.)
 // reads its own slice of the store through these instead of writing the same
 // inline selector six times. Each returns a primitive so Zustand's identity
 // equality short-circuits the re-render when the value hasn't changed.
-// ---------------------------------------------------------------------------
 
 /** This section's status — `'upcoming' | 'completed' | 'skipped'`. */
 export function useSectionStatus(id: SectionId): SectionStatus {
   return usePropertyCreationState((s) => s.sectionStates[id])
+}
+
+/**
+ * Section status with `'invalid'` layered on top — fires when the slice
+ * fails its schema and the user has either completed the section or entered
+ * any content. `'invalid'` outranks `'completed'` and `'skipped'` so a user
+ * who breaks a previously-completed section (or starts filling out a
+ * skipped one) sees the issue surfaced in every progress surface.
+ */
+export function useSectionValidity(id: SectionId): SectionValidity {
+  return usePropertyCreationState((s) => deriveSectionValidity(id, s))
 }
 
 /** True when this section is currently expanded in the accordion. */
@@ -73,7 +85,6 @@ export function useIsSectionRequired(id: SectionId): boolean {
   return getRequiredSectionIds(path).includes(id)
 }
 
-// ---------------------------------------------------------------------------
 // Extraction-comparison hook. Sections flag fields as "auto-filled from the
 // contract" via `useIsExtracted('<section>.<dot.path>')`. The hook returns
 // true iff the slice value at the path strictly equals the extracted value
@@ -95,7 +106,6 @@ export function useIsSectionRequired(id: SectionId): boolean {
 // translation (snake_case → camelCase rename, the nested `address.X` layout,
 // indexing into `landlords[]` / `tenants[]` / `expenses[]`). The current-side
 // is uniform path-walking and doesn't need per-field encoding.
-// ---------------------------------------------------------------------------
 
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 

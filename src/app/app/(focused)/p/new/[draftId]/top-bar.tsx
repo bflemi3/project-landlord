@@ -7,7 +7,9 @@ import {
   StepProgress,
   type StepProgressSegmentState,
 } from '@/components/step-progress'
+import { useShallow } from 'zustand/react/shallow'
 import { CHECKOUT_SECTIONS } from './state/registry'
+import { deriveAllSectionValidities, SectionValidity } from './state/section-validity'
 import { usePropertyCreationState } from './state/use-property-creation'
 
 interface PropertyCreationTopBarProps {
@@ -19,6 +21,13 @@ interface PropertyCreationTopBarProps {
    */
   backLabel: string
   exitLabel: string
+}
+
+const validitySegmentStatMap: Record<SectionValidity, StepProgressSegmentState> = {
+  completed: 'done',
+  skipped: 'skipped',
+  upcoming: 'upcoming',
+  invalid: 'invalid',
 }
 
 /**
@@ -39,23 +48,23 @@ export function PropertyCreationTopBar({
 }: PropertyCreationTopBarProps) {
   const t = useTranslations('propertyCreation')
   const step = usePropertyCreationState((s) => s.step)
-  const sectionStates = usePropertyCreationState((s) =>
-    s.step === 2 ? s.sectionStates : null,
-  )
   const activeSectionId = usePropertyCreationState((s) =>
     s.step === 2 ? s.activeSectionId : null,
   )
+  // `useShallow` keeps the returned record stable when no per-section
+  // validity actually changes, so the `useMemo` below stays cheap.
+  const validities = usePropertyCreationState(
+    useShallow((s) => (s.step === 2 ? deriveAllSectionValidities(s) : null)),
+  )
 
   const segments = useMemo<StepProgressSegmentState[]>(() => {
-    if (!sectionStates) return []
+    if (!validities) return []
     return CHECKOUT_SECTIONS.map((section) => {
       if (section.id === activeSectionId) return 'active'
-      const status = sectionStates[section.id]
-      if (status === 'completed') return 'done'
-      if (status === 'skipped') return 'skipped'
-      return 'upcoming'
+      const validity = validities[section.id]
+      return validitySegmentStatMap[validity]
     })
-  }, [sectionStates, activeSectionId])
+  }, [validities, activeSectionId])
 
   return (
     <>

@@ -321,11 +321,11 @@ describe('mergeExtractionIntoSectionData', () => {
 
   it('preserves other section keys in prev unchanged', () => {
     // Ensures the merge function doesn't overwrite slices that are unrelated
-    // to extraction seeding for this plan. Uses the `expenses` slice as the
-    // sentinel since `tenants` is now actively merged.
+    // to extraction seeding. `tenants` and `expenses` are both actively
+    // merged now, so this uses a hypothetical unrelated key as the sentinel.
     const prev: SectionData = {
       property: defaultPropertyInput(),
-      expenses: { foo: 'bar' } as unknown,
+      bank: { foo: 'bar' } as unknown,
     }
     const result = mergeExtractionIntoSectionData(
       prev,
@@ -342,7 +342,7 @@ describe('mergeExtractionIntoSectionData', () => {
         },
       }),
     )
-    expect(result.expenses).toEqual({ foo: 'bar' })
+    expect((result as Record<string, unknown>).bank).toEqual({ foo: 'bar' })
   })
 
   it('seeds tenants from extraction.tenants with isExtracted=true on each row', () => {
@@ -433,6 +433,120 @@ describe('mergeExtractionIntoSectionData', () => {
     const tenants = result.tenants as Array<{ name: string }>
     expect(tenants).toHaveLength(1)
     expect(tenants[0]?.name).toBe('Fresh')
+  })
+
+  it('seeds expenses from extraction.expenses with isExtracted=true and behavior derived from type', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        expenses: [
+          {
+            type: 'electricity',
+            bundledInto: null,
+            providerName: 'Celesc',
+            providerTaxId: null,
+          },
+          {
+            type: 'internet',
+            bundledInto: null,
+            providerName: null,
+            providerTaxId: null,
+          },
+        ],
+      }),
+    )
+    const expenses = result.expenses as Array<{
+      expense_type: string | null
+      amount_behavior: string | null
+      amount_minor: number | undefined
+      isExtracted: boolean
+    }>
+    expect(expenses).toHaveLength(2)
+    expect(expenses[0]?.expense_type).toBe('electricity')
+    // electricity defaults to variable
+    expect(expenses[0]?.amount_behavior).toBe('variable')
+    expect(expenses[0]?.amount_minor).toBeUndefined()
+    expect(expenses[0]?.isExtracted).toBe(true)
+    expect(expenses[1]?.expense_type).toBe('internet')
+    // internet defaults to fixed
+    expect(expenses[1]?.amount_behavior).toBe('fixed')
+    expect(expenses[1]?.isExtracted).toBe(true)
+  })
+
+  it('drops bundled expenses from the seed', () => {
+    // Bundled expenses (`bundledInto !== null`) require Phase 1C task 8's
+    // bundling fields + UI to render correctly. Until then they're filtered
+    // out so they don't appear as misleading flat rows.
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        expenses: [
+          {
+            type: 'water',
+            bundledInto: 'condo',
+            providerName: null,
+            providerTaxId: null,
+          },
+          {
+            type: 'gas',
+            bundledInto: 'rent',
+            providerName: null,
+            providerTaxId: null,
+          },
+          {
+            type: 'electricity',
+            bundledInto: null,
+            providerName: null,
+            providerTaxId: null,
+          },
+        ],
+      }),
+    )
+    const expenses = result.expenses as Array<{ expense_type: string | null }>
+    expect(expenses).toHaveLength(1)
+    expect(expenses[0]?.expense_type).toBe('electricity')
+  })
+
+  it('seeds an expense with null type as a row that has null type and null behavior', () => {
+    // Extraction couldn't classify the expense's type — surface a row anyway
+    // so the user knows the contract mentioned it; behavior stays null until
+    // the user picks a type.
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({
+        expenses: [
+          {
+            type: null,
+            bundledInto: null,
+            providerName: null,
+            providerTaxId: null,
+          },
+        ],
+      }),
+    )
+    const expenses = result.expenses as Array<{
+      expense_type: string | null
+      amount_behavior: string | null
+    }>
+    expect(expenses).toHaveLength(1)
+    expect(expenses[0]?.expense_type).toBeNull()
+    expect(expenses[0]?.amount_behavior).toBeNull()
+  })
+
+  it('coerces a null expenses block to an empty array', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({ expenses: null }),
+    )
+    expect(result.expenses).toEqual([])
+  })
+
+  it('produces an empty expenses array when extraction.expenses is an empty list', () => {
+    const result = mergeExtractionIntoSectionData(
+      defaultSectionData(),
+      makeExtraction({ expenses: [] }),
+    )
+    expect(result.expenses).toEqual([])
   })
 
   it('re-exports defaultPropertyInput() with the canonical blank shape', () => {

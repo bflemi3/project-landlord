@@ -29,25 +29,26 @@ import { RadioCardGroup, type RadioCardOption } from '@/components/radio-card-gr
 import { getAddressProvider } from '@/lib/address/provider'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
-import { getPropertyInputSchema } from '@/schemas/property'
+import { type PropertyInput } from '@/schemas/property'
 import { validateProperty } from '@/data/properties/actions/validate-property'
-import { zodValidator, useFormValidation } from '@/lib/forms/use-form-validation'
 import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'
+import { useWizardForm } from '../../../../state/use-wizard-form'
 import { Constants } from '@/lib/types/database'
 
-import type { SectionId } from '../../../state/registry'
-import type { PropertyInput } from '../../../state/extraction-seeding'
+import type { SectionId } from '../../../../state/registry'
 import {
   usePropertyCreationActions,
   usePropertyCreationState,
+  usePropertyCreationStoreApi,
   useIsExtracted,
-} from '../../../state/use-property-creation'
-import { useCheckoutContext } from '../checkout-context'
-import { Section } from '../section'
-import { useSectionController } from '../use-section-controller'
-import { SectionSkeleton } from './section-skeleton'
-import { SummaryRow } from './summary-row'
-import { AutoFilledIndicator } from './auto-filled-indicator'
+} from '../../../../state/use-property-creation'
+import { setAllTouched, type PropertyTouched } from './state'
+import { validateProperty as validatePropertyParse } from './validation'
+import { useCheckoutContext } from '../../checkout-context'
+import { Section } from '../../section'
+import { SectionSkeleton } from '../section-skeleton'
+import { SummaryRow } from '../summary-row'
+import { AutoFilledIndicator } from '../auto-filled-indicator'
 
 const SECTION_ID: SectionId = 'property'
 const ICON = Building2
@@ -62,9 +63,9 @@ const PROPERTY_TYPE_ICONS: Record<(typeof PROPERTY_TYPE_OPTIONS)[number], React.
 }
 
 type PropertyTypeValue = (typeof PROPERTY_TYPE_OPTIONS)[number]
+type PropertyField = keyof PropertyInput
 
 const brStates = getAddressProvider('BR').states
-const validator = zodValidator(getPropertyInputSchema('BR'))
 
 export function PropertySection() {
   const t = useTranslations('propertyCreation.checkout')
@@ -72,20 +73,62 @@ export function PropertySection() {
   const router = useRouter()
   const { registerHeaderRef } = useCheckoutContext()
   const { setSectionData } = usePropertyCreationActions()
+  const storeApi = usePropertyCreationStoreApi()
   const values = usePropertyCreationState(
     (s) => s.sectionData.property as PropertyInput,
   )
-  const form = useFormValidation({ values, validator })
-  const { markTouched } = form
+  const touched = usePropertyCreationState(
+    (s) => s.sectionTouched.property as PropertyTouched,
+  )
+  // Cached parse — shared with the section's status badge and summary panel.
+  const parseResult = usePropertyCreationState((s) => {
+    const slice = s.sectionData.property as PropertyInput | undefined
+    return validatePropertyParse(slice, slice?.country_code ?? 'BR')
+  })
+  const { errors, isValid, setTouched } = useWizardForm({
+    sectionId: 'property',
+    parseResult,
+    touched,
+  })
+
+  const promoteAllTouched = useCallback(() => {
+    setTouched<PropertyTouched>((prev) => setAllTouched(prev))
+  }, [setTouched])
   const {
     setServerErrors,
     clearServerErrors,
-    hasFieldError,
-    getFieldError,
+    getServerError,
   } = useServerValidationErrors<PropertyInput>()
 
+  // Append a single field to the section's touched set. The form constructs
+  // the updater inline since its shape (a `Set<string>`) is the form's own
+  // concern — section-level helpers stay minimal.
+  const markTouched = useCallback(
+    (field: PropertyField) => {
+      setTouched<PropertyTouched>((prev) => {
+        if (prev.has(field)) return prev
+        const next = new Set(prev)
+        next.add(field)
+        return next
+      })
+    },
+    [setTouched],
+  )
+
+  // `form.errors` is already touch-gated by the hook. Server-side errors
+  // (from `validateProperty`) are always shown when present, so they merge
+  // on top of the form's filtered errors.
+  const fieldError = useCallback(
+    (field: PropertyField) => errors[field]?.[0] ?? getServerError(field),
+    [errors, getServerError],
+  )
+
+  // Read values via storeApi so the callback identity is stable across
+  // keystrokes — closing over the `values` selector would recreate this
+  // function on every edit, cascading recomputes through Section.Actions.
   const onBeforeContinue = useCallback(async () => {
-    const result = await validateProperty(values)
+    const slice = storeApi.getState().sectionData.property as PropertyInput
+    const result = await validateProperty(slice)
     if (result.valid) {
       clearServerErrors()
       return true
@@ -104,9 +147,7 @@ export function PropertySection() {
       })
     }
     return false
-  }, [values, tProperties, router, clearServerErrors, setServerErrors])
-
-  const ctrl = useSectionController(SECTION_ID, { isFirst: true, onBeforeContinue })
+  }, [storeApi, tProperties, router, clearServerErrors, setServerErrors])
 
   const isPostalCodeExtracted = useIsExtracted('property.postal_code')
   const cepLabelExtra = useMemo(
@@ -144,6 +185,7 @@ export function PropertySection() {
     const type = values.property_type
       ? tProperties(`propertyTypeOptions.${values.property_type}`)
       : null
+
     return [type, address].filter(Boolean).join(' · ')
   }, [values.street, values.number, values.complement, values.country_code, values.property_type, tProperties])
 
@@ -190,13 +232,31 @@ export function PropertySection() {
     }))
   }
 
+  const propertyTypeError = fieldError('property_type')
+  const hasPropertyTypeError = Boolean(propertyTypeError)
+  const nameError = fieldError('name')
+  const hasNameError = Boolean(nameError)
+  const postalCodeError = fieldError('postal_code')
+  const hasPostalCodeError = Boolean(postalCodeError)
+  const streetError = fieldError('street')
+  const hasStreetError = Boolean(streetError)
+  const numberError = fieldError('number')
+  const hasNumberError = Boolean(numberError)
+  const complementError = fieldError('complement')
+  const hasComplementError = Boolean(complementError)
+  const neighborhoodError = fieldError('neighborhood')
+  const hasNeighborhoodError = Boolean(neighborhoodError)
+  const cityError = fieldError('city')
+  const hasCityError = Boolean(cityError)
+  const stateError = fieldError('state')
+  const hasStateError = Boolean(stateError)
+
   // 10. Return
   return (
     <Section
       id={SECTION_ID}
-      isActive={ctrl.isActive}
-      isUpNext={ctrl.isUpNext}
-      status={ctrl.status}
+      onFirstVisit={promoteAllTouched}
+      onLeave={promoteAllTouched}
     >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
@@ -209,6 +269,7 @@ export function PropertySection() {
         </Section.HeaderContent>
         <Section.Status
           doneLabel={t('status.done')}
+          needsAttentionLabel={t('status.needsAttention')}
           skippedLabel={t('status.skipped')}
           upNextLabel={t('status.upNext')}
         />
@@ -216,7 +277,7 @@ export function PropertySection() {
       <Section.Body>
         <FieldGroup>
           {/* 1. Property type */}
-          <Field>
+          <Field data-invalid={hasPropertyTypeError || undefined}>
             <FieldLabel>
               {tProperties('propertyType')}
               <AutoFilledIndicator path="property.property_type" />
@@ -225,14 +286,22 @@ export function PropertySection() {
               options={propertyTypeOptions}
               value={values.property_type}
               aria-label={tProperties('propertyType')}
-              onValueChange={(val) =>
+              aria-invalid={hasPropertyTypeError}
+              aria-describedby={hasPropertyTypeError ? 'property-type-error' : undefined}
+              onValueChange={(val) => {
                 setField('property_type', val as PropertyInput['property_type'])
-              }
+                markTouched('property_type')
+              }}
             />
+            {hasPropertyTypeError && (
+              <FieldError id="property-type-error">
+                {tProperties(propertyTypeError!)}
+              </FieldError>
+            )}
           </Field>
 
           {/* 2. Property name */}
-          <Field data-invalid={hasFieldError(form, 'name') || undefined}>
+          <Field data-invalid={hasNameError || undefined}>
             <FieldLabel htmlFor="name">
               {tProperties('propertyName')}
             </FieldLabel>
@@ -246,28 +315,28 @@ export function PropertySection() {
               placeholder={namePlaceholder}
               value={values.name}
               onChange={(e) => setField('name', e.target.value)}
-              onBlur={() => form.markTouched('name')}
-              aria-invalid={hasFieldError(form, 'name')}
-              aria-describedby={hasFieldError(form, 'name') ? 'name-error' : 'name-hint'}
+              onBlur={() => markTouched('name')}
+              aria-invalid={hasNameError}
+              aria-describedby={hasNameError ? 'name-error' : 'name-hint'}
             />
-            {hasFieldError(form, 'name') && (
+            {hasNameError && (
               <FieldError id="name-error">
-                {tProperties(getFieldError(form, 'name')!)}
+                {tProperties(nameError!)}
               </FieldError>
             )}
           </Field>
 
           {/* 3. CEP */}
-          <Field data-invalid={hasFieldError(form, 'postal_code') || undefined}>
+          <Field data-invalid={hasPostalCodeError || undefined}>
             <CepField
               labelExtra={cepLabelExtra}
               value={values.postal_code}
               onValueChange={handlePostalCodeChange}
               onAddressFound={handleAddressFound}
             />
-            {hasFieldError(form, 'postal_code') && (
+            {hasPostalCodeError && (
               <FieldError id="postal_code-error">
-                {tProperties(getFieldError(form, 'postal_code')!)}
+                {tProperties(postalCodeError!)}
               </FieldError>
             )}
           </Field>
@@ -280,7 +349,7 @@ export function PropertySection() {
             <FieldRow columns={3} breakpoint="md">
               <Field
                 className="md:col-span-2"
-                data-invalid={hasFieldError(form, 'street') || undefined}
+                data-invalid={hasStreetError || undefined}
               >
                 <FieldLabel htmlFor="street">
                   {tProperties('street')}
@@ -293,18 +362,18 @@ export function PropertySection() {
                   placeholder={tProperties('streetPlaceholder')}
                   value={values.street}
                   onChange={(e) => setField('street', e.target.value)}
-                  onBlur={() => form.markTouched('street')}
-                  aria-invalid={hasFieldError(form, 'street')}
-                  aria-describedby={hasFieldError(form, 'street') ? 'street-error' : undefined}
+                  onBlur={() => markTouched('street')}
+                  aria-invalid={hasStreetError}
+                  aria-describedby={hasStreetError ? 'street-error' : undefined}
                 />
-                {hasFieldError(form, 'street') && (
+                {hasStreetError && (
                   <FieldError id="street-error">
-                    {tProperties(getFieldError(form, 'street')!)}
+                    {tProperties(streetError!)}
                   </FieldError>
                 )}
               </Field>
 
-              <Field data-invalid={hasFieldError(form, 'number') || undefined}>
+              <Field data-invalid={hasNumberError || undefined}>
                 <FieldLabel htmlFor="number">
                   {tProperties('number')}
                   <AutoFilledIndicator path="property.number" />
@@ -316,13 +385,13 @@ export function PropertySection() {
                   placeholder={tProperties('numberPlaceholder')}
                   value={values.number}
                   onChange={(e) => setField('number', e.target.value)}
-                  onBlur={() => form.markTouched('number')}
-                  aria-invalid={hasFieldError(form, 'number')}
-                  aria-describedby={hasFieldError(form, 'number') ? 'number-error' : undefined}
+                  onBlur={() => markTouched('number')}
+                  aria-invalid={hasNumberError}
+                  aria-describedby={hasNumberError ? 'number-error' : undefined}
                 />
-                {hasFieldError(form, 'number') && (
+                {hasNumberError && (
                   <FieldError id="number-error">
-                    {tProperties(getFieldError(form, 'number')!)}
+                    {tProperties(numberError!)}
                   </FieldError>
                 )}
               </Field>
@@ -330,7 +399,7 @@ export function PropertySection() {
           </FieldSet>
 
           {/* 5. Complement */}
-          <Field data-invalid={hasFieldError(form, 'complement') || undefined}>
+          <Field data-invalid={hasComplementError || undefined}>
             <FieldLabel htmlFor="complement">
               {tProperties('complement')}
               <AutoFilledIndicator path="property.complement" />
@@ -342,19 +411,19 @@ export function PropertySection() {
               placeholder={tProperties('complementPlaceholder')}
               value={values.complement}
               onChange={(e) => setField('complement', e.target.value)}
-              onBlur={() => form.markTouched('complement')}
-              aria-invalid={hasFieldError(form, 'complement')}
-              aria-describedby={hasFieldError(form, 'complement') ? 'complement-error' : undefined}
+              onBlur={() => markTouched('complement')}
+              aria-invalid={hasComplementError}
+              aria-describedby={hasComplementError ? 'complement-error' : undefined}
             />
-            {hasFieldError(form, 'complement') && (
+            {hasComplementError && (
               <FieldError id="complement-error">
-                {tProperties(getFieldError(form, 'complement')!)}
+                {tProperties(complementError!)}
               </FieldError>
             )}
           </Field>
 
           {/* 6. Neighborhood */}
-          <Field data-invalid={hasFieldError(form, 'neighborhood') || undefined}>
+          <Field data-invalid={hasNeighborhoodError || undefined}>
             <FieldLabel htmlFor="neighborhood">
               {tProperties('neighborhood')}
               <AutoFilledIndicator path="property.neighborhood" />
@@ -366,13 +435,13 @@ export function PropertySection() {
               placeholder={tProperties('neighborhoodPlaceholder')}
               value={values.neighborhood}
               onChange={(e) => setField('neighborhood', e.target.value)}
-              onBlur={() => form.markTouched('neighborhood')}
-              aria-invalid={hasFieldError(form, 'neighborhood')}
-              aria-describedby={hasFieldError(form, 'neighborhood') ? 'neighborhood-error' : undefined}
+              onBlur={() => markTouched('neighborhood')}
+              aria-invalid={hasNeighborhoodError}
+              aria-describedby={hasNeighborhoodError ? 'neighborhood-error' : undefined}
             />
-            {hasFieldError(form, 'neighborhood') && (
+            {hasNeighborhoodError && (
               <FieldError id="neighborhood-error">
-                {tProperties(getFieldError(form, 'neighborhood')!)}
+                {tProperties(neighborhoodError!)}
               </FieldError>
             )}
           </Field>
@@ -385,7 +454,7 @@ export function PropertySection() {
             <FieldRow columns={3} breakpoint="md">
               <Field
                 className="md:col-span-2"
-                data-invalid={hasFieldError(form, 'city') || undefined}
+                data-invalid={hasCityError || undefined}
               >
                 <FieldLabel htmlFor="city">
                   {tProperties('city')}
@@ -398,18 +467,18 @@ export function PropertySection() {
                   placeholder={tProperties('cityPlaceholder')}
                   value={values.city}
                   onChange={(e) => setField('city', e.target.value)}
-                  onBlur={() => form.markTouched('city')}
-                  aria-invalid={hasFieldError(form, 'city')}
-                  aria-describedby={hasFieldError(form, 'city') ? 'city-error' : undefined}
+                  onBlur={() => markTouched('city')}
+                  aria-invalid={hasCityError}
+                  aria-describedby={hasCityError ? 'city-error' : undefined}
                 />
-                {hasFieldError(form, 'city') && (
+                {hasCityError && (
                   <FieldError id="city-error">
-                    {tProperties(getFieldError(form, 'city')!)}
+                    {tProperties(cityError!)}
                   </FieldError>
                 )}
               </Field>
 
-              <Field data-invalid={hasFieldError(form, 'state') || undefined}>
+              <Field data-invalid={hasStateError || undefined}>
                 <FieldLabel htmlFor="state">
                   {tProperties('state')}
                   <AutoFilledIndicator path="property.state" />
@@ -418,14 +487,14 @@ export function PropertySection() {
                   value={values.state}
                   onValueChange={(val) => {
                     setField('state', val ?? '')
-                    form.markTouched('state')
+                    markTouched('state')
                   }}
                 >
                   <SelectTrigger
                     id="state"
-                    onBlur={() => form.markTouched('state')}
-                    aria-invalid={hasFieldError(form, 'state')}
-                    aria-describedby={hasFieldError(form, 'state') ? 'state-error' : undefined}
+                    onBlur={() => markTouched('state')}
+                    aria-invalid={hasStateError}
+                    aria-describedby={hasStateError ? 'state-error' : undefined}
                   >
                     <SelectValue placeholder={tProperties('statePlaceholder')} />
                   </SelectTrigger>
@@ -437,9 +506,9 @@ export function PropertySection() {
                     ))}
                   </SelectContent>
                 </Select>
-                {hasFieldError(form, 'state') && (
+                {hasStateError && (
                   <FieldError id="state-error">
-                    {tProperties(getFieldError(form, 'state')!)}
+                    {tProperties(stateError!)}
                   </FieldError>
                 )}
               </Field>
@@ -449,13 +518,9 @@ export function PropertySection() {
         <Section.Actions
           backLabel={t('actions.back')}
           continueLabel={t('actions.continue')}
-          continueDisabled={!form.isValid}
-          continueLoading={ctrl.isContinuing}
+          continueDisabled={!isValid}
           skipLabel={t('actions.skip')}
-          showSkip={false}
-          onBack={ctrl.handleBack}
-          onContinue={ctrl.handleContinue}
-          onSkip={ctrl.handleSkip}
+          onBeforeContinue={onBeforeContinue}
         />
       </Section.Body>
     </Section>

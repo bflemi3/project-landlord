@@ -13,7 +13,7 @@ import { brazilCpfOrCnpjSchema } from './tax-id'
 // `taxIdInputSchema` is the optional variant — empty is valid (a user may
 // clear their tax_id under LGPD data minimization). The wizard's create-
 // property flow has its own required-non-empty extension at
-// `src/app/.../state/tax-id-schema.ts` because in that flow a tax_id is
+// `src/app/.../checkout/sections/tax-id/schemas.ts` because in that flow a tax_id is
 // always required to proceed.
 // =============================================================================
 

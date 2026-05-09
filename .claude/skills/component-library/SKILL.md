@@ -59,6 +59,9 @@ Dialog on desktop, bottom Sheet on mobile. Parts: `ResponsiveModal`, `.Content` 
 ### Empty State (`src/components/empty-state.tsx`)
 Compound: `EmptyState`, `EmptyStateIcon` (wraps an `IconTile`), `EmptyStateTitle`, `EmptyStateDescription`, `EmptyStateActions`. Pass the lucide icon as children of `EmptyStateIcon`; pick `tone="primary"` for inviting first actions and `muted` for neutral "nothing here" states.
 
+### Explainer Card (`src/components/explainer-card.tsx`)
+Compound: `ExplainerCard`, `ExplainerCardTitle`, `ExplainerCardDescription`, `ExplainerCardContent`, `ExplainerCardList` / `ExplainerCardListItem`, `ExplainerCardAction`. Calm, centered "why this matters" card with `bg-muted/40` chrome — used inside checkout/wizard sections (e.g. Tenants empty state, Tax ID "why we ask", Expenses empty state). `Description` is the optional one-line value statement; `Content` is a free slot for richer bodies and auto-tints lucide icons with `text-primary`. Use `ExplainerCardList` + `ExplainerCardListItem` for bullet lists (each item renders with a `<Check>` prefix automatically — never hand-roll the `<ul>` markup). Distinct from `EmptyState` — reach for that one for full-page sparse states with a circle icon tile.
+
 ### Info Box (`src/components/info-box.tsx`)
 Variants: default, warning, success, destructive. Parts: `InfoBox`, `InfoBoxIcon`, `InfoBoxContent`, `InfoBoxDivider`.
 
@@ -77,8 +80,13 @@ Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as t
 
 ### UI Primitives (shadcn, `src/components/ui/`)
 - **Button** — has `loading` prop, handles icon sizing. Variants: default (teal), secondary, destructive, ghost, link.
-- **Input** — `h-12 rounded-2xl`, built-in clear button.
+- **Input** — `h-12 rounded-2xl`, built-in clear button. **`variant`**: `card` (default — `bg-muted dark:bg-foreground/5 dark:border-foreground/15` for inputs in `bg-card` surfaces) or `page` (transparent for inputs on `bg-background`).
+- **InputGroup** (`ui/input-group.tsx`) — input + leading/trailing addons (icons, buttons). Mirrors `Input`'s `card`/`page` variants, defaults to `card`. Parts: `InputGroup`, `InputGroupAddon` (`align`: inline-start / inline-end / block-start / block-end), `InputGroupInput`, `InputGroupButton`, `InputGroupText`.
+- **IsoDatePicker** (`ui/iso-date-picker.tsx`) — date input + popover calendar, locale-aware. Stores ISO `YYYY-MM-DD`. Forwards `variant` to `InputGroup`.
 - **Select** — matches Input styling.
+- **DropdownMenu** (`ui/dropdown-menu.tsx`) — shadcn DropdownMenu customized to the design system. Surface uses `--shadow-popover`. Use for action menus and "More" affordances.
+- **Accordion** (`ui/accordion.tsx`) — base-ui Accordion with our chrome. `AccordionItem` accepts `isRemoving` (exit animation) and `animateEntrance` (opt-in mount fade — default OFF; only set true for newly-added rows, otherwise breaks parent scrollHeight measurement when the list mounts inside an opening section). Pair with `useDelayedRemoval` and `useRecentlyAdded` (see `frontend-patterns`).
+- **RadioCardGroup** (`components/radio-card-group.tsx`) — card-style radio group. Variants: `card` (full-bleed bordered card with optional icon) or `chip` (compact pill row). Helper: `radioCardVariants` cva for composing chip-styled buttons that aren't actual radios (e.g. full-width "Add tenant" / "Add expense" trigger).
 - **Card** — composable (`Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`) plus the `cardShellClassName` helper for non-`<div>` shells (a `<Link>` or `<button>`). Props: `size` (sm / md / lg / xl / compound / none), `variant` (solid / dashed), `interactive`. Token chrome: `rounded-card`, `shadow-card`, `shadow-card-hover`.
 - **Sheet** — bottom sheet for contextual actions.
 

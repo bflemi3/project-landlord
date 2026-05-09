@@ -158,6 +158,7 @@
     "dueDay": "Dia de vencimento do aluguel",
     "startDate": "Início do contrato",
     "endDate": "Fim do contrato",
+    "summaryDueDay": "dia {day}",
     "invalidAmount": "Informe um valor válido.",
     "tooLarge": "O valor é muito alto.",
     "invalidCurrency": "Escolha uma moeda compatível.",
@@ -451,7 +452,54 @@
       "expenses": {
         "title": "Despesas",
         "subtitle": "Contas de consumo, condomínio e quem paga.",
-        "placeholder": "Formulário de despesas em breve."
+        "addExpense": "Adicionar despesa",
+        "newExpense": "Nova despesa",
+        "removeAriaLabel": "Remover despesa",
+        "remove": "Remover",
+        "summaryNeedsAttention": "Precisa de atenção",
+        "summaryAndMore": "+{count} a mais",
+        "typeLabel": "Tipo de despesa",
+        "moreOptions": "Mais opções",
+        "amountLabel": "Valor esperado",
+        "amountLabelFixed": "Valor mensal",
+        "amountHelperFixed": "Quanto você paga todo mês.",
+        "amountHelperVariable": "Opcional — vamos preencher com base nas suas contas.",
+        "amountHelperUnknown": "Opcional — vamos aprender o padrão conforme as contas chegarem.",
+        "typeRequired": "Escolha um tipo de despesa.",
+        "invalidAmount": "Informe um valor válido.",
+        "tooLarge": "O valor é muito alto.",
+        "typeOptions": {
+          "electricity": "Energia",
+          "water": "Água",
+          "gas": "Gás",
+          "internet": "Internet",
+          "condo": "Condomínio",
+          "trash": "Lixo",
+          "sewer": "Esgoto",
+          "cable": "TV",
+          "insurance": "Seguro",
+          "maintenance": "Manutenção",
+          "other": "Outra"
+        },
+        "amountBehavior": {
+          "fixedLabel": "Valor fixo",
+          "fixedTrigger": "Mesmo valor todo mês",
+          "fixedDescription": "Mesmo valor todo mês — internet, condomínio, seguro.",
+          "variableLabel": "Valor variável",
+          "variableTrigger": "Acompanhado pela conta",
+          "variableDescription": "Valor vem da conta — utilidades como energia, água, gás.",
+          "unknownLabel": "Não tenho certeza",
+          "unknownTrigger": "Vamos detectar pelas suas contas",
+          "unknownDescription": "Vamos aprender o padrão conforme as contas chegarem.",
+          "changeAriaLabel": "Alterar comportamento do valor"
+        },
+        "emptyState": {
+          "title": "Acompanhe toda despesa recorrente",
+          "leadIn": "Adicione todas as despesas recorrentes deste imóvel — mesmo as que seu inquilino paga. A mabenn vai:",
+          "bulletTracking": "Ficar de olho em contas de consumo, condomínio e outros boletos automaticamente",
+          "bulletPayments": "Conciliar cada pagamento com a despesa certa",
+          "bulletResponsibility": "Descobrir quem paga o quê assim que as contas começarem a chegar"
+        }
       },
       "tax-id": {
         "title": "CPF/CNPJ",
@@ -481,7 +529,8 @@
       },
       "summary": {
         "title": "Configurar imóvel",
-        "remaining": "{count} de {total} seções restantes"
+        "remaining": "{count} de {total} seções restantes",
+        "needsAttention": "Precisa de atenção"
       },
       "cta": {
         "create": "Criar imóvel",
@@ -496,7 +545,8 @@
       "status": {
         "done": "Concluído",
         "skipped": "Pulado",
-        "upNext": "Próxima"
+        "upNext": "Próxima",
+        "needsAttention": "Precisa de atenção"
       },
       "extractionLegend": "Preenchido automaticamente do seu contrato"
     },

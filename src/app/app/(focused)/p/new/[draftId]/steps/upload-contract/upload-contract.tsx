@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import posthog from 'posthog-js'
 import { FileUpload, type FileUploadControls } from '@/components/file-upload'
+import { captureEvent } from '@/lib/analytics/capture'
 import { TextShimmer } from '@/components/text-shimmer'
 import { useReducedMotion } from 'motion/react'
 import { ContractUploadError } from './contract-upload-error'
@@ -97,7 +97,7 @@ export function UploadContract() {
     const response = await extractContractAction(fd)
 
     if (response.success) {
-      posthog.capture('contract_extraction_completed', {
+      captureEvent('contract_extraction_completed', {
         language: response.data.languageDetected,
         fieldCount: countExtractedFields(response.data),
       })
@@ -106,12 +106,12 @@ export function UploadContract() {
         extractionResult: response.data,
         path: 'contract',
       })
-      posthog.capture('property_checkout_entered', { path: 'contract' })
+      captureEvent('property_checkout_entered', { path: 'contract' })
       actions.goToStep(2)
       return
     }
 
-    posthog.capture('contract_extraction_failed', { code: response.error.code })
+    captureEvent('contract_extraction_failed', { code: response.error.code })
     setErrorCode(response.error.code)
 
     // Retry codes keep the file around so the CTA can re-invoke extraction
@@ -142,7 +142,7 @@ export function UploadContract() {
 
     const detected = detectFileType(selected)
 
-    posthog.capture('contract_upload_started', {
+    captureEvent('contract_upload_started', {
       fileType: detected ?? 'unknown',
       fileSizeBytes: selected.size,
     })
@@ -164,13 +164,13 @@ export function UploadContract() {
   function handleClear() {
     setErrorCode(null)
     if (contractFile) {
-      posthog.capture('contract_upload_removed')
+      captureEvent('contract_upload_removed')
     }
     actions.clearContractFile()
   }
 
   function handleNoContract() {
-    posthog.capture('no_contract_path_clicked')
+    captureEvent('no_contract_path_clicked')
     // Committing to the no-contract path: drop any in-flight upload or error
     // so nothing is left in memory or IndexedDB when Plan 9 wires the real
     // manual branch.
@@ -181,7 +181,7 @@ export function UploadContract() {
       extractionResult: null,
       path: 'no_contract',
     })
-    posthog.capture('property_checkout_entered', { path: 'no_contract' })
+    captureEvent('property_checkout_entered', { path: 'no_contract' })
     actions.goToStep(2)
   }
 

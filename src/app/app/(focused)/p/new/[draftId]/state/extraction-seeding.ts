@@ -7,15 +7,20 @@ import {
 import {
   defaultRentDatesInput,
   type RentDatesInput,
-} from './rent-dates-schema'
+} from '../steps/checkout/sections/rent-dates/schemas'
 import {
   defaultTaxIdInput,
   type TaxIdInput,
-} from './tax-id-schema'
+} from '../steps/checkout/sections/tax-id/schemas'
 import {
   tenantRowFromContractParty,
   type TenantRow,
-} from './tenant-row-schema'
+} from '../steps/checkout/sections/tenants/schemas'
+import {
+  expenseRowFromContractExpense,
+  isSeedableExtraction,
+  type ExpenseRow,
+} from '../steps/checkout/sections/expenses/schemas'
 import type { SectionId } from './registry'
 
 export {
@@ -25,12 +30,13 @@ export {
 export {
   defaultRentDatesInput,
   type RentDatesInput,
-} from './rent-dates-schema'
+} from '../steps/checkout/sections/rent-dates/schemas'
 export {
   defaultTaxIdInput,
   type TaxIdInput,
-} from './tax-id-schema'
-export { type TenantRow } from './tenant-row-schema'
+} from '../steps/checkout/sections/tax-id/schemas'
+export { type TenantRow } from '../steps/checkout/sections/tenants/schemas'
+export { type ExpenseRow } from '../steps/checkout/sections/expenses/schemas'
 
 export type SectionData = Partial<Record<SectionId, unknown>>
 
@@ -49,6 +55,7 @@ export function defaultSectionData(): SectionData {
     'rent-dates': defaultRentDatesInput(),
     tenants: [] as TenantRow[],
     'tax-id': defaultTaxIdInput(),
+    expenses: [] as ExpenseRow[],
   }
 }
 
@@ -108,9 +115,20 @@ export function mergeExtractionIntoSectionData(
     tenantRowFromContractParty(party, property.country_code),
   )
 
+  /** Expenses section */
+  // Each non-bundled extracted expense becomes an ExpenseRow with
+  // `isExtracted: true`. Bundled extractions (`bundledInto !== null`) are
+  // dropped until Phase 1C task 8 lands the bundling UI + schema fields —
+  // adding them as flat rows would mislead the landlord into thinking
+  // they're separate billable items. A null/missing expenses block resets
+  // the slice to an empty array, mirroring tenants.
+  const expenses: ExpenseRow[] = (extraction.expenses ?? [])
+    .filter(isSeedableExtraction)
+    .map(expenseRowFromContractExpense)
+
   /** Tax ID section */
   // Not seeded here — the section hydrates from `profile.tax_id` client-side
   // via `useProfile()` since extraction has no notion of "the creator".
 
-  return { ...prev, property, 'rent-dates': rentDates, tenants }
+  return { ...prev, property, 'rent-dates': rentDates, tenants, expenses }
 }

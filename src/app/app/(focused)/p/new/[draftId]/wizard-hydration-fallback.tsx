@@ -43,7 +43,7 @@ export function WizardHydrationFallback() {
         </div>
       </WizardShell.TopBar>
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
         <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
           <div
             data-slot="wizard-hydration-fallback"

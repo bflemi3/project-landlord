@@ -437,6 +437,218 @@ describe('usePropertyCreationActions + state machine invariants', () => {
   })
 })
 
+describe('store actions — slice + touched + UI dispatchers', () => {
+  it('setSectionData(value) replaces the slice with the new value', async () => {
+    const wrapper = makeWrapper('draft-set-section-data-value')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        property: usePropertyCreationState(
+          (s) => s.sectionData.property as { name?: string } | undefined,
+        ),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.setSectionData('property', {
+        ...defaultPropertyInput(),
+        name: 'My Place',
+      })
+    })
+
+    expect(result.current.property?.name).toBe('My Place')
+  })
+
+  it('setSectionData(updater) receives prev and writes the returned value', async () => {
+    const wrapper = makeWrapper('draft-set-section-data-updater')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        property: usePropertyCreationState(
+          (s) => s.sectionData.property as { street?: string } | undefined,
+        ),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.setSectionData<{
+        street: string
+      }>('property', (prev) => ({ ...prev, street: 'Rua A' }))
+    })
+    act(() => {
+      result.current.actions.setSectionData<{
+        street: string
+      }>('property', (prev) => ({ ...prev, street: prev.street + ' 100' }))
+    })
+
+    expect(result.current.property?.street).toBe('Rua A 100')
+  })
+
+  it('setTouched short-circuits when the updater returns the same ref (no state update)', async () => {
+    const wrapper = makeWrapper('draft-set-touched-shortcircuit')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        sectionTouched: usePropertyCreationState((s) => s.sectionTouched),
+      }),
+      { wrapper },
+    )
+
+    const before = result.current.sectionTouched
+
+    // Updater returns the prev ref unchanged → store should bail.
+    act(() => {
+      result.current.actions.setTouched<ReadonlySet<string>>(
+        'property',
+        (prev) => prev,
+      )
+    })
+
+    expect(result.current.sectionTouched).toBe(before)
+  })
+
+  it('setTouched writes the new value when the updater returns a new ref', async () => {
+    const wrapper = makeWrapper('draft-set-touched-write')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        sectionTouched: usePropertyCreationState((s) => s.sectionTouched),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.setTouched<ReadonlySet<string>>(
+        'property',
+        () => new Set(['street']),
+      )
+    })
+
+    const next = result.current.sectionTouched.property as ReadonlySet<string>
+    expect(next.has('street')).toBe(true)
+  })
+
+  it('setTouched only mutates the targeted section; sister sections stay referentially equal', async () => {
+    const wrapper = makeWrapper('draft-set-touched-isolated')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        sectionTouched: usePropertyCreationState((s) => s.sectionTouched),
+      }),
+      { wrapper },
+    )
+
+    const tenantsBefore = result.current.sectionTouched.tenants
+
+    act(() => {
+      result.current.actions.setTouched<ReadonlySet<string>>(
+        'property',
+        () => new Set(['street']),
+      )
+    })
+
+    // Sister section's reference is preserved through the update.
+    expect(result.current.sectionTouched.tenants).toBe(tenantsBefore)
+  })
+
+  it('setTenantsListUI(partial) merges into existing tenantsListUI', async () => {
+    const wrapper = makeWrapper('draft-tenants-list-ui-partial')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        listUI: usePropertyCreationState((s) => s.tenantsListUI),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.setTenantsListUI({ activeTenantId: 't-1' })
+    })
+
+    expect(result.current.listUI.activeTenantId).toBe('t-1')
+  })
+
+  it('setTenantsListUI(updater) receives prev and merges its return', async () => {
+    const wrapper = makeWrapper('draft-tenants-list-ui-updater')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        listUI: usePropertyCreationState((s) => s.tenantsListUI),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.setTenantsListUI({ activeTenantId: 't-1' })
+    })
+    act(() => {
+      result.current.actions.setTenantsListUI((prev) => ({
+        activeTenantId: prev.activeTenantId === 't-1' ? 't-2' : 't-1',
+      }))
+    })
+
+    expect(result.current.listUI.activeTenantId).toBe('t-2')
+  })
+
+  it('setExpensesListUI(partial) merges into existing expensesListUI', async () => {
+    const wrapper = makeWrapper('draft-expenses-list-ui-partial')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        listUI: usePropertyCreationState((s) => s.expensesListUI),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.setExpensesListUI({ activeExpenseId: 'e-1' })
+    })
+
+    expect(result.current.listUI.activeExpenseId).toBe('e-1')
+  })
+
+  it('markSectionVisited adds the id to visitedSectionIds', async () => {
+    const wrapper = makeWrapper('draft-visited-add')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        visited: usePropertyCreationState((s) => s.visitedSectionIds),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.markSectionVisited('property')
+    })
+
+    expect(result.current.visited.has('property')).toBe(true)
+  })
+
+  it('markSectionVisited short-circuits on a re-mark — visitedSectionIds keeps the same ref', async () => {
+    const wrapper = makeWrapper('draft-visited-shortcircuit')
+    const { result } = renderHook(
+      () => ({
+        actions: usePropertyCreationActions(),
+        visited: usePropertyCreationState((s) => s.visitedSectionIds),
+      }),
+      { wrapper },
+    )
+
+    act(() => {
+      result.current.actions.markSectionVisited('property')
+    })
+    const after = result.current.visited
+
+    act(() => {
+      result.current.actions.markSectionVisited('property')
+    })
+
+    expect(result.current.visited).toBe(after)
+  })
+})
+
 describe('persist middleware — writes', () => {
   it('writes the persisted slice through idb-keyval after a state change', async () => {
     const idb = await import('idb-keyval')

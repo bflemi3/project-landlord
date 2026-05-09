@@ -158,6 +158,7 @@
     "dueDay": "Día de vencimiento del alquiler",
     "startDate": "Inicio del contrato",
     "endDate": "Fin del contrato",
+    "summaryDueDay": "día {day}",
     "invalidAmount": "Ingresa un monto válido.",
     "tooLarge": "El monto es demasiado alto.",
     "invalidCurrency": "Elige una moneda compatible.",
@@ -451,7 +452,54 @@
       "expenses": {
         "title": "Gastos",
         "subtitle": "Servicios, expensas y quién los paga.",
-        "placeholder": "Formulario de gastos próximamente."
+        "addExpense": "Agregar gasto",
+        "newExpense": "Nuevo gasto",
+        "removeAriaLabel": "Quitar gasto",
+        "remove": "Quitar",
+        "summaryNeedsAttention": "Requiere atención",
+        "summaryAndMore": "+{count} más",
+        "typeLabel": "Tipo de gasto",
+        "moreOptions": "Más opciones",
+        "amountLabel": "Monto esperado",
+        "amountLabelFixed": "Monto mensual",
+        "amountHelperFixed": "Cuánto pagas cada mes.",
+        "amountHelperVariable": "Opcional — lo completaremos a partir de tus facturas.",
+        "amountHelperUnknown": "Opcional — aprenderemos el patrón a medida que lleguen las facturas.",
+        "typeRequired": "Elige un tipo de gasto.",
+        "invalidAmount": "Ingresa un monto válido.",
+        "tooLarge": "El monto es demasiado alto.",
+        "typeOptions": {
+          "electricity": "Electricidad",
+          "water": "Agua",
+          "gas": "Gas",
+          "internet": "Internet",
+          "condo": "Expensas",
+          "trash": "Basura",
+          "sewer": "Cloacas",
+          "cable": "Cable",
+          "insurance": "Seguro",
+          "maintenance": "Mantenimiento",
+          "other": "Otro"
+        },
+        "amountBehavior": {
+          "fixedLabel": "Monto fijo",
+          "fixedTrigger": "Mismo monto cada mes",
+          "fixedDescription": "Mismo monto cada mes — internet, expensas, seguro.",
+          "variableLabel": "Monto variable",
+          "variableTrigger": "Tomado de cada factura",
+          "variableDescription": "El monto viene de la factura — servicios como electricidad, agua, gas.",
+          "unknownLabel": "No estoy seguro",
+          "unknownTrigger": "Lo detectaremos por tus facturas",
+          "unknownDescription": "Vamos a aprender el patrón a medida que lleguen las facturas.",
+          "changeAriaLabel": "Cambiar comportamiento del monto"
+        },
+        "emptyState": {
+          "title": "Lleva el control de cada gasto recurrente",
+          "leadIn": "Agrega todos los gastos recurrentes de esta propiedad — incluso los que paga tu inquilino. mabenn:",
+          "bulletTracking": "Vigilará servicios, expensas y otras facturas automáticamente",
+          "bulletPayments": "Conciliará cada pago con el gasto correspondiente",
+          "bulletResponsibility": "Descubrirá quién paga qué a medida que vayan llegando las facturas"
+        }
       },
       "tax-id": {
         "title": "CPF/CNPJ",
@@ -481,7 +529,8 @@
       },
       "summary": {
         "title": "Configurar propiedad",
-        "remaining": "{count} de {total} secciones restantes"
+        "remaining": "{count} de {total} secciones restantes",
+        "needsAttention": "Requiere atención"
       },
       "cta": {
         "create": "Crear propiedad",
@@ -496,7 +545,8 @@
       "status": {
         "done": "Listo",
         "skipped": "Omitido",
-        "upNext": "Sigue"
+        "upNext": "Sigue",
+        "needsAttention": "Requiere atención"
       },
       "extractionLegend": "Completado automáticamente desde tu contrato"
     },

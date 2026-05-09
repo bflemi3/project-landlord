@@ -15,9 +15,7 @@ import {
   type PropertyCreationStoreValue,
 } from './store'
 
-// ---------------------------------------------------------------------------
 // Context
-// ---------------------------------------------------------------------------
 
 const StoreContext = createContext<PropertyCreationStore | null>(null)
 
@@ -57,9 +55,7 @@ function useStoreFromContext(): PropertyCreationStore {
   return store
 }
 
-// ---------------------------------------------------------------------------
 // Hooks
-// ---------------------------------------------------------------------------
 
 /**
  * Selector-based read into the property creation store. Mirrors Zustand's
@@ -90,6 +86,16 @@ export function usePropertyCreationState<T>(
 export function usePropertyCreationActions(): PropertyCreationActions {
   const store = useStoreFromContext()
   return store.getState().actions
+}
+
+/**
+ * Returns the stable store handle. Does NOT subscribe to state changes —
+ * use this when you need to read state synchronously inside an effect or
+ * callback without forcing a re-render on every state change. Reads via
+ * `storeApi.getState()`. The handle reference is stable per provider mount.
+ */
+export function usePropertyCreationStoreApi(): PropertyCreationStore {
+  return useStoreFromContext()
 }
 
 /**

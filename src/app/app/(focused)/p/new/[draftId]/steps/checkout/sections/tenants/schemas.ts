@@ -24,9 +24,18 @@ function refineEmailByInviteNow(
   }
 }
 
-export const tenantRowSchema = tenantInputBaseSchema
-  .extend({ ...rowExtensions, taxId: brazilTaxIdSchema })
-  .superRefine(refineEmailByInviteNow)
+// Inner object schema is pulled out so its `.shape` keys are accessible —
+// the exported `tenantRowSchema` has `.superRefine()` chained, which
+// strips `.shape`. `TENANT_ROW_FIELD_NAMES` derives from this and is the
+// single source of truth for the section's touched logic.
+const tenantRowObjectSchema = tenantInputBaseSchema.extend({
+  ...rowExtensions,
+  taxId: brazilTaxIdSchema,
+})
+
+export const tenantRowSchema = tenantRowObjectSchema.superRefine(
+  refineEmailByInviteNow,
+)
 
 export function getTenantRowSchema(countryCode = 'BR') {
   return tenantInputBaseSchema
@@ -35,6 +44,12 @@ export function getTenantRowSchema(countryCode = 'BR') {
 }
 
 export type TenantRow = z.infer<typeof tenantRowSchema>
+
+/** Field names derived from the schema's shape — single source of truth
+ *  for the tenants section's touched logic. */
+export const TENANT_ROW_FIELD_NAMES = Object.keys(
+  tenantRowObjectSchema.shape,
+) as readonly (keyof TenantRow)[]
 
 export function defaultTenantRow(): TenantRow {
   return {

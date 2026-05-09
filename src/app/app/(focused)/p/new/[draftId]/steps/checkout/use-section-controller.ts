@@ -1,7 +1,8 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import posthog from 'posthog-js'
+
+import { captureEvent } from '@/lib/analytics/capture'
 
 import type { SectionId } from '../../state/registry'
 import {
@@ -16,8 +17,6 @@ import { useCheckoutContext } from './checkout-context'
 import type { SectionStatus } from './section'
 
 interface UseSectionControllerOptions {
-  /** True for the first section in checkout order — hides the Back action. */
-  isFirst?: boolean
   /** Async guard that runs before advancing. Return false to block. */
   onBeforeContinue?: () => Promise<boolean>
 }
@@ -27,11 +26,10 @@ export interface SectionController {
   isActive: boolean
   isUpNext: boolean
   isRequired: boolean
-  isFirst: boolean
   isContinuing: boolean
   handleContinue: () => void
   handleSkip: () => void
-  handleBack: (() => void) | undefined
+  handleBack: () => void
 }
 
 /**
@@ -46,7 +44,7 @@ export interface SectionController {
  */
 export function useSectionController(
   id: SectionId,
-  { isFirst = false, onBeforeContinue }: UseSectionControllerOptions = {},
+  { onBeforeContinue }: UseSectionControllerOptions = {},
 ): SectionController {
   const { requestTransitionScroll } = useCheckoutContext()
 
@@ -71,13 +69,13 @@ export function useSectionController(
       }
     }
 
-    capture('property_checkout_section_completed', { section_id: id, path })
+    captureEvent('property_checkout_section_completed', { section_id: id, path })
     requestTransitionScroll()
     completeCurrentSection()
   }, [onBeforeContinue, id, path, requestTransitionScroll, completeCurrentSection])
 
   function handleSkip() {
-    capture('property_checkout_section_skipped', { section_id: id, path })
+    captureEvent('property_checkout_section_skipped', { section_id: id, path })
     requestTransitionScroll()
     skipCurrentSection()
   }
@@ -92,20 +90,10 @@ export function useSectionController(
     isActive,
     isUpNext,
     isRequired,
-    isFirst,
     isContinuing,
     handleContinue,
     handleSkip,
-    handleBack: isFirst ? undefined : handleBack,
+    handleBack,
   }
 }
 
-// posthog.capture throws when posthog isn't initialized (e.g. tests). Swallow
-// in one place so each section file isn't repeating try/catch noise.
-function capture(event: string, properties: Record<string, unknown>) {
-  try {
-    posthog.capture(event, properties)
-  } catch {
-    // posthog unavailable — capture is best-effort.
-  }
-}

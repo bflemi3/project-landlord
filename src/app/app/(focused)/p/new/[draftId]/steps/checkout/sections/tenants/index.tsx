@@ -1,21 +1,24 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { Users } from 'lucide-react'
 
-import type { PropertyInput } from '../../../state/extraction-seeding'
-import type { SectionId } from '../../../state/registry'
+import type { PropertyInput } from '@/schemas/property'
+
+import type { SectionId } from '../../../../state/registry'
+import { type TenantRow } from './schemas'
+import { setAllTouched, type TenantsTouched } from './state'
+import { validateTenants } from './validation'
 import {
-  getTenantRowSchema,
-  type TenantRow,
-} from '../../../state/tenant-row-schema'
-import { usePropertyCreationState } from '../../../state/use-property-creation'
-import { useCheckoutContext } from '../checkout-context'
-import { Section } from '../section'
-import { useSectionController } from '../use-section-controller'
-import { SectionSkeleton } from './section-skeleton'
-import { SummaryRow } from './summary-row'
+  usePropertyCreationActions,
+  usePropertyCreationState,
+  usePropertyCreationStoreApi,
+} from '../../../../state/use-property-creation'
+import { useCheckoutContext } from '../../checkout-context'
+import { Section } from '../../section'
+import { SectionSkeleton } from '../section-skeleton'
+import { SummaryRow } from '../summary-row'
 import { TenantList } from './tenant-list'
 
 const SECTION_ID: SectionId = 'tenants'
@@ -26,7 +29,17 @@ export function TenantsSection() {
   const t = useTranslations('propertyCreation.checkout')
   const tTenants = useTranslations('propertyCreation.checkout.tenants')
   const { registerHeaderRef } = useCheckoutContext()
-  const ctrl = useSectionController(SECTION_ID)
+  const { setTouched } = usePropertyCreationActions()
+  const storeApi = usePropertyCreationStoreApi()
+
+  const promoteAllTouched = useCallback(() => {
+    const sectionData = storeApi.getState().sectionData.tenants as
+      | TenantRow[]
+      | undefined
+    setTouched<TenantsTouched>(SECTION_ID, (prev) =>
+      setAllTouched(prev, sectionData),
+    )
+  }, [setTouched, storeApi])
 
   const tenants = usePropertyCreationState(
     (s) => s.sectionData.tenants as TenantRow[],
@@ -35,13 +48,8 @@ export function TenantsSection() {
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
 
-  // Section-level aggregate validity. The empty list is vacuously valid, so
-  // Continue stays enabled at zero rows; with rows present, every row must
-  // pass its country-aware schema before Continue can advance.
-  const isValid = useMemo(
-    () => getTenantRowSchema(countryCode).array().safeParse(tenants).success,
-    [tenants, countryCode],
-  )
+  // Cached: shares the parse with row badges + section-level isValid checks.
+  const continueDisabled = !validateTenants(tenants, countryCode).ok
 
   const sectionSummary = useMemo(
     () =>
@@ -55,9 +63,8 @@ export function TenantsSection() {
   return (
     <Section
       id={SECTION_ID}
-      isActive={ctrl.isActive}
-      isUpNext={ctrl.isUpNext}
-      status={ctrl.status}
+      onFirstVisit={promoteAllTouched}
+      onLeave={promoteAllTouched}
     >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
@@ -70,6 +77,7 @@ export function TenantsSection() {
         </Section.HeaderContent>
         <Section.Status
           doneLabel={t('status.done')}
+          needsAttentionLabel={t('status.needsAttention')}
           skippedLabel={t('status.skipped')}
           upNextLabel={t('status.upNext')}
         />
@@ -79,12 +87,8 @@ export function TenantsSection() {
         <Section.Actions
           backLabel={t('actions.back')}
           continueLabel={t('actions.continue')}
-          continueDisabled={!isValid}
+          continueDisabled={continueDisabled}
           skipLabel={t('actions.skip')}
-          showSkip={!ctrl.isRequired}
-          onBack={ctrl.handleBack}
-          onContinue={ctrl.handleContinue}
-          onSkip={ctrl.handleSkip}
         />
       </Section.Body>
     </Section>

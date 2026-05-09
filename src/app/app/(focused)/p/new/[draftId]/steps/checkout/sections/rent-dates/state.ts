@@ -1,0 +1,37 @@
+import type { PropertyCreationStateShape } from '../../../../state/store'
+import {
+  defaultRentDatesInput,
+  RENT_DATES_FIELD_NAMES,
+  type RentDatesInput,
+} from './schemas'
+import { validateRentDates } from './validation'
+
+export type RentDatesTouched = ReadonlySet<string>
+
+export function isValid(state: PropertyCreationStateShape): boolean {
+  return validateRentDates(
+    state.sectionData['rent-dates'] as RentDatesInput,
+    state.path,
+  ).success
+}
+
+export function isDefault(slice: RentDatesInput | undefined): boolean {
+  if (!slice) return true
+  const d = defaultRentDatesInput()
+  return (
+    slice.amount_minor === d.amount_minor &&
+    slice.currency === d.currency &&
+    slice.due_day === d.due_day &&
+    slice.start_date === d.start_date &&
+    slice.end_date === d.end_date
+  )
+}
+
+export function defaultTouched(): RentDatesTouched {
+  return new Set()
+}
+
+export function setAllTouched(prev: RentDatesTouched): RentDatesTouched {
+  if (RENT_DATES_FIELD_NAMES.every((f) => prev.has(f))) return prev
+  return new Set(RENT_DATES_FIELD_NAMES)
+}

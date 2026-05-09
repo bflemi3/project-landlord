@@ -230,6 +230,7 @@ interface CurrencyInputProps {
   id?: string
   name?: string
   placeholder?: string
+  ref?: React.Ref<HTMLInputElement>
   size?: CurrencyInputSize
   value: number | undefined
   variant?: CurrencyInputVariant
@@ -248,6 +249,7 @@ function CurrencyInput({
   id,
   name,
   placeholder = '0',
+  ref,
   size = 'default',
   value,
   variant = 'card',
@@ -431,6 +433,7 @@ function CurrencyInput({
         ) : null}
 
         <input
+          ref={ref}
           id={id}
           name={name}
           type="text"
@@ -446,6 +449,7 @@ function CurrencyInput({
             showFormattedDisplay && 'absolute inset-0 h-full w-full opacity-0',
           )}
           aria-describedby={ariaDescribedBy}
+          aria-invalid={ariaInvalid}
           aria-label={ariaLabel ?? `Amount in ${currency}`}
         />
       </div>

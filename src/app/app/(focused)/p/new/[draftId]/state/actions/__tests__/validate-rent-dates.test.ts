@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { validateRentDatesCore } from '../validate-rent-dates'
-import { defaultRentDatesInput } from '../../rent-dates-schema'
+import { defaultRentDatesInput } from '../../../steps/checkout/sections/rent-dates/schemas'
 
 const supabase = {} as TypedSupabaseClient
 
