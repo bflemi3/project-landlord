@@ -176,7 +176,7 @@ describe('mergeExtractionIntoSectionData', () => {
           amount: 450_000,
           currency: 'USD',
           dueDay: 10,
-          includes: ['rent', 'condo'],
+          includes: ['condo'],
         },
       }),
     )

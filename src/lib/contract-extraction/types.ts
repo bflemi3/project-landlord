@@ -59,11 +59,10 @@ export interface ContractRent {
   /** Day of month (1-31) */
   dueDay: number | null
   /**
-   * What the stated amount covers, e.g. ["rent", "condo", "IPTU"]. Always an
-   * array — an empty array means the contract doesn't itemize what rent bundles
-   * (treat as "rent only"), not "field is absent".
+   * Expense types covered by the rent payment. Always an array — an empty
+   * array means rent doesn't bundle any expenses, not "field absent".
    */
-  includes: string[]
+  includes: ExpenseType[]
 }
 
 export interface ContractDates {

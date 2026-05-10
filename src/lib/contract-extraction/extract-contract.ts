@@ -157,8 +157,7 @@ function normalizeParties(raw: LlmRaw['landlords']): ContractParty[] | null {
 function normalizeExpense(raw: LlmRaw['expenses'][number]): ContractExpense | null {
   const providerName = strOrNull(raw.providerName)
   const providerTaxId = strOrNull(raw.providerTaxId)
-  // "none" is the sentinel for "expense has its own dedicated bill".
-  const bundledInto: ExpenseBundledInto = raw.bundledInto === 'none' ? null : raw.bundledInto
+  const bundledInto: ExpenseBundledInto = raw.bundledInto
   if (raw.type == null && bundledInto == null && !providerName && !providerTaxId) {
     return null
   }

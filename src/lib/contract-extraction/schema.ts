@@ -46,52 +46,6 @@ const llmAddressSchema = z.object({
   country: z.string().describe('ISO 3166-1 alpha-2 country code (e.g., BR, US, MX, ES, CO). Infer from address format, currency, or language if not explicitly stated. Empty string "" only if truly undeterminable.'),
 })
 
-const llmRentSchema = z.object({
-  amount: z
-    .number()
-    .refine((n) => Number.isInteger(n) && n >= 0, {
-      message: 'amount must be a non-negative integer (minor units)',
-    })
-    .describe(
-      'Rent amount in integer minor units (centavos, cents). Must be a whole non-negative integer — do not emit a decimal. Example: R$2,500.00 = 250000. Use 0 only if the contract does not state a rent.',
-    ),
-  currency: z.string().describe('ISO 4217 currency code (e.g., BRL, USD, EUR). Empty string "" only if truly undeterminable.'),
-  dueDay: z
-    .number()
-    .refine((n) => Number.isInteger(n) && n >= 1 && n <= 31, {
-      message: 'dueDay must be an integer between 1 and 31',
-    })
-    .nullable()
-    .describe(
-      'Day of month rent is due. Whole integer in the range 1..31 (inclusive). Null if the contract does not specify a numeric due day.',
-    ),
-  includes: z
-    .array(z.string())
-    .describe('What the stated amount covers, e.g. ["rent", "condo", "IPTU"]. Empty array [] if the contract does not break this out.'),
-})
-
-const llmContractDatesSchema = z.object({
-  start: z.string().describe('Contract start date in YYYY-MM-DD format. Empty string "" if not stated.'),
-  end: z.string().describe('Contract end date in YYYY-MM-DD format. Empty string "" if not stated.'),
-})
-
-const rentAdjustmentFrequencySchema = z.enum(['monthly', 'quarterly', 'biannual', 'annual', 'other'])
-const rentAdjustmentMethodSchema = z.enum(['index', 'fixed_amount', 'fixed_percentage', 'other'])
-
-const llmRentAdjustmentSchema = z.object({
-  date: z.string().describe('Date or description of when the rent adjustment applies (e.g., "2027-01-01", "every January"). Empty string "" if not stated.'),
-  frequency: rentAdjustmentFrequencySchema.nullable().describe('How often the rent is adjusted. Null if the contract does not specify.'),
-  method: rentAdjustmentMethodSchema.nullable().describe('How the adjustment is calculated: "index" (tied to an inflation index like IPCA, CPI, IPC), "fixed_amount" (specific currency amount increase), "fixed_percentage" (e.g., 5% annual increase), or "other" if unclear. Null if the contract does not specify.'),
-  indexName: z.string().describe('Name of the inflation index if method is "index" (e.g., IPCA in Brazil, CPI in US, IPC in Spain/Mexico). Empty string "" if not index-based.'),
-  value: z.number().nullable().describe('Fixed adjustment amount (integer minor units) or percentage value. E.g., 5 for a 5% increase, or 50000 for a R$500 increase. Null if index-based or not applicable.'),
-})
-
-const llmPartySchema = z.object({
-  name: z.string().describe('Full legal name of the party. Empty string "" if not stated.'),
-  taxId: z.string().describe('Personal tax ID (CPF in Brazil, SSN in US, DNI in Spain, RFC/CURP in Mexico). Empty string "" if not stated.'),
-  email: z.string().describe('Email address. Empty string "" if not stated.'),
-})
-
 const expenseTypeSchema = z
   .enum([
     'electricity',
@@ -119,16 +73,61 @@ const expenseTypeSchema = z
       'Bundled expenses like "água e esgoto" should be split into separate entries (one "water", one "sewer").',
   )
 
-// `bundledInto` uses "none" as the sentinel for "expense has its own dedicated
-// bill" to avoid adding a third `.nullable()` union branch on top of the
-// existing expense-type + "rent" literal union. The engine maps "none" → null.
+const llmRentSchema = z.object({
+  amount: z
+    .number()
+    .refine((n) => Number.isInteger(n) && n >= 0, {
+      message: 'amount must be a non-negative integer (minor units)',
+    })
+    .describe(
+      'Rent amount in integer minor units (centavos, cents). Must be a whole non-negative integer — do not emit a decimal. Example: R$2,500.00 = 250000. Use 0 only if the contract does not state a rent.',
+    ),
+  currency: z.string().describe('ISO 4217 currency code (e.g., BRL, USD, EUR). Empty string "" only if truly undeterminable.'),
+  dueDay: z
+    .number()
+    .refine((n) => Number.isInteger(n) && n >= 1 && n <= 31, {
+      message: 'dueDay must be an integer between 1 and 31',
+    })
+    .nullable()
+    .describe(
+      'Day of month rent is due. Whole integer in the range 1..31 (inclusive). Null if the contract does not specify a numeric due day.',
+    ),
+  includes: z
+    .array(expenseTypeSchema)
+    .describe(
+      'Expense types covered by the rent payment (e.g., "the rent includes water and IPTU"). Use the canonical ExpenseType values — map IPTU/IBI/predial to "other". Empty array [] if rent does not bundle any expenses.',
+    ),
+})
+
+const llmContractDatesSchema = z.object({
+  start: z.string().describe('Contract start date in YYYY-MM-DD format. Empty string "" if not stated.'),
+  end: z.string().describe('Contract end date in YYYY-MM-DD format. Empty string "" if not stated.'),
+})
+
+const rentAdjustmentFrequencySchema = z.enum(['monthly', 'quarterly', 'biannual', 'annual', 'other'])
+const rentAdjustmentMethodSchema = z.enum(['index', 'fixed_amount', 'fixed_percentage', 'other'])
+
+const llmRentAdjustmentSchema = z.object({
+  date: z.string().describe('Date or description of when the rent adjustment applies (e.g., "2027-01-01", "every January"). Empty string "" if not stated.'),
+  frequency: rentAdjustmentFrequencySchema.nullable().describe('How often the rent is adjusted. Null if the contract does not specify.'),
+  method: rentAdjustmentMethodSchema.nullable().describe('How the adjustment is calculated: "index" (tied to an inflation index like IPCA, CPI, IPC), "fixed_amount" (specific currency amount increase), "fixed_percentage" (e.g., 5% annual increase), or "other" if unclear. Null if the contract does not specify.'),
+  indexName: z.string().describe('Name of the inflation index if method is "index" (e.g., IPCA in Brazil, CPI in US, IPC in Spain/Mexico). Empty string "" if not index-based.'),
+  value: z.number().nullable().describe('Fixed adjustment amount (integer minor units) or percentage value. E.g., 5 for a 5% increase, or 50000 for a R$500 increase. Null if index-based or not applicable.'),
+})
+
+const llmPartySchema = z.object({
+  name: z.string().describe('Full legal name of the party. Empty string "" if not stated.'),
+  taxId: z.string().describe('Personal tax ID (CPF in Brazil, SSN in US, DNI in Spain, RFC/CURP in Mexico). Empty string "" if not stated.'),
+  email: z.string().describe('Email address. Empty string "" if not stated.'),
+})
+
 const llmExpenseBundledIntoSchema = z
-  .union([expenseTypeSchema, z.literal('rent'), z.literal('none')])
+  .union([expenseTypeSchema, z.literal('rent'), z.null()])
   .describe(
     'Where this expense is paid from: ' +
       '"rent" → the amount rolls up into the monthly rent payment (e.g., "the rent includes IPTU"); ' +
       'an expense type like "condo" → the bill is paid together with that category (e.g., a condo fee that covers water); ' +
-      '"none" → this expense has its own dedicated bill. ' +
+      'null → this expense has its own dedicated bill. ' +
       'Every recurring service the contract mentions should be a first-class expense entry — if multiple services share one bill, the "secondary" services set bundledInto to the type of the primary bill.',
   )
 
@@ -208,8 +207,8 @@ const contractRentSchema = z.object({
       message: 'dueDay must be an integer between 1 and 31',
     })
     .nullable(),
-  // Always an array — empty means "no bundling info", not "field absent".
-  includes: z.array(z.string()),
+  // Always an array of canonical expense types — empty means "rent doesn't bundle anything", not "field absent".
+  includes: z.array(expenseTypeSchema),
 })
 
 const contractDatesSchema = z.object({

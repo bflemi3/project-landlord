@@ -36,7 +36,7 @@ Brazilian addresses have specific components. Map them as:
 - Brazilian currency formatting uses "." as thousands separator and "," as decimal separator: "R$ 6.300,00" = 6300.00 BRL = 630000 minor units. "R$ 1.250,50" = 1250.50 BRL = 125050 minor units.
 - currency → almost always "BRL" (the "R$" symbol). Rarely a Brazilian contract denominates rent in USD or EUR for a foreign-tenant arrangement — use the symbol actually shown ("US$" / "$" in a US context → USD, "€" → EUR). Do not default to BRL if the symbol is explicitly foreign.
 - dueDay → typically stated as "até o dia X" or "no dia X de cada mês". In a Quadro Resumo this often appears as a terse row with just the number ("Vencimento: 5", "Dia de pagamento: 5", "Dia do vencimento: 05"). If the contract specifies a non-numeric due date ("último dia útil do mês", "primeiro dia útil"), return null.
-- includes → if the rent amount explicitly bundles expenses (e.g., "aluguel inclui condomínio e IPTU"), list them here. Otherwise null.
+- includes → if the rent amount explicitly bundles expenses (e.g., "aluguel inclui condomínio e IPTU"), list the canonical ExpenseType values (e.g., ["condo", "other"]). Empty array [] if rent doesn't bundle anything.
 
 ## Contract dates
 
