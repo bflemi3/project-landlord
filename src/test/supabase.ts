@@ -34,15 +34,28 @@ export async function createTestUser(
   return { client, userId: userData.user.id, email: testEmail }
 }
 
-/** Create a property with a unit via the RPC. */
+/** Create a property with a unit via the RPC. Uses the new create_property
+ *  RPC which is idempotent on properties.id; we generate a fresh uuid here so
+ *  every test gets its own row. The legacy create_property_with_membership /
+ *  create_property_with_unit RPCs were dropped during the property-creation
+ *  persistence migration. */
 export async function createTestProperty(
   client: TypedClient,
   name = 'Test Property',
 ): Promise<{ propertyId: string; unitId: string }> {
-  const { data, error } = await client.rpc('create_property_with_membership', {
-    p_name: name, p_street: 'Rua Teste', p_number: '123',
-    p_city: 'Sao Paulo', p_state: 'SP', p_postal_code: '01310100',
-    p_due_day: 10,
+  const propertyId = crypto.randomUUID()
+  const { data, error } = await client.rpc('create_property', {
+    p_property_id: propertyId,
+    p_property: {
+      name,
+      country_code: 'BR',
+      street: 'Rua Teste',
+      number: '123',
+      city: 'Sao Paulo',
+      state: 'SP',
+      postal_code: '01310100',
+    } as never,
+    p_unit: { name, currency: 'BRL' } as never,
   })
   if (error || !data) throw new Error(`Failed to create test property: ${error?.message}`)
   const result = data as unknown as { property_id: string; unit_id: string }

@@ -17,10 +17,14 @@ export async function fetchDefinitionsWithRules(
   supabase: TypedSupabaseClient,
   unitId: string,
 ): Promise<ChargeDefinitionWithRule[]> {
+  // amount_behavior replaces the legacy charge_type column. Rent rows live
+  // in the rent table now; charge_definitions only carries non-rent
+  // expenses. The downstream chargeType field is derived for UI consumers
+  // that still branch on the old union.
   const { data, error } = await supabase
     .from('charge_definitions')
     .select(`
-      id, name, charge_type, amount_minor, currency, is_active,
+      id, name, amount_behavior, amount_minor, currency, is_active,
       recurring_rules ( start_date, end_date, day_of_month ),
       responsibility_allocations ( role, allocation_type, percentage, fixed_minor )
     `)
@@ -50,7 +54,7 @@ export async function fetchDefinitionsWithRules(
     return {
       id: row.id,
       name: row.name,
-      chargeType: row.charge_type as 'rent' | 'recurring' | 'variable',
+      chargeType: (row.amount_behavior === 'variable' ? 'variable' : 'recurring') as 'rent' | 'recurring' | 'variable',
       amountMinor: row.amount_minor,
       currency: row.currency,
       isActive: row.is_active,

@@ -83,7 +83,9 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
 
       posthog.capture('charge_definition_created', {
         property_id: propertyId,
-        charge_type: config.chargeType,
+        // Property name kept as the legacy taxonomy term to preserve event
+        // continuity in PostHog. The DB no longer has a charge_type column.
+        chargeKind: config.chargeType,
       })
     }
 

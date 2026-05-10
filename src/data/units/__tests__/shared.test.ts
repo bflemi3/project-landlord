@@ -60,15 +60,18 @@ describe('fetchUnitCharges', () => {
   })
 
   it('maps rows with default split when no allocations', async () => {
+    // amount_behavior replaces the legacy charge_type column. Rent now lives
+    // in the rent table; charge_definitions only carries non-rent expenses.
+    // The reader maps amount_behavior 'fixed' -> chargeType 'recurring'.
     const rows = [{
-      id: 'c1', name: 'Rent', charge_type: 'rent',
+      id: 'c1', name: 'Condo', expense_type: 'condo', amount_behavior: 'fixed',
       amount_minor: 150000, currency: 'BRL', is_active: true,
       responsibility_allocations: [],
     }]
     const result = await fetchUnitCharges(mockSupabase({ data: rows }), 'u1')
     expect(result).toHaveLength(1)
     expect(result[0].id).toBe('c1')
-    expect(result[0].chargeType).toBe('rent')
+    expect(result[0].chargeType).toBe('recurring')
     expect(result[0].split.payer).toBe('tenant')
   })
 })

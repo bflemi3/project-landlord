@@ -56,6 +56,7 @@ const expenseTypeSchema = z
     'trash',
     'sewer',
     'cable',
+    'insurance',
     'maintenance',
     'other',
   ])

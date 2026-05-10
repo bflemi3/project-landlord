@@ -18,13 +18,16 @@ export async function SummaryCard({ statementId }: { statementId: string }) {
   const tenantTotal = formatCurrency(statement.tenantTotalMinor, statement.currency)
   const landlordTotal = formatCurrency(statement.landlordTotalMinor, statement.currency)
   const total = formatCurrency(statement.totalAmountMinor, statement.currency)
-  const dueDate = new Date(statement.periodYear, statement.periodMonth - 1, unit.dueDay)
+  // unit.dueDay is sourced from the unit's active rent row; fall back to 10
+  // when no rent row exists yet (pre-pivot units / units mid-creation).
+  const effectiveDueDay = unit.dueDay ?? 10
+  const dueDate = new Date(statement.periodYear, statement.periodMonth - 1, effectiveDueDay)
   const dueDateLabel = dueDate.toLocaleDateString(locale, { month: 'long', day: 'numeric', year: 'numeric' })
   const isEstimated = missingCharges.length > 0
   const hasSplit = statement.landlordTotalMinor > 0
-  const urgency = getStatementUrgency(unit.dueDay, statement.periodYear, statement.periodMonth)
-  const daysUntilPublish = getDaysUntilPublishBy(unit.dueDay, statement.periodYear, statement.periodMonth)
-  const publishByDay = getPublishByDay(unit.dueDay)
+  const urgency = getStatementUrgency(effectiveDueDay, statement.periodYear, statement.periodMonth)
+  const daysUntilPublish = getDaysUntilPublishBy(effectiveDueDay, statement.periodYear, statement.periodMonth)
+  const publishByDay = getPublishByDay(effectiveDueDay)
   const publishByDate = new Date(statement.periodYear, statement.periodMonth - 1, publishByDay)
   const publishByLabel = publishByDate.toLocaleDateString(locale, { month: 'long', day: 'numeric' })
 

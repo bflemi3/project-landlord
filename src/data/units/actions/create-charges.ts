@@ -5,9 +5,16 @@ import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
+// chargeType is the legacy three-way picker in pre-pivot UIs. After this
+// migration train rent leaves charge_definitions entirely; this action no
+// longer creates rent rows here. Callers passing 'rent' get the same
+// amount_behavior=fixed treatment as 'recurring'. expenseType is required by
+// the new schema; defaults to 'other' when not supplied so legacy callers
+// keep compiling. Migrate explicit callers to set expenseType in their PRs.
 export interface ChargeInput extends SplitInput {
   name: string
   chargeType: 'rent' | 'recurring' | 'variable'
+  expenseType?: 'electricity' | 'water' | 'gas' | 'internet' | 'condo' | 'trash' | 'sewer' | 'cable' | 'maintenance' | 'insurance' | 'other'
   amountMinor: number | null
 }
 
@@ -40,13 +47,19 @@ export async function createChargesCore(
       continue
     }
 
-    // 1. Create charge definition
+    // 1. Create charge definition.
+    // amount_behavior derives from chargeType ('variable' -> variable; rent
+    // and recurring -> fixed). Rent rows do NOT belong here under the new
+    // model; if a caller still passes chargeType='rent' it inserts a fixed
+    // expense (legacy compatibility shim). The wizard owns rent inserts
+    // through the rent table.
     const { data: chargeDef, error: chargeError } = await supabase
       .from('charge_definitions')
       .insert({
         unit_id: unitId,
         name: charge.name,
-        charge_type: charge.chargeType,
+        expense_type: charge.expenseType ?? 'other',
+        amount_behavior: charge.chargeType === 'variable' ? 'variable' : 'fixed',
         amount_minor: charge.amountMinor,
         currency: 'BRL',
       })

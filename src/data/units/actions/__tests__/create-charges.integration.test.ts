@@ -91,7 +91,10 @@ describe('createChargesCore', () => {
       .eq('name', 'Rent')
 
     expect(chargeDefs).toHaveLength(1)
-    expect(chargeDefs![0].charge_type).toBe('rent')
+    // Rent now lives in the rent table; this action no longer produces rent
+    // rows. The compatibility shim maps chargeType='rent' to amount_behavior
+    // 'fixed'. Update the assertion accordingly.
+    expect(chargeDefs![0].amount_behavior).toBe('fixed')
     expect(chargeDefs![0].amount_minor).toBe(200000)
     expect(chargeDefs![0].currency).toBe('BRL')
 

@@ -80,50 +80,76 @@ export type Database = {
       }
       charge_definitions: {
         Row: {
+          amount_behavior: Database["public"]["Enums"]["expense_amount_behavior"]
           amount_minor: number | null
-          charge_type: Database["public"]["Enums"]["charge_type"]
+          bundled_into_charge_id: string | null
+          bundled_into_rent: boolean
           created_at: string
           currency: string
           deleted_at: string | null
+          expense_type: Database["public"]["Enums"]["expense_type"]
           id: string
           is_active: boolean
           name: string
-          provider_id: string | null
+          provider_profile_id: string | null
+          provider_request_id: string | null
           unit_id: string
           updated_at: string
         }
         Insert: {
+          amount_behavior?: Database["public"]["Enums"]["expense_amount_behavior"]
           amount_minor?: number | null
-          charge_type: Database["public"]["Enums"]["charge_type"]
+          bundled_into_charge_id?: string | null
+          bundled_into_rent?: boolean
           created_at?: string
           currency?: string
           deleted_at?: string | null
+          expense_type: Database["public"]["Enums"]["expense_type"]
           id?: string
           is_active?: boolean
           name: string
-          provider_id?: string | null
+          provider_profile_id?: string | null
+          provider_request_id?: string | null
           unit_id: string
           updated_at?: string
         }
         Update: {
+          amount_behavior?: Database["public"]["Enums"]["expense_amount_behavior"]
           amount_minor?: number | null
-          charge_type?: Database["public"]["Enums"]["charge_type"]
+          bundled_into_charge_id?: string | null
+          bundled_into_rent?: boolean
           created_at?: string
           currency?: string
           deleted_at?: string | null
+          expense_type?: Database["public"]["Enums"]["expense_type"]
           id?: string
           is_active?: boolean
           name?: string
-          provider_id?: string | null
+          provider_profile_id?: string | null
+          provider_request_id?: string | null
           unit_id?: string
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "charge_definitions_provider_id_fkey"
-            columns: ["provider_id"]
+            foreignKeyName: "charge_definitions_bundled_into_charge_id_fkey"
+            columns: ["bundled_into_charge_id"]
             isOneToOne: false
-            referencedRelation: "providers"
+            referencedRelation: "charge_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charge_definitions_provider_profile_id_fkey"
+            columns: ["provider_profile_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoice_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charge_definitions_provider_request_id_fkey"
+            columns: ["provider_request_id"]
+            isOneToOne: false
+            referencedRelation: "provider_requests"
             referencedColumns: ["id"]
           },
           {
@@ -296,6 +322,84 @@ export type Database = {
             columns: ["company_cache_id"]
             isOneToOne: false
             referencedRelation: "company_cache"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contracts: {
+        Row: {
+          bytes: number | null
+          created_at: string
+          deleted_at: string | null
+          extracted_at: string | null
+          extraction_data: Json | null
+          extraction_language: string | null
+          extraction_model: string | null
+          extraction_schema_version: number
+          id: string
+          is_active: boolean
+          mime_type: string
+          original_filename: string | null
+          raw_text: string | null
+          storage_path: string
+          unit_id: string
+          updated_at: string
+          upload_status: Database["public"]["Enums"]["file_upload_status"]
+          uploaded_by: string
+        }
+        Insert: {
+          bytes?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          extracted_at?: string | null
+          extraction_data?: Json | null
+          extraction_language?: string | null
+          extraction_model?: string | null
+          extraction_schema_version?: number
+          id?: string
+          is_active?: boolean
+          mime_type: string
+          original_filename?: string | null
+          raw_text?: string | null
+          storage_path: string
+          unit_id: string
+          updated_at?: string
+          upload_status?: Database["public"]["Enums"]["file_upload_status"]
+          uploaded_by: string
+        }
+        Update: {
+          bytes?: number | null
+          created_at?: string
+          deleted_at?: string | null
+          extracted_at?: string | null
+          extraction_data?: Json | null
+          extraction_language?: string | null
+          extraction_model?: string | null
+          extraction_schema_version?: number
+          id?: string
+          is_active?: boolean
+          mime_type?: string
+          original_filename?: string | null
+          raw_text?: string | null
+          storage_path?: string
+          unit_id?: string
+          updated_at?: string
+          upload_status?: Database["public"]["Enums"]["file_upload_status"]
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contracts_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contracts_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -565,12 +669,14 @@ export type Database = {
           invited_by: string
           invited_email: string
           invited_name: string | null
+          last_emailed_at: string | null
           personal_note: string | null
           property_address_hint: string | null
           property_id: string | null
           role: Database["public"]["Enums"]["user_role"]
           source: string | null
           status: Database["public"]["Enums"]["invitation_status"]
+          tax_id: string | null
           unit_id: string | null
           updated_at: string
         }
@@ -584,12 +690,14 @@ export type Database = {
           invited_by: string
           invited_email: string
           invited_name?: string | null
+          last_emailed_at?: string | null
           personal_note?: string | null
           property_address_hint?: string | null
           property_id?: string | null
           role: Database["public"]["Enums"]["user_role"]
           source?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
+          tax_id?: string | null
           unit_id?: string | null
           updated_at?: string
         }
@@ -603,12 +711,14 @@ export type Database = {
           invited_by?: string
           invited_email?: string
           invited_name?: string | null
+          last_emailed_at?: string | null
           personal_note?: string | null
           property_address_hint?: string | null
           property_id?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           source?: string | null
           status?: Database["public"]["Enums"]["invitation_status"]
+          tax_id?: string | null
           unit_id?: string | null
           updated_at?: string
         }
@@ -1024,6 +1134,104 @@ export type Database = {
           },
         ]
       }
+      provider_requests: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          city: string | null
+          country_code: string
+          created_at: string
+          decline_reason: string | null
+          expense_type: Database["public"]["Enums"]["expense_type"] | null
+          id: string
+          neighborhood: string | null
+          normalized_provider_name: string | null
+          notes: string | null
+          profile_id: string | null
+          provider_id: string | null
+          requested_by: string | null
+          requested_provider_name: string | null
+          requested_provider_tax_id: string | null
+          source: Database["public"]["Enums"]["provider_request_source"]
+          state: string | null
+          status: Database["public"]["Enums"]["provider_request_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          decline_reason?: string | null
+          expense_type?: Database["public"]["Enums"]["expense_type"] | null
+          id?: string
+          neighborhood?: string | null
+          normalized_provider_name?: string | null
+          notes?: string | null
+          profile_id?: string | null
+          provider_id?: string | null
+          requested_by?: string | null
+          requested_provider_name?: string | null
+          requested_provider_tax_id?: string | null
+          source: Database["public"]["Enums"]["provider_request_source"]
+          state?: string | null
+          status?: Database["public"]["Enums"]["provider_request_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          city?: string | null
+          country_code?: string
+          created_at?: string
+          decline_reason?: string | null
+          expense_type?: Database["public"]["Enums"]["expense_type"] | null
+          id?: string
+          neighborhood?: string | null
+          normalized_provider_name?: string | null
+          notes?: string | null
+          profile_id?: string | null
+          provider_id?: string | null
+          requested_by?: string | null
+          requested_provider_name?: string | null
+          requested_provider_tax_id?: string | null
+          source?: Database["public"]["Enums"]["provider_request_source"]
+          state?: string | null
+          status?: Database["public"]["Enums"]["provider_request_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "provider_requests_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_requests_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "provider_invoice_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_requests_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_requests_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_test_bills: {
         Row: {
           created_at: string
@@ -1033,8 +1241,10 @@ export type Database = {
           mime_type: string
           profile_id: string | null
           provider_id: string | null
+          provider_request_id: string | null
           source: string
           storage_path: string
+          upload_status: Database["public"]["Enums"]["file_upload_status"]
           uploaded_by: string | null
         }
         Insert: {
@@ -1042,11 +1252,13 @@ export type Database = {
           file_name: string
           file_size_bytes?: number | null
           id?: string
-          mime_type?: string
+          mime_type: string
           profile_id?: string | null
           provider_id?: string | null
+          provider_request_id?: string | null
           source: string
           storage_path: string
+          upload_status?: Database["public"]["Enums"]["file_upload_status"]
           uploaded_by?: string | null
         }
         Update: {
@@ -1057,8 +1269,10 @@ export type Database = {
           mime_type?: string
           profile_id?: string | null
           provider_id?: string | null
+          provider_request_id?: string | null
           source?: string
           storage_path?: string
+          upload_status?: Database["public"]["Enums"]["file_upload_status"]
           uploaded_by?: string | null
         }
         Relationships: [
@@ -1074,6 +1288,13 @@ export type Database = {
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "provider_test_bills_provider_request_id_fkey"
+            columns: ["provider_request_id"]
+            isOneToOne: false
+            referencedRelation: "provider_requests"
             referencedColumns: ["id"]
           },
         ]
@@ -1206,6 +1427,81 @@ export type Database = {
             columns: ["charge_definition_id"]
             isOneToOne: false
             referencedRelation: "charge_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rent: {
+        Row: {
+          adjustment_amount_minor: number | null
+          adjustment_basis_points: number | null
+          adjustment_frequency: string | null
+          adjustment_index: string | null
+          adjustment_method: string | null
+          amount_minor: number
+          created_at: string
+          created_by: string
+          currency: string
+          deleted_at: string | null
+          due_day_of_month: number
+          end_date: string | null
+          id: string
+          includes: Database["public"]["Enums"]["expense_type"][] | null
+          start_date: string | null
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          adjustment_amount_minor?: number | null
+          adjustment_basis_points?: number | null
+          adjustment_frequency?: string | null
+          adjustment_index?: string | null
+          adjustment_method?: string | null
+          amount_minor: number
+          created_at?: string
+          created_by: string
+          currency: string
+          deleted_at?: string | null
+          due_day_of_month: number
+          end_date?: string | null
+          id?: string
+          includes?: Database["public"]["Enums"]["expense_type"][] | null
+          start_date?: string | null
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          adjustment_amount_minor?: number | null
+          adjustment_basis_points?: number | null
+          adjustment_frequency?: string | null
+          adjustment_index?: string | null
+          adjustment_method?: string | null
+          amount_minor?: number
+          created_at?: string
+          created_by?: string
+          currency?: string
+          deleted_at?: string | null
+          due_day_of_month?: number
+          end_date?: string | null
+          id?: string
+          includes?: Database["public"]["Enums"]["expense_type"][] | null
+          start_date?: string | null
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rent_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rent_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
             referencedColumns: ["id"]
           },
         ]
@@ -1453,7 +1749,6 @@ export type Database = {
           created_at: string
           currency: string
           deleted_at: string | null
-          due_day_of_month: number
           id: string
           name: string
           pix_key: string | null
@@ -1465,7 +1760,6 @@ export type Database = {
           created_at?: string
           currency?: string
           deleted_at?: string | null
-          due_day_of_month?: number
           id?: string
           name: string
           pix_key?: string | null
@@ -1477,7 +1771,6 @@ export type Database = {
           created_at?: string
           currency?: string
           deleted_at?: string | null
-          due_day_of_month?: number
           id?: string
           name?: string
           pix_key?: string | null
@@ -1563,32 +1856,17 @@ export type Database = {
       }
     }
     Functions: {
-      create_property_with_membership: {
+      create_property: {
         Args: {
-          p_city?: string
-          p_complement?: string
-          p_country_code?: string
-          p_due_day?: number
-          p_name: string
-          p_neighborhood?: string
-          p_number?: string
-          p_postal_code?: string
-          p_state?: string
-          p_street?: string
-        }
-        Returns: Json
-      }
-      create_property_with_unit: {
-        Args: {
-          p_city?: string
-          p_complement?: string
-          p_country_code?: string
-          p_name: string
-          p_neighborhood?: string
-          p_number?: string
-          p_postal_code?: string
-          p_state?: string
-          p_street?: string
+          p_contract?: Json
+          p_expenses?: Json
+          p_property: Json
+          p_property_id: string
+          p_provider_request_drafts?: Json
+          p_rent?: Json
+          p_tax_id?: string
+          p_tenants?: Json
+          p_unit: Json
         }
         Returns: Json
       }
@@ -1614,12 +1892,15 @@ export type Database = {
       }
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }
+      is_unit_landlord: { Args: { p_unit_id: string }; Returns: boolean }
       is_unit_member: { Args: { p_unit_id: string }; Returns: boolean }
+      normalize_provider_name: { Args: { p_input: string }; Returns: string }
       redeem_invite: { Args: { invite_code: string }; Returns: Json }
       replace_allocations: {
         Args: { p_allocations: Json; p_charge_definition_id: string }
         Returns: undefined
       }
+      unaccent: { Args: { "": string }; Returns: string }
       validate_invite_code: { Args: { invite_code: string }; Returns: boolean }
       validate_invite_with_context: {
         Args: { invite_code: string }
@@ -1642,8 +1923,8 @@ export type Database = {
         | "confirm"
         | "reject"
       charge_source: "manual" | "imported" | "corrected"
-      charge_type: "rent" | "recurring" | "variable"
       dispute_status: "open" | "resolved"
+      expense_amount_behavior: "fixed" | "variable" | "unknown"
       expense_type:
         | "electricity"
         | "water"
@@ -1653,15 +1934,22 @@ export type Database = {
         | "trash"
         | "sewer"
         | "cable"
+        | "insurance"
         | "maintenance"
         | "other"
+      file_upload_status: "pending" | "uploaded" | "failed"
       ingestion_status:
         | "uploaded"
         | "processing"
         | "ready_for_review"
         | "approved"
         | "failed"
-      invitation_status: "pending" | "accepted" | "expired" | "cancelled"
+      invitation_status:
+        | "pending"
+        | "accepted"
+        | "expired"
+        | "cancelled"
+        | "not_invited"
       payment_method: "pix" | "bank_transfer" | "cash" | "other"
       payment_status: "pending" | "confirmed" | "rejected"
       pix_key_type: "cpf" | "email" | "phone" | "random"
@@ -1676,6 +1964,17 @@ export type Database = {
         | "insurance"
         | "other"
       provider_profile_status: "draft" | "active" | "deprecated"
+      provider_request_source:
+        | "user_new_provider"
+        | "user_correction"
+        | "engineer"
+        | "system"
+      provider_request_status:
+        | "pending"
+        | "in_progress"
+        | "testing"
+        | "complete"
+        | "declined"
       split_type: "percentage" | "fixed_amount"
       statement_status: "draft" | "published"
       user_role: "landlord" | "tenant"
@@ -1819,8 +2118,8 @@ export const Constants = {
         "reject",
       ],
       charge_source: ["manual", "imported", "corrected"],
-      charge_type: ["rent", "recurring", "variable"],
       dispute_status: ["open", "resolved"],
+      expense_amount_behavior: ["fixed", "variable", "unknown"],
       expense_type: [
         "electricity",
         "water",
@@ -1830,9 +2129,11 @@ export const Constants = {
         "trash",
         "sewer",
         "cable",
+        "insurance",
         "maintenance",
         "other",
       ],
+      file_upload_status: ["pending", "uploaded", "failed"],
       ingestion_status: [
         "uploaded",
         "processing",
@@ -1840,7 +2141,13 @@ export const Constants = {
         "approved",
         "failed",
       ],
-      invitation_status: ["pending", "accepted", "expired", "cancelled"],
+      invitation_status: [
+        "pending",
+        "accepted",
+        "expired",
+        "cancelled",
+        "not_invited",
+      ],
       payment_method: ["pix", "bank_transfer", "cash", "other"],
       payment_status: ["pending", "confirmed", "rejected"],
       pix_key_type: ["cpf", "email", "phone", "random"],
@@ -1856,6 +2163,19 @@ export const Constants = {
         "other",
       ],
       provider_profile_status: ["draft", "active", "deprecated"],
+      provider_request_source: [
+        "user_new_provider",
+        "user_correction",
+        "engineer",
+        "system",
+      ],
+      provider_request_status: [
+        "pending",
+        "in_progress",
+        "testing",
+        "complete",
+        "declined",
+      ],
       split_type: ["percentage", "fixed_amount"],
       statement_status: ["draft", "published"],
       user_role: ["landlord", "tenant"],

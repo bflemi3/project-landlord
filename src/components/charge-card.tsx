@@ -68,9 +68,9 @@ function buildSubtitle(
 
   const parts: string[] = []
 
-  // Type label
-  if (charge.chargeType === 'rent') parts.push(t('rent'))
-  else if (charge.chargeType === 'recurring') parts.push(t('recurring'))
+  // Type label. Rent rows live in the rent table now and never reach this
+  // component via charge_definitions; we keep the 'recurring' branch only.
+  if (charge.chargeType === 'recurring') parts.push(t('recurring'))
 
   // Split label
   if (split.payer === 'landlord') {

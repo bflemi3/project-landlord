@@ -78,7 +78,7 @@ export async function fetchStatementCharges(
       name, amount_minor, currency, charge_source, split_type,
       landlord_percentage, tenant_percentage, landlord_fixed_minor, tenant_fixed_minor,
       source_documents ( id, file_name, mime_type, file_path ),
-      charge_definitions ( charge_type )
+      charge_definitions ( amount_behavior )
     `)
     .eq('statement_id', statementId)
     .order('created_at')
@@ -87,7 +87,10 @@ export async function fetchStatementCharges(
 
   return data.map((row) => {
     const doc = row.source_documents as unknown as { id: string; file_name: string; mime_type: string; file_path: string } | null
-    const def = row.charge_definitions as unknown as { charge_type: string } | null
+    const def = row.charge_definitions as unknown as { amount_behavior: 'fixed' | 'variable' | 'unknown' } | null
+    // chargeType is a derived legacy field (rent rows live in the rent table
+    // now; charge_definitions only carries non-rent expenses). Map
+    // amount_behavior 'fixed' -> 'recurring', 'variable' -> 'variable'.
     return {
       id: row.id,
       statementId: row.statement_id,
@@ -97,7 +100,7 @@ export async function fetchStatementCharges(
       amountMinor: row.amount_minor,
       currency: row.currency,
       chargeSource: row.charge_source as ChargeInstance['chargeSource'],
-      chargeType: (def?.charge_type as ChargeInstance['chargeType']) ?? null,
+      chargeType: (def?.amount_behavior === 'variable' ? 'variable' : def ? 'recurring' : null) as ChargeInstance['chargeType'],
       splitType: row.split_type as ChargeInstance['splitType'],
       landlordPercentage: row.landlord_percentage,
       tenantPercentage: row.tenant_percentage,
@@ -112,6 +115,12 @@ export const statementChargesQueryKey = (statementId: string) => ['statement-cha
 
 // --- Missing Charges ---
 
+// chargeType is a derived legacy-shape field. Rent rows live in the rent
+// table now; charge_definitions only carries non-rent expenses. Mapping:
+//   amount_behavior = 'fixed'/'unknown' -> chargeType 'recurring'
+//   amount_behavior = 'variable'         -> chargeType 'variable'
+// 'rent' is kept on the literal union for legacy UI components that branch
+// on it, but new readers will never see it from this module.
 export interface MissingCharge {
   definitionId: string
   name: string
@@ -131,10 +140,12 @@ export async function fetchMissingCharges(
   periodYear: number,
   periodMonth: number,
 ): Promise<MissingCharge[]> {
-  // Get all active definitions for this unit
+  // Get all active definitions for this unit. Legacy chargeType is derived
+  // from amount_behavior ('variable' -> 'variable'; 'fixed' or 'unknown' ->
+  // 'recurring'). Rent rows live in the rent table now.
   const { data: definitions, error: defError } = await supabase
     .from('charge_definitions')
-    .select('id, name, charge_type, amount_minor, recurring_rules ( start_date, end_date )')
+    .select('id, name, amount_behavior, amount_minor, recurring_rules ( start_date, end_date )')
     .eq('unit_id', unitId)
     .is('deleted_at', null)
     .eq('is_active', true)
@@ -171,7 +182,7 @@ export async function fetchMissingCharges(
     .map((def) => ({
       definitionId: def.id,
       name: def.name,
-      chargeType: def.charge_type as MissingCharge['chargeType'],
+      chargeType: (def.amount_behavior === 'variable' ? 'variable' : 'recurring') as MissingCharge['chargeType'],
       amountMinor: def.amount_minor,
     }))
 }

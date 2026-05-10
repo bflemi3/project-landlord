@@ -6,10 +6,17 @@ import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import type { Json } from '@/lib/types/database'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
+// chargeType is the legacy three-way picker in pre-pivot UIs. The schema now
+// stores expense_type + amount_behavior instead. We translate at this boundary:
+//   chargeType 'rent'/'recurring' -> amount_behavior 'fixed'
+//   chargeType 'variable'         -> amount_behavior 'variable'
+// Rent rows live in the rent table; this action only writes non-rent charges.
+// expenseType is required by the new schema; the caller must supply it.
 export interface UpdateChargeInput extends SplitInput {
   chargeId: string
   name: string
   chargeType: 'rent' | 'recurring' | 'variable'
+  expenseType?: 'electricity' | 'water' | 'gas' | 'internet' | 'condo' | 'trash' | 'sewer' | 'cable' | 'maintenance' | 'insurance' | 'other'
   amountMinor: number | null
 }
 
@@ -22,7 +29,8 @@ export async function updateChargeCore(
     .from('charge_definitions')
     .update({
       name: input.name,
-      charge_type: input.chargeType,
+      amount_behavior: input.chargeType === 'variable' ? 'variable' : 'fixed',
+      ...(input.expenseType ? { expense_type: input.expenseType } : {}),
       amount_minor: input.amountMinor,
       updated_at: new Date().toISOString(),
     })

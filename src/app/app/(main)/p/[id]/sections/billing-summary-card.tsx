@@ -20,8 +20,11 @@ export async function BillingSummaryCard({ unitId, propertyId }: { unitId: strin
     (s) => s.periodYear === year && s.periodMonth === month,
   )
 
-  const urgency = getStatementUrgency(unit.dueDay, year, month)
-  const daysUntil = getDaysUntilPublishBy(unit.dueDay, year, month)
+  // unit.dueDay is sourced from the unit's active rent row; fall back to 10
+  // when no rent row exists yet (pre-pivot units / units mid-creation).
+  const effectiveDueDay = unit.dueDay ?? 10
+  const urgency = getStatementUrgency(effectiveDueDay, year, month)
+  const daysUntil = getDaysUntilPublishBy(effectiveDueDay, year, month)
   const isEstimate = source !== 'statement'
 
   // Don't show the card if there are no charges configured
@@ -32,7 +35,7 @@ export async function BillingSummaryCard({ unitId, propertyId }: { unitId: strin
       unitId={unitId}
       propertyId={propertyId}
       currency={unit.currency}
-      dueDay={unit.dueDay}
+      dueDay={effectiveDueDay}
       tenantTotal={tenantTotal}
       isEstimate={isEstimate}
       periodLabel={periodLabel}
