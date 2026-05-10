@@ -7,6 +7,39 @@
 -- risk without a payoff.
 -- =============================================================================
 
+-- =============================================================================
+-- DESTRUCTIVE OPERATIONS — see .claude/rules/database-migrations.md
+--
+-- What's destructive:
+--   1. The do-block below DELETEs rent-typed charge_definitions rows after
+--      copying their data into the new rent table, plus their dependent
+--      charge_instances rows.
+--   2. ALTER TABLE units DROP COLUMN due_day_of_month (column drop).
+--   3. DROP FUNCTION create_property_with_membership / create_property_with_unit
+--      (legacy RPCs replaced by create_property in this PR train).
+--
+-- Approval:
+--   Explicitly authorized by the project owner. Rationale: rent-typed
+--   charge_definitions rows are pre-pivot leftovers under the post-pivot
+--   data model (rent has its own table). Pre-flight gate in the next
+--   migration (20260510120600) re-validates that no rent-typed rows
+--   survive — anything that fell through the backfill (NULL amount, no
+--   resolvable landlord) trips the gate and aborts the train.
+--
+-- Rollback plan:
+--   Forward-only per the spec's "Rollback / Forward-only Posture" section.
+--   No down-migration is provided. If a critical bug surfaces after deploy:
+--   recover via Supabase point-in-time restore of the affected tables
+--   (charge_instances, charge_definitions, rent, units). On-call engineer
+--   runs `supabase db restore --time <pre-deploy timestamp>` against the
+--   sa-east-1 project per the spec.
+--
+-- Pre-deploy verification:
+--   The deploy procedure for this PR train requires confirmation that a
+--   Supabase backup snapshot exists immediately before `supabase db push
+--   --linked` runs. Point-in-time recovery is enabled at the project level.
+-- =============================================================================
+
 create table rent (
   id uuid primary key default gen_random_uuid(),
   unit_id uuid not null references units(id) on delete cascade,

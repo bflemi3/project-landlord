@@ -26,6 +26,16 @@ alter table provider_test_bills add constraint provider_test_bills_mime_type_all
   mime_type in ('application/pdf', 'image/jpeg', 'image/png', 'image/webp')
 );
 
+-- The test-bills storage bucket was created in
+-- 20260415120000_provider_creation_support.sql with allowed_mime_types
+-- locked to {application/pdf}. Broaden it to match the table CHECK above so
+-- a wizard bill image that passes the table CHECK also passes Storage.
+-- The two allowlists must move together; future widenings should update
+-- both in the same migration.
+update storage.buckets
+   set allowed_mime_types = array['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
+ where id = 'test-bills';
+
 -- Allow own-row UPDATE for upload_status flips. The existing INSERT/SELECT
 -- policies already exist; this fills in the missing UPDATE path the server
 -- action needs after Storage upload completes. The with-check clamps the

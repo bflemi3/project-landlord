@@ -281,30 +281,28 @@ begin
         and (last_emailed_at is null or last_emailed_at < now() - interval '5 minutes')
     );
 
-    -- Expenses summary, joined through units.
+    -- Expenses summary, joined through units. by_type is a grouped subquery
+    -- (NOT a window function over a single-row scope, which would always
+    -- return 1) so it returns the real per-expense_type count.
     select jsonb_build_object(
       'count',             coalesce(sum(1), 0),
       'unspecified_count', coalesce(sum(case when cd.provider_profile_id is null and cd.provider_request_id is null and not cd.bundled_into_rent and cd.bundled_into_charge_id is null then 1 else 0 end), 0),
       'bundled_count',     coalesce(sum(case when cd.bundled_into_rent or cd.bundled_into_charge_id is not null then 1 else 0 end), 0),
-      'by_type',           coalesce(jsonb_object_agg(et, et_count) filter (where et is not null), '{}'::jsonb)
-    ) into v_expenses_summary
-    from (
-      select
-        cd.expense_type,
-        cd.provider_profile_id,
-        cd.provider_request_id,
-        cd.bundled_into_rent,
-        cd.bundled_into_charge_id
-      from charge_definitions cd
-      join units u on u.id = cd.unit_id
-      where u.property_id = p_property_id
-        and cd.deleted_at is null
-    ) cd
-    left join lateral (
-      select
-        cd.expense_type::text as et,
-        count(*) over (partition by cd.expense_type)::integer as et_count
-    ) t on true;
+      'by_type',           coalesce((select jsonb_object_agg(t.expense_type::text, t.cnt)
+                                     from (
+                                       select expense_type, count(*) as cnt
+                                       from charge_definitions cd2
+                                       join units u2 on u2.id = cd2.unit_id
+                                       where u2.property_id = p_property_id
+                                         and cd2.deleted_at is null
+                                       group by expense_type
+                                     ) t), '{}'::jsonb)
+    )
+    into v_expenses_summary
+    from charge_definitions cd
+    join units u on u.id = cd.unit_id
+    where u.property_id = p_property_id
+      and cd.deleted_at is null;
 
     -- Bill uploads still pending.
     select coalesce(jsonb_agg(jsonb_build_object(
@@ -361,9 +359,10 @@ begin
 
   -- -----------------------------------------------------------------------
   -- 5. Insert landlord membership.
-  --    Convention: landlord memberships have unit_id = null (scoped to the
-  --    property). is_unit_landlord(unit) joins through units to find a
-  --    landlord membership on the unit's property.
+  --    From this point forward landlord memberships are inserted with
+  --    unit_id = null (property-scoped). Older landlord rows may carry a
+  --    unit_id from the 20260327120000_memberships_unit_id.sql backfill;
+  --    is_unit_landlord(unit) joins through units so it handles both shapes.
   -- -----------------------------------------------------------------------
   insert into memberships (user_id, property_id, unit_id, role)
   values (v_user_id, p_property_id, null, 'landlord');
@@ -628,8 +627,18 @@ begin
 
   -- -----------------------------------------------------------------------
   -- 11. Tax id update logic
+  --
+  -- Defensive: if handle_new_user ever failed and the user's profile row is
+  -- missing, the SELECT returns no rows and a subsequent UPDATE would
+  -- silently no-op (v_tax_id_updated stays false even though the user
+  -- supplied a value). Treat missing profile as the same failure mode as
+  -- missing auth and raise unauthenticated.
   -- -----------------------------------------------------------------------
   select tax_id into v_existing_tax_id from profiles where id = v_user_id;
+
+  if not found then
+    raise exception 'unauthenticated' using errcode = 'P0001';
+  end if;
 
   if (v_existing_tax_id is null or v_existing_tax_id = '')
      and nullif(p_tax_id, '') is not null then

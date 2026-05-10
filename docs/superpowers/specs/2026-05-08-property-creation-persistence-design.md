@@ -167,7 +167,7 @@ The implementation plan must add:
 
 - A `contracts` table (unit-scoped, FK to `units`) with extraction storage (extraction stored as JSONB columns on the contract row — see *Extraction Storage* below)
 - A `rent` table (unit-scoped, FK to `units`). Rent currently leaks into `charge_definitions` with `charge_type='rent'`, which the post-pivot model rejects. `due_day_of_month` moves from `units` to `rent`.
-- An `is_unit_landlord(uuid)` SQL helper alongside the existing `is_property_member` / `is_property_landlord` / `is_unit_member`. Required by the unit-scoped `contracts` and `rent` RLS, and the contracts Storage bucket policies. Joins through `units` because landlord memberships have `unit_id IS NULL` by convention.
+- An `is_unit_landlord(uuid)` SQL helper alongside the existing `is_property_member` / `is_property_landlord` / `is_unit_member`. Required by the unit-scoped `contracts` and `rent` RLS, and the contracts Storage bucket policies. Joins through `units` so it works regardless of whether the landlord-membership row has `unit_id IS NULL` (the insertion convention from this point forward) or has a specific `unit_id` set (older landlord rows that picked up a `unit_id` from the `20260327120000_memberships_unit_id.sql` backfill).
 - A `provider_requests` table
 - A `contracts` Storage bucket + bucket RLS
 - A `provider_request_id uuid` column on `provider_test_bills` so request-tied bill uploads can be linked
@@ -221,7 +221,7 @@ The migrations have inter-dependencies. Run in this order:
 6. **`charge_definitions` modifications** — drop `charge_type` and legacy `provider_id`, add new columns referencing `provider_invoice_profiles` and `provider_requests`. **Pre-flight audit** runs against `charge_type` first; only proceed if it returns zero rent rows.
 7. **`invitations` modifications** — `tax_id`, `last_emailed_at` columns. `not_invited` status was added in step 1.
 8. **`audit_*` triggers** — `audit_contracts`, `audit_rent`, `audit_provider_requests` using existing `audit_log_trigger()`. Mirrors the `audit_charge_definitions` naming pattern.
-9. **`is_unit_landlord(uuid)` SQL helper.** Mirrors the existing `is_unit_member` pattern but joins through `units` to find a landlord membership scoped to the unit's property (landlord memberships have `unit_id IS NULL` by convention). Required by the unit-scoped `contracts` and `rent` RLS, and the contracts Storage bucket policies.
+9. **`is_unit_landlord(uuid)` SQL helper.** Mirrors the existing `is_unit_member` pattern but joins through `units` so it works regardless of whether the landlord-membership row has `unit_id IS NULL` (the insertion convention from this point forward) or has a specific `unit_id` set (older landlord rows that picked up a `unit_id` from the `20260327120000_memberships_unit_id.sql` backfill). Required by the unit-scoped `contracts` and `rent` RLS, and the contracts Storage bucket policies.
 10. **`contracts` Storage bucket + RLS policies.** Uses `is_unit_member` and the new `is_unit_landlord`.
 11. **`create_property` RPC.** Created last because it references all of the above.
 12. **TypeScript types regenerated** (`pnpm supabase gen types --local`) and committed in the same PR train.
@@ -702,7 +702,7 @@ Tenants on the unit get read access via `is_unit_member`. Only the unit's landlo
 
 #### `is_unit_landlord` helper
 
-The existing helpers (`is_property_member`, `is_property_landlord`, `is_unit_member`) read the `memberships` table directly with no joins — they're cheap. `is_unit_landlord` necessarily joins through `units` because by convention landlord memberships have `unit_id IS NULL` (set scoped to the property, not any specific unit). The function:
+The existing helpers (`is_property_member`, `is_property_landlord`, `is_unit_member`) read the `memberships` table directly with no joins — they're cheap. `is_unit_landlord` necessarily joins through `units` so it resolves a landlord membership regardless of whether the row's `unit_id` is `NULL` (landlord memberships are inserted with `unit_id IS NULL` from this point forward) or has a specific value (older landlord rows picked up a `unit_id` from the `20260327120000_memberships_unit_id.sql` backfill). The function:
 
 ```sql
 create or replace function is_unit_landlord(p_unit_id uuid)
@@ -846,7 +846,7 @@ When `is_idempotent_replay = true`, the RPC builds the same return shape as a fr
 - `expenses.count` / `unspecified_count` / `bundled_count` ← counts on `charge_definitions` joined through `units` to filter by property: `from charge_definitions cd join units u on u.id = cd.unit_id where u.property_id = p_property_id`. Group as needed for each count.
 - `expenses.by_type` ← same join, grouped by `expense_type`.
 - `provider_requests.new_count` / `deduped_count` ← **not derivable on replay** — see below.
-- `provider_requests.bill_uploads` ← all `provider_test_bills` rows whose `provider_request_id` is referenced by any `charge_definitions` row scoped to this property (joined through `units`), filtered to `upload_status = 'pending'` and `uploaded_by = auth.uid()`. The replay returns only `'pending'` rows so the action's upload retry processes exactly the bills that didn't land. `'uploaded'` rows are skipped — the file is already there. `'failed'` rows are surfaced for the user to retry.
+- `provider_requests.bill_uploads` ← all `provider_test_bills` rows whose `provider_request_id` is referenced by any `charge_definitions` row scoped to this property (joined through `units`), filtered to `upload_status = 'pending'` and `uploaded_by = auth.uid()`. The replay returns only `'pending'` rows so the action's upload retry processes exactly the bills that didn't land. `'uploaded'` rows are skipped — the file is already there. `'failed'` rows are surfaced for manual retry on the **property page**, not in the action's auto-retry flow. The replay payload's `bill_uploads` deliberately excludes `'failed'` rows — auto-retry is for the in-flight retry burst (network glitch on first submit), not for reprocessing rows that have already failed once. The property-page workstream owns the "your bill upload failed, retry?" surface; this spec does not specify it.
 - `tax_id_updated` ← always `false` on replay (the original insert decision is not preserved; consumers should treat the field as informational on replay only).
 
 **`new_count` / `deduped_count` on replay**: replay can't tell which `provider_requests` rows the original insert created vs linked to. Decision: return `new_count = null, deduped_count = null` on replay. The success-screen copy MUST handle these as "we created/linked some requests" without quoting numbers when both are null. The first-write path returns concrete counts.
@@ -1185,7 +1185,7 @@ The "first failing section" lookup runs in the wizard component immediately afte
 Because uploads happen **after** the RPC commits, there is no DB-vs-Storage orphan to clean up. The remaining cases are:
 
 - Contract upload fails → contract row exists with `upload_status = 'failed'`. Property is recoverable by re-submitting (same `draftId` short-circuits the RPC, retries the upload to the same path). The property page surfaces a "re-upload contract" affordance.
-- Bill upload fails → `provider_test_bills` row exists with `upload_status = 'failed'`. Engineer-side tooling can prompt a re-upload; not user-visible.
+- Bill upload fails → `provider_test_bills` row exists with `upload_status = 'failed'`. The action's auto-retry pass does **not** re-process `'failed'` rows (auto-retry is for the in-flight retry burst, not for reprocessing rows that have already failed once). The "your bill upload failed, retry?" surface is property-page workstream territory; this spec does not specify it. Engineer-side tooling can prompt a re-upload as an escape hatch until that lands.
 - Property page fetches a contract or bill with `upload_status != 'uploaded'` → render a "missing file" state, not a 404 on the file itself.
 
 No Storage-orphan cleanup job is needed.
@@ -1632,7 +1632,7 @@ For history; do not relitigate without strong reason:
 | At-most-one active contract | Partial unique index `(unit_id) where is_active = true and deleted_at is null` | Defense-in-depth; concurrent re-uploads or future bugs can't leave two active rows. Unit-scoped because contracts are per-tenancy. |
 | Storage RLS (contracts) | Unit-membership-driven via path-extracted `unit_id`; uses `is_unit_member` and new `is_unit_landlord` helper | Tenants on the unit read; the unit's landlord writes. Robust to multi-unit properties and ownership transfers. |
 | `contracts` and `rent` scope | Unit-scoped (FK to `units`, not `properties`) | A rental contract is one tenancy on one unit; a multi-unit property holds multiple unrelated leases. Mirrors `charge_definitions`, `statements`, `source_documents`. Avoids future rework when multi-unit ships. |
-| `is_unit_landlord(uuid)` helper | New SQL helper that joins `memberships` ↔ `units` to find a landlord membership for the unit's property | Existing helpers don't cover this case because landlord memberships have `unit_id IS NULL` by convention. |
+| `is_unit_landlord(uuid)` helper | New SQL helper that joins `memberships` ↔ `units` to find a landlord membership for the unit's property | Existing helpers don't cover this case. The join also makes the helper robust to mixed historical state: landlord memberships are inserted with `unit_id IS NULL` from this point forward, but older landlord rows may have `unit_id` set due to the `20260327120000_memberships_unit_id.sql` backfill. |
 | Extraction storage | JSONB columns on the `contracts` row, plus `extraction_model` and `extraction_schema_version` (default 0) | One row per upload. Re-extraction is a column update. Model + schema version on the row enable targeted re-extraction and shape-evolution safety. Token/latency telemetry stays in PostHog. |
 | Re-extraction | Overwrite on the same row (MVP) | Source PDF is canonical; re-extraction is repeatable. Versioning is forward-only via a future history table. |
 | `extraction_schema_version` constant | `src/lib/contract-extraction/schema-version.ts` exports `CONTRACT_EXTRACTION_SCHEMA_VERSION` | Single source of truth; bumped on shape change. Imported by extractor and persistence. |
