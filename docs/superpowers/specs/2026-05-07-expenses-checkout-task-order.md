@@ -39,6 +39,7 @@ Branch: `brandon/wizard-shell-and-contract-upload`. PR/branch-rename/CHANGELOG d
 6. **Provider picker UI** — DB-backed search of real providers/profiles + existing requests, honest status labels, "I don't see my provider" entry point.
 7. **Missing-provider flow UI** — bill-first primary path, manual fallback, mandatory existing-request match step in both. Bill-draft persistence stubbed; finalized in Phase 2.
 8. **Bundled-row UI** — mark a row as bundled into rent or another expense.
+   - LLM extraction shape (already in place — see `src/lib/contract-extraction/schema.ts`): bundling is encoded **bottom-up**. Each `expense.bundledInto: ExpenseType | 'rent' | null` declares where that expense is paid from (e.g. `water.bundledInto = 'condo'`). `rent.includes: ExpenseType[]` mirrors the bundled-into-rent set at the rent section. Don't flip to top-down (parent-declares-children) without a redesign — prompts are written for bottom-up.
 
 ## Phase 2 — remaining
 
@@ -86,6 +87,6 @@ Three parallel `superpowers:code-reviewer` subagents reviewed the diff against `
 ### Test count
 
 - Session start: 253 tests
-- Session end: 341 tests (+88)
+- Session end: 498 tests (+245; includes the contract-extraction suite covered by the schema tightening commit)
 - Coverage added: `useWizardForm`, `derivations.hasWizardWork`, `tax-id-schema`, `defaultSectionTouched` dispatcher, store actions (incl. load-bearing referential-equality short-circuits on `setTouched` / `markSectionVisited`), per-section `state.ts` (`setAllTouched` short-circuit + `isDefault`), `validation.ts` cache per section.
 - One gap remains: list-mode "remove active row clears `active*Id`" — would need component-level integration; logic lives in `handleRemove` callbacks, not store actions.
