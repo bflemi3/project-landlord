@@ -5,16 +5,20 @@ import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
-// chargeType is the legacy three-way picker in pre-pivot UIs. After this
-// migration train rent leaves charge_definitions entirely; this action no
-// longer creates rent rows here. Callers passing 'rent' get the same
-// amount_behavior=fixed treatment as 'recurring'. expenseType is required by
-// the new schema; defaults to 'other' when not supplied so legacy callers
-// keep compiling. Migrate explicit callers to set expenseType in their PRs.
+// Inputs for creating an expense charge_definitions row. Rent does NOT live
+// in charge_definitions under the post-pivot model — the wizard inserts rent
+// directly into the rent table via the create_property RPC. Callers here are
+// pre-pivot UIs that build expense charges (utilities, condo fees, etc.).
+export type ExpenseTypeInput =
+  | 'electricity' | 'water' | 'gas' | 'internet' | 'condo'
+  | 'trash' | 'sewer' | 'cable' | 'insurance' | 'maintenance' | 'other'
+
+export type AmountBehaviorInput = 'fixed' | 'variable' | 'unknown'
+
 export interface ChargeInput extends SplitInput {
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
-  expenseType?: 'electricity' | 'water' | 'gas' | 'internet' | 'condo' | 'trash' | 'sewer' | 'cable' | 'maintenance' | 'insurance' | 'other'
+  expenseType: ExpenseTypeInput
+  amountBehavior: AmountBehaviorInput
   amountMinor: number | null
 }
 
@@ -24,7 +28,7 @@ export interface CreateChargesResult {
 }
 
 export async function validateCharge(charge: ChargeInput): Promise<string | null> {
-  if ((charge.chargeType === 'rent' || charge.chargeType === 'recurring') && charge.amountMinor !== null && charge.amountMinor <= 0) {
+  if (charge.amountBehavior === 'fixed' && charge.amountMinor !== null && charge.amountMinor <= 0) {
     return `Fixed charge amount must be positive: ${charge.amountMinor}`
   }
   return null
@@ -47,19 +51,13 @@ export async function createChargesCore(
       continue
     }
 
-    // 1. Create charge definition.
-    // amount_behavior derives from chargeType ('variable' -> variable; rent
-    // and recurring -> fixed). Rent rows do NOT belong here under the new
-    // model; if a caller still passes chargeType='rent' it inserts a fixed
-    // expense (legacy compatibility shim). The wizard owns rent inserts
-    // through the rent table.
     const { data: chargeDef, error: chargeError } = await supabase
       .from('charge_definitions')
       .insert({
         unit_id: unitId,
         name: charge.name,
-        expense_type: charge.expenseType ?? 'other',
-        amount_behavior: charge.chargeType === 'variable' ? 'variable' : 'fixed',
+        expense_type: charge.expenseType,
+        amount_behavior: charge.amountBehavior,
         amount_minor: charge.amountMinor,
         currency: 'BRL',
       })

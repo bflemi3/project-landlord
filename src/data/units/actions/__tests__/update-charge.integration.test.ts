@@ -25,7 +25,8 @@ describe('updateChargeCore', () => {
     // Seed a tenant-pays charge
     await createChargesCore(client, unitId, [{
       name: 'Rent',
-      chargeType: 'rent',
+      expenseType: 'condo',
+      amountBehavior: 'fixed',
       amountMinor: 200000,
       payer: 'tenant',
       tenantPercent: 100,
@@ -50,7 +51,8 @@ describe('updateChargeCore', () => {
     const result = await updateChargeCore(client, {
       chargeId,
       name: 'Updated Rent',
-      chargeType: 'rent',
+      expenseType: 'condo',
+      amountBehavior: 'fixed',
       amountMinor: 250000,
       payer: 'tenant',
       tenantPercent: 100,
@@ -75,7 +77,8 @@ describe('updateChargeCore', () => {
     const result = await updateChargeCore(client, {
       chargeId,
       name: 'Updated Rent',
-      chargeType: 'rent',
+      expenseType: 'condo',
+      amountBehavior: 'fixed',
       amountMinor: 250000,
       payer: 'split',
       splitMode: 'percent',
@@ -102,7 +105,8 @@ describe('updateChargeCore', () => {
     const result = await updateChargeCore(client, {
       chargeId,
       name: 'Updated Rent',
-      chargeType: 'rent',
+      expenseType: 'condo',
+      amountBehavior: 'fixed',
       amountMinor: 250000,
       payer: 'landlord',
       tenantPercent: 0,

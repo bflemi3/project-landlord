@@ -55,9 +55,6 @@ describe('fetchStatementCharges', () => {
   })
 
   it('maps rows with source document', async () => {
-    // amount_behavior replaces the legacy charge_type column. Rent now lives
-    // in the rent table; the reader derives chargeType ('fixed' -> 'recurring',
-    // 'variable' -> 'variable').
     const rows = [{
       id: 'ci1', statement_id: 's1', charge_definition_id: 'cd1',
       source_document_id: 'sd1', name: 'Condo', amount_minor: 150000,
@@ -72,7 +69,7 @@ describe('fetchStatementCharges', () => {
     expect(result[0].sourceDocument).toEqual({
       id: 'sd1', fileName: 'bill.pdf', mimeType: 'application/pdf', filePath: '/bills/bill.pdf',
     })
-    expect(result[0].chargeType).toBe('recurring')
+    expect(result[0].amountBehavior).toBe('fixed')
   })
 })
 

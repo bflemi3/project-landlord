@@ -12,8 +12,9 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 describe('validateCharge', () => {
   it('rejects non-positive fixed amount', async () => {
     const result = await validateCharge({
-      name: 'Rent',
-      chargeType: 'rent',
+      name: 'Condo',
+      expenseType: 'condo',
+      amountBehavior: 'fixed',
       amountMinor: -500,
       payer: 'tenant',
       tenantPercent: 100,
@@ -25,7 +26,8 @@ describe('validateCharge', () => {
   it('allows null amount for variable charges', async () => {
     const result = await validateCharge({
       name: 'Water',
-      chargeType: 'variable',
+      expenseType: 'water',
+      amountBehavior: 'variable',
       amountMinor: null,
       payer: 'tenant',
       tenantPercent: 100,
@@ -36,8 +38,9 @@ describe('validateCharge', () => {
 
   it('allows valid fixed charge', async () => {
     const result = await validateCharge({
-      name: 'Rent',
-      chargeType: 'rent',
+      name: 'Condo',
+      expenseType: 'condo',
+      amountBehavior: 'fixed',
       amountMinor: 200000,
       payer: 'tenant',
       tenantPercent: 100,
@@ -69,8 +72,9 @@ describe('createChargesCore', () => {
   it('creates charge definition + recurring rule + allocation for a tenant-pays charge', async () => {
     const charges: ChargeInput[] = [
       {
-        name: 'Rent',
-        chargeType: 'rent',
+        name: 'Condo',
+        expenseType: 'condo',
+        amountBehavior: 'fixed',
         amountMinor: 200000,
         payer: 'tenant',
         tenantPercent: 100,
@@ -88,13 +92,11 @@ describe('createChargesCore', () => {
       .from('charge_definitions')
       .select('*')
       .eq('unit_id', unitId)
-      .eq('name', 'Rent')
+      .eq('name', 'Condo')
 
     expect(chargeDefs).toHaveLength(1)
-    // Rent now lives in the rent table; this action no longer produces rent
-    // rows. The compatibility shim maps chargeType='rent' to amount_behavior
-    // 'fixed'. Update the assertion accordingly.
     expect(chargeDefs![0].amount_behavior).toBe('fixed')
+    expect(chargeDefs![0].expense_type).toBe('condo')
     expect(chargeDefs![0].amount_minor).toBe(200000)
     expect(chargeDefs![0].currency).toBe('BRL')
 
@@ -123,7 +125,8 @@ describe('createChargesCore', () => {
     const charges: ChargeInput[] = [
       {
         name: 'Electric',
-        chargeType: 'recurring',
+        expenseType: 'electricity',
+        amountBehavior: 'fixed',
         amountMinor: 30000,
         payer: 'split',
         splitMode: 'percent',
@@ -169,7 +172,8 @@ describe('createChargesCore', () => {
     const charges: ChargeInput[] = [
       {
         name: 'Bad Charge',
-        chargeType: 'rent',
+        expenseType: 'other',
+        amountBehavior: 'fixed',
         amountMinor: -100, // invalid: negative amount
         payer: 'tenant',
         tenantPercent: 100,
@@ -177,7 +181,8 @@ describe('createChargesCore', () => {
       },
       {
         name: 'Good Charge',
-        chargeType: 'recurring',
+        expenseType: 'other',
+        amountBehavior: 'fixed',
         amountMinor: 5000,
         payer: 'tenant',
         tenantPercent: 100,

@@ -1462,7 +1462,7 @@ export type Database = {
           created_by: string
           currency: string
           deleted_at?: string | null
-          due_day_of_month: number
+          due_day_of_month?: number
           end_date?: string | null
           id?: string
           includes?: Database["public"]["Enums"]["expense_type"][] | null

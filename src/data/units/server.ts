@@ -1,11 +1,23 @@
 import { cache } from 'react'
 import { createClient } from '@/lib/supabase/server'
-import { fetchUnit, fetchUnitCharges, fetchUnitTenants, fetchUnitInvites, fetchUnitStatements } from './shared'
-import type { Unit, ChargeDefinition, UnitTenant, UnitInvite, UnitStatement } from './shared'
+import {
+  fetchUnit,
+  fetchUnitRent,
+  fetchUnitCharges,
+  fetchUnitTenants,
+  fetchUnitInvites,
+  fetchUnitStatements,
+} from './shared'
+import type { Unit, UnitRent, ChargeDefinition, UnitTenant, UnitInvite, UnitStatement } from './shared'
 
 export const getUnit = cache(async (unitId: string): Promise<Unit> => {
   const supabase = await createClient()
   return fetchUnit(supabase, unitId)
+})
+
+export const getUnitRent = cache(async (unitId: string): Promise<UnitRent | null> => {
+  const supabase = await createClient()
+  return fetchUnitRent(supabase, unitId)
 })
 
 export const getUnitCharges = cache(async (unitId: string): Promise<ChargeDefinition[]> => {

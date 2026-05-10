@@ -6,17 +6,20 @@ import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import type { Json } from '@/lib/types/database'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
-// chargeType is the legacy three-way picker in pre-pivot UIs. The schema now
-// stores expense_type + amount_behavior instead. We translate at this boundary:
-//   chargeType 'rent'/'recurring' -> amount_behavior 'fixed'
-//   chargeType 'variable'         -> amount_behavior 'variable'
-// Rent rows live in the rent table; this action only writes non-rent charges.
-// expenseType is required by the new schema; the caller must supply it.
+// Inputs for updating an expense charge_definitions row. Rent does NOT live
+// in charge_definitions under the post-pivot model; rent updates go through
+// a separate flow against the rent table.
+export type ExpenseTypeInput =
+  | 'electricity' | 'water' | 'gas' | 'internet' | 'condo'
+  | 'trash' | 'sewer' | 'cable' | 'insurance' | 'maintenance' | 'other'
+
+export type AmountBehaviorInput = 'fixed' | 'variable' | 'unknown'
+
 export interface UpdateChargeInput extends SplitInput {
   chargeId: string
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
-  expenseType?: 'electricity' | 'water' | 'gas' | 'internet' | 'condo' | 'trash' | 'sewer' | 'cable' | 'maintenance' | 'insurance' | 'other'
+  expenseType: ExpenseTypeInput
+  amountBehavior: AmountBehaviorInput
   amountMinor: number | null
 }
 
@@ -24,13 +27,12 @@ export async function updateChargeCore(
   supabase: TypedSupabaseClient,
   input: UpdateChargeInput,
 ): Promise<{ success: boolean }> {
-  // Update charge definition
   const { error: chargeError } = await supabase
     .from('charge_definitions')
     .update({
       name: input.name,
-      amount_behavior: input.chargeType === 'variable' ? 'variable' : 'fixed',
-      ...(input.expenseType ? { expense_type: input.expenseType } : {}),
+      expense_type: input.expenseType,
+      amount_behavior: input.amountBehavior,
       amount_minor: input.amountMinor,
       updated_at: new Date().toISOString(),
     })

@@ -36,7 +36,8 @@ describe('statement charge mutations', () => {
     await createChargesCore(client, unitId, [
       {
         name: 'Water',
-        chargeType: 'variable',
+        expenseType: 'water',
+        amountBehavior: 'variable',
         amountMinor: null,
         payer: 'split',
         splitMode: 'percent',

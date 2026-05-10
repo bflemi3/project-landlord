@@ -1,7 +1,10 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import { Zap, Home, Repeat } from 'lucide-react'
+import {
+  Zap, Repeat,
+  Bolt, Droplet, Flame, Wifi, Building2, Trash2, Waves, Tv, ShieldCheck, Wrench, Receipt,
+} from 'lucide-react'
 import {
   ChargeRow,
   ChargeRowIcon,
@@ -13,12 +16,22 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { formatCurrency } from '@/lib/format-currency'
-import type { ChargeDefinition } from '@/data/units/client'
+import type { ChargeDefinition, ExpenseType } from '@/data/units/client'
 
-const CHARGE_TYPE_ICONS: Record<string, React.ElementType> = {
-  rent: Home,
-  recurring: Repeat,
-  variable: Zap,
+// Icons by expense_type. Variable charges get a generic Zap when the type
+// doesn't itself imply an icon. Rent rows are not in this table, so no Home.
+const EXPENSE_TYPE_ICONS: Record<ExpenseType, React.ElementType> = {
+  electricity: Bolt,
+  water: Droplet,
+  gas: Flame,
+  internet: Wifi,
+  condo: Building2,
+  trash: Trash2,
+  sewer: Waves,
+  cable: Tv,
+  insurance: ShieldCheck,
+  maintenance: Wrench,
+  other: Receipt,
 }
 
 export function ChargeCard({
@@ -33,7 +46,9 @@ export function ChargeCard({
   className?: string
 }) {
   const t = useTranslations('propertyDetail')
-  const Icon = CHARGE_TYPE_ICONS[charge.chargeType] ?? Repeat
+  const Icon =
+    EXPENSE_TYPE_ICONS[charge.expenseType] ??
+    (charge.amountBehavior === 'variable' ? Zap : Repeat)
   const subtitle = buildSubtitle(charge, t)
 
   return (
@@ -68,9 +83,9 @@ function buildSubtitle(
 
   const parts: string[] = []
 
-  // Type label. Rent rows live in the rent table now and never reach this
-  // component via charge_definitions; we keep the 'recurring' branch only.
-  if (charge.chargeType === 'recurring') parts.push(t('recurring'))
+  // Behavior label: render "Fixed" for fixed-amount charges. Variable
+  // already shows in the right-side amount slot ("variable" label).
+  if (charge.amountBehavior === 'fixed') parts.push(t('amountBehaviorFixed'))
 
   // Split label
   if (split.payer === 'landlord') {

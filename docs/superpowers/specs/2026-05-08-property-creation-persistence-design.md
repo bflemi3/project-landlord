@@ -816,7 +816,7 @@ A structured JSONB payload (or a parameter list — implementation detail) cover
     - If `profiles.tax_id` already has a value, do not update.
     - If `p_tax_id` is null/empty, do not update.
     - Set `v_tax_id_updated boolean` for the return payload.
-    - **Collision handling.** If a unique-violation surfaces during the update (`SQLSTATE 23505`, e.g. another profile already claimed this tax_id under a partial unique index), re-raise with a tagged exception `tax_id_conflict` so the server action maps it to a per-section error (`sectionErrors['tax-id'].tax_id = ['tax_id_conflict']`) instead of a generic 500. The current schema does not have a unique index on `profiles.tax_id`, but the spec defines the handling so a future index addition doesn't blindside the wizard.
+    - **Collision handling.** A partial unique index `idx_profiles_tax_id` already exists on `profiles(tax_id) where tax_id is not null` (shipped in `20260413120000_billing_intelligence_profiles.sql`). When the update raises a unique-violation (`SQLSTATE 23505`) because another profile already claimed this tax_id, re-raise with a tagged exception `tax_id_conflict` so the server action maps it to a per-section error (`sectionErrors['tax-id'].tax_id = ['tax_id_conflict']`) instead of a generic 500. This is the live path, not a hypothetical future one.
 12. Audit events fire via existing triggers on each affected table.
 13. Return the success payload (see *Return shape*).
 
@@ -1061,7 +1061,7 @@ Codes still exist as a TS literal union at `src/data/properties/actions/submit-p
 | `idempotency_owner_mismatch` | `globalErrors[]` | n/a | RPC (defensive) |
 | `rpc_constraint_violation` | `globalErrors[]` | n/a | Postgres constraint exceptions not otherwise tagged |
 | `unknown` | `globalErrors[]` | n/a | Catch-all for unmapped exceptions |
-| `tax_id_conflict` | `sectionErrors['tax-id'].tax_id` | tax-id / `tax_id` | RPC (SQLSTATE 23505 from any future `profiles.tax_id` partial unique) |
+| `tax_id_conflict` | `sectionErrors['tax-id'].tax_id` | tax-id / `tax_id` | RPC (SQLSTATE 23505 from the live `idx_profiles_tax_id` partial unique on `profiles(tax_id) where tax_id is not null`) |
 | `expense_bundle_invalid_reference` | `sectionErrors.expenses[rowId].bundled_into_expense_index` | expenses / row field | Server action bundle-graph check + RPC re-validation |
 | Zod schema keys (e.g. `invalidExpenseType`, `required`) | `sectionErrors[section][field]` (or `[rowId][field]`) | per-section, per-field | Composed Zod via `flattenError` |
 
@@ -1611,7 +1611,7 @@ For history; do not relitigate without strong reason:
 - **`file_upload_status` enum naming.** Generic up front so future statuses on either bills or contracts don't force a rename. Resolves the prior open question about `contract_upload_status` reuse.
 - **`extraction_schema_version` default.** `not null default 0`, where `0` is a sentinel for "not extracted yet."
 - **Re-uploading the contract during the wizard's same submit.** Out of scope (single contract per submit). Multi-contract / renewal UX is property-page work.
-- **Tax id collision posture.** RPC raises `tax_id_conflict`; action emits `sectionErrors['tax-id'] = { tax_id: ['tax_id_conflict'] }`. Even though `profiles.tax_id` has no unique index today, the spec defines the handling so a future index addition doesn't blindside the wizard.
+- **Tax id collision posture.** RPC raises `tax_id_conflict`; action emits `sectionErrors['tax-id'] = { tax_id: ['tax_id_conflict'] }`. The partial unique index `idx_profiles_tax_id` on `profiles(tax_id) where tax_id is not null` is live (shipped in `20260413120000_billing_intelligence_profiles.sql`), so this is the active error path, not a hypothetical future one.
 - **Provider request dedupe LGPD.** `requested_by` is filtered out of any cross-landlord read path. `requested_provider_tax_id` (provider CNPJ) is fine to expose.
 
 ---

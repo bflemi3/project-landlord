@@ -1,13 +1,14 @@
 import { getLocale } from 'next-intl/server'
-import { getUnit, getUnitCharges, getUnitStatements } from '@/data/units/server'
+import { getUnit, getUnitRent, getUnitCharges, getUnitStatements } from '@/data/units/server'
 import { getCurrentPeriod, formatPeriod, getStatementUrgency, getDaysUntilPublishBy } from '@/lib/statement-urgency'
 import { computeFinancialSummary } from '@/lib/statements/financial-summary'
 import { BillingSummaryCardClient } from './billing-summary-card-client'
 
 export async function BillingSummaryCard({ unitId, propertyId }: { unitId: string; propertyId: string }) {
   const locale = await getLocale()
-  const [unit, charges, statements] = await Promise.all([
+  const [unit, rent, charges, statements] = await Promise.all([
     getUnit(unitId),
+    getUnitRent(unitId),
     getUnitCharges(unitId),
     getUnitStatements(unitId),
   ])
@@ -20,11 +21,12 @@ export async function BillingSummaryCard({ unitId, propertyId }: { unitId: strin
     (s) => s.periodYear === year && s.periodMonth === month,
   )
 
-  // unit.dueDay is sourced from the unit's active rent row; fall back to 10
-  // when no rent row exists yet (pre-pivot units / units mid-creation).
-  const effectiveDueDay = unit.dueDay ?? 10
-  const urgency = getStatementUrgency(effectiveDueDay, year, month)
-  const daysUntil = getDaysUntilPublishBy(effectiveDueDay, year, month)
+  // Due day comes from the unit's active rent row. When no rent row exists
+  // yet, downstream UI hides the "due monthly" line and skips urgency
+  // rendering — no fake fallback number.
+  const dueDay = rent?.dueDayOfMonth ?? null
+  const urgency = dueDay != null ? getStatementUrgency(dueDay, year, month) : null
+  const daysUntil = dueDay != null ? getDaysUntilPublishBy(dueDay, year, month) : null
   const isEstimate = source !== 'statement'
 
   // Don't show the card if there are no charges configured
@@ -35,7 +37,7 @@ export async function BillingSummaryCard({ unitId, propertyId }: { unitId: strin
       unitId={unitId}
       propertyId={propertyId}
       currency={unit.currency}
-      dueDay={effectiveDueDay}
+      dueDay={dueDay}
       tenantTotal={tenantTotal}
       isEstimate={isEstimate}
       periodLabel={periodLabel}

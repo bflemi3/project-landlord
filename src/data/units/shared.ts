@@ -3,14 +3,14 @@ import { parseSplit, DEFAULT_SPLIT, type ChargeSplit, type AllocationRow } from 
 
 // --- Unit ---
 
-// dueDay is sourced from the unit's active rent row (rent.due_day_of_month).
-// `units.due_day_of_month` was dropped during the property-creation persistence
-// migration; readers that previously consumed it now fall through to the rent
-// row. Returns null when no rent row exists for the unit yet.
+// `dueDay` no longer lives on Unit. It moved off `units.due_day_of_month`
+// during the property-creation persistence migration and now lives on the
+// unit's active rent row. Consumers that need the due day call
+// `fetchUnitRent(unitId)` and read `rent.dueDayOfMonth`, or treat the
+// missing-rent case explicitly (no fake fallback number).
 export interface Unit {
   id: string
   name: string
-  dueDay: number | null
   pixKey: string | null
   pixKeyType: string | null
   currency: string
@@ -26,20 +26,9 @@ export async function fetchUnit(supabase: TypedSupabaseClient, unitId: string): 
 
   if (error || !data) throw new Error('Unit not found')
 
-  // dueDay derives from the unit's active rent row.
-  const { data: rentRow } = await supabase
-    .from('rent')
-    .select('due_day_of_month')
-    .eq('unit_id', unitId)
-    .is('deleted_at', null)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
-
   return {
     id: data.id,
     name: data.name,
-    dueDay: rentRow?.due_day_of_month ?? null,
     pixKey: data.pix_key,
     pixKeyType: data.pix_key_type,
     currency: data.currency,
@@ -48,26 +37,79 @@ export async function fetchUnit(supabase: TypedSupabaseClient, unitId: string): 
 
 export const unitQueryKey = (id: string) => ['unit', id] as const
 
+// --- Unit Rent (current active row) ---
+
+export interface UnitRent {
+  id: string
+  amountMinor: number
+  currency: string
+  dueDayOfMonth: number
+  startDate: string | null
+  endDate: string | null
+  includes: string[] | null
+}
+
+/**
+ * Fetches the unit's most-recent non-deleted rent row, or null when the unit
+ * has no rent set up yet (e.g. a unit mid-creation, or a pre-pivot unit
+ * whose data has not been migrated). Callers must handle null explicitly —
+ * do not invent a default amount or due day.
+ */
+export async function fetchUnitRent(
+  supabase: TypedSupabaseClient,
+  unitId: string,
+): Promise<UnitRent | null> {
+  const { data, error } = await supabase
+    .from('rent')
+    .select('id, amount_minor, currency, due_day_of_month, start_date, end_date, includes')
+    .eq('unit_id', unitId)
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (error || !data) return null
+
+  return {
+    id: data.id,
+    amountMinor: data.amount_minor,
+    currency: data.currency,
+    dueDayOfMonth: data.due_day_of_month,
+    startDate: data.start_date,
+    endDate: data.end_date,
+    includes: data.includes,
+  }
+}
+
+export const unitRentQueryKey = (unitId: string) => ['unit-rent', unitId] as const
+
 // --- Unit Charges ---
 
 export type { ChargeSplit }
 
-// `chargeType` is a derived legacy-shape field. The schema now stores
-// `expense_type` + `amount_behavior`; rent has its own `rent` table. UI
-// components that still want a three-way picker (rent/recurring/variable)
-// should be migrated to expense_type + amount_behavior in their own PRs.
-//
-// Mapping:
-//   amount_behavior = 'fixed'    -> chargeType = 'recurring'
-//   amount_behavior = 'variable' -> chargeType = 'variable'
-//   amount_behavior = 'unknown'  -> chargeType = 'recurring' (default)
-// Rent rows do not appear here — they live in the `rent` table.
+// Charge definitions carry expense_type (semantic kind) and amount_behavior
+// (does the amount stay the same each period or vary). Rent rows live in
+// the rent table and never appear in charge_definitions.
+export type ExpenseType =
+  | 'electricity'
+  | 'water'
+  | 'gas'
+  | 'internet'
+  | 'condo'
+  | 'trash'
+  | 'sewer'
+  | 'cable'
+  | 'insurance'
+  | 'maintenance'
+  | 'other'
+
+export type AmountBehavior = 'fixed' | 'variable' | 'unknown'
+
 export interface ChargeDefinition {
   id: string
   name: string
-  chargeType: 'recurring' | 'variable'
-  expenseType: string
-  amountBehavior: 'fixed' | 'variable' | 'unknown'
+  expenseType: ExpenseType
+  amountBehavior: AmountBehavior
   amountMinor: number | null
   currency: string
   isActive: boolean
@@ -92,9 +134,8 @@ export async function fetchUnitCharges(supabase: TypedSupabaseClient, unitId: st
     return {
       id: c.id,
       name: c.name,
-      chargeType: (c.amount_behavior === 'variable' ? 'variable' : 'recurring') as ChargeDefinition['chargeType'],
-      expenseType: c.expense_type,
-      amountBehavior: c.amount_behavior as ChargeDefinition['amountBehavior'],
+      expenseType: c.expense_type as ExpenseType,
+      amountBehavior: c.amount_behavior as AmountBehavior,
       amountMinor: c.amount_minor,
       currency: c.currency,
       isActive: c.is_active,

@@ -17,10 +17,13 @@ import { AddChargeSheet } from '../add-charge-sheet'
 import { formatCurrency } from '@/lib/format-currency'
 import type { ChargeInstance, MissingCharge } from '@/data/statements/shared'
 
-const CHARGE_TYPE_ICONS: Record<string, React.ElementType> = {
-  rent: Home,
-  recurring: Repeat,
+// Icon by amount_behavior. Variable charges get Zap; fixed get Repeat. Rent
+// rows live in the rent table now and never reach this missing-charges list
+// (charge_definitions only carries non-rent expenses).
+const AMOUNT_BEHAVIOR_ICONS: Record<string, React.ElementType> = {
+  fixed: Repeat,
   variable: Zap,
+  unknown: Repeat,
 }
 
 function getChargeIcon(charge: ChargeInstance): React.ElementType {
@@ -135,7 +138,7 @@ export function ChargesListInteractive({
           {missingCharges.length > 0 && (
             <div ref={missingRef} id="missing-charges">
               {missingCharges.map((missing) => {
-                const Icon = CHARGE_TYPE_ICONS[missing.chargeType] ?? Zap
+                const Icon = AMOUNT_BEHAVIOR_ICONS[missing.amountBehavior] ?? Repeat
                 return (
                   <ChargeRow
                     key={missing.definitionId}
