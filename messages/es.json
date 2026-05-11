@@ -510,7 +510,8 @@
         "validation": {
           "required": "Ingresa tu CPF o CNPJ.",
           "invalidTaxId": "Ese CPF o CNPJ no parece válido.",
-          "tooLong": "Es más largo de lo esperado."
+          "tooLong": "Es más largo de lo esperado.",
+          "tax_id_conflict": "Este CPF/CNPJ ya está registrado en otra cuenta."
         },
         "whyWeAsk": {
           "title": "Por qué te lo pedimos",
@@ -687,7 +688,12 @@
       "api_key_missing": {
         "title": "Extracción no disponible",
         "message": "Tenemos problemas para conectar con el servicio de extracción. Vuelve a intentar más tarde."
-      }
+      },
+      "duplicate_address": "Ya tienes una propiedad en esta dirección.",
+      "unauthenticated": "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
+      "idempotency_owner_mismatch": "Esta sesión del asistente no puede reutilizarse en otra cuenta. Empieza una nueva.",
+      "rpc_constraint_violation": "No pudimos guardar esta propiedad porque algo no coincide. Revisa los datos y vuelve a intentar.",
+      "unknown": "Algo salió mal. Vuelve a intentar."
     },
     "resumeUnavailable": "Es posible que tu progreso no se guarde en este dispositivo.",
     "success": {

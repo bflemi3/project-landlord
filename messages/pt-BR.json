@@ -510,7 +510,8 @@
         "validation": {
           "required": "Informe seu CPF ou CNPJ.",
           "invalidTaxId": "Esse CPF ou CNPJ não parece válido.",
-          "tooLong": "Está mais longo do que o esperado."
+          "tooLong": "Está mais longo do que o esperado.",
+          "tax_id_conflict": "Este CPF/CNPJ já está cadastrado em outra conta."
         },
         "whyWeAsk": {
           "title": "Por que pedimos",
@@ -687,7 +688,12 @@
       "api_key_missing": {
         "title": "Extração indisponível",
         "message": "Estamos com dificuldade de acessar o serviço de extração. Tente de novo mais tarde."
-      }
+      },
+      "duplicate_address": "Você já tem um imóvel neste endereço.",
+      "unauthenticated": "Sua sessão expirou. Faça login novamente para continuar.",
+      "idempotency_owner_mismatch": "Esta sessão do assistente não pode ser reutilizada em outra conta. Comece uma nova.",
+      "rpc_constraint_violation": "Não conseguimos salvar este imóvel porque algo não bate. Revise as informações e tente novamente.",
+      "unknown": "Algo deu errado. Tente novamente."
     },
     "resumeUnavailable": "Seu progresso pode não ser salvo neste dispositivo.",
     "success": {

@@ -510,7 +510,8 @@
         "validation": {
           "required": "Enter your CPF or CNPJ.",
           "invalidTaxId": "That doesn't look like a valid CPF or CNPJ.",
-          "tooLong": "That's longer than expected."
+          "tooLong": "That's longer than expected.",
+          "tax_id_conflict": "This tax ID is already registered to another account."
         },
         "whyWeAsk": {
           "title": "Why we ask",
@@ -687,7 +688,12 @@
       "api_key_missing": {
         "title": "Extraction unavailable",
         "message": "We're having trouble reaching our extraction service. Try again later."
-      }
+      },
+      "duplicate_address": "You already have a property at this address.",
+      "unauthenticated": "Your session expired. Sign in again to continue.",
+      "idempotency_owner_mismatch": "This wizard session can't be reused on another account. Start a fresh one.",
+      "rpc_constraint_violation": "We couldn't save this property because something doesn't line up. Review your entries and try again.",
+      "unknown": "Something went wrong. Please try again."
     },
     "resumeUnavailable": "Your progress may not be saved on this device.",
     "success": {

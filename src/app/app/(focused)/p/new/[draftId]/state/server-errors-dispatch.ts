@@ -54,9 +54,13 @@ const SECTION_SERVER_ERROR_MODULES: Record<SectionId, SectionServerErrorsModule>
 /**
  * Apply a `ServerErrorsResponse` to the wizard store.
  *
- * - `ok: true`: reset every section's slice to its default, clear globals.
+ * - `ok: true`: clear `globalErrors` only. Section slices are NOT reset here
+ *   — callers (continue actions) clear their own slice on success, and the
+ *   submit success path wipes the persisted draft via `clearPersisted`.
+ *   This keeps every other section's slice untouched on a one-section
+ *   continue, avoiding six store writes (and an IDB persist) per click.
  * - `ok: false`: REPLACE each listed section's slice (per-section
- *   authoritative for that round), replace globals, mark every section
+ *   authoritative for that round), set `globalErrors`, mark every section
  *   with errors as visited so its validity badge surfaces.
  */
 export function dispatchServerErrorsResponse(
@@ -64,11 +68,6 @@ export function dispatchServerErrorsResponse(
   actions: PropertyCreationActions,
 ): void {
   if (response.ok) {
-    for (const section of CHECKOUT_SECTIONS) {
-      actions.setServerErrors(section.id, () =>
-        SECTION_SERVER_ERROR_MODULES[section.id].defaultServerErrors(),
-      )
-    }
     actions.setGlobalErrors([])
     return
   }

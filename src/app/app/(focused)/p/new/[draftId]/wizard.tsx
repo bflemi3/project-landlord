@@ -9,9 +9,10 @@ import {
 } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 import { WizardShell } from '@/components/wizard-shell'
 import { captureEvent } from '@/lib/analytics/capture'
-import type { SubmitSummary } from '@/data/properties/actions/server-errors'
+import type { GlobalError, SubmitSummary } from '@/data/properties/actions/server-errors'
 import { propertyCreationWizardKey } from './state/persistence'
 import { PropertyCreationTopBar } from './top-bar'
 import { PropertyCheckoutShell } from './steps/checkout/checkout-shell'
@@ -72,7 +73,15 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
 
   const step = usePropertyCreationState((s) => s.step)
   const storeApi = usePropertyCreationStoreApi()
-  const { goToStep, clearPersisted } = usePropertyCreationActions()
+  const { goToStep, clearPersisted, setGlobalErrors } = usePropertyCreationActions()
+
+  // Wizard-level `globalErrors` toast pipeline. Section continue actions and
+  // (Phase 3) the submit action write into the store's `globalErrors` slice
+  // via `dispatchServerErrorsResponse`. The wizard subscribes and renders one
+  // destructive toast per error, then clears the slice so the toast doesn't
+  // refire when the user re-opens the wizard with persisted errors.
+  const globalErrors = usePropertyCreationState((s) => s.globalErrors)
+  useGlobalErrorsToast({ globalErrors, setGlobalErrors })
 
   // Local-dev preview: open `?__preview=success` to render the success
   // screen with a mock summary so it can be eyeballed without Phase 3's
@@ -183,6 +192,49 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
       />
     </>
   )
+}
+
+// Wizard-level toast for `globalErrors`. Subscribes to the persisted slice
+// and fires one destructive toast per error code, then resets the slice so
+// the toasts don't refire on remount or re-render. `duplicate_address` is
+// the only code today that carries `data` — its toast includes a deep-link
+// to the existing property. Other codes render a one-line message.
+function useGlobalErrorsToast({
+  globalErrors,
+  setGlobalErrors,
+}: {
+  globalErrors: GlobalError[]
+  setGlobalErrors: (next: GlobalError[]) => void
+}) {
+  const router = useRouter()
+  const t = useTranslations('propertyCreation.errors')
+  const tProperties = useTranslations('properties')
+
+  useEffect(() => {
+    if (globalErrors.length === 0) return
+
+    for (const err of globalErrors) {
+      const message = t(err.code)
+      if (err.code === 'duplicate_address' && err.data?.existingPropertyId) {
+        const targetId = err.data.existingPropertyId
+        toast.warning(message, {
+          position: 'top-center',
+          duration: Infinity,
+          action: {
+            label: tProperties('viewExistingProperty'),
+            onClick: () => router.push(`/app/p/${targetId}`),
+          },
+        })
+      } else {
+        toast.error(message, { position: 'top-center' })
+      }
+    }
+
+    // Reset to [] after firing so the same error doesn't refire on the next
+    // render. Sections clear their own server-error slice on field edit;
+    // global errors are intentionally one-shot.
+    setGlobalErrors([])
+  }, [globalErrors, setGlobalErrors, t, tProperties, router])
 }
 
 // Dev-only preview hook. Activates when `?__preview=success` is on the URL

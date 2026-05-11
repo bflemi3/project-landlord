@@ -22,14 +22,18 @@ export type SectionServerErrors =
   | FlatFieldErrors
   | Record<string /* rowId */, FlatFieldErrors>
 
-/** Wizard-wide codes surfaced as a destructive toast — bypass accordion focus. */
-export type GlobalError = {
-  code:
-    | 'unauthenticated'
-    | 'idempotency_owner_mismatch'
-    | 'rpc_constraint_violation'
-    | 'unknown'
-}
+/**
+ * Wizard-wide codes surfaced as a destructive toast — bypass accordion focus.
+ *
+ * `duplicate_address` carries the existing property's id so the toast can
+ * offer a "View existing property" deep-link. Other codes have no payload.
+ */
+export type GlobalError =
+  | { code: 'unauthenticated' }
+  | { code: 'idempotency_owner_mismatch' }
+  | { code: 'rpc_constraint_violation' }
+  | { code: 'unknown' }
+  | { code: 'duplicate_address'; data?: { existingPropertyId?: string } }
 
 // ---------------------------------------------------------------------------
 // SubmitSummary — the typed shape returned by `submitPropertyCreation` on

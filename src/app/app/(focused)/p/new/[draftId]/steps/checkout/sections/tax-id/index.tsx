@@ -27,7 +27,12 @@ import type { PropertyInput } from '@/schemas/property'
 
 import type { SectionId } from '../../../../state/registry'
 import { type TaxIdInput as TaxIdSectionInput } from './schemas'
-import { setAllTouched, type TaxIdSectionTouched } from './state'
+import {
+  clearFieldServerError,
+  setAllTouched,
+  type TaxIdSectionTouched,
+  type TaxIdServerErrors,
+} from './state'
 import { validateTaxId as validateTaxIdParse } from './validation'
 import {
   usePropertyCreationActions,
@@ -113,7 +118,7 @@ function TaxIdFormFallback() {
 function TaxIdForm() {
   const t = useTranslations('propertyCreation.checkout')
   const tTaxId = useTranslations('propertyCreation.checkout.tax-id')
-  const { setSectionData } = usePropertyCreationActions()
+  const { setSectionData, setServerErrors } = usePropertyCreationActions()
   const values = usePropertyCreationState(
     (s) => s.sectionData['tax-id'] as TaxIdSectionInput,
   )
@@ -136,6 +141,9 @@ function TaxIdForm() {
     parseResult,
     touched,
   })
+  const serverErrors = usePropertyCreationState(
+    (s) => (s.sectionServerErrors['tax-id'] ?? {}) as TaxIdServerErrors,
+  )
 
   // Mode is decided once per mount from the hydrated slice value. Mounting
   // empty → editable for the lifetime of this open; mounting with a value →
@@ -145,12 +153,13 @@ function TaxIdForm() {
 
   const setTaxId = useCallback(
     (next: string) => {
+      setServerErrors('tax-id', clearFieldServerError('tax_id'))
       setSectionData<TaxIdSectionInput>('tax-id', (prev) => ({
         ...prev,
         tax_id: next,
       }))
     },
-    [setSectionData],
+    [setSectionData, setServerErrors],
   )
 
   const touchTaxId = useCallback(() => {
@@ -165,8 +174,11 @@ function TaxIdForm() {
   const handleChangeIt = useCallback(() => setIsEditing(true), [])
 
   const inputId = 'tax-id-input'
-  // `errors` is already touch-gated by the hook — read the field directly.
-  const taxIdError = errors.tax_id?.[0]
+  // `errors` is touch-gated by the hook; `serverErrors` is not. The merge
+  // mirrors the property / rent-dates sections — local validation wins when
+  // present, server errors surface otherwise (and stay visible until the
+  // user edits the field, at which point `setTaxId` clears the slice).
+  const taxIdError = errors.tax_id?.[0] ?? serverErrors.tax_id?.[0]
   const hasError = Boolean(taxIdError)
 
   return (

@@ -58,7 +58,6 @@ export function RentDatesSection() {
   const values = usePropertyCreationState(
     (s) => s.sectionData['rent-dates'] as RentDatesInput,
   )
-  const path = usePropertyCreationState((s) => s.path)
 
   const locale = useLocale() as Locale
   const sectionSummary = useMemo(
@@ -107,13 +106,20 @@ export function RentDatesSection() {
   // Read values + path via storeApi so the callback identity is stable
   // across keystrokes — closing over them would recreate this function on
   // every edit and cascade recomputes through Section.Actions.
+  //
+  // On success, clear this section's own server-error slice explicitly.
+  // The dispatcher no longer resets every section's slice on `ok: true` —
+  // callers own that responsibility for the section they validated.
   const onBeforeContinue = useCallback(async () => {
     const state = storeApi.getState()
     const slice = state.sectionData['rent-dates'] as RentDatesInput
     const result = await validateRentDates(slice, state.path ?? 'contract')
+    if (result.ok) {
+      setServerErrors('rent-dates', () => ({}))
+    }
     dispatchServerErrorsResponse(result, actions)
     return result.ok
-  }, [storeApi, actions])
+  }, [storeApi, actions, setServerErrors])
 
   function setField<K extends keyof RentDatesInput>(
     key: K,

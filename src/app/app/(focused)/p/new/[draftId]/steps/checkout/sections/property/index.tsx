@@ -2,8 +2,6 @@
 
 import { useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
 import { Building2, Home, Briefcase, MoreHorizontal } from 'lucide-react'
 
 import { CepField } from '@/components/forms/cep-field'
@@ -74,7 +72,6 @@ const brStates = getAddressProvider('BR').states
 export function PropertySection() {
   const t = useTranslations('propertyCreation.checkout')
   const tProperties = useTranslations('properties')
-  const router = useRouter()
   const { registerHeaderRef } = useCheckoutContext()
   const actions = usePropertyCreationActions()
   const { setSectionData, setServerErrors } = actions
@@ -123,24 +120,24 @@ export function PropertySection() {
   // Read values via storeApi so the callback identity is stable across
   // keystrokes — closing over the `values` selector would recreate this
   // function on every edit, cascading recomputes through Section.Actions.
+  //
+  // `duplicate_address` lands on `globalErrors` and is surfaced by the
+  // wizard-level toast subscription (see `useGlobalErrorsToast` in
+  // `wizard.tsx`). The section doesn't need to read `existingPropertyId`
+  // here — the toast picks it up off the `GlobalError`'s `data` payload.
+  //
+  // On success, clear this section's own server-error slice explicitly.
+  // The dispatcher no longer resets every section's slice on `ok: true` —
+  // callers own that responsibility for the section they validated.
   const onBeforeContinue = useCallback(async () => {
     const slice = storeApi.getState().sectionData.property as PropertyInput
     const result = await validatePropertyForCheckout(slice)
-    dispatchServerErrorsResponse(result, actions)
-    if (result.ok) return true
-
-    if (result.existingPropertyId) {
-      toast.warning(tProperties('duplicateAddress'), {
-        position: 'top-center',
-        duration: Infinity,
-        action: {
-          label: tProperties('viewExistingProperty'),
-          onClick: () => router.push(`/app/p/${result.existingPropertyId}`),
-        },
-      })
+    if (result.ok) {
+      setServerErrors('property', () => ({}))
     }
-    return false
-  }, [storeApi, tProperties, router, actions])
+    dispatchServerErrorsResponse(result, actions)
+    return result.ok
+  }, [storeApi, actions, setServerErrors])
 
   const isPostalCodeExtracted = useIsExtracted('property.postal_code')
   const cepLabelExtra = useMemo(
