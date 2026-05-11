@@ -305,15 +305,13 @@ describe('createPropertyCore', () => {
       expect(summary.contract).not.toBeNull()
       expect(summary.contract?.upload_failed).toBe(true)
 
-      // Status flip is best-effort (separate RLS follow-up); the in-memory
-      // `upload_failed: true` flag is the load-bearing signal for Phase 4.
       const { data: contractRow } = await admin
         .from('contracts')
         .select('id, upload_status')
         .eq('id', summary.contract!.contract_id)
         .single()
       expect(contractRow).not.toBeNull()
-      expect(['pending', 'failed']).toContain(contractRow?.upload_status)
+      expect(contractRow?.upload_status).toBe('failed')
     } finally {
       storageFromSpy.mockRestore()
     }
