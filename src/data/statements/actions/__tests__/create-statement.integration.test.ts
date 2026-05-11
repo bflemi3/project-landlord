@@ -22,11 +22,12 @@ describe('createStatementCore', () => {
     const prop = await createTestProperty(client)
     unitId = prop.unitId
 
-    // Seed charges: rent (fixed) + gas (variable, null amount)
+    // Seed charges: a fixed condo charge + a variable gas charge
     await createChargesCore(client, unitId, [
       {
-        name: 'Rent',
-        chargeType: 'rent',
+        name: 'Condo',
+        expenseType: 'condo',
+        amountBehavior: 'fixed',
         amountMinor: 200000,
         payer: 'tenant',
         tenantPercent: 100,
@@ -34,7 +35,8 @@ describe('createStatementCore', () => {
       },
       {
         name: 'Gas',
-        chargeType: 'variable',
+        expenseType: 'gas',
+        amountBehavior: 'variable',
         amountMinor: null,
         payer: 'tenant',
         tenantPercent: 100,

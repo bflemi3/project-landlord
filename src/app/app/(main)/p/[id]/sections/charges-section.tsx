@@ -19,7 +19,10 @@ import { useHighlightTarget } from '@/lib/hooks/use-highlight-target'
 function toChargeConfig(charge: ChargeDefinition): ChargeConfig {
   return {
     name: charge.name,
-    chargeType: charge.chargeType,
+    // The form picker only supports the binary fixed/variable split. 'unknown'
+    // collapses to 'fixed' on edit so the user can confirm an amount or
+    // explicitly switch to variable.
+    amountBehavior: charge.amountBehavior === 'variable' ? 'variable' : 'fixed',
     amountMinor: charge.amountMinor,
     payer: charge.split.payer,
     splitMode: charge.split.allocationType === 'fixed_amount' ? 'amount' : 'percent',
@@ -57,7 +60,9 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
       await updateCharge({
         chargeId: editingCharge.id,
         name: config.name,
-        chargeType: config.chargeType,
+        // Editing existing rows preserves the source row's expense_type.
+        expenseType: editingCharge.expenseType,
+        amountBehavior: config.amountBehavior,
         amountMinor: config.amountMinor,
         payer: config.payer,
         splitMode: config.splitMode,
@@ -68,10 +73,13 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         propertyId,
       })
     } else {
-      // Create new
+      // Create new. expense_type is required; pre-pivot UI doesn't yet
+      // surface a picker for it, so we default to 'other'. Custom chargers
+      // built via this UI are typically utilities the landlord names freely.
       await createCharges(unitId, [{
         name: config.name,
-        chargeType: config.chargeType,
+        expenseType: 'other',
+        amountBehavior: config.amountBehavior,
         amountMinor: config.amountMinor,
         payer: config.payer,
         splitMode: config.splitMode,
@@ -83,7 +91,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
 
       posthog.capture('charge_definition_created', {
         property_id: propertyId,
-        charge_type: config.chargeType,
+        amount_behavior: config.amountBehavior,
       })
     }
 
@@ -158,7 +166,7 @@ export function ChargesSection({ unitId, propertyId }: { unitId: string; propert
         onOpenChange={setSheetOpen}
         chargeName={editingCharge?.name ?? ''}
         isCustom={true}
-        defaultType={editingCharge?.chargeType ?? 'recurring'}
+        defaultBehavior={editingCharge?.amountBehavior === 'variable' ? 'variable' : 'fixed'}
         currency={unit.currency}
         existingConfig={editingCharge ? toChargeConfig(editingCharge) : null}
         onSave={handleSave}

@@ -23,8 +23,9 @@ describe('toggleChargeActiveCore', () => {
     unitId = prop.unitId
 
     await createChargesCore(client, unitId, [{
-      name: 'Rent',
-      chargeType: 'rent',
+      name: 'Condo',
+      expenseType: 'condo',
+      amountBehavior: 'fixed',
       amountMinor: 200000,
       payer: 'tenant',
       tenantPercent: 100,
@@ -36,7 +37,7 @@ describe('toggleChargeActiveCore', () => {
       .from('charge_definitions')
       .select('id')
       .eq('unit_id', unitId)
-      .eq('name', 'Rent')
+      .eq('name', 'Condo')
       .single()
     chargeId = data!.id
   })

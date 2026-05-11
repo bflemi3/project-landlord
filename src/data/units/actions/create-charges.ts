@@ -5,9 +5,20 @@ import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
 
+// Inputs for creating an expense charge_definitions row. Rent does NOT live
+// in charge_definitions under the post-pivot model — the wizard inserts rent
+// directly into the rent table via the create_property RPC. Callers here are
+// pre-pivot UIs that build expense charges (utilities, condo fees, etc.).
+export type ExpenseTypeInput =
+  | 'electricity' | 'water' | 'gas' | 'internet' | 'condo'
+  | 'trash' | 'sewer' | 'cable' | 'insurance' | 'maintenance' | 'other'
+
+export type AmountBehaviorInput = 'fixed' | 'variable' | 'unknown'
+
 export interface ChargeInput extends SplitInput {
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
+  expenseType: ExpenseTypeInput
+  amountBehavior: AmountBehaviorInput
   amountMinor: number | null
 }
 
@@ -17,7 +28,7 @@ export interface CreateChargesResult {
 }
 
 export async function validateCharge(charge: ChargeInput): Promise<string | null> {
-  if ((charge.chargeType === 'rent' || charge.chargeType === 'recurring') && charge.amountMinor !== null && charge.amountMinor <= 0) {
+  if (charge.amountBehavior === 'fixed' && charge.amountMinor !== null && charge.amountMinor <= 0) {
     return `Fixed charge amount must be positive: ${charge.amountMinor}`
   }
   return null
@@ -40,13 +51,13 @@ export async function createChargesCore(
       continue
     }
 
-    // 1. Create charge definition
     const { data: chargeDef, error: chargeError } = await supabase
       .from('charge_definitions')
       .insert({
         unit_id: unitId,
         name: charge.name,
-        charge_type: charge.chargeType,
+        expense_type: charge.expenseType,
+        amount_behavior: charge.amountBehavior,
         amount_minor: charge.amountMinor,
         currency: 'BRL',
       })

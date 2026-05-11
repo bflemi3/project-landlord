@@ -32,12 +32,12 @@ function mockSupabase(overrides: { data?: unknown; error?: unknown }) {
 describe('fetchUnit', () => {
   it('maps row to Unit shape', async () => {
     const row = {
-      id: 'u1', name: 'Apt A', due_day_of_month: 5,
+      id: 'u1', name: 'Apt A',
       pix_key: 'abc', pix_key_type: 'cpf', currency: 'BRL',
     }
     const result = await fetchUnit(mockSupabase({ data: row }), 'u1')
     expect(result).toEqual({
-      id: 'u1', name: 'Apt A', dueDay: 5,
+      id: 'u1', name: 'Apt A',
       pixKey: 'abc', pixKeyType: 'cpf', currency: 'BRL',
     })
   })
@@ -61,14 +61,15 @@ describe('fetchUnitCharges', () => {
 
   it('maps rows with default split when no allocations', async () => {
     const rows = [{
-      id: 'c1', name: 'Rent', charge_type: 'rent',
+      id: 'c1', name: 'Condo', expense_type: 'condo', amount_behavior: 'fixed',
       amount_minor: 150000, currency: 'BRL', is_active: true,
       responsibility_allocations: [],
     }]
     const result = await fetchUnitCharges(mockSupabase({ data: rows }), 'u1')
     expect(result).toHaveLength(1)
     expect(result[0].id).toBe('c1')
-    expect(result[0].chargeType).toBe('rent')
+    expect(result[0].expenseType).toBe('condo')
+    expect(result[0].amountBehavior).toBe('fixed')
     expect(result[0].split.payer).toBe('tenant')
   })
 })

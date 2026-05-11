@@ -21,12 +21,15 @@ interface BillingSummaryCardClientProps {
   unitId: string
   propertyId: string
   currency: string
-  dueDay: number
+  // Null when no rent row exists for the unit yet. The "due monthly" line
+  // and urgency-based statement countdown both depend on a real due day —
+  // we omit them rather than display a fake fallback number.
+  dueDay: number | null
   tenantTotal: number
   isEstimate: boolean
   periodLabel: string
-  urgency: UrgencyLevel
-  daysUntil: number
+  urgency: UrgencyLevel | null
+  daysUntil: number | null
   year: number
   month: number
   currentStatement: {
@@ -98,9 +101,11 @@ export function BillingSummaryCardClient({
           {isEstimate ? t('estimatedTenantOwes') : t('tenantOwes')}
         </span>
       </div>
-      <p className="mt-0.5 text-sm text-muted-foreground">
-        {t('paymentDueMonthly', { day: `${dueDay}${getOrdinalSuffix(dueDay)}` })}
-      </p>
+      {dueDay != null && (
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          {t('paymentDueMonthly', { day: `${dueDay}${getOrdinalSuffix(dueDay)}` })}
+        </p>
+      )}
 
       {/* Action area: statement status */}
       {currentStatement ? (
@@ -111,8 +116,8 @@ export function BillingSummaryCardClient({
           <div className="min-w-0">
             <span className={`flex items-center gap-1.5 text-sm font-medium ${actionText}`}>
               {t('completeStatement')}
-              {urgency === 'overdue' && ` — ${t('daysOverdue', { days: formatDays(daysUntil) })}`}
-              {urgency === 'approaching' && ` — ${daysUntil === 0 ? t('dueToday') : t('daysLeft', { days: formatDays(daysUntil) })}`}
+              {urgency === 'overdue' && daysUntil != null && ` — ${t('daysOverdue', { days: formatDays(daysUntil) })}`}
+              {urgency === 'approaching' && daysUntil != null && ` — ${daysUntil === 0 ? t('dueToday') : t('daysLeft', { days: formatDays(daysUntil) })}`}
             </span>
             <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs">
               {t('statementDraft', { period: periodLabel })} · {t('draft')}
@@ -123,7 +128,7 @@ export function BillingSummaryCardClient({
         </a>
       ) : (
         <div className="mt-4">
-          {urgency !== 'normal' && (
+          {urgency != null && urgency !== 'normal' && daysUntil != null && (
             <>
               <Separator className="mb-4" />
               <p className={`mb-2 text-sm font-medium ${actionText}`}>

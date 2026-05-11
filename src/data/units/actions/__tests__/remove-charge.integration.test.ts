@@ -28,7 +28,8 @@ describe('removeChargeCore', () => {
     await createChargesCore(client, unitId, [
       {
         name: 'Deletable Charge',
-        chargeType: 'recurring',
+        expenseType: 'other',
+        amountBehavior: 'fixed',
         amountMinor: 5000,
         payer: 'tenant',
         tenantPercent: 100,

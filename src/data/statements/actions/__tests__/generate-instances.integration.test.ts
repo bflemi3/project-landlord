@@ -28,8 +28,9 @@ describe('generateAndPersistInstancesCore', () => {
     // Seed two charges
     await createChargesCore(client, unitId, [
       {
-        name: 'Rent',
-        chargeType: 'rent',
+        name: 'Condo',
+        expenseType: 'condo',
+        amountBehavior: 'fixed',
         amountMinor: 200000,
         payer: 'tenant',
         tenantPercent: 100,
@@ -37,7 +38,8 @@ describe('generateAndPersistInstancesCore', () => {
       },
       {
         name: 'Water',
-        chargeType: 'variable',
+        expenseType: 'water',
+        amountBehavior: 'variable',
         amountMinor: null,
         payer: 'split',
         splitMode: 'percent',

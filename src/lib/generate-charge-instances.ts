@@ -25,10 +25,12 @@ export interface AllocationRow {
   fixed_minor: number | null
 }
 
+export type AmountBehavior = 'fixed' | 'variable' | 'unknown'
+
 export interface ChargeDefinitionWithRule {
   id: string
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
+  amountBehavior: AmountBehavior
   amountMinor: number | null
   currency: string
   isActive: boolean

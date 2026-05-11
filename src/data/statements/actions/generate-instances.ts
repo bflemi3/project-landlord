@@ -20,7 +20,7 @@ export async function fetchDefinitionsWithRules(
   const { data, error } = await supabase
     .from('charge_definitions')
     .select(`
-      id, name, charge_type, amount_minor, currency, is_active,
+      id, name, amount_behavior, amount_minor, currency, is_active,
       recurring_rules ( start_date, end_date, day_of_month ),
       responsibility_allocations ( role, allocation_type, percentage, fixed_minor )
     `)
@@ -50,7 +50,7 @@ export async function fetchDefinitionsWithRules(
     return {
       id: row.id,
       name: row.name,
-      chargeType: row.charge_type as 'rent' | 'recurring' | 'variable',
+      amountBehavior: row.amount_behavior as ChargeDefinitionWithRule['amountBehavior'],
       amountMinor: row.amount_minor,
       currency: row.currency,
       isActive: row.is_active,

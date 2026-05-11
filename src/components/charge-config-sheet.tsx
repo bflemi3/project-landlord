@@ -23,9 +23,15 @@ import {
 
 const CURRENCY_SYMBOLS: Record<string, string> = { BRL: 'R$', USD: '$', EUR: '€' }
 
+// amount_behavior is the new domain primitive: 'fixed' (same amount each
+// period) or 'variable' (amount comes from bills). Rent does not exist as
+// a charge_definitions kind anymore — the wizard inserts rent rows directly
+// into the rent table.
+export type AmountBehaviorChoice = 'fixed' | 'variable'
+
 export interface ChargeConfig {
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
+  amountBehavior: AmountBehaviorChoice
   amountMinor: number | null
   payer: 'tenant' | 'landlord' | 'split'
   splitMode?: 'percent' | 'amount'
@@ -41,7 +47,7 @@ interface ChargeConfigSheetProps {
   onOpenChange: (open: boolean) => void
   chargeName: string
   isCustom?: boolean
-  defaultType: 'rent' | 'recurring' | 'variable'
+  defaultBehavior: AmountBehaviorChoice
   currency?: string
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
@@ -56,7 +62,7 @@ export function ChargeConfigSheet({
   onOpenChange,
   chargeName,
   isCustom = false,
-  defaultType,
+  defaultBehavior,
   currency = 'BRL',
   existingConfig,
   onSave,
@@ -84,7 +90,7 @@ export function ChargeConfigSheet({
         key={formKey}
         chargeName={chargeName}
         isCustom={isCustom}
-        defaultType={defaultType}
+        defaultBehavior={defaultBehavior}
         currency={currency}
         existingConfig={existingConfig}
         onSave={onSave}
@@ -100,7 +106,7 @@ export function ChargeConfigSheet({
 function ChargeConfigForm({
   chargeName,
   isCustom,
-  defaultType,
+  defaultBehavior,
   currency,
   existingConfig,
   onSave,
@@ -111,7 +117,7 @@ function ChargeConfigForm({
 }: {
   chargeName: string
   isCustom: boolean
-  defaultType: 'rent' | 'recurring' | 'variable'
+  defaultBehavior: AmountBehaviorChoice
   currency: string
   existingConfig?: ChargeConfig | null
   onSave: (config: ChargeConfig) => void
@@ -123,8 +129,8 @@ function ChargeConfigForm({
   const t = useTranslations('properties')
 
   const [editableName, setEditableName] = useState(existingConfig?.name ?? chargeName)
-  const [chargeType, setChargeType] = useState<'rent' | 'recurring' | 'variable'>(
-    existingConfig?.chargeType ?? defaultType,
+  const [amountBehavior, setAmountBehavior] = useState<AmountBehaviorChoice>(
+    existingConfig?.amountBehavior ?? defaultBehavior,
   )
   const [amount, setAmount] = useState(
     existingConfig?.amountMinor ? String(existingConfig.amountMinor / 100) : '',
@@ -140,7 +146,7 @@ function ChargeConfigForm({
     existingConfig?.tenantFixedMinor != null ? existingConfig.tenantFixedMinor / 100 : 0,
   )
 
-  const isFixed = chargeType === 'rent' || chargeType === 'recurring'
+  const isFixed = amountBehavior === 'fixed'
   const canSave = (isFixed ? amount.trim().length > 0 && Number(amount.replace(',', '.')) > 0 : true) && editableName.trim().length > 0
 
   function handleSave() {
@@ -157,7 +163,7 @@ function ChargeConfigForm({
 
     onSave({
       name: isCustom ? editableName.trim() : chargeName,
-      chargeType,
+      amountBehavior,
       amountMinor: totalMinor,
       payer,
       splitMode: payer === 'split' ? splitMode : undefined,
@@ -169,7 +175,7 @@ function ChargeConfigForm({
   }
 
   function handleSwitchType() {
-    setChargeType(isFixed ? 'variable' : (defaultType === 'variable' ? 'recurring' : defaultType))
+    setAmountBehavior(isFixed ? 'variable' : 'fixed')
   }
 
   const currencySymbol = CURRENCY_SYMBOLS[currency] ?? currency

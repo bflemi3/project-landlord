@@ -3,11 +3,13 @@
 import { createSuspenseHook } from '../shared/create-hook'
 import {
   fetchUnit, unitQueryKey,
+  fetchUnitRent, unitRentQueryKey,
   fetchUnitCharges, unitChargesQueryKey,
   fetchUnitTenants, unitTenantsQueryKey,
   fetchUnitInvites, unitInvitesQueryKey,
   fetchUnitStatements, unitStatementsQueryKey,
   type Unit,
+  type UnitRent,
   type ChargeDefinition,
   type UnitTenant,
   type UnitInvite,
@@ -17,6 +19,11 @@ import {
 export const useUnit = createSuspenseHook<Unit, [string]>(
   unitQueryKey,
   fetchUnit,
+)
+
+export const useUnitRent = createSuspenseHook<UnitRent | null, [string]>(
+  unitRentQueryKey,
+  fetchUnitRent,
 )
 
 export const useUnitCharges = createSuspenseHook<ChargeDefinition[], [string]>(
@@ -39,4 +46,8 @@ export const useUnitStatements = createSuspenseHook<UnitStatement[], [string]>(
   fetchUnitStatements,
 )
 
-export type { Unit, ChargeDefinition, ChargeSplit, UnitTenant, UnitInvite, UnitStatement } from './shared'
+export type {
+  Unit, UnitRent, ChargeDefinition, ChargeSplit,
+  ExpenseType, AmountBehavior,
+  UnitTenant, UnitInvite, UnitStatement,
+} from './shared'

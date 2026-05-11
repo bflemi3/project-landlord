@@ -49,6 +49,8 @@ export const statementQueryKey = (id: string) => ['statement', id] as const
 
 // --- Statement Charges ---
 
+export type AmountBehavior = 'fixed' | 'variable' | 'unknown'
+
 export interface ChargeInstance {
   id: string
   statementId: string
@@ -58,7 +60,9 @@ export interface ChargeInstance {
   amountMinor: number
   currency: string
   chargeSource: 'manual' | 'imported' | 'corrected'
-  chargeType: 'rent' | 'recurring' | 'variable' | null
+  // Mirrors the source charge_definition's amount_behavior. Null when the
+  // instance has no linked definition (manual or imported entry).
+  amountBehavior: AmountBehavior | null
   splitType: 'percentage' | 'fixed_amount'
   landlordPercentage: number | null
   tenantPercentage: number | null
@@ -78,7 +82,7 @@ export async function fetchStatementCharges(
       name, amount_minor, currency, charge_source, split_type,
       landlord_percentage, tenant_percentage, landlord_fixed_minor, tenant_fixed_minor,
       source_documents ( id, file_name, mime_type, file_path ),
-      charge_definitions ( charge_type )
+      charge_definitions ( amount_behavior )
     `)
     .eq('statement_id', statementId)
     .order('created_at')
@@ -87,7 +91,7 @@ export async function fetchStatementCharges(
 
   return data.map((row) => {
     const doc = row.source_documents as unknown as { id: string; file_name: string; mime_type: string; file_path: string } | null
-    const def = row.charge_definitions as unknown as { charge_type: string } | null
+    const def = row.charge_definitions as unknown as { amount_behavior: AmountBehavior } | null
     return {
       id: row.id,
       statementId: row.statement_id,
@@ -97,7 +101,7 @@ export async function fetchStatementCharges(
       amountMinor: row.amount_minor,
       currency: row.currency,
       chargeSource: row.charge_source as ChargeInstance['chargeSource'],
-      chargeType: (def?.charge_type as ChargeInstance['chargeType']) ?? null,
+      amountBehavior: def?.amount_behavior ?? null,
       splitType: row.split_type as ChargeInstance['splitType'],
       landlordPercentage: row.landlord_percentage,
       tenantPercentage: row.tenant_percentage,
@@ -115,7 +119,7 @@ export const statementChargesQueryKey = (statementId: string) => ['statement-cha
 export interface MissingCharge {
   definitionId: string
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
+  amountBehavior: AmountBehavior
   amountMinor: number | null
 }
 
@@ -131,10 +135,9 @@ export async function fetchMissingCharges(
   periodYear: number,
   periodMonth: number,
 ): Promise<MissingCharge[]> {
-  // Get all active definitions for this unit
   const { data: definitions, error: defError } = await supabase
     .from('charge_definitions')
-    .select('id, name, charge_type, amount_minor, recurring_rules ( start_date, end_date )')
+    .select('id, name, amount_behavior, amount_minor, recurring_rules ( start_date, end_date )')
     .eq('unit_id', unitId)
     .is('deleted_at', null)
     .eq('is_active', true)
@@ -171,7 +174,7 @@ export async function fetchMissingCharges(
     .map((def) => ({
       definitionId: def.id,
       name: def.name,
-      chargeType: def.charge_type as MissingCharge['chargeType'],
+      amountBehavior: def.amount_behavior as AmountBehavior,
       amountMinor: def.amount_minor,
     }))
 }

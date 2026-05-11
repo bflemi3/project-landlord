@@ -1,12 +1,18 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { createChargesCore, type ChargeInput } from '@/data/units/actions/create-charges'
+import {
+  createChargesCore,
+  type ChargeInput,
+  type ExpenseTypeInput,
+  type AmountBehaviorInput,
+} from '@/data/units/actions/create-charges'
 
 export interface SaveChargeDefinitionInput {
   unitId: string
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
+  expenseType: ExpenseTypeInput
+  amountBehavior: AmountBehaviorInput
   amountMinor: number | null
   payer: 'tenant' | 'landlord' | 'split'
   splitMode?: 'percent' | 'amount'
@@ -21,7 +27,8 @@ export async function saveChargeAsDefinition(input: SaveChargeDefinitionInput): 
 
   const charge: ChargeInput = {
     name: input.name,
-    chargeType: input.chargeType,
+    expenseType: input.expenseType,
+    amountBehavior: input.amountBehavior,
     amountMinor: input.amountMinor,
     payer: input.payer,
     splitMode: input.splitMode,

@@ -57,19 +57,19 @@ describe('fetchStatementCharges', () => {
   it('maps rows with source document', async () => {
     const rows = [{
       id: 'ci1', statement_id: 's1', charge_definition_id: 'cd1',
-      source_document_id: 'sd1', name: 'Rent', amount_minor: 150000,
+      source_document_id: 'sd1', name: 'Condo', amount_minor: 150000,
       currency: 'BRL', charge_source: 'manual', split_type: 'percentage',
       landlord_percentage: 0, tenant_percentage: 100,
       landlord_fixed_minor: null, tenant_fixed_minor: null,
       source_documents: { id: 'sd1', file_name: 'bill.pdf', mime_type: 'application/pdf', file_path: '/bills/bill.pdf' },
-      charge_definitions: { charge_type: 'rent' },
+      charge_definitions: { amount_behavior: 'fixed' },
     }]
     const result = await fetchStatementCharges(mockSupabase({ data: rows }), 's1')
     expect(result).toHaveLength(1)
     expect(result[0].sourceDocument).toEqual({
       id: 'sd1', fileName: 'bill.pdf', mimeType: 'application/pdf', filePath: '/bills/bill.pdf',
     })
-    expect(result[0].chargeType).toBe('rent')
+    expect(result[0].amountBehavior).toBe('fixed')
   })
 })
 

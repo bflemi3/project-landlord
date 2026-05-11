@@ -123,10 +123,11 @@ function AddChargeForm({
   const isEditing = !!existingInstance
   const isFillingMissing = !!missingCharge
   const isAdHoc = !isEditing && !isFillingMissing
-  const isVariable = missingCharge?.chargeType === 'variable' || existingInstance?.chargeType === 'variable'
+  const isVariable =
+    missingCharge?.amountBehavior === 'variable' || existingInstance?.amountBehavior === 'variable'
   const [confirmingRemove, setConfirmingRemove] = useState(false)
   const [saveForLater, setSaveForLater] = useState(false)
-  const [savedChargeType, setSavedChargeType] = useState<'recurring' | 'variable'>('recurring')
+  const [savedAmountBehavior, setSavedAmountBehavior] = useState<'fixed' | 'variable'>('fixed')
 
   // Form state
   const [name, setName] = useState(existingInstance?.name ?? missingCharge?.name ?? '')
@@ -304,8 +305,12 @@ function AddChargeForm({
         await saveChargeAsDefinition({
           unitId,
           name: name.trim(),
-          chargeType: savedChargeType,
-          amountMinor: savedChargeType === 'variable' ? null : amountMinor,
+          // expense_type is required by the schema. Pre-pivot UI doesn't yet
+          // surface a picker for it; default to 'other' to match the inline
+          // ad-hoc flow's behavior in charges-section.tsx.
+          expenseType: 'other',
+          amountBehavior: savedAmountBehavior,
+          amountMinor: savedAmountBehavior === 'variable' ? null : amountMinor,
           payer,
           splitMode: payer === 'split' ? splitMode : undefined,
           tenantPercent: tp,
@@ -417,31 +422,31 @@ function AddChargeForm({
             <Suspense fallback={null}>
               <AnimatedSplitSection show={saveForLater}>
                 <div className="mt-3">
-                  <p className="mb-2 text-sm text-muted-foreground">{t('chargeType')}</p>
+                  <p className="mb-2 text-sm text-muted-foreground">{t('amountBehavior')}</p>
                   <div className="flex h-10 rounded-lg border border-border bg-secondary/50 p-0.5">
                     <button
                       type="button"
-                      onClick={() => setSavedChargeType('recurring')}
+                      onClick={() => setSavedAmountBehavior('fixed')}
                       className={cn(
                         'flex-1 rounded-md text-sm font-medium transition-colors',
-                        savedChargeType === 'recurring'
+                        savedAmountBehavior === 'fixed'
                           ? 'bg-card text-foreground shadow-sm dark:bg-secondary'
                           : 'text-muted-foreground',
                       )}
                     >
-                      {t('chargeTypeFixed')}
+                      {t('amountBehaviorFixed')}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setSavedChargeType('variable')}
+                      onClick={() => setSavedAmountBehavior('variable')}
                       className={cn(
                         'flex-1 rounded-md text-sm font-medium transition-colors',
-                        savedChargeType === 'variable'
+                        savedAmountBehavior === 'variable'
                           ? 'bg-card text-foreground shadow-sm dark:bg-secondary'
                           : 'text-muted-foreground',
                       )}
                     >
-                      {t('chargeTypeVariable')}
+                      {t('amountBehaviorVariable')}
                     </button>
                   </div>
                 </div>
