@@ -1,16 +1,17 @@
 import { z } from 'zod'
 
 import { contractInputSchema } from './contract'
-import { expenseRowSchema, findExpenseBundleCycles } from './expense'
+import { expenseRowSchema, expenseTypeSchema, findExpenseBundleCycles } from './expense'
 import { propertyInputBaseSchema, propertyAddressInputBaseSchema } from './property'
 import { rentInputSchema } from './rent'
 import { taxIdBaseSchema } from './tax-id'
 import { tenantInputBaseSchema } from './tenant'
 
-// Composed persistence-boundary schema. Per-section keys are optional so the
-// omit-when-skipped contract holds; cross-section invariants run in the
-// superRefine below. Country-specific tightening on `property` (CEP regex,
-// state codes) is applied earlier via `getPropertyInputSchema` in the action.
+// Composed persistence-boundary schema. `property` and `tax_id` are always
+// required; the other sections may be skipped per the section persistence
+// rules. Cross-section invariants run in the superRefine below. Country-
+// specific tightening on `property` (CEP regex, state codes) is applied
+// earlier via `getPropertyInputSchema` in the action.
 
 const propertySubmissionSchema = propertyInputBaseSchema.extend(
   propertyAddressInputBaseSchema.shape,
@@ -34,7 +35,7 @@ const providerRequestDraftSchema = z.object({
     .max(64, { error: 'tooLong' })
     .nullable()
     .default(null),
-  expense_type: z.string().nullable().default(null),
+  expense_type: expenseTypeSchema.nullable().default(null),
   bill_file: z
     .object({
       mime_type: z.string().min(1, { error: 'required' }),
@@ -49,12 +50,12 @@ const providerRequestDraftSchema = z.object({
 export const propertyCreationSubmissionSchema = z
   .object({
     path: z.enum(['contract', 'no_contract'], { error: 'invalidPath' }),
-    property: propertySubmissionSchema.optional(),
+    property: propertySubmissionSchema,
     rent: rentInputSchema.optional(),
     tenants: z.array(tenantSubmissionRowSchema).optional(),
     expenses: z.array(expenseRowSchema).optional(),
     provider_request_drafts: z.array(providerRequestDraftSchema).optional(),
-    tax_id: taxIdSubmissionSchema.optional(),
+    tax_id: taxIdSubmissionSchema,
     contract: contractInputSchema.optional(),
   })
   .superRefine((input, ctx) => {

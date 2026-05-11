@@ -65,10 +65,13 @@ export const expenseRowSchema = z
     ].filter(Boolean).length
 
     if (attachments > 1) {
+      // Row-level — the conflict is between multiple fields. Pinning the
+      // error to one field would mis-flag a value the user may not have
+      // touched; the row card renders this as a destructive-tone banner.
       ctx.addIssue({
         code: 'custom',
         message: 'expense_bundle_invalid_reference',
-        path: ['bundled_into_rent'],
+        path: [],
       })
     }
   })
@@ -77,12 +80,18 @@ export type ExpenseRow = z.infer<typeof expenseRowSchema>
 
 /**
  * Cycle detection over the `i → bundled_into_expense_index` directed graph.
- * Iterative DFS with white/gray/black coloring; any back edge into a GRAY node
- * marks every node currently on the stack as a cycle member.
+ * Iterative DFS with white/gray/black coloring; any back edge into a GRAY
+ * node marks every node currently on the stack as a cycle member.
  *
- * Returns the indices of every row participating in a cycle. The caller
- * (`propertyCreationSubmissionSchema`) handles range checks and self-bundle
- * checks separately and only feeds valid edges to the walk.
+ * Returns the indices of every row reachable on the DFS path at the moment a
+ * back edge is detected. This is a superset of the strict SCC — a node that
+ * merely leads INTO a cycle (e.g. 0 in `0→1, 1→2, 2→1`) is also reported. The
+ * trade-off is acceptable because the row-level error is the same ("this row
+ * participates in an invalid bundle graph") and the user has to fix something
+ * either way. If we ever want strict SCCs, swap the body for Tarjan's.
+ *
+ * Range / self-bundle / out-of-range checks live in the composed submission
+ * schema; this walk only follows valid edges.
  */
 export function findExpenseBundleCycles(
   rows: readonly { bundled_into_expense_index: number | null }[],
