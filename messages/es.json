@@ -693,6 +693,7 @@
       "unauthenticated": "Tu sesión expiró. Vuelve a iniciar sesión para continuar.",
       "idempotency_owner_mismatch": "Esta sesión del asistente no puede reutilizarse en otra cuenta. Empieza una nueva.",
       "rpc_constraint_violation": "No pudimos guardar esta propiedad porque algo no coincide. Revisa los datos y vuelve a intentar.",
+      "contract_validation_failed": "El archivo del contrato parece inválido. Intenta subirlo de nuevo.",
       "unknown": "Algo salió mal. Vuelve a intentar."
     },
     "resumeUnavailable": "Es posible que tu progreso no se guarde en este dispositivo.",

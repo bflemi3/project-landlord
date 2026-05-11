@@ -37,7 +37,7 @@ This block is the **merge gate** for split workstreams (database, canonical Zod,
 1. **Database** — migrations in topological order (*Migration ordering (topological)*), including `create_property` RPC, `contracts` Storage bucket + RLS.
 2. **Generated types** — `pnpm supabase gen types --local`; commit the updated Supabase TypeScript types (e.g. `src/lib/types/database.ts`).
 3. **Canonical Zod** — `src/schemas/*`, composed `propertyCreationSubmissionSchema` (or equivalent).
-4. **Server action** — `submitPropertyCreation` (*Server Action Contract*): validate, call RPC, Storage uploads, emails, `revalidatePath`, map failures to `ServerErrorsResponse`.
+4. **Server action** — `createProperty` (*Server Action Contract*): validate, call RPC, Storage uploads, emails, `revalidatePath`, map failures to `ServerErrorsResponse`. (Earlier drafts of this spec called it `submitPropertyCreation`; renamed to match the codebase's verb-noun action convention. The original FormData-based `createProperty` was moved to `create-property-deprecated.ts` as `createPropertyDeprecated`.)
 5. **Wizard** — persisted `sectionServerErrors` / `globalErrors`, `dispatchServerErrorsResponse`, per-section reads and clears (*Error wiring on the frontend*).
 6. **Success screen** — may start earlier against a mocked `summary` if the `SubmitSummary` shape below is stable.
 7. **Integration** — wire **Create property** to the action; one happy-path verification.
@@ -84,7 +84,7 @@ type ServerErrorsResponse =
     }
 ```
 
-Declare a real `SubmitSummary` in application code (`submit-property-creation.ts` or a colocated `types.ts`) by intersecting the generated RPC return type with the three extension fields from *Server Action Contract* § Flow step 9 (`contract.upload_failed`, `provider_requests.bill_upload_failed_count`, `tenants.email_failed_count` — exact nesting per that section and *Success Behavior*).
+Declare a real `SubmitSummary` in application code (`create-property.ts` or a colocated `types.ts`) by intersecting the generated RPC return type with the three extension fields from *Server Action Contract* § Flow step 9 (`contract.upload_failed`, `provider_requests.bill_upload_failed_count`, `tenants.email_failed_count` — exact nesting per that section and *Success Behavior*).
 
 **Per-section continue actions** (e.g. validate before Continue) use the same **failure** shape (`ok: false`, `sectionErrors?`, `globalErrors?`). On success they return **`{ ok: true }` only** (no `summary`). The **submit** action returns `{ ok: true; summary: SubmitSummary }` on success. Optionally model both as one discriminated union in TS with `summary?` optional when `ok: true`.
 
@@ -95,8 +95,8 @@ On `{ ok: false }` from a **continue** action, expect **at most one** `sectionEr
 | Artifact | Identifier / path |
 |----------|-------------------|
 | Transactional RPC | `create_property` — `SECURITY DEFINER`, `set search_path = public`; `p_property_id uuid` = wizard `draftId` |
-| Server action | `submitPropertyCreation` → `src/data/properties/actions/submit-property-creation.ts` |
-| Typed error catalogue | `src/data/properties/actions/submit-property-creation-errors.ts`; i18n under `propertyCreation.errors.*` |
+| Server action | `createProperty` → `src/data/properties/actions/create-property.ts` |
+| Typed error catalogue | `src/data/properties/actions/create-property-errors.ts`; i18n under `propertyCreation.errors.*` |
 
 Full payloads and behavior: *RPC Contract* and *Server Action Contract*.
 
@@ -181,7 +181,7 @@ The implementation plan must add:
 - Canonical `src/schemas/expense.ts`, `src/schemas/rent.ts`, `src/schemas/contract.ts` (each new — none exist today)
 - Refactor of the wizard's checkout-local `steps/checkout/sections/expenses/schemas.ts` to derive its types from `src/schemas/expense.ts` instead of redeclaring `EXPENSE_TYPES`, `EXPENSE_AMOUNT_BEHAVIORS`, and the row schema
 - A new transactional RPC that supersedes `create_property_with_membership`
-- A new server action `submitPropertyCreation` that wraps validation, RPC call, contract + bill uploads, error mapping, and cleanup
+- A new server action `createProperty` (renames the wizard submit action; the pre-wizard FormData-based `createProperty` moved to `createPropertyDeprecated`) that wraps validation, RPC call, contract + bill uploads, error mapping, and cleanup
 - A persisted `sectionServerErrors` slice (plus a `globalErrors` slice) on the wizard store so server errors from continue actions and from final submit both survive refresh and navigation between sections
 - Wizard sections move their server-error reads from local `useServerValidationErrors` state to the persisted store slice; the inline merge with `useWizardForm.errors` at the call site is unchanged. `useServerValidationErrors` stays for non-wizard forms (profile, user-menu).
 - A redesigned success screen with two CTAs (see *Success Behavior*)
@@ -924,7 +924,7 @@ The RPC raises tagged exceptions on validation failures inside its transaction. 
 
 ## Server Action Contract
 
-`submitPropertyCreation` lives at `src/data/properties/actions/submit-property-creation.ts` (next to existing actions). It returns a discriminated union; never throws to the form.
+`createProperty` lives at `src/data/properties/actions/create-property.ts` (next to existing actions). It returns a discriminated union; never throws to the form.
 
 ### Inputs
 
@@ -1053,7 +1053,7 @@ return { ok: false, globalErrors: [{ code: 'rpc_constraint_violation' }] }
 
 #### Error code catalogue
 
-Codes still exist as a TS literal union at `src/data/properties/actions/submit-property-creation-errors.ts`. They show up in two places: as i18n keys inside per-section field arrays (section-scoped codes), or as `globalErrors[].code` (wizard-wide codes). Adding a new code is a deliberate change requiring a new i18n key.
+Codes still exist as a TS literal union at `src/data/properties/actions/create-property-errors.ts`. They show up in two places: as i18n keys inside per-section field arrays (section-scoped codes), or as `globalErrors[].code` (wizard-wide codes). Adding a new code is a deliberate change requiring a new i18n key.
 
 | Code | Where it appears | Section / Field | Source |
 |---|---|---|---|
@@ -1473,10 +1473,10 @@ Engineers triaging the queue may decline a provider request (out-of-region, ille
   - The `normalize_provider_name(text)` Postgres function and `provider_requests` trigger.
   - `invitations.last_emailed_at` and `invitations.tax_id` columns; the `not_invited` invitation status value.
 - The new transactional RPC (function definition, `SECURITY DEFINER`, audit triggers, grants).
-- The `submitPropertyCreation` server action and the deprecation of `createProperty` + `create_property_with_membership`.
+- The `createProperty` server action and the deprecation of the pre-wizard `createProperty` (now `createPropertyDeprecated`) + `create_property_with_membership`.
 - All new `src/schemas/` files: `expense.ts`, `rent.ts`, `contract.ts`, `property-creation-submission.ts`.
 - Refactor of the wizard's checkout-local `steps/checkout/sections/expenses/schemas.ts` to derive types from the canonical `src/schemas/` files.
-- Frontend wiring: replace the existing `createProperty` action call with `submitPropertyCreation`. Migrate every wizard section component from local `useServerValidationErrors` to a Zustand selector against `sectionServerErrors[section]`. The inline merge expression (`errors[field]?.[0] ?? serverErrors[field]?.[0]`) and per-edit clear calls already exist in each section component — only the import / source changes. `useServerValidationErrors` itself stays untouched for non-wizard call sites.
+- Frontend wiring: call the new `createProperty` wizard action (the pre-wizard FormData-based `createProperty` is now `createPropertyDeprecated` and is not called from the wizard). Migrate every wizard section component from local `useServerValidationErrors` to a Zustand selector against `sectionServerErrors[section]`. The inline merge expression (`errors[field]?.[0] ?? serverErrors[field]?.[0]`) and per-edit clear calls already exist in each section component — only the import / source changes. `useServerValidationErrors` itself stays untouched for non-wizard call sites.
 - Persisted `sectionServerErrors` and `globalErrors` slices on the wizard store (added to `partialize`, version bumped, wiped on successful submit). One new store action `dispatchServerErrorsResponse(response)`; three clear helpers `clearFieldServerError`, `clearRowServerErrors`, `clearRowFieldServerError`.
 - Continue actions (e.g. `validateProperty`) reshape their return to `ServerErrorsResponse` and dispatch via `dispatchServerErrorsResponse`. The per-section payload they emit today (`Record<string, string[]>`) is already the right shape; this is a thin reshape of the response envelope, not a logic change.
 - One new `state.ts` export per section: `defaultPropertyServerErrors()`, `defaultExpensesServerErrors()`, etc. Aggregated in `state/section-defaults.ts`. No `applyServerErrors`, no `promoteTouched`, no per-section dispatcher.
@@ -1567,7 +1567,7 @@ Per `testing` skill, server actions get integration tests using the local Supaba
 
 ### Unit tests
 
-- `submitPropertyCreationCore` (the testable wrapper per `testing` skill) — covers the validation phase.
+- `createPropertyCore` (the testable wrapper per `testing` skill) — covers the validation phase.
 - The composed `propertyCreationSubmissionSchema` — covers cross-section invariants and bundle-graph rules.
 - `normalize_provider_name` — table-driven SQL test for known input → expected output.
 - Wizard store server-error slice — table-driven test for `dispatchServerErrorsResponse` covering: (a) `ok: true` clears only `globalErrors` and leaves section slices untouched (callers own their own section's clear on success); (b) `ok: false` with `sectionErrors` replaces (not merges) per-section payloads and adds those sections to `visitedSectionIds`; (c) `clearFieldServerError(section, field)` removes one key from a flat section; (d) `clearRowServerErrors(section, rowId)` drops a row's full record; (e) `clearRowFieldServerError(section, rowId, field)` removes one field from a row's record. Plus a persistence-bump migration test that confirms older snapshots wipe their server-error slices on load.
