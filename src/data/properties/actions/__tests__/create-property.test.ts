@@ -138,4 +138,24 @@ describe('createPropertyCore — validation', () => {
     })
     expect(result.sectionErrors?.property).toBeUndefined()
   })
+
+  it('rejects BR-specific malformed postal_code / state at the trust boundary', async () => {
+    const supabase = makeAuthedStub()
+
+    const result = await createPropertyCore(supabase, {
+      draftId: 'a',
+      path: 'no_contract',
+      property: { ...brAddress(), postal_code: '12345', state: 'XX' },
+      tax_id: { tax_id: '' },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    const propertySlice = result.sectionErrors?.property as
+      | Record<string, string[]>
+      | undefined
+    expect(propertySlice?.postal_code).toContain('invalidPostalCode')
+    expect(propertySlice?.state).toContain('invalidState')
+    expect(vi.mocked(supabase.rpc)).not.toHaveBeenCalled()
+  })
 })

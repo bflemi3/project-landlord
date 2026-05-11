@@ -36,6 +36,33 @@ import type {
 } from './server-errors'
 import type { SectionId } from '@/app/app/(focused)/p/new/[draftId]/state/registry'
 
+/** Throws on missing-or-empty values that the schema layer should have
+ *  populated. Catches programmer errors at the RPC payload boundary rather
+ *  than letting a hardcoded fallback hide them. */
+function invariant<T>(
+  value: T | null | undefined,
+  context: string,
+): NonNullable<T> {
+  if (value == null || value === '') {
+    throw new Error(`invariant: ${context} unexpectedly empty`)
+  }
+  return value as NonNullable<T>
+}
+
+/** Maps a country code to its default currency for unit rows when the wizard
+ *  didn't capture rent. Centralizes the small literal so the action stays
+ *  multi-country-ready per the data-modeling guardrail. */
+function defaultCurrencyForCountry(countryCode: string): string {
+  switch (countryCode) {
+    case 'BR':
+      return 'BRL'
+    case 'US':
+      return 'USD'
+    default:
+      return 'BRL'
+  }
+}
+
 // Types inferred from the canonical Zod schemas — single source of truth.
 // Adding the wizard-only `id` (used for row-keyed error projection) and the
 // extras (`draftId`, file Blobs) that don't fit the Zod parse boundary.
@@ -90,6 +117,17 @@ export async function createPropertyCore(
   } = await supabase.auth.getUser()
   if (!user) {
     return { ok: false, globalErrors: [{ code: 'unauthenticated' }] }
+  }
+
+  // Country-aware property validation runs FIRST — the composed schema's
+  // address shape is country-agnostic (CEP regex, state codes etc. live in
+  // `getPropertyInputSchema(country)`), so without this pass a payload with
+  // `postal_code: '12345'` or `state: 'XX'` would clear the trust boundary.
+  const countryAwarePropertyParse = getPropertyInputSchema(
+    input.property?.country_code ?? 'BR',
+  ).safeParse(input.property)
+  if (!countryAwarePropertyParse.success) {
+    return projectValidationFailureToEnvelope(input)
   }
 
   const composedParse = propertyCreationSubmissionSchema.safeParse(input)
@@ -273,9 +311,13 @@ interface RpcPayload {
 
 function buildRpcPayload(input: SubmitInput): RpcPayload {
   const property = input.property
+  // `country_code` is defaulted by `propertyInputBaseSchema`; `rent.currency`
+  // is required by `rentInputSchema`. Both pass the composed-schema gate
+  // above, so missing values here mean someone bypassed validation —
+  // invariant rather than a silent fallback.
   const propertyJson: Record<string, unknown> = {
     name: property.name || '',
-    country_code: property.country_code || 'BR',
+    country_code: invariant(property.country_code, 'property.country_code'),
     property_type: property.property_type ?? null,
     street: property.street,
     number: property.number,
@@ -288,7 +330,11 @@ function buildRpcPayload(input: SubmitInput): RpcPayload {
 
   const unitJson: Record<string, unknown> = {
     name: property.name || '',
-    currency: input.rent?.currency || 'BRL',
+    currency: input.rent
+      ? invariant(input.rent.currency, 'rent.currency')
+      : defaultCurrencyForCountry(
+          invariant(property.country_code, 'property.country_code'),
+        ),
   }
 
   const contractJson: Record<string, unknown> | null =
