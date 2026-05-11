@@ -5,6 +5,8 @@ import * as rentDates from '../steps/checkout/sections/rent-dates/state'
 import * as taxId from '../steps/checkout/sections/tax-id/state'
 import * as tenants from '../steps/checkout/sections/tenants/state'
 
+import { hasAnyServerErrors } from '@/data/properties/actions/server-errors'
+
 import type { SectionStatus } from './persistence'
 import { CHECKOUT_SECTIONS, type SectionId } from './registry'
 import type { PropertyCreationStateShape } from './store'
@@ -52,28 +54,6 @@ export function deriveSectionValidity(
     state.visitedSectionIds.has(sectionId)
   if (!engaged) return status
   return SECTION_PREDICATES[sectionId].isValid(state) ? status : 'invalid'
-}
-
-/**
- * Covers both flat (`Record<field, string[]>`) and row
- * (`Record<rowId, Record<field, string[]>>`) shapes. Any non-empty leaf
- * means the section has at least one server error.
- */
-function hasAnyServerErrors(
-  slice: PropertyCreationStateShape['sectionServerErrors'][SectionId] | undefined,
-): boolean {
-  if (!slice) return false
-  const keys = Object.keys(slice)
-  if (keys.length === 0) return false
-  for (const key of keys) {
-    const value = (slice as Record<string, unknown>)[key]
-    if (Array.isArray(value)) {
-      if (value.length > 0) return true
-    } else if (value && typeof value === 'object') {
-      if (Object.keys(value).length > 0) return true
-    }
-  }
-  return false
 }
 
 /**

@@ -73,13 +73,14 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
 
   const step = usePropertyCreationState((s) => s.step)
   const storeApi = usePropertyCreationStoreApi()
-  const actions = usePropertyCreationActions()
   const {
     goToStep,
     clearPersisted,
     setGlobalErrors,
+    setServerErrors,
+    markSectionVisited,
     openSection,
-  } = actions
+  } = usePropertyCreationActions()
 
   // Wizard-level `globalErrors` toast pipeline. Section continue actions and
   // (Phase 3) the submit action write into the store's `globalErrors` slice
@@ -152,6 +153,17 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
     if (isSubmitting) return
     const input = buildSubmitInputFromStore(storeApi.getState(), draftId)
     setIsSubmitting(true)
+    // Re-pack the destructured action functions into the shape the
+    // dispatcher expects. Each function reference is stable across
+    // renders (the actions bag is created once at store construction), so
+    // including the individual deps below is equivalent to including the
+    // whole bag — but explicit deps document exactly what the callback
+    // consumes.
+    const dispatchActions = {
+      setServerErrors,
+      markSectionVisited,
+      setGlobalErrors,
+    }
     try {
       const response = await createProperty(input)
 
@@ -162,7 +174,7 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
         // slices ride along inside the `clearPersisted()` IDB wipe below
         // — the dispatcher intentionally doesn't touch them on `ok: true`
         // so unrelated continue-action successes don't reset siblings.
-        dispatchServerErrorsResponse(response, actions)
+        dispatchServerErrorsResponse(response, dispatchActions)
         // `clearPersisted()` wipes the IDB record (including server errors
         // and globals). `setSubmitSummary(...)` swaps the wizard render for
         // the success screen on the next paint. Order: clear first so a
@@ -194,7 +206,7 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
       // wizard owns the first-failing-section lookup (dispatcher stays
       // pure-data per spec). Global errors fire as toasts via the
       // existing `useGlobalErrorsToast` subscription.
-      dispatchServerErrorsResponse(response, actions)
+      dispatchServerErrorsResponse(response, dispatchActions)
       if (!response.ok) {
         const firstFailing = firstFailingSectionId(
           storeApi.getState().sectionServerErrors,
@@ -216,9 +228,10 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
     storeApi,
     draftId,
     clearPersisted,
-    actions,
-    openSection,
+    setServerErrors,
+    markSectionVisited,
     setGlobalErrors,
+    openSection,
   ])
 
   if (!hasHydrated) {

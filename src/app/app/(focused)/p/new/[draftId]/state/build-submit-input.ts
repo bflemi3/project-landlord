@@ -37,19 +37,15 @@ function rentOrDefaultCurrency(state: PropertyCreationStateShape): string {
   return property?.country_code === 'US' ? 'USD' : 'BRL'
 }
 
-// File extension used in the contract storage path. The wizard tracks the
-// file type as a closed union (`'pdf' | 'docx'`); we reuse it directly.
-function contractExtensionFor(type: 'pdf' | 'docx' | null): string {
-  return type ?? ''
-}
-
-function contractMimeFor(
-  type: 'pdf' | 'docx' | null,
-): (typeof CONTRACT_MIME_TYPES)[number] | '' {
-  if (type === 'pdf') return 'application/pdf'
-  if (type === 'docx')
-    return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  return ''
+// Wizard tracks the file type as a closed union; map to its mime once.
+// The extension is the same string as the union literal, so no parallel
+// table is needed — inline `state.contractFileType ?? ''` at the call site.
+const MIME_BY_CONTRACT_FILE_TYPE: Record<
+  'pdf' | 'docx',
+  (typeof CONTRACT_MIME_TYPES)[number]
+> = {
+  pdf: 'application/pdf',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 }
 
 function buildContractPayload(
@@ -58,8 +54,9 @@ function buildContractPayload(
   if (state.path !== 'contract') return null
   const file = state.contractFile
   if (!file) return null
-  const mime_type = contractMimeFor(state.contractFileType)
-  const extension = contractExtensionFor(state.contractFileType)
+  const fileType = state.contractFileType
+  const mime_type = fileType ? MIME_BY_CONTRACT_FILE_TYPE[fileType] : ''
+  const extension = fileType ?? ''
   // The action's contract Zod schema needs flat `extraction_*` keys. The
   // wizard stores the engine's `ContractExtractionResult` shape (camelCase
   // fields). Translate here so the action sees the canonical wire shape.
@@ -146,13 +143,13 @@ function buildExpensesPayload(
   const currency = rentOrDefaultCurrency(state)
   return rows.map((row) => {
     if (row.expense_type === null || row.amount_behavior === null) {
-      // The action will reject these on the per-form parse and project
-      // back to the section. Preserve the row so the user sees the error
-      // on the same id they were editing.
+      // The row is intentionally invalid — preserve its id so the action's
+      // per-form parse projects errors back to the same row the user was
+      // editing. Both `expense_type` and `name` will surface as errors
+      // against this row's id (`name` because the synthesized fallback
+      // below is `''` when `expense_type` is null).
       return {
         id: row.id,
-        // The schema rejects empty `name`; we still send a synthesized one
-        // so the failing field is `expense_type` rather than `name`.
         name: row.expense_type ?? '',
         expense_type: row.expense_type as never,
         amount_behavior: row.amount_behavior as never,
