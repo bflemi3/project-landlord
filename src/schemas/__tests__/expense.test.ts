@@ -7,7 +7,6 @@ import {
   expenseAmountBehaviorSchema,
   expenseRowSchema,
   expenseTypeSchema,
-  findExpenseBundleCycles,
 } from '../expense'
 
 function validRow(overrides: Record<string, unknown> = {}) {
@@ -26,6 +25,8 @@ function fieldErrors(input: unknown) {
   if (r.success) return null
   return z.flattenError(r.error).fieldErrors
 }
+
+const VALID_UUID = 'a1b2c3d4-1234-4567-89ab-cdef01234567'
 
 // =============================================================================
 // expenseTypeSchema / expenseAmountBehaviorSchema — database-derived enums
@@ -93,7 +94,7 @@ describe('expenseRowSchema — happy paths', () => {
     expect(r.success).toBe(true)
   })
 
-  it('applies defaults for provider/bundle fields when omitted', () => {
+  it('applies defaults for provider fields when omitted', () => {
     const r = expenseRowSchema.parse({
       name: 'Electricity',
       expense_type: 'electricity',
@@ -103,8 +104,6 @@ describe('expenseRowSchema — happy paths', () => {
     })
     expect(r.provider_profile_id).toBeNull()
     expect(r.provider_request_draft_index).toBeNull()
-    expect(r.bundled_into_rent).toBe(false)
-    expect(r.bundled_into_expense_index).toBeNull()
   })
 })
 
@@ -146,89 +145,21 @@ describe('expenseRowSchema — required-field errors', () => {
 })
 
 // =============================================================================
-// expenseRowSchema — multi-attachment conflict → ROW-LEVEL error (path: [])
+// Provider-attachment exclusivity — surfaces at row level (path: [])
 // =============================================================================
 
-describe('expenseRowSchema — multi-attachment conflicts surface at row level', () => {
-  it('bundled_into_rent + provider_profile_id → row-level error', () => {
+describe('expenseRowSchema — provider-attachment exclusivity', () => {
+  it('exactly one provider attachment is valid (profile only)', () => {
     const r = expenseRowSchema.safeParse(
-      validRow({
-        bundled_into_rent: true,
-        provider_profile_id: 'a1b2c3d4-1234-4567-89ab-cdef01234567',
-      }),
-    )
-    expect(r.success).toBe(false)
-    if (r.success) return
-    const conflict = r.error.issues.find(
-      (i) => i.message === 'expense_bundle_invalid_reference',
-    )
-    expect(conflict).toBeDefined()
-    expect(conflict?.path).toEqual([])
-  })
-
-  it('bundled_into_rent + provider_request_draft_index → row-level error', () => {
-    const r = expenseRowSchema.safeParse(
-      validRow({ bundled_into_rent: true, provider_request_draft_index: 0 }),
-    )
-    expect(r.success).toBe(false)
-    if (r.success) return
-    const conflict = r.error.issues.find(
-      (i) => i.message === 'expense_bundle_invalid_reference',
-    )
-    expect(conflict?.path).toEqual([])
-  })
-
-  it('bundled_into_rent + bundled_into_expense_index → row-level error', () => {
-    const r = expenseRowSchema.safeParse(
-      validRow({ bundled_into_rent: true, bundled_into_expense_index: 1 }),
-    )
-    expect(r.success).toBe(false)
-    if (r.success) return
-    const conflict = r.error.issues.find(
-      (i) => i.message === 'expense_bundle_invalid_reference',
-    )
-    expect(conflict?.path).toEqual([])
-  })
-
-  it('provider_profile_id + provider_request_draft_index → row-level error', () => {
-    const r = expenseRowSchema.safeParse(
-      validRow({
-        provider_profile_id: 'a1b2c3d4-1234-4567-89ab-cdef01234567',
-        provider_request_draft_index: 0,
-      }),
-    )
-    expect(r.success).toBe(false)
-    if (r.success) return
-    const conflict = r.error.issues.find(
-      (i) => i.message === 'expense_bundle_invalid_reference',
-    )
-    expect(conflict?.path).toEqual([])
-  })
-
-  it('bundled_into_expense_index + provider_profile_id → row-level error', () => {
-    const r = expenseRowSchema.safeParse(
-      validRow({
-        bundled_into_expense_index: 1,
-        provider_profile_id: 'a1b2c3d4-1234-4567-89ab-cdef01234567',
-      }),
-    )
-    expect(r.success).toBe(false)
-    if (r.success) return
-    const conflict = r.error.issues.find(
-      (i) => i.message === 'expense_bundle_invalid_reference',
-    )
-    expect(conflict?.path).toEqual([])
-  })
-
-  it('exactly one attachment is valid (provider_profile_id only)', () => {
-    const r = expenseRowSchema.safeParse(
-      validRow({ provider_profile_id: 'a1b2c3d4-1234-4567-89ab-cdef01234567' }),
+      validRow({ provider_profile_id: VALID_UUID }),
     )
     expect(r.success).toBe(true)
   })
 
-  it('exactly one attachment is valid (bundled_into_rent only)', () => {
-    const r = expenseRowSchema.safeParse(validRow({ bundled_into_rent: true }))
+  it('exactly one provider attachment is valid (draft index only)', () => {
+    const r = expenseRowSchema.safeParse(
+      validRow({ provider_request_draft_index: 0 }),
+    )
     expect(r.success).toBe(true)
   })
 
@@ -236,61 +167,20 @@ describe('expenseRowSchema — multi-attachment conflicts surface at row level',
     const r = expenseRowSchema.safeParse(validRow())
     expect(r.success).toBe(true)
   })
-})
 
-// =============================================================================
-// findExpenseBundleCycles — pure helper
-// =============================================================================
-
-function rows(...edges: (number | null)[]) {
-  return edges.map((bundled_into_expense_index) => ({
-    bundled_into_expense_index,
-  }))
-}
-
-describe('findExpenseBundleCycles', () => {
-  it('returns an empty set when there are no bundle edges', () => {
-    expect(findExpenseBundleCycles(rows(null, null, null))).toEqual(new Set())
-  })
-
-  it('returns an empty set for a simple chain (0→1→2→null)', () => {
-    expect(findExpenseBundleCycles(rows(1, 2, null))).toEqual(new Set())
-  })
-
-  it('detects a 2-cycle (0→1, 1→0)', () => {
-    expect(findExpenseBundleCycles(rows(1, 0))).toEqual(new Set([0, 1]))
-  })
-
-  it('detects a 3-cycle (0→1→2→0)', () => {
-    expect(findExpenseBundleCycles(rows(1, 2, 0))).toEqual(new Set([0, 1, 2]))
-  })
-
-  it('ignores a self-edge (i === bundled_into_expense_index) — caught by range check upstream', () => {
-    // Self-edges are filtered out as not-valid edges in the walk; the
-    // submission schema's range check is what flags them with a real path.
-    expect(findExpenseBundleCycles(rows(0))).toEqual(new Set())
-  })
-
-  it('ignores an out-of-range edge — caught by range check upstream', () => {
-    expect(findExpenseBundleCycles(rows(99, null))).toEqual(new Set())
-  })
-
-  it('isolates a cycle in one component, leaves an acyclic component clean', () => {
-    // Rows 0↔1 form a cycle; rows 2,3 are an acyclic chain (3→2→null).
-    const cycles = findExpenseBundleCycles(rows(1, 0, null, 2))
-    expect(cycles).toEqual(new Set([0, 1]))
-  })
-
-  it('reports every node on the DFS path when a back edge is detected', () => {
-    // Graph: 0 → 1 → 2 → 1. The strict cycle is {1, 2}; node 0 merely leads
-    // INTO the cycle. The helper's documented behavior is to return every
-    // node currently on the DFS path at the moment of detection — a
-    // superset of the strict SCC. See `findExpenseBundleCycles` JSDoc.
-    const cycles = findExpenseBundleCycles(rows(1, 2, 1))
-    expect(cycles).toEqual(new Set([0, 1, 2]))
-  })
-
-  it('handles an empty input', () => {
-    expect(findExpenseBundleCycles([])).toEqual(new Set())
+  it('provider_profile_id + provider_request_draft_index → row-level error', () => {
+    const r = expenseRowSchema.safeParse(
+      validRow({
+        provider_profile_id: VALID_UUID,
+        provider_request_draft_index: 0,
+      }),
+    )
+    expect(r.success).toBe(false)
+    if (r.success) return
+    const conflict = r.error.issues.find(
+      (i) => i.message === 'provider_attachment_conflict',
+    )
+    expect(conflict).toBeDefined()
+    expect(conflict?.path).toEqual([])
   })
 })

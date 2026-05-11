@@ -6,6 +6,7 @@ import { CONTRACT_EXTRACTION_SCHEMA_VERSION } from '@/lib/contract-extraction/ty
 import { propertyCreationSubmissionSchema } from '../property-creation-submission'
 
 const PDF = 'application/pdf'
+const VALID_UUID = 'a1b2c3d4-1234-4567-89ab-cdef01234567'
 
 function validProperty(overrides: Record<string, unknown> = {}) {
   return {
@@ -221,100 +222,29 @@ describe('propertyCreationSubmissionSchema — path', () => {
 })
 
 // =============================================================================
-// Bundle-graph integrity — index range, self-bundle, cycles
+// Expenses array — accepts empty + valid rows
 // =============================================================================
 
-describe('propertyCreationSubmissionSchema — bundle-graph integrity', () => {
-  it('accepts a valid in-range bundle reference', () => {
+describe('propertyCreationSubmissionSchema — expenses', () => {
+  it('accepts an empty expenses array', () => {
     const r = propertyCreationSubmissionSchema.safeParse(
-      validNoContractPayload({
-        expenses: [
-          validExpense({ name: 'parent', bundled_into_rent: true }),
-          validExpense({ name: 'child', bundled_into_expense_index: 0 }),
-        ],
-      }),
+      validNoContractPayload({ expenses: [] }),
     )
     expect(r.success).toBe(true)
   })
 
-  it('rejects an out-of-range bundled_into_expense_index', () => {
+  it('accepts a row with no provider attachment ("unspecified" state)', () => {
     const r = propertyCreationSubmissionSchema.safeParse(
-      validNoContractPayload({
-        expenses: [validExpense({ bundled_into_expense_index: 5 })],
-      }),
+      validNoContractPayload({ expenses: [validExpense()] }),
     )
-    expect(r.success).toBe(false)
-    expect(
-      pathMessages(r, ['expenses', 0, 'bundled_into_expense_index']),
-    ).toContain('expense_bundle_invalid_reference')
+    expect(r.success).toBe(true)
   })
 
-  it('rejects a negative bundled_into_expense_index', () => {
-    // Negative values are caught by the row-level schema's `.min(0)` first.
+  it('accepts a row attached to a tracked provider profile', () => {
     const r = propertyCreationSubmissionSchema.safeParse(
       validNoContractPayload({
-        expenses: [validExpense({ bundled_into_expense_index: -1 })],
+        expenses: [validExpense({ provider_profile_id: VALID_UUID })],
       }),
-    )
-    expect(r.success).toBe(false)
-  })
-
-  it('rejects self-bundle (i === bundled_into_expense_index)', () => {
-    const r = propertyCreationSubmissionSchema.safeParse(
-      validNoContractPayload({
-        expenses: [validExpense({ bundled_into_expense_index: 0 })],
-      }),
-    )
-    expect(r.success).toBe(false)
-    expect(
-      pathMessages(r, ['expenses', 0, 'bundled_into_expense_index']),
-    ).toContain('expense_bundle_invalid_reference')
-  })
-
-  it('detects a 2-cycle (0 ↔ 1)', () => {
-    const r = propertyCreationSubmissionSchema.safeParse(
-      validNoContractPayload({
-        expenses: [
-          validExpense({ bundled_into_expense_index: 1 }),
-          validExpense({ bundled_into_expense_index: 0 }),
-        ],
-      }),
-    )
-    expect(r.success).toBe(false)
-    // Cycle errors fire on each row in the cycle.
-    expect(
-      pathMessages(r, ['expenses', 0, 'bundled_into_expense_index']),
-    ).toContain('expense_bundle_invalid_reference')
-    expect(
-      pathMessages(r, ['expenses', 1, 'bundled_into_expense_index']),
-    ).toContain('expense_bundle_invalid_reference')
-  })
-
-  it('detects a 3-cycle (0 → 1 → 2 → 0)', () => {
-    const r = propertyCreationSubmissionSchema.safeParse(
-      validNoContractPayload({
-        expenses: [
-          validExpense({ bundled_into_expense_index: 1 }),
-          validExpense({ bundled_into_expense_index: 2 }),
-          validExpense({ bundled_into_expense_index: 0 }),
-        ],
-      }),
-    )
-    expect(r.success).toBe(false)
-    expect(
-      pathMessages(r, ['expenses', 0, 'bundled_into_expense_index']),
-    ).toContain('expense_bundle_invalid_reference')
-    expect(
-      pathMessages(r, ['expenses', 1, 'bundled_into_expense_index']),
-    ).toContain('expense_bundle_invalid_reference')
-    expect(
-      pathMessages(r, ['expenses', 2, 'bundled_into_expense_index']),
-    ).toContain('expense_bundle_invalid_reference')
-  })
-
-  it('accepts an empty expenses array', () => {
-    const r = propertyCreationSubmissionSchema.safeParse(
-      validNoContractPayload({ expenses: [] }),
     )
     expect(r.success).toBe(true)
   })
@@ -349,7 +279,7 @@ describe('propertyCreationSubmissionSchema — provider_request_draft_index rang
     expect(r.success).toBe(false)
     expect(
       pathMessages(r, ['expenses', 0, 'provider_request_draft_index']),
-    ).toContain('expense_bundle_invalid_reference')
+    ).toContain('provider_request_draft_index_out_of_range')
   })
 
   it('rejects a draft index when no drafts are provided', () => {
@@ -361,12 +291,12 @@ describe('propertyCreationSubmissionSchema — provider_request_draft_index rang
     expect(r.success).toBe(false)
     expect(
       pathMessages(r, ['expenses', 0, 'provider_request_draft_index']),
-    ).toContain('expense_bundle_invalid_reference')
+    ).toContain('provider_request_draft_index_out_of_range')
   })
 })
 
 // =============================================================================
-// provider_request_drafts.expense_type — narrowed to the enum (item #2)
+// provider_request_drafts.expense_type — narrowed to the enum
 // =============================================================================
 
 describe('providerRequestDraftSchema — expense_type narrowed to the enum', () => {
@@ -448,24 +378,24 @@ describe('propertyCreationSubmissionSchema — cross-section composition', () =>
     ).toBe(true)
   })
 
-  it('surfaces a row-level expense error on the expenses[i] path', () => {
+  it('surfaces a row-level provider-attachment conflict on the expenses[i] path', () => {
     const r = propertyCreationSubmissionSchema.safeParse(
       validNoContractPayload({
         expenses: [
           validExpense({
-            bundled_into_rent: true,
-            provider_profile_id: 'a1b2c3d4-1234-4567-89ab-cdef01234567',
+            provider_profile_id: VALID_UUID,
+            provider_request_draft_index: 0,
           }),
         ],
+        provider_request_drafts: [{ requested_provider_name: 'Some Provider' }],
       }),
     )
     expect(r.success).toBe(false)
     if (r.success) return
-    // The row-level conflict surfaces at `expenses[0]` (path: []) on the row.
     expect(
       r.error.issues.some(
         (i) =>
-          i.message === 'expense_bundle_invalid_reference' &&
+          i.message === 'provider_attachment_conflict' &&
           i.path.length === 2 &&
           i.path[0] === 'expenses' &&
           i.path[1] === 0,
@@ -475,9 +405,6 @@ describe('propertyCreationSubmissionSchema — cross-section composition', () =>
 
   it('infers the composed type with required property + tax_id keys', () => {
     type Submission = z.infer<typeof propertyCreationSubmissionSchema>
-    // Compile-time check: property and tax_id are non-optional keys on the
-    // inferred type. The cast wraps the helper-returned shape into the
-    // narrower inferred-from-Zod shape.
     const _required: Pick<Submission, 'path' | 'property' | 'tax_id'> = {
       path: 'no_contract',
       property: validProperty() as Submission['property'],

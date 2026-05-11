@@ -1,7 +1,7 @@
 import { z } from 'zod'
 
 import { contractInputSchema } from './contract'
-import { expenseRowSchema, expenseTypeSchema, findExpenseBundleCycles } from './expense'
+import { expenseRowSchema, expenseTypeSchema } from './expense'
 import { propertyInputBaseSchema, propertyAddressInputBaseSchema } from './property'
 import { rentInputSchema } from './rent'
 import { taxIdBaseSchema } from './tax-id'
@@ -12,6 +12,14 @@ import { tenantInputBaseSchema } from './tenant'
 // rules. Cross-section invariants run in the superRefine below. Country-
 // specific tightening on `property` (CEP regex, state codes) is applied
 // earlier via `getPropertyInputSchema` in the action.
+//
+// Bundling fields (`bundled_into_rent`, `bundled_into_charge_id`) exist on
+// the `charge_definitions` table and the RPC accepts them, but the wizard
+// UI today doesn't surface bundling — the canonical schema doesn't carry
+// these fields and the composed schema doesn't validate them. Cycle / bundle
+// graph integrity is enforced on the server inside the RPC; that stays the
+// trust boundary. Add client-side bundling fields and their validation here
+// if/when the UI ships.
 
 const propertySubmissionSchema = propertyInputBaseSchema.extend(
   propertyAddressInputBaseSchema.shape,
@@ -79,40 +87,19 @@ export const propertyCreationSubmissionSchema = z
       })
     }
 
+    // `provider_request_draft_index` is a real index into another array on the
+    // payload — programmer-mistake defense.
     const expenses = input.expenses ?? []
-    if (expenses.length === 0) return
-
-    // Range checks: bundled_into_expense_index must be in `[0, expenses.length)`
-    // and not point at self; provider_request_draft_index must point at a real
-    // draft in `provider_request_drafts`.
     const requestDrafts = input.provider_request_drafts ?? []
     for (let i = 0; i < expenses.length; i++) {
-      const row = expenses[i]
-      const bi = row.bundled_into_expense_index
-      if (bi != null && (bi < 0 || bi >= expenses.length || bi === i)) {
-        ctx.addIssue({
-          code: 'custom',
-          path: ['expenses', i, 'bundled_into_expense_index'],
-          message: 'expense_bundle_invalid_reference',
-        })
-      }
-      const pi = row.provider_request_draft_index
+      const pi = expenses[i].provider_request_draft_index
       if (pi != null && (pi < 0 || pi >= requestDrafts.length)) {
         ctx.addIssue({
           code: 'custom',
           path: ['expenses', i, 'provider_request_draft_index'],
-          message: 'expense_bundle_invalid_reference',
+          message: 'provider_request_draft_index_out_of_range',
         })
       }
-    }
-
-    // Cycle check on the `i → bundled_into_expense_index` directed graph.
-    for (const node of findExpenseBundleCycles(expenses)) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['expenses', node, 'bundled_into_expense_index'],
-        message: 'expense_bundle_invalid_reference',
-      })
     }
   })
 
