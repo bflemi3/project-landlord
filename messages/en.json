@@ -693,6 +693,7 @@
       "unauthenticated": "Your session expired. Sign in again to continue.",
       "idempotency_owner_mismatch": "This wizard session can't be reused on another account. Start a fresh one.",
       "rpc_constraint_violation": "We couldn't save this property because something doesn't line up. Review your entries and try again.",
+      "contract_validation_failed": "The contract file looks invalid. Try uploading it again.",
       "unknown": "Something went wrong. Please try again."
     },
     "resumeUnavailable": "Your progress may not be saved on this device.",

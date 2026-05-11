@@ -34,9 +34,10 @@ export type GlobalError =
   | { code: 'rpc_constraint_violation' }
   | { code: 'unknown' }
   | { code: 'duplicate_address'; data?: { existingPropertyId?: string } }
+  | { code: 'contract_validation_failed' }
 
 // ---------------------------------------------------------------------------
-// SubmitSummary — the typed shape returned by `submitPropertyCreation` on
+// SubmitSummary — the typed shape returned by `createProperty` on
 // `{ ok: true }`. Mirrors the `create_property` RPC return shape plus the
 // three non-fatal extension flags the server action layers on after Storage
 // uploads and email sends (spec § Server Action Contract, Flow step 9).

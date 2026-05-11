@@ -1,128 +1,141 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-const mocks = vi.hoisted(() => ({
-  createClient: vi.fn(),
-  revalidatePath: vi.fn(),
-  rpc: vi.fn(),
-  validateProperty: vi.fn(),
+vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
+
+vi.mock('@/lib/resend/client', () => ({
+  resend: { emails: { send: vi.fn() } },
+  RESEND_FROM: 'mabenn <noreply@mabenn.com>',
+  RESEND_REPLY_TO: 'hello@mabenn.com',
+  RESEND_WAITLIST_SEGMENT_ID: 'test-segment',
 }))
 
-vi.mock('@/lib/supabase/server', () => ({
-  createClient: mocks.createClient,
-}))
+const { createPropertyCore } = await import('../create-property')
 
-vi.mock('next/cache', () => ({
-  revalidatePath: mocks.revalidatePath,
-}))
-
-vi.mock('../validate-property', () => ({
-  validateProperty: mocks.validateProperty,
-}))
-
-import { createProperty } from '../create-property'
-
-function propertyFormData(overrides: Record<string, string> = {}) {
-  const formData = new FormData()
-  const values = {
-    name: '',
-    postal_code: '01310-100',
-    street: 'Rua Augusta',
-    number: '123',
-    complement: '',
-    neighborhood: 'Consolação',
-    city: 'São Paulo',
-    state: 'SP',
-    country_code: 'BR',
-    property_type: 'apartment',
-    due_day: '15',
-    ...overrides,
-  }
-
-  for (const [key, value] of Object.entries(values)) {
-    formData.set(key, value)
-  }
-
-  return formData
+function makeAuthedStub(userId = 'user-1'): SupabaseClient<any> {
+  return {
+    auth: {
+      getUser: vi.fn().mockResolvedValue({ data: { user: { id: userId } } }),
+    },
+    rpc: vi.fn(),
+    from: vi.fn(),
+    storage: { from: vi.fn() },
+  } as unknown as SupabaseClient<any>
 }
 
-describe('createProperty', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    mocks.createClient.mockResolvedValue({ rpc: mocks.rpc })
-    mocks.rpc.mockResolvedValue({ data: { property_id: 'property-1', unit_id: 'unit-1' }, error: null })
-    mocks.validateProperty.mockResolvedValue({ valid: true })
+function brAddress() {
+  return {
+    name: '',
+    country_code: 'BR',
+    property_type: null,
+    postal_code: '01310-100',
+    street: 'Rua Teste',
+    number: '123',
+    city: 'Sao Paulo',
+    state: 'SP',
+    complement: '',
+    neighborhood: '',
+  }
+}
+
+describe('createPropertyCore — validation', () => {
+  it('returns unauthenticated when auth.getUser returns no user', async () => {
+    const supabase = {
+      auth: {
+        getUser: vi.fn().mockResolvedValue({ data: { user: null } }),
+      },
+    } as unknown as SupabaseClient<any>
+
+    const result = await createPropertyCore(supabase, {
+      draftId: 'a',
+      path: 'no_contract',
+      property: brAddress(),
+      tax_id: { tax_id: '' },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.globalErrors).toEqual([{ code: 'unauthenticated' }])
   })
 
-  it('returns schema field errors without calling validation or Supabase for invalid FormData', async () => {
-    const result = await createProperty({ success: false }, propertyFormData({
-      postal_code: '',
-      street: '',
-      number: '',
-      city: '',
-      state: '',
-      property_type: 'condo',
-    }))
+  it('projects per-section errors when composed schema rejects the input', async () => {
+    const supabase = makeAuthedStub()
 
-    expect(result).toEqual({
-      success: false,
-      errors: {
-        postal_code: ['required'],
-        street: ['required'],
-        number: ['required'],
-        city: ['required'],
-        state: ['required'],
-        property_type: ['invalidPropertyType'],
+    const result = await createPropertyCore(supabase, {
+      draftId: 'a',
+      path: 'no_contract',
+      property: { ...brAddress(), street: '' },
+      tax_id: { tax_id: '' },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.sectionErrors?.property).toBeDefined()
+    const propertySlice = result.sectionErrors?.property as Record<
+      string,
+      string[]
+    >
+    expect(propertySlice.street).toContain('required')
+    expect(vi.mocked(supabase.rpc)).not.toHaveBeenCalled()
+  })
+
+  it('contract-path missing contract returns ok:false with a global toast', async () => {
+    const supabase = makeAuthedStub()
+
+    const result = await createPropertyCore(supabase, {
+      draftId: 'a',
+      path: 'contract',
+      property: brAddress(),
+      tax_id: { tax_id: '' },
+    })
+
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    // Cross-section invariant (contract path requires `contract` + `rent`)
+    // doesn't sit in any one form's scope, so the action surfaces it via a
+    // generic global toast — the wizard's accordion focus logic stays out.
+    expect(result.globalErrors).toBeDefined()
+    expect(result.globalErrors?.length).toBeGreaterThan(0)
+  })
+
+  it('contract validation failure emits contract_validation_failed global, not a section error', async () => {
+    const supabase = makeAuthedStub()
+
+    // Bogus mime type fails `contractInputSchema`. Pair with `rent` so the
+    // contract-path cross-invariant passes and only the contract parse
+    // contributes to the envelope.
+    const result = await createPropertyCore(supabase, {
+      draftId: 'a',
+      path: 'contract',
+      property: brAddress(),
+      tax_id: { tax_id: '' },
+      rent: {
+        amount_minor: 100_000,
+        currency: 'BRL',
+        due_day_of_month: 5,
+        start_date: null,
+        end_date: null,
+        adjustment_frequency: null,
+        adjustment_method: null,
+        adjustment_index: null,
+        adjustment_amount_minor: null,
+        adjustment_basis_points: null,
+        includes: null,
+      },
+      contract: {
+        mime_type: 'application/x-bogus' as never,
+        bytes: 100,
+        original_filename: 'contract.pdf',
+        extension: 'pdf',
+        extraction: null,
       },
     })
-    expect(mocks.validateProperty).not.toHaveBeenCalled()
-    expect(mocks.createClient).not.toHaveBeenCalled()
-  })
 
-  it('validates normalized FormData and creates the property with parsed fields', async () => {
-    const result = await createProperty({ success: false }, propertyFormData({
-      name: ' <strong>Casa Centro</strong> ',
-      street: ' <b>Rua Augusta</b> ',
-      number: ' 123 ',
-      complement: ' Apto 4 ',
-    }))
-
-    expect(mocks.validateProperty).toHaveBeenCalledWith({
-      name: 'Casa Centro',
-      postal_code: '01310-100',
-      street: 'Rua Augusta',
-      number: '123',
-      complement: 'Apto 4',
-      neighborhood: 'Consolação',
-      city: 'São Paulo',
-      state: 'SP',
-      country_code: 'BR',
-      property_type: 'apartment',
+    expect(result.ok).toBe(false)
+    if (result.ok) return
+    expect(result.globalErrors).toContainEqual({
+      code: 'contract_validation_failed',
     })
-    expect(mocks.rpc).toHaveBeenCalledWith('create_property_with_membership', {
-      p_name: 'Casa Centro',
-      p_street: 'Rua Augusta',
-      p_number: '123',
-      p_complement: 'Apto 4',
-      p_neighborhood: 'Consolação',
-      p_city: 'São Paulo',
-      p_state: 'SP',
-      p_postal_code: '01310-100',
-      p_country_code: 'BR',
-      p_due_day: 15,
-    })
-    expect(mocks.revalidatePath).toHaveBeenCalledWith('/app')
-    expect(result).toEqual({ success: true, propertyId: 'property-1', unitId: 'unit-1' })
-  })
-
-  it('returns business validation errors before creating the property', async () => {
-    mocks.validateProperty.mockResolvedValueOnce({
-      valid: false,
-      errors: { general: ['duplicateAddress'] },
-    })
-
-    const result = await createProperty({ success: false }, propertyFormData())
-
-    expect(result).toEqual({ success: false, errors: { general: ['duplicateAddress'] } })
-    expect(mocks.createClient).not.toHaveBeenCalled()
+    expect(result.sectionErrors?.property).toBeUndefined()
   })
 })

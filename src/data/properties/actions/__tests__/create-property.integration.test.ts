@@ -7,13 +7,8 @@ import {
   getAdminClient,
 } from '@/test/supabase'
 
-// Stub Next's revalidatePath — irrelevant for these tests and avoids the
-// "outside of a request scope" complaint when run from node.
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
 
-// Stub Resend — every invite email test path must control the outcome. The
-// default implementation succeeds; individual tests override with
-// `vi.mocked(resend.emails.send).mockRejectedValueOnce(...)`.
 vi.mock('@/lib/resend/client', () => ({
   resend: {
     emails: {
@@ -25,7 +20,7 @@ vi.mock('@/lib/resend/client', () => ({
   RESEND_WAITLIST_SEGMENT_ID: 'test-segment',
 }))
 
-const { submitPropertyCreationCore } = await import('../submit-property-creation')
+const { createPropertyCore } = await import('../create-property')
 const { resend } = await import('@/lib/resend/client')
 
 // -----------------------------------------------------------------------------
@@ -65,7 +60,7 @@ function basicRent() {
 
 // -----------------------------------------------------------------------------
 
-describe('submitPropertyCreationCore', () => {
+describe('createPropertyCore', () => {
   let client: SupabaseClient<any>
   let userId: string
   let admin: ReturnType<typeof getAdminClient>
@@ -83,7 +78,6 @@ describe('submitPropertyCreationCore', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    // Default success path for every test; failure tests override per-call.
     vi.mocked(resend.emails.send).mockResolvedValue({
       data: { id: 'test-email-id' },
       error: null,
@@ -99,7 +93,7 @@ describe('submitPropertyCreationCore', () => {
     const tenantEmail = `tenant-${Date.now()}@test.local`
     const contractBlob = new Blob(['fake-pdf'], { type: 'application/pdf' })
 
-    const result = await submitPropertyCreationCore(client, {
+    const result = await createPropertyCore(client, {
       draftId,
       path: 'contract',
       property: brAddress('happy'),
@@ -146,7 +140,6 @@ describe('submitPropertyCreationCore', () => {
     expect(summary.tenants.invited_count).toBe(1)
     expect(summary.expenses.count).toBe(1)
 
-    // Verify rows via admin client.
     const { data: propertyRow } = await admin
       .from('properties')
       .select('id, created_by')
@@ -163,7 +156,6 @@ describe('submitPropertyCreationCore', () => {
     expect(invitationRow?.status).toBe('pending')
     expect(invitationRow?.last_emailed_at).not.toBeNull()
 
-    // Email was sent.
     expect(vi.mocked(resend.emails.send)).toHaveBeenCalledTimes(1)
   })
 
@@ -172,7 +164,7 @@ describe('submitPropertyCreationCore', () => {
   it('no-contract path with no rent: contract and rent come back null, everything else proceeds', async () => {
     const draftId = crypto.randomUUID()
 
-    const result = await submitPropertyCreationCore(client, {
+    const result = await createPropertyCore(client, {
       draftId,
       path: 'no_contract',
       property: brAddress('no-contract'),
@@ -211,14 +203,14 @@ describe('submitPropertyCreationCore', () => {
       ],
     }
 
-    const first = await submitPropertyCreationCore(client, payload)
+    const first = await createPropertyCore(client, payload)
     expect(first.ok).toBe(true)
     if (!first.ok) return
     expect(first.summary!.is_idempotent_replay).toBe(false)
     expect(vi.mocked(resend.emails.send)).toHaveBeenCalledTimes(1)
 
     // Second call with the SAME draftId triggers the replay branch.
-    const second = await submitPropertyCreationCore(client, payload)
+    const second = await createPropertyCore(client, payload)
     expect(second.ok).toBe(true)
     if (!second.ok) return
     expect(second.summary!.is_idempotent_replay).toBe(true)
@@ -243,7 +235,7 @@ describe('submitPropertyCreationCore', () => {
 
     try {
       const draftId = crypto.randomUUID()
-      const result = await submitPropertyCreationCore(client, {
+      const result = await createPropertyCore(client, {
         draftId,
         path: 'no_contract',
         property: brAddress('tax-conflict'),
@@ -267,12 +259,9 @@ describe('submitPropertyCreationCore', () => {
   it('contract upload failure: DB is preserved, upload_status flips to failed, summary flags upload_failed', async () => {
     const draftId = crypto.randomUUID()
 
-    // Force the Storage upload to fail by sending an invalid mime type via
-    // a Blob the bucket rejects. Simpler: stub the supabase storage client
-    // by intercepting the underlying fetch. We instead point at an extension
-    // the bucket allows but feed a bogus blob — the actual reject path here
-    // exercises the action's try/catch around `.upload()`. We force-feed by
-    // intercepting `from('contracts').upload`.
+    // Intercept `from('contracts').upload` to force a failure. Proxy keeps
+    // `this`-bound methods on the real bucket intact (a plain spread breaks
+    // them).
     const originalFrom = client.storage.from.bind(client.storage)
     const uploadSpy = vi
       .fn()
@@ -282,23 +271,19 @@ describe('submitPropertyCreationCore', () => {
       .mockImplementation((bucket: string) => {
         const real = originalFrom(bucket)
         if (bucket === 'contracts') {
-          // Return an object that proxies `real`'s methods but replaces
-          // `upload`. We can't just spread `real` because its methods are
-          // bound to a closure that depends on `this`; we wrap instead.
-          const wrapped = new Proxy(real, {
+          return new Proxy(real, {
             get(target, prop) {
               if (prop === 'upload') return uploadSpy
               const value = Reflect.get(target, prop)
               return typeof value === 'function' ? value.bind(target) : value
             },
-          })
-          return wrapped as any
+          }) as any
         }
         return real
       })
 
     try {
-      const result = await submitPropertyCreationCore(client, {
+      const result = await createPropertyCore(client, {
         draftId,
         path: 'contract',
         property: brAddress('upload-fail'),
@@ -320,13 +305,8 @@ describe('submitPropertyCreationCore', () => {
       expect(summary.contract).not.toBeNull()
       expect(summary.contract?.upload_failed).toBe(true)
 
-      // Contract row still exists (RPC inserted it; upload-side failure
-      // doesn't roll it back). The non-fatal posture is "summary flags
-      // the failure, the property page offers re-upload" — see spec §
-      // Storage cleanup model. The action attempts to flip
-      // `contracts.upload_status = 'failed'`; that flip is best-effort
-      // (RLS on contracts has a known interaction with property-scoped
-      // landlord memberships that's outside this PR's scope).
+      // Status flip is best-effort (separate RLS follow-up); the in-memory
+      // `upload_failed: true` flag is the load-bearing signal for Phase 4.
       const { data: contractRow } = await admin
         .from('contracts')
         .select('id, upload_status')
@@ -347,7 +327,7 @@ describe('submitPropertyCreationCore', () => {
     const draftId = crypto.randomUUID()
     const tenantEmail = `failmail-${Date.now()}@test.local`
 
-    const result = await submitPropertyCreationCore(client, {
+    const result = await createPropertyCore(client, {
       draftId,
       path: 'no_contract',
       property: brAddress('email-fail'),
@@ -387,7 +367,7 @@ describe('submitPropertyCreationCore', () => {
       process.env.SUPABASE_ANON_KEY!,
     ) as unknown as SupabaseClient<any>
 
-    const result = await submitPropertyCreationCore(anonClient, {
+    const result = await createPropertyCore(anonClient, {
       draftId: crypto.randomUUID(),
       path: 'no_contract',
       property: brAddress('anon'),

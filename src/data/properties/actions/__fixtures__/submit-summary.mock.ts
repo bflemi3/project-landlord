@@ -1,6 +1,6 @@
 /**
  * Mock `SubmitSummary` fixtures used during local development of the
- * success screen while Phase 3 (the real `submitPropertyCreation` action)
+ * success screen while Phase 3 (the real `createProperty` action)
  * is still in flight. Once the action ships, the success screen consumes
  * the action's response and these fixtures collapse into test data.
  */

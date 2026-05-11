@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * Wizard success screen. Rendered after `submitPropertyCreation` resolves
+ * Wizard success screen. Rendered after `createProperty` resolves
  * with `{ ok: true, summary }`. Lives in the focused-route shell so the
  * Wordmark stays in the top-left and there's no app chrome bleed.
  *

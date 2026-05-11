@@ -693,6 +693,7 @@
       "unauthenticated": "Sua sessão expirou. Faça login novamente para continuar.",
       "idempotency_owner_mismatch": "Esta sessão do assistente não pode ser reutilizada em outra conta. Comece uma nova.",
       "rpc_constraint_violation": "Não conseguimos salvar este imóvel porque algo não bate. Revise as informações e tente novamente.",
+      "contract_validation_failed": "O arquivo do contrato parece inválido. Tente enviá-lo novamente.",
       "unknown": "Algo deu errado. Tente novamente."
     },
     "resumeUnavailable": "Seu progresso pode não ser salvo neste dispositivo.",

@@ -21,17 +21,17 @@ import { tenantInputBaseSchema } from './tenant'
 // trust boundary. Add client-side bundling fields and their validation here
 // if/when the UI ships.
 
-const propertySubmissionSchema = propertyInputBaseSchema.extend(
+export const propertySubmissionSchema = propertyInputBaseSchema.extend(
   propertyAddressInputBaseSchema.shape,
 )
 
-const tenantSubmissionRowSchema = tenantInputBaseSchema.extend({
+export const tenantSubmissionRowSchema = tenantInputBaseSchema.extend({
   taxId: taxIdBaseSchema,
 })
 
-const taxIdSubmissionSchema = z.object({ tax_id: taxIdBaseSchema })
+export const taxIdSubmissionSchema = z.object({ tax_id: taxIdBaseSchema })
 
-const providerRequestDraftSchema = z.object({
+export const providerRequestDraftSchema = z.object({
   requested_provider_name: z
     .string()
     .trim()
