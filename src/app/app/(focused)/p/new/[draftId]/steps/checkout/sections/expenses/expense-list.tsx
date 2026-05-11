@@ -16,10 +16,8 @@ import {
   ExplainerCardListItem,
   ExplainerCardTitle,
 } from '@/components/explainer-card'
-import { radioCardVariants } from '@/components/radio-card-group'
 import { useDelayedRemoval } from '@/lib/hooks/use-delayed-removal'
 import { useRecentlyAdded } from '@/lib/hooks/use-recently-added'
-import { cn } from '@/lib/utils'
 
 import {
   defaultExpenseRow,
@@ -119,20 +117,10 @@ export function ExpenseList() {
           />
         ))}
       </Accordion>
-      {/* Add expense — styled as a full-width chip so it reads as part of
-          the row rhythm (same chrome as the type-selector "More options"
-          trigger) rather than a small ghost button tucked at the bottom. */}
-      <button
-        type="button"
-        onClick={handleAdd}
-        className={cn(
-          radioCardVariants({ variant: 'chip' }),
-          'text-muted-foreground hover:text-foreground w-full',
-        )}
-      >
-        <Plus className="size-4 shrink-0" />
-        <span>{t('addExpense')}</span>
-      </button>
+      <Button onClick={handleAdd}>
+        <Plus />
+        {t('addExpense')}
+      </Button>
     </div>
   )
 }

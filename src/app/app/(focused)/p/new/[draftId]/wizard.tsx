@@ -97,6 +97,13 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
   // effect via the `process.env.NODE_ENV` gate inside the hook.
   useDevSuccessPreview({ setSubmitSummary, clearPersisted })
 
+  // Wipe the persisted draft only after the success screen has rendered.
+  // If `<PropertyCreationSuccessScreen>` throws in its render, this effect
+  // never commits and the user's draft survives a refresh.
+  useEffect(() => {
+    if (submitSummary) clearPersisted()
+  }, [submitSummary, clearPersisted])
+
   useEffect(() => {
     router.prefetch(EXIT_HREF)
     // Next.js RSC prefetches for dynamic routes have a short TTL (~30s), so a
@@ -175,12 +182,6 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
         // — the dispatcher intentionally doesn't touch them on `ok: true`
         // so unrelated continue-action successes don't reset siblings.
         dispatchServerErrorsResponse(response, dispatchActions)
-        // `clearPersisted()` wipes the IDB record (including server errors
-        // and globals). `setSubmitSummary(...)` swaps the wizard render for
-        // the success screen on the next paint. Order: clear first so a
-        // late persist-debounce write doesn't resurrect the slice; the
-        // success screen reads from `summary`, not the store.
-        clearPersisted()
         setSubmitSummary(summary)
         captureEvent(
           summary.is_idempotent_replay

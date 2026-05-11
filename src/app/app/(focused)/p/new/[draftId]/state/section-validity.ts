@@ -29,16 +29,13 @@ const SECTION_PREDICATES: Record<SectionId, SectionPredicate> = {
 /**
  * Combines a section's persisted status with its schema-driven validity.
  * `'invalid'` outranks the persisted status when the schema fails AND the
- * user has engaged with the section — visited it, completed it, or skipped
- * it. An unvisited section with extracted-invalid contents stays quiet
- * until the user opens it; that's what stops Step 2 landing from yelling
- * about every section at once.
+ * user has engaged with the section. Engagement: completed, skipped, or
+ * visited-on-contract-path. The contract-path visit gate is intentional —
+ * extracted-but-invalid fields should surface on first visit, but a fresh
+ * no-contract section the user just landed on should stay quiet.
  *
- * Server errors are unconditional: a section with any entry in
- * `sectionServerErrors[sectionId]` is `'invalid'` regardless of engagement
- * — the dispatcher already adds errored sections to `visitedSectionIds`,
- * but the explicit check keeps the rule local to this function rather
- * than relying on a cross-file invariant.
+ * Server errors are unconditional: any entry in `sectionServerErrors[id]`
+ * forces `'invalid'`.
  */
 export function deriveSectionValidity(
   sectionId: SectionId,
@@ -51,7 +48,7 @@ export function deriveSectionValidity(
   const engaged =
     status === 'completed' ||
     status === 'skipped' ||
-    state.visitedSectionIds.has(sectionId)
+    (state.path === 'contract' && state.visitedSectionIds.has(sectionId))
   if (!engaged) return status
   return SECTION_PREDICATES[sectionId].isValid(state) ? status : 'invalid'
 }

@@ -29,6 +29,11 @@ import { useWizardForm } from '../../../../state/use-wizard-form'
 import { clearFieldServerError, type TenantsTouched } from './state'
 import { validateTenants } from './validation'
 
+const EMPTY_ROW_SERVER_ERRORS: Record<string, string[]> = Object.freeze({}) as Record<
+  string,
+  string[]
+>
+
 interface TenantFormProps {
   id: string
   /** Focus the name field on mount — used after Add tenant. */
@@ -39,14 +44,12 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
   const { setSectionData, setServerErrors } = usePropertyCreationActions()
   const t = useTranslations('propertyCreation.checkout.tenants')
 
-  // Row-keyed server errors for this tenant. The submit action populates
-  // `sectionServerErrors.tenants[rowId]` on failure; merged below at the
-  // call site (`errors[field]?.[0] ?? rowServerErrors[field]?.[0]`).
   const rowServerErrors = usePropertyCreationState((s) => {
     const section = s.sectionServerErrors.tenants as
       | Record<string, Record<string, string[]>>
       | undefined
-    return section?.[id] ?? {}
+
+    return section?.[id] ?? EMPTY_ROW_SERVER_ERRORS
   })
 
   const tenant = usePropertyCreationState((s) =>

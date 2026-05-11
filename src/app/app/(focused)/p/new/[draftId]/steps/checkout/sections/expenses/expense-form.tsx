@@ -29,6 +29,11 @@ import { ExpenseTypeSelector } from './expense-type-selector'
 import { clearFieldServerError, type ExpensesTouched } from './state'
 import { validateExpenses } from './validation'
 
+const EMPTY_ROW_SERVER_ERRORS: Record<string, string[]> = Object.freeze({}) as Record<
+  string,
+  string[]
+>
+
 interface ExpenseFormProps {
   id: string
 }
@@ -38,14 +43,12 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
   const t = useTranslations('propertyCreation.checkout.expenses')
   const { setSectionData, setServerErrors } = usePropertyCreationActions()
 
-  // Row-keyed server errors for this expense. The submit action populates
-  // `sectionServerErrors.expenses[rowId]` on failure; merged below at the
-  // call site (`errors[field]?.[0] ?? rowServerErrors[field]?.[0]`).
   const rowServerErrors = usePropertyCreationState((s) => {
     const section = s.sectionServerErrors.expenses as
       | Record<string, Record<string, string[]>>
       | undefined
-    return section?.[id] ?? {}
+
+    return section?.[id] ?? EMPTY_ROW_SERVER_ERRORS
   })
 
   const expense = usePropertyCreationState((s) =>

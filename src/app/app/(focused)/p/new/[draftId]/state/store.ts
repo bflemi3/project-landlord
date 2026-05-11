@@ -427,11 +427,6 @@ function buildPersistOptions(
         console.error('[property-creation] rehydration failed', error)
         return
       }
-      // Profile-derived seeding: the tax-id section pre-fills from
-      // `profiles.tax_id` when the persisted slice is empty. The persist
-      // write that follows the seed is intentional — next load reads the
-      // value straight from IDB and the helper short-circuits.
-      if (state) void seedTaxIdFromProfileIfMissing(state)
     },
   }
 }
@@ -465,7 +460,12 @@ export function createPropertyCreationStore(draftId: string) {
       (set, get) => ({
         ...defaultState(),
         actions: {
-          goToStep: (step) => set({ step }),
+          goToStep: (step) => {
+            set({ step })
+            // Seed tax-id from profile only after the user advances to
+            // step 2 — keeps step 1 silent on exit when nothing's touched.
+            if (step === 2) void seedTaxIdFromProfileIfMissing(get())
+          },
 
           setContractFile: (file, name, type) =>
             set({

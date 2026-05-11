@@ -74,7 +74,8 @@ export interface SubmitSummaryRent {
   amount_minor: number
   currency: string
   due_day_of_month: number
-  includes: ExpenseType[]
+  /** Nullable on the RPC's replay path; first-write path returns `[]`. */
+  includes: ExpenseType[] | null
 }
 
 export interface SubmitSummaryTenants {

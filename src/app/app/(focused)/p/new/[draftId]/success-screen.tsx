@@ -109,7 +109,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
           icon={<Home aria-hidden="true" />}
           eyebrow={t('summary.property.title')}
         >
-          <p className="text-sm font-medium text-foreground sm:text-base">
+          <p className="text-sm font-bold text-foreground sm:text-base">
             {summary.property_name}
           </p>
           {addressLine ? (
@@ -125,7 +125,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
             icon={<Wallet aria-hidden="true" />}
             eyebrow={t('summary.rent.title')}
           >
-            <p className="text-sm font-medium text-foreground sm:text-base">
+            <p className="text-sm font-bold text-foreground sm:text-base">
               {formatCurrency(summary.rent.amount_minor, summary.rent.currency, locale)}
             </p>
             <p className="text-sm text-muted-foreground">
@@ -133,10 +133,10 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
                 ordinal: ordinal(summary.rent.due_day_of_month, locale),
               })}
             </p>
-            {summary.rent.includes.length > 0 ? (
+            {(summary.rent.includes ?? []).length > 0 ? (
               <p className="text-sm text-muted-foreground">
                 {t('summary.rent.includes', {
-                  list: summary.rent.includes
+                  list: (summary.rent.includes ?? [])
                     .map((expenseType) => tExpenses(expenseType as ExpenseType))
                     .join(', '),
                 })}
@@ -203,7 +203,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
             icon={<Receipt aria-hidden="true" />}
             eyebrow={t('summary.expenses.title')}
           >
-            <p className="text-sm font-medium text-foreground sm:text-base">
+            <p className="text-sm text-foreground sm:text-base">
               {t('summary.expenses.tracked', {
                 count: summary.expenses.count,
               })}
@@ -237,13 +237,13 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
         ) : null}
       </Card>
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row-reverse sm:justify-start">
-        <Link
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row-reverse sm:justify-center">
+        {/* <Link
           href={`/app/p/${summary.property_id}`}
           className={cn(buttonVariants({ size: 'default' }), 'w-full sm:w-auto')}
         >
           {t('cta.viewProperty')}
-        </Link>
+        </Link> */}
         <Link
           href="/app"
           className={cn(
