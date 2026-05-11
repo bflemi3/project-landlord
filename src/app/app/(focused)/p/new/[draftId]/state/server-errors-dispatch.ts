@@ -51,6 +51,14 @@ const SECTION_SERVER_ERROR_MODULES: Record<SectionId, SectionServerErrorsModule>
   bank,
 }
 
+/** Narrow shape the dispatcher consumes — pinned so callers can pass a
+ *  re-packed object of destructured actions without depending on the
+ *  full `PropertyCreationActions` bag. */
+export type ServerErrorsDispatchActions = Pick<
+  PropertyCreationActions,
+  'setServerErrors' | 'markSectionVisited' | 'setGlobalErrors'
+>
+
 /**
  * Apply a `ServerErrorsResponse` to the wizard store.
  *
@@ -65,7 +73,7 @@ const SECTION_SERVER_ERROR_MODULES: Record<SectionId, SectionServerErrorsModule>
  */
 export function dispatchServerErrorsResponse(
   response: ServerErrorsResponse,
-  actions: PropertyCreationActions,
+  actions: ServerErrorsDispatchActions,
 ): void {
   if (response.ok) {
     actions.setGlobalErrors([])

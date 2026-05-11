@@ -52,7 +52,15 @@ import { ExtractionLegend } from './sections/extraction-legend'
  *   - `property_checkout_section_completed` / `_skipped` fire from each
  *     section's `useSectionController` handlers.
  */
-export function PropertyCheckoutShell() {
+interface PropertyCheckoutShellProps {
+  onCreateProperty: () => void
+  isSubmitting: boolean
+}
+
+export function PropertyCheckoutShell({
+  onCreateProperty,
+  isSubmitting,
+}: PropertyCheckoutShellProps) {
   const activeSectionId = usePropertyCreationState((s) => s.activeSectionId)
   const { openSection } = usePropertyCreationActions()
 
@@ -84,8 +92,13 @@ export function PropertyCheckoutShell() {
   }, [])
 
   const checkoutContext = useMemo<CheckoutContextValue>(
-    () => ({ registerHeaderRef, requestTransitionScroll }),
-    [registerHeaderRef, requestTransitionScroll],
+    () => ({
+      registerHeaderRef,
+      requestTransitionScroll,
+      onCreateProperty,
+      isSubmitting,
+    }),
+    [registerHeaderRef, requestTransitionScroll, onCreateProperty, isSubmitting],
   )
 
   // Smooth-scroll the new active section's header into view when a transition

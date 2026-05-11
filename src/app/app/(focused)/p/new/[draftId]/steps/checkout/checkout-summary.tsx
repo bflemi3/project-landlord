@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { CHECKOUT_SECTIONS } from '../../state/registry'
 import { getRemainingSectionCount } from '../../state/derivations'
 import { usePropertyCreationState } from '../../state/use-property-creation'
+import { useCheckoutContext } from './checkout-context'
 import { PropertySummaryRow } from './sections/property'
 import { RentDatesSummaryRow } from './sections/rent-dates'
 import { TenantsSummaryRow } from './sections/tenants'
@@ -25,6 +26,7 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
   const remaining = usePropertyCreationState((s) =>
     getRemainingSectionCount({ sectionStates: s.sectionStates }),
   )
+  const { onCreateProperty, isSubmitting } = useCheckoutContext()
 
   return (
     <aside
@@ -53,8 +55,12 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
         <TaxIdSummaryRow />
         <BankSummaryRow />
       </ul>
-      <Button className="mt-6 w-full" disabled={remaining > 0}>
-        {t('cta.create')}
+      <Button
+        className="mt-6 w-full"
+        disabled={remaining > 0 || isSubmitting}
+        onClick={onCreateProperty}
+      >
+        {isSubmitting ? t('cta.creating') : t('cta.create')}
       </Button>
       {remaining > 0 && (
         <p className="text-center text-sm text-muted-foreground -mt-3">

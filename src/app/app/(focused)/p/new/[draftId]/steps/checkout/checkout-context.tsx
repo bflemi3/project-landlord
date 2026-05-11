@@ -20,6 +20,13 @@ import type { SectionId } from '../../state/registry'
 export interface CheckoutContextValue {
   registerHeaderRef: (id: SectionId) => (node: HTMLButtonElement | null) => void
   requestTransitionScroll: () => void
+  /** Wizard-owned submit handler. The desktop summary button and the mobile
+   *  sticky bar both consume this — the wizard composes the action call,
+   *  success-screen hand-off, and error dispatch in one place. */
+  onCreateProperty: () => void
+  /** True while the submit action is in flight. Disables the CTAs and
+   *  swaps in a loading affordance per design-system motion rules. */
+  isSubmitting: boolean
 }
 
 const CheckoutContext = createContext<CheckoutContextValue | null>(null)

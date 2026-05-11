@@ -47,6 +47,12 @@ export function TenantsSection() {
   const countryCode = usePropertyCreationState(
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
+  // Only auto-promote touched on first visit when extraction populated the
+  // section (contract path). No-contract entry stays quiet until the user
+  // engages a field; continue / submit still promote touched via the
+  // existing handlers.
+  const path = usePropertyCreationState((s) => s.path)
+  const onFirstVisit = path === 'contract' ? promoteAllTouched : undefined
 
   // Cached: shares the parse with row badges + section-level isValid checks.
   const continueDisabled = !validateTenants(tenants, countryCode).ok
@@ -63,7 +69,7 @@ export function TenantsSection() {
   return (
     <Section
       id={SECTION_ID}
-      onFirstVisit={promoteAllTouched}
+      onFirstVisit={onFirstVisit}
       onLeave={promoteAllTouched}
     >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>

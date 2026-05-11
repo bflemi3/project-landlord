@@ -29,6 +29,19 @@ interface CepFieldProps {
    */
   onValueChange?: (formatted: string) => void
   labelExtra?: ReactNode
+  /**
+   * Whether the parent's `<Field>` is in an error state. Pipes through to
+   * the internal `<Input>` so the design system's `aria-invalid` styling
+   * (red border) paints. The parent renders its own `<FieldError>` sibling
+   * — this prop is just the border/aria piece. When true, the input's
+   * `aria-describedby` points at `errorId` so screen readers reach the
+   * sibling error message; otherwise it points at the internal hint id.
+   */
+  hasError?: boolean
+  /** ID of the parent's `<FieldError>` element. Used for `aria-describedby`
+   *  wiring when `hasError` is true. Required when `hasError` is true; ignored
+   *  otherwise. */
+  errorId?: string
 }
 
 export const CepField = memo(function CepField({
@@ -37,6 +50,8 @@ export const CepField = memo(function CepField({
   value,
   onValueChange,
   labelExtra,
+  hasError = false,
+  errorId,
 }: CepFieldProps) {
   // 1. Refs
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -134,6 +149,8 @@ export const CepField = memo(function CepField({
           : { defaultValue })}
         onChange={handleChange}
         maxLength={9}
+        aria-invalid={hasError || undefined}
+        aria-describedby={hasError && errorId ? errorId : 'postal_code-hint'}
       />
       {looking && (
         <FieldDescription

@@ -138,3 +138,21 @@ export type ServerErrorsResponse =
       sectionErrors?: Partial<Record<SectionId, SectionServerErrors>>
       globalErrors?: GlobalError[]
     }
+
+/**
+ * True when the given slice contains at least one non-empty leaf. Walks
+ * arbitrary depth so it works for both flat shapes (`Record<field,
+ * string[]>`) and row shapes (`Record<rowId, Record<field, string[]>>`) —
+ * and any future nesting without a code change.
+ *
+ * Co-located with the wire types because it operates on the same shapes
+ * (`SectionServerErrors`, the inner `FlatFieldErrors`). Callers that just
+ * need "does this section have anything to surface?" import from here.
+ */
+export function hasAnyServerErrors(value: unknown): boolean {
+  if (Array.isArray(value)) return value.length > 0
+  if (value !== null && typeof value === 'object') {
+    return Object.values(value).some(hasAnyServerErrors)
+  }
+  return false
+}

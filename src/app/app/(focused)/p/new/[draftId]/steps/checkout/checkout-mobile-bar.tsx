@@ -12,6 +12,7 @@ import {
 } from '../../state/section-validity'
 import { usePropertyCreationState } from '../../state/use-property-creation'
 import { getRemainingSectionCount } from '../../state/derivations'
+import { useCheckoutContext } from './checkout-context'
 
 interface CheckoutMobileBarProps {
   className?: string
@@ -33,6 +34,7 @@ export function CheckoutMobileBar({ className }: CheckoutMobileBarProps) {
   const remaining = usePropertyCreationState((s) =>
     getRemainingSectionCount({ sectionStates: s.sectionStates }),
   )
+  const { onCreateProperty, isSubmitting } = useCheckoutContext()
 
   return (
     <StickyBottomBar data-slot="checkout-mobile-bar" className={className}>
@@ -58,8 +60,12 @@ export function CheckoutMobileBar({ className }: CheckoutMobileBarProps) {
           {t('remaining', { count: remaining })}
         </p>
       )}
-      <Button className="w-full" disabled={remaining > 0}>
-        {t('create')}
+      <Button
+        className="w-full"
+        disabled={remaining > 0 || isSubmitting}
+        onClick={onCreateProperty}
+      >
+        {isSubmitting ? t('creating') : t('create')}
       </Button>
     </StickyBottomBar>
   )

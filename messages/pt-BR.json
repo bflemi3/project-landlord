@@ -535,6 +535,7 @@
       },
       "cta": {
         "create": "Criar imóvel",
+        "creating": "Criando…",
         "remaining": "{count, plural, one {falta # seção} other {faltam # seções}}",
         "hint": "Conclua as seções obrigatórias para criar o imóvel."
       },
