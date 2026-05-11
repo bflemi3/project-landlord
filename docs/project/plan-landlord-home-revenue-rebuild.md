@@ -1,7 +1,13 @@
 # Plan: Landlord home page — revenue-first rebuild
 
-**Status:** Planning doc, not yet dispatched. Written 2026-05-11 while Phase 2 of property-creation is in flight.
-**Dispatch when:** Phase 2 (canonical Zod schemas, wizard store error slice, success screen) merges and Phase 3 / Phase 4 (server action + Create-property wiring) are either in progress or queued. The landlord home rebuild can dispatch in parallel with Phase 3 or after Phase 4 — its files don't overlap, but Phase 4 may want to verify the home page reflects a freshly-created property at integration time.
+**Status:** Planning doc, ready to dispatch. Written 2026-05-11; all wizard phases (1, 2A/B/C, 3, 4) have since merged on `brandon/wizard-shell-and-contract-upload`. The wizard creates a property end-to-end; this rebuild updates the surface the user lands on afterward.
+**Dispatch when:** ready now. No remaining wizard-phase dependency. Live UI iteration on the wizard's bank section + success-screen polish can run in parallel with this work since the files don't overlap.
+
+## Parent context
+
+- **`docs/project/product-pivot-long-term-rentals.md`** — the post-pivot product spec. The rent-first / passive-by-design / summary-first framing on the home page is a direct expression of those principles.
+- **`docs/superpowers/specs/2026-05-08-property-creation-persistence-design.md`** — defines the `rent` table shape the calculations consume (`amount_minor`, `currency`, `due_day_of_month`, `start_date`, `end_date`, `includes`). Canonical source for the rent schema; this plan reads from it but does not modify it.
+- **`docs/project/deferred-decision-properties-units-collapse.md`** — open architectural question about whether `units` collapses into `properties`. If that lands BEFORE this rebuild, the per-property card and the data-fetcher paths simplify (one less join). The plan as written assumes the current dual-table shape; revisit the next-time checklist below if the decision flips.
 
 ---
 
@@ -51,7 +57,7 @@ Rather than maintain the pre-pivot pages against the new schema, this plan rebui
 │  Total earned                  Expected monthly         │
 │  R$ 42,000                     R$ 6,000                 │
 │                                                         │
-│  2 properties have leases ending in the next 30 days    │
+│  2 properties have leases ending in the next 60 days    │
 │  Rua das Flores, 123 (Apt 101) · Avenida Sol, 500       │
 └─────────────────────────────────────────────────────────┘
 ```
@@ -165,7 +171,7 @@ export type LandlordHomePropertyCard = {
   monthly_minor: number | null  // null means "—"
   currency: string
   end_date: string | null
-  end_state: 'far' | 'ending-soon' | 'ending-immediately' | 'ended' | 'none'
+  end_state: 'far' | 'ending-soon' | 'ended' | 'none'
 }
 
 // server.ts (React.cache-wrapped)
@@ -173,12 +179,12 @@ export const getLandlordHomeRevenueSummary = cache(async (userId: string) => { .
 export const getLandlordHomePropertyCards = cache(async (userId: string) => { ... })
 ```
 
-Both queries scope to the landlord via `memberships` join on `role = 'landlord'`. Two queries → two Suspense boundaries on the page so the summary streams in independently from the cards.
+Both queries scope to the landlord via `memberships` join on `role = 'landlord'`. The new `is_property_landlord(uuid)` / `is_unit_landlord(uuid)` SQL helpers from Phase 1 are also available if a per-row predicate reads cleaner than an explicit join. Two queries → two Suspense boundaries on the page so the summary streams in independently from the cards.
 
 ### SQL views vs TS fetchers
 
 TS fetchers, not SQL views. Rationale:
-- The end-date thresholds (30 / 7 days) are constants that will likely tune post-launch. TS const change is one PR; SQL view change is a migration + types regen + PR.
+- The 60-day end-date threshold (and any future sub-tier) is a constant that may tune post-launch. TS const change is one PR; SQL view change is a migration + types regen + PR.
 - At MVP scale (single landlord, ~10s of properties), the perf gap between a view and a TS-side aggregation is sub-millisecond. Both paths hit the same indexes.
 - The `getLandlordHomeRevenueSummary` query needs the "ending soon" list inline, which means joining `rent` + `properties` and filtering by date — easier to express in TS than in a `create view` statement that re-runs the date check on every read.
 
@@ -202,10 +208,11 @@ For the dispatched agent — these are deletions, not refactors:
 - [ ] `src/app/app/(focused)/p/[id]/s/[statementId]/` — entire directory (statement pages)
 - [ ] `src/data/statements/` — entire directory (`shared.ts`, `server.ts`, `client.ts`, `actions/*`, `__tests__/*`)
 - [ ] Audit `src/data/units/` and remove anything that only fed statement pages. Keep what the wizard / property-creation needs.
-- [ ] Audit `src/data/properties/` and remove anything that only fed the deleted detail page.
+- [ ] Audit `src/data/properties/` and remove anything that only fed the deleted detail page. **Keep `create-property.ts` and `create-property-deprecated.ts`** — both are property-creation surfaces from the wizard's PR train, not detail-page artifacts.
 - [ ] `src/components/charge-card.tsx`, `charge-config-sheet.tsx`, `add-charge-sheet.tsx` (and similar) — audit; delete if not used elsewhere.
 - [ ] `messages/{en,es,pt-BR}.json` — remove keys for deleted UI. Run a grep after deletion to find orphans.
 - [ ] Any "what's next" widget on the current home page — entire UI surface gone.
+- [ ] **Success screen's "View property" CTA** at `src/app/app/(focused)/p/new/[draftId]/success-screen.tsx` — currently navigates to `/app/p/{property_id}`, which this work deletes. Repoint to `/app` (the home with the new property card) OR drop the CTA so the screen has a single "Go to dashboard" action. Either way, update the success screen + the i18n keys (`propertyCreation.success.cta.viewProperty`) in lockstep.
 
 `pnpm typecheck` and `pnpm lint` are the safety net. Any import of a deleted module fails the build immediately — that's the point.
 
