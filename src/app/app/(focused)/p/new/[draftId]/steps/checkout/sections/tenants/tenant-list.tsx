@@ -30,13 +30,17 @@ import {
   usePropertyCreationActions,
   usePropertyCreationState,
 } from '../../../../state/use-property-creation'
-import { type TenantsTouched } from './state'
+import { clearRowServerErrors, type TenantsTouched } from './state'
 import { TenantRow as TenantRowComponent } from './tenant-row'
 
 export function TenantList() {
   const t = useTranslations('propertyCreation.checkout.tenants')
-  const { setSectionData, setTenantsListUI, setTouched } =
-    usePropertyCreationActions()
+  const {
+    setSectionData,
+    setTenantsListUI,
+    setTouched,
+    setServerErrors,
+  } = usePropertyCreationActions()
   const tenantIds = usePropertyCreationState(
     useShallow((s) => (s.sectionData.tenants as TenantRow[]).map((row) => row.id)),
   )
@@ -63,12 +67,13 @@ export function TenantList() {
         setSectionData<TenantRow[]>('tenants', (prev) =>
           prev.filter((row) => row.id !== id),
         )
+        setServerErrors('tenants', clearRowServerErrors(id))
         setTenantsListUI((current) =>
           current.activeTenantId === id ? { activeTenantId: null } : {},
         )
       })
     },
-    [remove, setSectionData, setTenantsListUI],
+    [remove, setSectionData, setTenantsListUI, setServerErrors],
   )
 
   const handleActiveChange = useCallback(

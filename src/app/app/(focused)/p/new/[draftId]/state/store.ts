@@ -5,7 +5,10 @@ import {
   propertyCreationWizardKey,
   type SectionStatus,
 } from './persistence'
-import { defaultSectionTouched } from './section-defaults'
+import {
+  defaultSectionServerErrors,
+  defaultSectionTouched,
+} from './section-defaults'
 import { createIdbStorage } from './idb-storage'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 import {
@@ -23,6 +26,7 @@ import { fetchProfile } from '@/data/profiles/shared'
 import { createClient } from '@/lib/supabase/client'
 import type { TaxIdInput } from '../steps/checkout/sections/tax-id/schemas'
 import type { TenantRow } from '../steps/checkout/sections/tenants/schemas'
+import type { GlobalError, SectionServerErrors } from './types'
 
 // Types
 
@@ -73,6 +77,8 @@ export interface PropertyCreationStateShape {
   visitedSectionIds: ReadonlySet<SectionId>
   tenantsListUI: TenantsListUI
   expensesListUI: ExpensesListUI
+  sectionServerErrors: Record<SectionId, SectionServerErrors>
+  globalErrors: GlobalError[]
 }
 
 export interface PropertyCreationActions {
@@ -120,6 +126,11 @@ export interface PropertyCreationActions {
    * drafts don't accumulate. The "Save for later" branch deliberately does
    * NOT call this — leaving IDB intact is what enables resume. */
   clearPersisted: () => void
+  /** Mirrors `setTouched` — the store dispatches an opaque updater on the
+   *  section's slice. Each section's `state.ts` exports its update helpers
+   *  (`applyServerErrors`, `clearFieldServerError`, row variants). */
+  setServerErrors: <T>(id: SectionId, updater: (prev: T) => T) => void
+  setGlobalErrors: (next: GlobalError[]) => void
 }
 
 export interface PropertyCreationStoreValue extends PropertyCreationStateShape {
@@ -168,6 +179,8 @@ function defaultState(): PropertyCreationStateShape {
     visitedSectionIds: new Set(),
     tenantsListUI: defaultTenantsListUI(),
     expensesListUI: defaultExpensesListUI(),
+    sectionServerErrors: defaultSectionServerErrors(),
+    globalErrors: [],
   }
 }
 
@@ -297,6 +310,8 @@ function buildPersistOptions(
       visitedSectionIds: state.visitedSectionIds,
       tenantsListUI: state.tenantsListUI,
       expensesListUI: state.expensesListUI,
+      sectionServerErrors: state.sectionServerErrors,
+      globalErrors: state.globalErrors,
     }),
     merge: (persistedStateUnknown, currentState) => {
       // Persist v5 calls `merge` on every hydration — including the
@@ -373,6 +388,14 @@ function buildPersistOptions(
         ...(persisted.sectionTouched ?? {}),
       }
 
+      // Defaults under the persisted slice so missing keys (older snapshots
+      // written before this slice shipped) fall through to empty defaults.
+      const sectionServerErrors: Record<SectionId, SectionServerErrors> = {
+        ...defaultSectionServerErrors(),
+        ...(persisted.sectionServerErrors ?? {}),
+      }
+      const globalErrors: GlobalError[] = persisted.globalErrors ?? []
+
       return {
         ...currentState,
         step: resumeMidExtraction ? 1 : (persisted.step ?? currentState.step),
@@ -388,6 +411,8 @@ function buildPersistOptions(
         visitedSectionIds,
         tenantsListUI,
         expensesListUI,
+        sectionServerErrors,
+        globalErrors,
       }
     },
     migrate: (persistedState) => {
@@ -620,6 +645,25 @@ export function createPropertyCreationStore(draftId: string) {
 
           clearPersisted: () => {
             storeRef.current?.persist.clearStorage()
+          },
+
+          setServerErrors: (id, updater) => {
+            const state = get()
+            const prev = state.sectionServerErrors[id]
+            const next = updater(prev as never)
+            if (next === prev) return
+            set({
+              sectionServerErrors: {
+                ...state.sectionServerErrors,
+                [id]: next as SectionServerErrors,
+              },
+            })
+          },
+
+          setGlobalErrors: (next) => {
+            const state = get()
+            if (state.globalErrors === next) return
+            set({ globalErrors: next })
           },
         },
       }),

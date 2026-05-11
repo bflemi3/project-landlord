@@ -15,6 +15,7 @@ import * as tenants from '../steps/checkout/sections/tenants/state'
 
 import type { SectionData } from './extraction-seeding'
 import type { SectionId } from './registry'
+import type { SectionServerErrors } from './types'
 
 export function defaultSectionTouched(): Partial<Record<SectionId, unknown>> {
   return {
@@ -24,6 +25,21 @@ export function defaultSectionTouched(): Partial<Record<SectionId, unknown>> {
     expenses: expenses.defaultTouched(),
     'tax-id': taxId.defaultTouched(),
     bank: bank.defaultTouched(),
+  }
+}
+
+/**
+ * Per-section default server-error slices. Used by the store's
+ * `defaultState()`. Flat sections return `{}`; row sections return `{}`.
+ */
+export function defaultSectionServerErrors(): Record<SectionId, SectionServerErrors> {
+  return {
+    property: property.defaultServerErrors(),
+    'rent-dates': rentDates.defaultServerErrors(),
+    tenants: tenants.defaultServerErrors(),
+    expenses: expenses.defaultServerErrors(),
+    'tax-id': taxId.defaultServerErrors(),
+    bank: bank.defaultServerErrors(),
   }
 }
 

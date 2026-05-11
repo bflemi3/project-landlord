@@ -30,13 +30,17 @@ import {
   usePropertyCreationActions,
   usePropertyCreationState,
 } from '../../../../state/use-property-creation'
-import { type ExpensesTouched } from './state'
+import { clearRowServerErrors, type ExpensesTouched } from './state'
 import { ExpenseRow } from './expense-row'
 
 export function ExpenseList() {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const { setSectionData, setExpensesListUI, setTouched } =
-    usePropertyCreationActions()
+  const {
+    setSectionData,
+    setExpensesListUI,
+    setTouched,
+    setServerErrors,
+  } = usePropertyCreationActions()
   const expenseIds = usePropertyCreationState(
     useShallow((s) => (s.sectionData.expenses as ExpenseRowType[]).map((row) => row.id)),
   )
@@ -62,12 +66,13 @@ export function ExpenseList() {
         setSectionData<ExpenseRowType[]>('expenses', (prev) =>
           prev.filter((row) => row.id !== id),
         )
+        setServerErrors('expenses', clearRowServerErrors(id))
         setExpensesListUI((current) =>
           current.activeExpenseId === id ? { activeExpenseId: null } : {},
         )
       })
     },
-    [remove, setSectionData, setExpensesListUI],
+    [remove, setSectionData, setExpensesListUI, setServerErrors],
   )
 
   const handleActiveChange = useCallback(

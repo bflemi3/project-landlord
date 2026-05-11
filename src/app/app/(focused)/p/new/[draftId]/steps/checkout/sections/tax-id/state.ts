@@ -9,6 +9,26 @@ import { validateTaxId } from './validation'
 
 export type TaxIdSectionTouched = ReadonlySet<string>
 
+/** Server-error slice for this section. */
+export type TaxIdServerErrors = Record<string, string[]>
+
+export function defaultServerErrors(): TaxIdServerErrors {
+  return {}
+}
+
+export function applyServerErrors(slice: TaxIdServerErrors) {
+  return (): TaxIdServerErrors => slice
+}
+
+export function clearFieldServerError(field: string) {
+  return (prev: TaxIdServerErrors): TaxIdServerErrors => {
+    if (prev[field] == null) return prev
+    const next = { ...prev }
+    delete next[field]
+    return next
+  }
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const country =
     (state.sectionData.property as PropertyInput | undefined)?.country_code ??

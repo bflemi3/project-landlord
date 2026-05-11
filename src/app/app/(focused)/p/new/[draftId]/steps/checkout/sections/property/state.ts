@@ -9,6 +9,28 @@ import { validateProperty } from './validation'
 
 export type PropertyTouched = ReadonlySet<string>
 
+/** Server-error slice for this section. */
+export type PropertyServerErrors = Record<string, string[]>
+
+export function defaultServerErrors(): PropertyServerErrors {
+  return {}
+}
+
+/** Updater: replace the slice wholesale (server response is authoritative). */
+export function applyServerErrors(slice: PropertyServerErrors) {
+  return (): PropertyServerErrors => slice
+}
+
+/** Updater: drop one field's errors. Used by `setField` on user edit. */
+export function clearFieldServerError(field: string) {
+  return (prev: PropertyServerErrors): PropertyServerErrors => {
+    if (prev[field] == null) return prev
+    const next = { ...prev }
+    delete next[field]
+    return next
+  }
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const slice = state.sectionData.property as PropertyInput | undefined
   const country = slice?.country_code ?? 'BR'

@@ -9,6 +9,42 @@ import { validateTenants } from './validation'
 
 export type TenantsTouched = Record<string, ReadonlySet<string>>
 
+/** Server-error slice for this row section. Keyed by stable row `id`, never
+ *  index — row delete must not shift other rows' errors. */
+export type TenantsServerErrors = Record<string /* rowId */, Record<string, string[]>>
+
+export function defaultServerErrors(): TenantsServerErrors {
+  return {}
+}
+
+export function applyServerErrors(slice: TenantsServerErrors) {
+  return (): TenantsServerErrors => slice
+}
+
+export function clearRowServerErrors(rowId: string) {
+  return (prev: TenantsServerErrors): TenantsServerErrors => {
+    if (prev[rowId] == null) return prev
+    const next = { ...prev }
+    delete next[rowId]
+    return next
+  }
+}
+
+export function clearFieldServerError(rowId: string, field: string) {
+  return (prev: TenantsServerErrors): TenantsServerErrors => {
+    const row = prev[rowId]
+    if (!row || row[field] == null) return prev
+    const nextRow = { ...row }
+    delete nextRow[field]
+    if (Object.keys(nextRow).length === 0) {
+      const next = { ...prev }
+      delete next[rowId]
+      return next
+    }
+    return { ...prev, [rowId]: nextRow }
+  }
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const country =
     (state.sectionData.property as PropertyInput | undefined)?.country_code ??
