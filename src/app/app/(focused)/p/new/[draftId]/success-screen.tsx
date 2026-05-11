@@ -41,7 +41,7 @@ import type { Locale } from '@/i18n/routing'
 import type {
   ExpenseType,
   SubmitSummary,
-} from '@/data/properties/actions/submit-property-creation-types'
+} from '@/data/properties/actions/server-errors'
 
 interface SuccessScreenProps {
   summary: SubmitSummary

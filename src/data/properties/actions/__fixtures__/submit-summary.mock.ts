@@ -5,7 +5,7 @@
  * the action's response and these fixtures collapse into test data.
  */
 
-import type { SubmitSummary } from '../submit-property-creation-types'
+import type { SubmitSummary } from '../server-errors'
 
 const BASE_PROPERTY_ID = '11111111-1111-1111-1111-111111111111'
 const BASE_UNIT_ID = '22222222-2222-2222-2222-222222222222'
