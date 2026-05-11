@@ -689,7 +689,47 @@
         "message": "Estamos com dificuldade de acessar o serviço de extração. Tente de novo mais tarde."
       }
     },
-    "resumeUnavailable": "Seu progresso pode não ser salvo neste dispositivo."
+    "resumeUnavailable": "Seu progresso pode não ser salvo neste dispositivo.",
+    "success": {
+      "title": "Imóvel criado.",
+      "subtitle": "As contas e pagamentos deste imóvel serão acompanhados automaticamente assim que as movimentações chegarem.",
+      "summary": {
+        "property": {
+          "title": "Imóvel"
+        },
+        "rent": {
+          "title": "Aluguel",
+          "dueEvery": "Vence todo dia {ordinal} do mês",
+          "includes": "Inclui {list}"
+        },
+        "contract": {
+          "title": "Contrato",
+          "uploaded": "Contrato enviado",
+          "uploadFailed": "Seu contrato não terminou de ser enviado.",
+          "reupload": "Reenviar contrato"
+        },
+        "tenants": {
+          "title": "Inquilinos",
+          "invited": "{count, plural, one {# convite enviado} other {# convites enviados}}",
+          "deferred": "{count, plural, one {# salvo para depois} other {# salvos para depois}}",
+          "emailFailed": "{count, plural, one {# e-mail de convite não foi enviado} other {# e-mails de convite não foram enviados}}"
+        },
+        "expenses": {
+          "title": "Despesas",
+          "tracked": "{count, plural, one {# despesa registrada} other {# despesas registradas}}",
+          "byTypeList": "Inclui {list}"
+        },
+        "providerRequests": {
+          "title": "Novos fornecedores",
+          "note": "Estamos adicionando suporte a um ou mais dos seus fornecedores. Avisaremos quando o acompanhamento automático estiver disponível.",
+          "billUploadFailed": "{count, plural, one {# fatura não terminou de ser enviada} other {# faturas não terminaram de ser enviadas}}"
+        }
+      },
+      "cta": {
+        "viewProperty": "Ver imóvel",
+        "goToDashboard": "Ir para o painel"
+      }
+    }
   },
   "settings": {
     "title": "Configurações",

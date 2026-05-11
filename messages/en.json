@@ -689,7 +689,47 @@
         "message": "We're having trouble reaching our extraction service. Try again later."
       }
     },
-    "resumeUnavailable": "Your progress may not be saved on this device."
+    "resumeUnavailable": "Your progress may not be saved on this device.",
+    "success": {
+      "title": "Property created.",
+      "subtitle": "Bills and payments for this property will be tracked automatically when activity arrives.",
+      "summary": {
+        "property": {
+          "title": "Property"
+        },
+        "rent": {
+          "title": "Rent",
+          "dueEvery": "Due every {ordinal} of the month",
+          "includes": "Includes {list}"
+        },
+        "contract": {
+          "title": "Contract",
+          "uploaded": "Contract uploaded",
+          "uploadFailed": "Your contract didn't finish uploading.",
+          "reupload": "Re-upload contract"
+        },
+        "tenants": {
+          "title": "Tenants",
+          "invited": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+          "deferred": "{count, plural, one {# saved for later} other {# saved for later}}",
+          "emailFailed": "{count, plural, one {# invitation email didn't send} other {# invitation emails didn't send}}"
+        },
+        "expenses": {
+          "title": "Expenses",
+          "tracked": "{count, plural, one {# expense tracked} other {# expenses tracked}}",
+          "byTypeList": "Includes {list}"
+        },
+        "providerRequests": {
+          "title": "New providers",
+          "note": "We're adding support for one or more of your providers. We'll let you know once automatic tracking is available.",
+          "billUploadFailed": "{count, plural, one {# bill upload didn't finish} other {# bill uploads didn't finish}}"
+        }
+      },
+      "cta": {
+        "viewProperty": "View property",
+        "goToDashboard": "Go to dashboard"
+      }
+    }
   },
   "settings": {
     "title": "Settings",

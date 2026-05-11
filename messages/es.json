@@ -689,7 +689,47 @@
         "message": "Tenemos problemas para conectar con el servicio de extracción. Vuelve a intentar más tarde."
       }
     },
-    "resumeUnavailable": "Es posible que tu progreso no se guarde en este dispositivo."
+    "resumeUnavailable": "Es posible que tu progreso no se guarde en este dispositivo.",
+    "success": {
+      "title": "Propiedad creada.",
+      "subtitle": "Las cuentas y los pagos de esta propiedad se registrarán automáticamente cuando lleguen los movimientos.",
+      "summary": {
+        "property": {
+          "title": "Propiedad"
+        },
+        "rent": {
+          "title": "Alquiler",
+          "dueEvery": "Vence cada día {ordinal} del mes",
+          "includes": "Incluye {list}"
+        },
+        "contract": {
+          "title": "Contrato",
+          "uploaded": "Contrato subido",
+          "uploadFailed": "Tu contrato no terminó de subir.",
+          "reupload": "Volver a subir el contrato"
+        },
+        "tenants": {
+          "title": "Inquilinos",
+          "invited": "{count, plural, one {# invitación enviada} other {# invitaciones enviadas}}",
+          "deferred": "{count, plural, one {# guardado para después} other {# guardados para después}}",
+          "emailFailed": "{count, plural, one {# email de invitación no se envió} other {# emails de invitación no se enviaron}}"
+        },
+        "expenses": {
+          "title": "Gastos",
+          "tracked": "{count, plural, one {# gasto registrado} other {# gastos registrados}}",
+          "byTypeList": "Incluye {list}"
+        },
+        "providerRequests": {
+          "title": "Nuevos proveedores",
+          "note": "Estamos agregando soporte para uno o más de tus proveedores. Te avisaremos cuando el seguimiento automático esté disponible.",
+          "billUploadFailed": "{count, plural, one {# factura no terminó de subir} other {# facturas no terminaron de subir}}"
+        }
+      },
+      "cta": {
+        "viewProperty": "Ver propiedad",
+        "goToDashboard": "Ir al panel"
+      }
+    }
   },
   "settings": {
     "title": "Configuración",
