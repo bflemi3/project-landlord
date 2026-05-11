@@ -5,6 +5,7 @@ import { detectLanguage } from './language-detection'
 import { extractText, ExtractTextError, type ExtractTextErrorCode } from './extract-text'
 import { getLanguagePrompt, systemPrompt } from './prompts'
 import { contractExtractionLlmSchema } from './schema'
+import { CONTRACT_EXTRACTION_SCHEMA_VERSION } from './schema-version'
 import type {
   ContractAddress,
   ContractExpense,
@@ -317,6 +318,8 @@ export async function extractContract(
       ...llmResult,
       languageDetected: language,
       rawExtractedText: rawText,
+      modelId,
+      schemaVersion: CONTRACT_EXTRACTION_SCHEMA_VERSION,
     },
   }
 }

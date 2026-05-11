@@ -4,16 +4,18 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
+import type {
+  ExpenseAmountBehavior as AmountBehaviorInput,
+  ExpenseType as ExpenseTypeInput,
+} from '@/schemas/expense'
 
 // Inputs for creating an expense charge_definitions row. Rent does NOT live
 // in charge_definitions under the post-pivot model — the wizard inserts rent
 // directly into the rent table via the create_property RPC. Callers here are
 // pre-pivot UIs that build expense charges (utilities, condo fees, etc.).
-export type ExpenseTypeInput =
-  | 'electricity' | 'water' | 'gas' | 'internet' | 'condo'
-  | 'trash' | 'sewer' | 'cable' | 'insurance' | 'maintenance' | 'other'
-
-export type AmountBehaviorInput = 'fixed' | 'variable' | 'unknown'
+// The `*Input` aliases come from the canonical `@/schemas/expense` so this
+// module can't drift from the DB enums.
+export type { ExpenseTypeInput, AmountBehaviorInput }
 
 export interface ChargeInput extends SplitInput {
   name: string

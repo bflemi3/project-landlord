@@ -5,15 +5,17 @@ import { revalidatePath } from 'next/cache'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import type { Json } from '@/lib/types/database'
 import { buildAllocationRows, type SplitInput } from '@/lib/split-allocations'
+import type {
+  ExpenseAmountBehavior as AmountBehaviorInput,
+  ExpenseType as ExpenseTypeInput,
+} from '@/schemas/expense'
 
 // Inputs for updating an expense charge_definitions row. Rent does NOT live
 // in charge_definitions under the post-pivot model; rent updates go through
-// a separate flow against the rent table.
-export type ExpenseTypeInput =
-  | 'electricity' | 'water' | 'gas' | 'internet' | 'condo'
-  | 'trash' | 'sewer' | 'cable' | 'insurance' | 'maintenance' | 'other'
-
-export type AmountBehaviorInput = 'fixed' | 'variable' | 'unknown'
+// a separate flow against the rent table. The `*Input` aliases come from
+// the canonical `@/schemas/expense` so this module can't drift from the DB
+// enums.
+export type { ExpenseTypeInput, AmountBehaviorInput }
 
 export interface UpdateChargeInput extends SplitInput {
   chargeId: string

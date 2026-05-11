@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { Constants } from '@/lib/types/database'
+import { expenseTypeSchema as canonicalExpenseTypeSchema } from '@/schemas/expense'
 import type {
   ContractExtractionLlmResult,
   ContractExtractionResult,
@@ -46,33 +47,22 @@ const llmAddressSchema = z.object({
   country: z.string().describe('ISO 3166-1 alpha-2 country code (e.g., BR, US, MX, ES, CO). Infer from address format, currency, or language if not explicitly stated. Empty string "" only if truly undeterminable.'),
 })
 
-const expenseTypeSchema = z
-  .enum([
-    'electricity',
-    'water',
-    'gas',
-    'internet',
-    'condo',
-    'trash',
-    'sewer',
-    'cable',
-    'insurance',
-    'maintenance',
-    'other',
-  ])
-  .describe(
-    'Canonical expense category. Normalize the contract\'s native term to this set — do not translate literally, classify semantically. ' +
-      'Mapping guidance: ' +
-      'PT-BR "luz"/"energia elétrica" → electricity; "água" → water; "gás" → gas; "internet" → internet; ' +
-      '"condomínio"/"taxa condominial" → condo; "IPTU" → other; "lixo" → trash; "esgoto" → sewer; "manutenção" → maintenance. ' +
-      'ES "energía eléctrica"/"electricidad"/"luz" → electricity; "agua" → water; "gas"/"gas natural" → gas; ' +
-      '"comunidad"/"gastos de comunidad" → condo; "mantenimiento"/"cuota de mantenimiento" → maintenance; ' +
-      '"IBI"/"predial" → other. ' +
-      'EN "electricity"/"electric" → electricity; "water" → water; "gas"/"natural gas" → gas; "HOA dues" → condo; ' +
-      '"trash"/"garbage"/"waste" → trash; "sewer" → sewer; "cable"/"TV" → cable. ' +
-      'Use "other" for any expense that does not fit an explicit category (IPTU, IBI, predial, security fees, pool fees, etc.). ' +
-      'Bundled expenses like "água e esgoto" should be split into separate entries (one "water", one "sewer").',
-  )
+// Re-use the canonical `expenseTypeSchema` (database-derived) with extraction-
+// specific guidance attached. The LLM call passes this schema to
+// `Output.object({ schema })`, so the `.describe()` is what reaches the model.
+const expenseTypeSchema = canonicalExpenseTypeSchema.describe(
+  'Canonical expense category. Normalize the contract\'s native term to this set — do not translate literally, classify semantically. ' +
+    'Mapping guidance: ' +
+    'PT-BR "luz"/"energia elétrica" → electricity; "água" → water; "gás" → gas; "internet" → internet; ' +
+    '"condomínio"/"taxa condominial" → condo; "IPTU" → other; "lixo" → trash; "esgoto" → sewer; "manutenção" → maintenance. ' +
+    'ES "energía eléctrica"/"electricidad"/"luz" → electricity; "agua" → water; "gas"/"gas natural" → gas; ' +
+    '"comunidad"/"gastos de comunidad" → condo; "mantenimiento"/"cuota de mantenimiento" → maintenance; ' +
+    '"IBI"/"predial" → other. ' +
+    'EN "electricity"/"electric" → electricity; "water" → water; "gas"/"natural gas" → gas; "HOA dues" → condo; ' +
+    '"trash"/"garbage"/"waste" → trash; "sewer" → sewer; "cable"/"TV" → cable. ' +
+    'Use "other" for any expense that does not fit an explicit category (IPTU, IBI, predial, security fees, pool fees, etc.). ' +
+    'Bundled expenses like "água e esgoto" should be split into separate entries (one "water", one "sewer").',
+)
 
 const llmRentSchema = z.object({
   amount: z
@@ -260,6 +250,16 @@ const contractExtractionLlmResultSchema = z.object({
 export const contractExtractionResultSchema = contractExtractionLlmResultSchema.extend({
   languageDetected: supportedLanguageSchema.describe('Language detected in the document by the engine'),
   rawExtractedText: z.string().describe('Full text extracted from the document'),
+  modelId: z
+    .string()
+    .describe('Model id that produced the extraction (e.g. claude-sonnet-4-6)'),
+  schemaVersion: z
+    .number()
+    .int()
+    .describe(
+      'Pinned to CONTRACT_EXTRACTION_SCHEMA_VERSION at the time of extraction. ' +
+        'Persistence writes this onto contracts.extraction_schema_version.',
+    ),
 })
 
 // Back-compat export — some tests / consumers want the "expected result" shape

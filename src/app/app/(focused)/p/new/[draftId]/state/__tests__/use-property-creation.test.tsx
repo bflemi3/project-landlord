@@ -202,6 +202,8 @@ describe('usePropertyCreationState — hydration', () => {
       expenses: null,
       languageDetected: 'pt-br',
       rawExtractedText: '',
+      modelId: 'claude-sonnet-4-6',
+      schemaVersion: 1,
     }
 
     seedPersistedState(draftId, {
@@ -377,6 +379,8 @@ describe('usePropertyCreationActions + state machine invariants', () => {
       expenses: null,
       languageDetected: 'pt-br',
       rawExtractedText: '',
+      modelId: 'claude-sonnet-4-6',
+      schemaVersion: 1,
     }
 
     // Phase 1: commit the contract path with extraction. sectionData.property
@@ -739,6 +743,8 @@ describe('useIsExtracted', () => {
         expenses: null,
         languageDetected: 'pt-br',
         rawExtractedText: '',
+        modelId: 'claude-sonnet-4-6',
+        schemaVersion: 1,
       } satisfies ContractExtractionResult,
       path: 'contract',
       // Eager-init `defaultSectionData()` populates `property` to defaults; the
@@ -843,6 +849,8 @@ describe('useIsExtracted', () => {
         expenses: null,
         languageDetected: 'pt-br',
         rawExtractedText: '',
+        modelId: 'claude-sonnet-4-6',
+        schemaVersion: 1,
       } satisfies ContractExtractionResult,
       path: 'contract',
       sectionData: {
@@ -921,6 +929,8 @@ describe('useIsExtracted', () => {
         expenses: null,
         languageDetected: 'pt-br',
         rawExtractedText: '',
+        modelId: 'claude-sonnet-4-6',
+        schemaVersion: 1,
       } satisfies ContractExtractionResult,
       path: 'contract',
       sectionData: { property: defaultPropertyInput() },
@@ -987,6 +997,8 @@ describe('useIsExtracted', () => {
         expenses: null,
         languageDetected: 'pt-br',
         rawExtractedText: '',
+        modelId: 'claude-sonnet-4-6',
+        schemaVersion: 1,
       } satisfies ContractExtractionResult,
       path: 'contract',
       sectionData: { property: defaultPropertyInput() },
