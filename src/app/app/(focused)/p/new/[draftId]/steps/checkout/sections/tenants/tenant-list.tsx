@@ -30,10 +30,8 @@ import {
   usePropertyCreationActions,
   usePropertyCreationState,
 } from '../../../../state/use-property-creation'
-import {
-  clearRowFromTenantsServerErrors,
-  type TenantsTouched,
-} from './state'
+import * as tenantsState from './state'
+import { type TenantsTouched } from './state'
 import { TenantRow as TenantRowComponent } from './tenant-row'
 
 export function TenantList() {
@@ -70,7 +68,7 @@ export function TenantList() {
         setSectionData<TenantRow[]>('tenants', (prev) =>
           prev.filter((row) => row.id !== id),
         )
-        setServerErrors('tenants', clearRowFromTenantsServerErrors(id))
+        setServerErrors('tenants', tenantsState.clearRowServerErrors(id))
         setTenantsListUI((current) =>
           current.activeTenantId === id ? { activeTenantId: null } : {},
         )

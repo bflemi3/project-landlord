@@ -12,15 +12,15 @@ export type TaxIdSectionTouched = ReadonlySet<string>
 /** Server-error slice for this section. */
 export type TaxIdServerErrors = Record<string, string[]>
 
-export function defaultTaxIdServerErrors(): TaxIdServerErrors {
+export function defaultServerErrors(): TaxIdServerErrors {
   return {}
 }
 
-export function applyTaxIdServerErrors(slice: TaxIdServerErrors) {
+export function applyServerErrors(slice: TaxIdServerErrors) {
   return (): TaxIdServerErrors => slice
 }
 
-export function clearFieldFromTaxIdServerErrors(field: string) {
+export function clearFieldServerError(field: string) {
   return (prev: TaxIdServerErrors): TaxIdServerErrors => {
     if (prev[field] == null) return prev
     const next = { ...prev }

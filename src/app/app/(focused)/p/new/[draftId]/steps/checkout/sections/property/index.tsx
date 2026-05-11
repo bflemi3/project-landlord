@@ -42,11 +42,8 @@ import {
   usePropertyCreationStoreApi,
   useIsExtracted,
 } from '../../../../state/use-property-creation'
-import {
-  clearFieldFromPropertyServerErrors,
-  setAllTouched,
-  type PropertyTouched,
-} from './state'
+import * as propertyState from './state'
+import { setAllTouched, type PropertyTouched } from './state'
 import { validateProperty as validatePropertyParse } from './validation'
 import { useCheckoutContext } from '../../checkout-context'
 import { Section } from '../../section'
@@ -184,7 +181,7 @@ export function PropertySection() {
 
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
-      setServerErrors('property', clearFieldFromPropertyServerErrors('postal_code'))
+      setServerErrors('property', propertyState.clearFieldServerError('postal_code'))
       setSectionData<PropertyInput>('property', (prev) => ({
         ...(prev as PropertyInput),
         postal_code: formatted,
@@ -197,7 +194,7 @@ export function PropertySection() {
   const handleAddressFound = useCallback(
     (result: AddressLookupResult) => {
       for (const f of ['street', 'neighborhood', 'city', 'state'] as const) {
-        setServerErrors('property', clearFieldFromPropertyServerErrors(f))
+        setServerErrors('property', propertyState.clearFieldServerError(f))
       }
       setSectionData<PropertyInput>('property', (prev) => {
         const base = prev as PropertyInput
@@ -217,7 +214,7 @@ export function PropertySection() {
     key: K,
     next: PropertyInput[K],
   ) {
-    setServerErrors('property', clearFieldFromPropertyServerErrors(key))
+    setServerErrors('property', propertyState.clearFieldServerError(key))
     setSectionData<PropertyInput>('property', (prev) => ({
       ...(prev as PropertyInput),
       [key]: next,

@@ -12,17 +12,17 @@ export type PropertyTouched = ReadonlySet<string>
 /** Server-error slice for this section. */
 export type PropertyServerErrors = Record<string, string[]>
 
-export function defaultPropertyServerErrors(): PropertyServerErrors {
+export function defaultServerErrors(): PropertyServerErrors {
   return {}
 }
 
 /** Updater: replace the slice wholesale (server response is authoritative). */
-export function applyPropertyServerErrors(slice: PropertyServerErrors) {
+export function applyServerErrors(slice: PropertyServerErrors) {
   return (): PropertyServerErrors => slice
 }
 
 /** Updater: drop one field's errors. Used by `setField` on user edit. */
-export function clearFieldFromPropertyServerErrors(field: string) {
+export function clearFieldServerError(field: string) {
   return (prev: PropertyServerErrors): PropertyServerErrors => {
     if (prev[field] == null) return prev
     const next = { ...prev }

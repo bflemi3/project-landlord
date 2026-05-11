@@ -30,10 +30,8 @@ import {
   usePropertyCreationActions,
   usePropertyCreationState,
 } from '../../../../state/use-property-creation'
-import {
-  clearRowFromExpensesServerErrors,
-  type ExpensesTouched,
-} from './state'
+import * as expensesState from './state'
+import { type ExpensesTouched } from './state'
 import { ExpenseRow } from './expense-row'
 
 export function ExpenseList() {
@@ -69,7 +67,7 @@ export function ExpenseList() {
         setSectionData<ExpenseRowType[]>('expenses', (prev) =>
           prev.filter((row) => row.id !== id),
         )
-        setServerErrors('expenses', clearRowFromExpensesServerErrors(id))
+        setServerErrors('expenses', expensesState.clearRowServerErrors(id))
         setExpensesListUI((current) =>
           current.activeExpenseId === id ? { activeExpenseId: null } : {},
         )

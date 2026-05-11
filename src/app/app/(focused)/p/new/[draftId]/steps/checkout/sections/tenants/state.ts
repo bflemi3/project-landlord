@@ -13,15 +13,15 @@ export type TenantsTouched = Record<string, ReadonlySet<string>>
  *  index — row delete must not shift other rows' errors. */
 export type TenantsServerErrors = Record<string /* rowId */, Record<string, string[]>>
 
-export function defaultTenantsServerErrors(): TenantsServerErrors {
+export function defaultServerErrors(): TenantsServerErrors {
   return {}
 }
 
-export function applyTenantsServerErrors(slice: TenantsServerErrors) {
+export function applyServerErrors(slice: TenantsServerErrors) {
   return (): TenantsServerErrors => slice
 }
 
-export function clearRowFromTenantsServerErrors(rowId: string) {
+export function clearRowServerErrors(rowId: string) {
   return (prev: TenantsServerErrors): TenantsServerErrors => {
     if (prev[rowId] == null) return prev
     const next = { ...prev }
@@ -30,7 +30,7 @@ export function clearRowFromTenantsServerErrors(rowId: string) {
   }
 }
 
-export function clearFieldFromTenantsServerErrors(rowId: string, field: string) {
+export function clearFieldServerError(rowId: string, field: string) {
   return (prev: TenantsServerErrors): TenantsServerErrors => {
     const row = prev[rowId]
     if (!row || row[field] == null) return prev

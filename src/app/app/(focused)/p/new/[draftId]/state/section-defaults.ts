@@ -34,12 +34,12 @@ export function defaultSectionTouched(): Partial<Record<SectionId, unknown>> {
  */
 export function defaultSectionServerErrors(): Record<SectionId, SectionServerErrors> {
   return {
-    property: property.defaultPropertyServerErrors(),
-    'rent-dates': rentDates.defaultRentDatesServerErrors(),
-    tenants: tenants.defaultTenantsServerErrors(),
-    expenses: expenses.defaultExpensesServerErrors(),
-    'tax-id': taxId.defaultTaxIdServerErrors(),
-    bank: bank.defaultBankServerErrors(),
+    property: property.defaultServerErrors(),
+    'rent-dates': rentDates.defaultServerErrors(),
+    tenants: tenants.defaultServerErrors(),
+    expenses: expenses.defaultServerErrors(),
+    'tax-id': taxId.defaultServerErrors(),
+    bank: bank.defaultServerErrors(),
   }
 }
 

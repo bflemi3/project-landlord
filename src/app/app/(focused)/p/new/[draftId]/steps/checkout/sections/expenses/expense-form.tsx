@@ -26,10 +26,8 @@ import { useWizardForm } from '../../../../state/use-wizard-form'
 import type { RentDatesInput } from '../rent-dates/schemas'
 import { AmountBehaviorSelector } from './amount-behavior-selector'
 import { ExpenseTypeSelector } from './expense-type-selector'
-import {
-  clearFieldFromExpensesServerErrors,
-  type ExpensesTouched,
-} from './state'
+import * as expensesState from './state'
+import { type ExpensesTouched } from './state'
 import { validateExpenses } from './validation'
 
 interface ExpenseFormProps {
@@ -92,7 +90,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
 
   const setExpenseType = useCallback(
     (next: ExpenseType) => {
-      setServerErrors('expenses', clearFieldFromExpensesServerErrors(id, 'expense_type'))
+      setServerErrors('expenses', expensesState.clearFieldServerError(id, 'expense_type'))
       setSectionData<ExpenseRow[]>('expenses', (prev) =>
         prev.map((row) =>
           row.id === id
@@ -121,7 +119,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
 
   const setBehavior = useCallback(
     (next: ExpenseAmountBehavior) => {
-      setServerErrors('expenses', clearFieldFromExpensesServerErrors(id, 'amount_behavior'))
+      setServerErrors('expenses', expensesState.clearFieldServerError(id, 'amount_behavior'))
       setSectionData<ExpenseRow[]>('expenses', (prev) =>
         prev.map((row) => {
           if (row.id !== id) return row
@@ -140,7 +138,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
 
   const setAmount = useCallback(
     (next: number | undefined) => {
-      setServerErrors('expenses', clearFieldFromExpensesServerErrors(id, 'amount_minor'))
+      setServerErrors('expenses', expensesState.clearFieldServerError(id, 'amount_minor'))
       setSectionData<ExpenseRow[]>('expenses', (prev) =>
         prev.map((row) => {
           if (row.id !== id) return row

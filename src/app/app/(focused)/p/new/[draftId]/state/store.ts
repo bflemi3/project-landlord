@@ -127,8 +127,8 @@ export interface PropertyCreationActions {
    * NOT call this — leaving IDB intact is what enables resume. */
   clearPersisted: () => void
   /** Mirrors `setTouched` — the store dispatches an opaque updater on the
-   *  section's slice. Each section exports its own update helpers
-   *  (`applyXServerErrors`, `clearFieldFromXServerErrors`, row variants). */
+   *  section's slice. Each section's `state.ts` exports its update helpers
+   *  (`applyServerErrors`, `clearFieldServerError`, row variants). */
   setServerErrors: <T>(id: SectionId, updater: (prev: T) => T) => void
   setGlobalErrors: (next: GlobalError[]) => void
 }

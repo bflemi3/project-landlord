@@ -5,21 +5,12 @@ export type BankTouched = ReadonlySet<string>
 /** Server-error slice for this section. */
 export type BankServerErrors = Record<string, string[]>
 
-export function defaultBankServerErrors(): BankServerErrors {
+export function defaultServerErrors(): BankServerErrors {
   return {}
 }
 
-export function applyBankServerErrors(slice: BankServerErrors) {
+export function applyServerErrors(slice: BankServerErrors) {
   return (): BankServerErrors => slice
-}
-
-export function clearFieldFromBankServerErrors(field: string) {
-  return (prev: BankServerErrors): BankServerErrors => {
-    if (prev[field] == null) return prev
-    const next = { ...prev }
-    delete next[field]
-    return next
-  }
 }
 
 export function isValid(): boolean {

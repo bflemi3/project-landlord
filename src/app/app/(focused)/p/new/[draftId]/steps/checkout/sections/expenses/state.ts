@@ -11,15 +11,15 @@ export type ExpensesTouched = Record<string, ReadonlySet<string>>
  *  index — row delete must not shift other rows' errors. */
 export type ExpensesServerErrors = Record<string /* rowId */, Record<string, string[]>>
 
-export function defaultExpensesServerErrors(): ExpensesServerErrors {
+export function defaultServerErrors(): ExpensesServerErrors {
   return {}
 }
 
-export function applyExpensesServerErrors(slice: ExpensesServerErrors) {
+export function applyServerErrors(slice: ExpensesServerErrors) {
   return (): ExpensesServerErrors => slice
 }
 
-export function clearRowFromExpensesServerErrors(rowId: string) {
+export function clearRowServerErrors(rowId: string) {
   return (prev: ExpensesServerErrors): ExpensesServerErrors => {
     if (prev[rowId] == null) return prev
     const next = { ...prev }
@@ -28,7 +28,7 @@ export function clearRowFromExpensesServerErrors(rowId: string) {
   }
 }
 
-export function clearFieldFromExpensesServerErrors(rowId: string, field: string) {
+export function clearFieldServerError(rowId: string, field: string) {
   return (prev: ExpensesServerErrors): ExpensesServerErrors => {
     const row = prev[rowId]
     if (!row || row[field] == null) return prev

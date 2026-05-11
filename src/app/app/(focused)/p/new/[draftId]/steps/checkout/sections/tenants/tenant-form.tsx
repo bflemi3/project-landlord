@@ -26,10 +26,8 @@ import {
   usePropertyCreationState,
 } from '../../../../state/use-property-creation'
 import { useWizardForm } from '../../../../state/use-wizard-form'
-import {
-  clearFieldFromTenantsServerErrors,
-  type TenantsTouched,
-} from './state'
+import * as tenantsState from './state'
+import { type TenantsTouched } from './state'
 import { validateTenants } from './validation'
 
 interface TenantFormProps {
@@ -96,7 +94,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
 
   const setField = useCallback(
     <K extends keyof TenantRow>(key: K, next: TenantRow[K]) => {
-      setServerErrors('tenants', clearFieldFromTenantsServerErrors(id, key))
+      setServerErrors('tenants', tenantsState.clearFieldServerError(id, key))
       setSectionData<TenantRow[]>('tenants', (prev) =>
         prev.map((row) => {
           if (row.id !== id) return row

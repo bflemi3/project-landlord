@@ -2,7 +2,7 @@
  * Cross-section dispatcher for a `ServerErrorsResponse`. Stays out of the
  * store action so the store never has to know per-section shapes — it just
  * forwards updaters via `setServerErrors(sectionId, updater)`. Each section
- * exports the `apply…ServerErrors(slice)` helper this dispatcher consumes.
+ * exports the `applyServerErrors(slice)` helper this dispatcher consumes.
  */
 
 import * as bank from '../steps/checkout/sections/bank/state'
@@ -37,42 +37,18 @@ export function firstFailingSectionId(
 
 type SliceUpdater = (prev: SectionServerErrors) => SectionServerErrors
 
-function applyUpdaterFor(id: SectionId, slice: SectionServerErrors): SliceUpdater {
-  switch (id) {
-    case 'property':
-      return property.applyPropertyServerErrors(slice as never) as SliceUpdater
-    case 'rent-dates':
-      return rentDates.applyRentDatesServerErrors(slice as never) as SliceUpdater
-    case 'tenants':
-      return tenants.applyTenantsServerErrors(slice as never) as SliceUpdater
-    case 'expenses':
-      return expenses.applyExpensesServerErrors(slice as never) as SliceUpdater
-    case 'tax-id':
-      return taxId.applyTaxIdServerErrors(slice as never) as SliceUpdater
-    case 'bank':
-      return bank.applyBankServerErrors(slice as never) as SliceUpdater
-    default:
-      throw new Error(`Unknown SectionId: ${id}`)
-  }
+interface SectionServerErrorsModule {
+  defaultServerErrors(): SectionServerErrors
+  applyServerErrors(slice: never): SliceUpdater
 }
 
-function defaultUpdaterFor(id: SectionId): SliceUpdater {
-  switch (id) {
-    case 'property':
-      return () => property.defaultPropertyServerErrors()
-    case 'rent-dates':
-      return () => rentDates.defaultRentDatesServerErrors()
-    case 'tenants':
-      return () => tenants.defaultTenantsServerErrors()
-    case 'expenses':
-      return () => expenses.defaultExpensesServerErrors()
-    case 'tax-id':
-      return () => taxId.defaultTaxIdServerErrors()
-    case 'bank':
-      return () => bank.defaultBankServerErrors()
-    default:
-      throw new Error(`Unknown SectionId: ${id}`)
-  }
+const SECTION_SERVER_ERROR_MODULES: Record<SectionId, SectionServerErrorsModule> = {
+  property,
+  'rent-dates': rentDates,
+  tenants,
+  expenses,
+  'tax-id': taxId,
+  bank,
 }
 
 /**
@@ -89,7 +65,9 @@ export function dispatchServerErrorsResponse(
 ): void {
   if (response.ok) {
     for (const section of CHECKOUT_SECTIONS) {
-      actions.setServerErrors(section.id, defaultUpdaterFor(section.id))
+      actions.setServerErrors(section.id, () =>
+        SECTION_SERVER_ERROR_MODULES[section.id].defaultServerErrors(),
+      )
     }
     actions.setGlobalErrors([])
     return
@@ -99,7 +77,10 @@ export function dispatchServerErrorsResponse(
     for (const key of Object.keys(response.sectionErrors) as SectionId[]) {
       const incoming = response.sectionErrors[key]
       if (incoming === undefined) continue
-      actions.setServerErrors(key, applyUpdaterFor(key, incoming))
+      actions.setServerErrors(
+        key,
+        SECTION_SERVER_ERROR_MODULES[key].applyServerErrors(incoming as never),
+      )
       actions.markSectionVisited(key)
     }
   }
