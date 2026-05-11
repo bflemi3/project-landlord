@@ -12,6 +12,7 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { WizardShell } from '@/components/wizard-shell'
 import { captureEvent } from '@/lib/analytics/capture'
+import { createProperty } from '@/data/properties/actions/create-property'
 import type { GlobalError, SubmitSummary } from '@/data/properties/actions/server-errors'
 import { propertyCreationWizardKey } from './state/persistence'
 import { PropertyCreationTopBar } from './top-bar'
@@ -24,6 +25,11 @@ import {
   usePropertyCreationStoreApi,
 } from './state/use-property-creation'
 import { hasWizardWork } from './state/derivations'
+import { buildSubmitInputFromStore } from './state/build-submit-input'
+import {
+  dispatchServerErrorsResponse,
+  firstFailingSectionId,
+} from './state/server-errors-dispatch'
 import { WizardHydrationFallback } from './wizard-hydration-fallback'
 import { PropertyCreationSuccessScreen } from './success-screen'
 
@@ -58,22 +64,22 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
   const [exitPromptOpen, setExitPromptOpen] = useState(false)
 
   // Local hold for the submit response so the success screen can render
-  // before Phase 4 wires the action into the store. Phase 4 will either
-  // (a) lift this into the wizard store as a transient slice, or (b) leave
-  // it here and pass the setter into the action's onSettled callback. The
-  // success-screen component itself only needs `summary` as a prop, so its
-  // contract doesn't change either way.
-  //
-  // TODO(phase-4): hand `setSubmitSummary` into the submit action's
-  // resolution path, e.g. `submitAction(...).then((res) => {
-  //   if (res.ok) { clearPersisted(); setSubmitSummary(res.summary) }
-  // })`. The clearPersisted() call wipes the persisted IDB record per
-  // spec §Success Behavior step 1.
+  // once `createProperty` resolves with `{ ok: true, summary }`. Kept off the
+  // wizard store on purpose — the summary is a transient hand-off between
+  // the action and the success screen, not part of the persisted draft (the
+  // success path wipes IDB before this is rendered).
   const [submitSummary, setSubmitSummary] = useState<SubmitSummary | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const step = usePropertyCreationState((s) => s.step)
   const storeApi = usePropertyCreationStoreApi()
-  const { goToStep, clearPersisted, setGlobalErrors } = usePropertyCreationActions()
+  const actions = usePropertyCreationActions()
+  const {
+    goToStep,
+    clearPersisted,
+    setGlobalErrors,
+    openSection,
+  } = actions
 
   // Wizard-level `globalErrors` toast pipeline. Section continue actions and
   // (Phase 3) the submit action write into the store's `globalErrors` slice
@@ -142,6 +148,79 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
     clearPersisted()
   }, [step, clearPersisted])
 
+  const handleCreateProperty = useCallback(async () => {
+    if (isSubmitting) return
+    const input = buildSubmitInputFromStore(storeApi.getState(), draftId)
+    setIsSubmitting(true)
+    try {
+      const response = await createProperty(input)
+
+      if (response.ok && response.summary) {
+        const summary = response.summary
+        // Dispatch the success-shape envelope so `globalErrors` resets to
+        // `[]` (the spec § Success Behavior step 1 sequencing). Section
+        // slices ride along inside the `clearPersisted()` IDB wipe below
+        // — the dispatcher intentionally doesn't touch them on `ok: true`
+        // so unrelated continue-action successes don't reset siblings.
+        dispatchServerErrorsResponse(response, actions)
+        // `clearPersisted()` wipes the IDB record (including server errors
+        // and globals). `setSubmitSummary(...)` swaps the wizard render for
+        // the success screen on the next paint. Order: clear first so a
+        // late persist-debounce write doesn't resurrect the slice; the
+        // success screen reads from `summary`, not the store.
+        clearPersisted()
+        setSubmitSummary(summary)
+        captureEvent(
+          summary.is_idempotent_replay
+            ? 'property_create_replay'
+            : 'property_created',
+          {
+            property_id: summary.property_id,
+            has_contract: summary.contract !== null,
+            has_rent: summary.rent !== null,
+            expense_count: summary.expenses.count,
+            tenant_invited_count: summary.tenants.invited_count,
+            tenant_deferred_count: summary.tenants.deferred_count,
+            provider_request_new_count:
+              summary.provider_requests.new_count ?? 0,
+            is_idempotent_replay: summary.is_idempotent_replay,
+            tax_id_updated: summary.tax_id_updated,
+          },
+        )
+        return
+      }
+
+      // Failure path. Dispatcher writes section / global slices; the
+      // wizard owns the first-failing-section lookup (dispatcher stays
+      // pure-data per spec). Global errors fire as toasts via the
+      // existing `useGlobalErrorsToast` subscription.
+      dispatchServerErrorsResponse(response, actions)
+      if (!response.ok) {
+        const firstFailing = firstFailingSectionId(
+          storeApi.getState().sectionServerErrors,
+        )
+        if (firstFailing) openSection(firstFailing)
+      }
+    } catch (error) {
+      // `createProperty` never throws to the form by contract — this catch
+      // is a defensive belt for unexpected exceptions (e.g. network
+      // glitch surfacing as a thrown Error rather than a `{ ok: false }`).
+      // Falls through to the standard global-error toast.
+      console.error('[property-creation] submit threw', error)
+      setGlobalErrors([{ code: 'unknown' }])
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [
+    isSubmitting,
+    storeApi,
+    draftId,
+    clearPersisted,
+    actions,
+    openSection,
+    setGlobalErrors,
+  ])
+
   if (!hasHydrated) {
     return <WizardHydrationFallback />
   }
@@ -175,7 +254,10 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
             </div>
           </div>
         ) : (
-          <PropertyCheckoutShell />
+          <PropertyCheckoutShell
+            onCreateProperty={handleCreateProperty}
+            isSubmitting={isSubmitting}
+          />
         )}
       </WizardShell>
 

@@ -31,11 +31,20 @@ const SECTION_PREDICATES: Record<SectionId, SectionPredicate> = {
  * it. An unvisited section with extracted-invalid contents stays quiet
  * until the user opens it; that's what stops Step 2 landing from yelling
  * about every section at once.
+ *
+ * Server errors are unconditional: a section with any entry in
+ * `sectionServerErrors[sectionId]` is `'invalid'` regardless of engagement
+ * — the dispatcher already adds errored sections to `visitedSectionIds`,
+ * but the explicit check keeps the rule local to this function rather
+ * than relying on a cross-file invariant.
  */
 export function deriveSectionValidity(
   sectionId: SectionId,
   state: PropertyCreationStateShape,
 ): SectionValidity {
+  if (hasAnyServerErrors(state.sectionServerErrors[sectionId])) {
+    return 'invalid'
+  }
   const status = state.sectionStates[sectionId]
   const engaged =
     status === 'completed' ||
@@ -43,6 +52,28 @@ export function deriveSectionValidity(
     state.visitedSectionIds.has(sectionId)
   if (!engaged) return status
   return SECTION_PREDICATES[sectionId].isValid(state) ? status : 'invalid'
+}
+
+/**
+ * Covers both flat (`Record<field, string[]>`) and row
+ * (`Record<rowId, Record<field, string[]>>`) shapes. Any non-empty leaf
+ * means the section has at least one server error.
+ */
+function hasAnyServerErrors(
+  slice: PropertyCreationStateShape['sectionServerErrors'][SectionId] | undefined,
+): boolean {
+  if (!slice) return false
+  const keys = Object.keys(slice)
+  if (keys.length === 0) return false
+  for (const key of keys) {
+    const value = (slice as Record<string, unknown>)[key]
+    if (Array.isArray(value)) {
+      if (value.length > 0) return true
+    } else if (value && typeof value === 'object') {
+      if (Object.keys(value).length > 0) return true
+    }
+  }
+  return false
 }
 
 /**

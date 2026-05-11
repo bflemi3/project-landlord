@@ -535,6 +535,7 @@
       },
       "cta": {
         "create": "Create property",
+        "creating": "Creating…",
         "remaining": "{count, plural, one {# section left} other {# sections left}}",
         "hint": "Complete the required sections to create the property."
       },

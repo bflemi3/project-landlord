@@ -535,6 +535,7 @@
       },
       "cta": {
         "create": "Crear propiedad",
+        "creating": "Creando…",
         "remaining": "{count, plural, one {falta # sección} other {faltan # secciones}}",
         "hint": "Completa las secciones requeridas para crear la propiedad."
       },
