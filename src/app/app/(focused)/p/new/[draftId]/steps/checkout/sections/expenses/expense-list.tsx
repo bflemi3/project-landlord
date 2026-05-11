@@ -30,7 +30,10 @@ import {
   usePropertyCreationActions,
   usePropertyCreationState,
 } from '../../../../state/use-property-creation'
-import { type ExpensesTouched } from './state'
+import {
+  clearRowFromExpensesServerErrors,
+  type ExpensesTouched,
+} from './state'
 import { ExpenseRow } from './expense-row'
 
 export function ExpenseList() {
@@ -39,7 +42,7 @@ export function ExpenseList() {
     setSectionData,
     setExpensesListUI,
     setTouched,
-    clearRowServerErrors,
+    setServerErrors,
   } = usePropertyCreationActions()
   const expenseIds = usePropertyCreationState(
     useShallow((s) => (s.sectionData.expenses as ExpenseRowType[]).map((row) => row.id)),
@@ -66,15 +69,13 @@ export function ExpenseList() {
         setSectionData<ExpenseRowType[]>('expenses', (prev) =>
           prev.filter((row) => row.id !== id),
         )
-        // Per-row keying makes this trivial — drop the row's server-error
-        // bucket without shifting any sibling rows.
-        clearRowServerErrors('expenses', id)
+        setServerErrors('expenses', clearRowFromExpensesServerErrors(id))
         setExpensesListUI((current) =>
           current.activeExpenseId === id ? { activeExpenseId: null } : {},
         )
       })
     },
-    [remove, setSectionData, setExpensesListUI, clearRowServerErrors],
+    [remove, setSectionData, setExpensesListUI, setServerErrors],
   )
 
   const handleActiveChange = useCallback(

@@ -16,6 +16,19 @@ export function defaultTaxIdServerErrors(): TaxIdServerErrors {
   return {}
 }
 
+export function applyTaxIdServerErrors(slice: TaxIdServerErrors) {
+  return (): TaxIdServerErrors => slice
+}
+
+export function clearFieldFromTaxIdServerErrors(field: string) {
+  return (prev: TaxIdServerErrors): TaxIdServerErrors => {
+    if (prev[field] == null) return prev
+    const next = { ...prev }
+    delete next[field]
+    return next
+  }
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const country =
     (state.sectionData.property as PropertyInput | undefined)?.country_code ??

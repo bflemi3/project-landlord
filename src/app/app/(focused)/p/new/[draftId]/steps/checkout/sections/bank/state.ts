@@ -9,6 +9,19 @@ export function defaultBankServerErrors(): BankServerErrors {
   return {}
 }
 
+export function applyBankServerErrors(slice: BankServerErrors) {
+  return (): BankServerErrors => slice
+}
+
+export function clearFieldFromBankServerErrors(field: string) {
+  return (prev: BankServerErrors): BankServerErrors => {
+    if (prev[field] == null) return prev
+    const next = { ...prev }
+    delete next[field]
+    return next
+  }
+}
+
 export function isValid(): boolean {
   return true
 }

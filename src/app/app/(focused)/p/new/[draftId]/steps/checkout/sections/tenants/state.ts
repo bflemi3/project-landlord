@@ -17,6 +17,34 @@ export function defaultTenantsServerErrors(): TenantsServerErrors {
   return {}
 }
 
+export function applyTenantsServerErrors(slice: TenantsServerErrors) {
+  return (): TenantsServerErrors => slice
+}
+
+export function clearRowFromTenantsServerErrors(rowId: string) {
+  return (prev: TenantsServerErrors): TenantsServerErrors => {
+    if (prev[rowId] == null) return prev
+    const next = { ...prev }
+    delete next[rowId]
+    return next
+  }
+}
+
+export function clearFieldFromTenantsServerErrors(rowId: string, field: string) {
+  return (prev: TenantsServerErrors): TenantsServerErrors => {
+    const row = prev[rowId]
+    if (!row || row[field] == null) return prev
+    const nextRow = { ...row }
+    delete nextRow[field]
+    if (Object.keys(nextRow).length === 0) {
+      const next = { ...prev }
+      delete next[rowId]
+      return next
+    }
+    return { ...prev, [rowId]: nextRow }
+  }
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const country =
     (state.sectionData.property as PropertyInput | undefined)?.country_code ??

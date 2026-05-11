@@ -15,6 +15,19 @@ export function defaultRentDatesServerErrors(): RentDatesServerErrors {
   return {}
 }
 
+export function applyRentDatesServerErrors(slice: RentDatesServerErrors) {
+  return (): RentDatesServerErrors => slice
+}
+
+export function clearFieldFromRentDatesServerErrors(field: string) {
+  return (prev: RentDatesServerErrors): RentDatesServerErrors => {
+    if (prev[field] == null) return prev
+    const next = { ...prev }
+    delete next[field]
+    return next
+  }
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   return validateRentDates(
     state.sectionData['rent-dates'] as RentDatesInput,

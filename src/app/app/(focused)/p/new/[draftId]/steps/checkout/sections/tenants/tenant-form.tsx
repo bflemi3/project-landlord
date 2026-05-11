@@ -26,7 +26,10 @@ import {
   usePropertyCreationState,
 } from '../../../../state/use-property-creation'
 import { useWizardForm } from '../../../../state/use-wizard-form'
-import { type TenantsTouched } from './state'
+import {
+  clearFieldFromTenantsServerErrors,
+  type TenantsTouched,
+} from './state'
 import { validateTenants } from './validation'
 
 interface TenantFormProps {
@@ -36,12 +39,12 @@ interface TenantFormProps {
 }
 
 export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
-  const { setSectionData, clearRowFieldServerError } = usePropertyCreationActions()
+  const { setSectionData, setServerErrors } = usePropertyCreationActions()
   const t = useTranslations('propertyCreation.checkout.tenants')
 
   // Row-keyed server errors for this tenant. The submit action populates
-  // `sectionServerErrors.tenants[rowId]` on failure; the merge expression
-  // below (`errors[field]?.[0] ?? rowServerErrors[field]?.[0]`) surfaces it.
+  // `sectionServerErrors.tenants[rowId]` on failure; merged below at the
+  // call site (`errors[field]?.[0] ?? rowServerErrors[field]?.[0]`).
   const rowServerErrors = usePropertyCreationState((s) => {
     const section = s.sectionServerErrors.tenants as
       | Record<string, Record<string, string[]>>
@@ -93,7 +96,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
 
   const setField = useCallback(
     <K extends keyof TenantRow>(key: K, next: TenantRow[K]) => {
-      clearRowFieldServerError('tenants', id, key)
+      setServerErrors('tenants', clearFieldFromTenantsServerErrors(id, key))
       setSectionData<TenantRow[]>('tenants', (prev) =>
         prev.map((row) => {
           if (row.id !== id) return row
@@ -107,7 +110,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
         }),
       )
     },
-    [id, setSectionData, clearRowFieldServerError],
+    [id, setSectionData, setServerErrors],
   )
 
   if (!tenant) return null

@@ -12,7 +12,11 @@ import {
   type RentDatesInput,
   type SupportedCurrency,
 } from './schemas'
-import { setAllTouched, type RentDatesTouched } from './state'
+import {
+  clearFieldFromRentDatesServerErrors,
+  setAllTouched,
+  type RentDatesTouched,
+} from './state'
 import type { SectionId } from '../../../../state/registry'
 import {
   usePropertyCreationActions,
@@ -20,6 +24,7 @@ import {
   usePropertyCreationStoreApi,
 } from '../../../../state/use-property-creation'
 import { validateRentDates } from '../../../../state/actions/validate-rent-dates'
+import { dispatchServerErrorsResponse } from '../../../../state/server-errors-dispatch'
 import { useCheckoutContext } from '../../checkout-context'
 import { Section } from '../../section'
 import { SectionSkeleton } from '../section-skeleton'
@@ -47,11 +52,8 @@ export function RentDatesSection() {
   const t = useTranslations('propertyCreation.checkout')
   const tRentDates = useTranslations('rentDates')
   const { registerHeaderRef } = useCheckoutContext()
-  const {
-    setSectionData,
-    applyServerErrorsResponse,
-    clearFieldServerError,
-  } = usePropertyCreationActions()
+  const actions = usePropertyCreationActions()
+  const { setSectionData, setServerErrors } = actions
   const storeApi = usePropertyCreationStoreApi()
   const values = usePropertyCreationState(
     (s) => s.sectionData['rent-dates'] as RentDatesInput,
@@ -77,16 +79,10 @@ export function RentDatesSection() {
     parseResult,
     touched,
   })
-  // Server-side errors now read from the persisted store slice. The merge
-  // expression below (`errors[field]?.[0] ?? serverErrors[field]?.[0]`) is
-  // unchanged — only the source has moved from local React state to Zustand.
   const serverErrors = usePropertyCreationState(
     (s) => (s.sectionServerErrors['rent-dates'] ?? {}) as Record<string, string[]>,
   )
 
-  // Append a single field to the section's touched set. The form constructs
-  // the updater inline since its shape (a `Set<string>`) is the form's own
-  // concern — section-level helpers stay minimal.
   const markTouched = useCallback(
     (field: RentDatesField) => {
       setTouched<RentDatesTouched>((prev) => {
@@ -103,9 +99,6 @@ export function RentDatesSection() {
     setTouched<RentDatesTouched>((prev) => setAllTouched(prev))
   }, [setTouched])
 
-  // `errors` is already touch-gated by the hook. Server-side errors (from
-  // `validateRentDates`) are always shown when present, so they merge on
-  // top of the form's filtered errors.
   const fieldError = useCallback(
     (field: RentDatesField) => errors[field]?.[0] ?? serverErrors[field]?.[0],
     [errors, serverErrors],
@@ -118,15 +111,15 @@ export function RentDatesSection() {
     const state = storeApi.getState()
     const slice = state.sectionData['rent-dates'] as RentDatesInput
     const result = await validateRentDates(slice, state.path ?? 'contract')
-    applyServerErrorsResponse(result)
+    dispatchServerErrorsResponse(result, actions)
     return result.ok
-  }, [storeApi, applyServerErrorsResponse])
+  }, [storeApi, actions])
 
   function setField<K extends keyof RentDatesInput>(
     key: K,
     next: RentDatesInput[K],
   ) {
-    clearFieldServerError('rent-dates', key)
+    setServerErrors('rent-dates', clearFieldFromRentDatesServerErrors(key))
     setSectionData<RentDatesInput>('rent-dates', (prev: RentDatesInput) => ({
       ...prev,
       [key]: next,

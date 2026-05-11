@@ -26,7 +26,10 @@ import { useWizardForm } from '../../../../state/use-wizard-form'
 import type { RentDatesInput } from '../rent-dates/schemas'
 import { AmountBehaviorSelector } from './amount-behavior-selector'
 import { ExpenseTypeSelector } from './expense-type-selector'
-import { type ExpensesTouched } from './state'
+import {
+  clearFieldFromExpensesServerErrors,
+  type ExpensesTouched,
+} from './state'
 import { validateExpenses } from './validation'
 
 interface ExpenseFormProps {
@@ -36,11 +39,11 @@ interface ExpenseFormProps {
 export function ExpenseForm({ id }: ExpenseFormProps) {
   const amountInputRef = useRef<HTMLInputElement | null>(null)
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const { setSectionData, clearRowFieldServerError } = usePropertyCreationActions()
+  const { setSectionData, setServerErrors } = usePropertyCreationActions()
 
   // Row-keyed server errors for this expense. The submit action populates
-  // `sectionServerErrors.expenses[rowId]` on failure; the merge expression
-  // below (`errors[field]?.[0] ?? rowServerErrors[field]?.[0]`) surfaces it.
+  // `sectionServerErrors.expenses[rowId]` on failure; merged below at the
+  // call site (`errors[field]?.[0] ?? rowServerErrors[field]?.[0]`).
   const rowServerErrors = usePropertyCreationState((s) => {
     const section = s.sectionServerErrors.expenses as
       | Record<string, Record<string, string[]>>
@@ -89,7 +92,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
 
   const setExpenseType = useCallback(
     (next: ExpenseType) => {
-      clearRowFieldServerError('expenses', id, 'expense_type')
+      setServerErrors('expenses', clearFieldFromExpensesServerErrors(id, 'expense_type'))
       setSectionData<ExpenseRow[]>('expenses', (prev) =>
         prev.map((row) =>
           row.id === id
@@ -99,7 +102,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
       )
       touchField('expense_type')
     },
-    [id, setSectionData, touchField, clearRowFieldServerError],
+    [id, setSectionData, touchField, setServerErrors],
   )
 
   // Auto-focus the amount field on the first type selection. Effect-based
@@ -118,7 +121,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
 
   const setBehavior = useCallback(
     (next: ExpenseAmountBehavior) => {
-      clearRowFieldServerError('expenses', id, 'amount_behavior')
+      setServerErrors('expenses', clearFieldFromExpensesServerErrors(id, 'amount_behavior'))
       setSectionData<ExpenseRow[]>('expenses', (prev) =>
         prev.map((row) => {
           if (row.id !== id) return row
@@ -132,12 +135,12 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
       )
       touchField('amount_behavior')
     },
-    [id, setSectionData, touchField, clearRowFieldServerError],
+    [id, setSectionData, touchField, setServerErrors],
   )
 
   const setAmount = useCallback(
     (next: number | undefined) => {
-      clearRowFieldServerError('expenses', id, 'amount_minor')
+      setServerErrors('expenses', clearFieldFromExpensesServerErrors(id, 'amount_minor'))
       setSectionData<ExpenseRow[]>('expenses', (prev) =>
         prev.map((row) => {
           if (row.id !== id) return row
@@ -150,7 +153,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
         }),
       )
     },
-    [id, setSectionData, clearRowFieldServerError],
+    [id, setSectionData, setServerErrors],
   )
 
   if (!expense) return null
