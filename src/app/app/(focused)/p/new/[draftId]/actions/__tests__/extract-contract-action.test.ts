@@ -44,6 +44,8 @@ describe('extractContractAction', () => {
         expenses: null,
         languageDetected: 'pt-br',
         rawExtractedText: 'some text',
+        modelId: 'claude-sonnet-4-6',
+        schemaVersion: 1,
       },
     }
     mockExtractContract.mockResolvedValueOnce(engineResponse)
@@ -131,6 +133,8 @@ describe('extractContractAction', () => {
         expenses: null,
         languageDetected: 'en',
         rawExtractedText: 'text',
+        modelId: 'claude-sonnet-4-6',
+        schemaVersion: 1,
       },
     })
 

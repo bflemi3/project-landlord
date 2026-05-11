@@ -27,6 +27,8 @@ function makeExtraction(
     expenses: null,
     languageDetected: 'pt-br',
     rawExtractedText: '',
+    modelId: 'claude-sonnet-4-6',
+    schemaVersion: 1,
     ...overrides,
   }
 }

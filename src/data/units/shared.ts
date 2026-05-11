@@ -1,3 +1,7 @@
+import type {
+  ExpenseAmountBehavior as AmountBehavior,
+  ExpenseType,
+} from '@/schemas/expense'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 import { parseSplit, DEFAULT_SPLIT, type ChargeSplit, type AllocationRow } from '@/lib/split-allocations'
 
@@ -89,21 +93,10 @@ export type { ChargeSplit }
 
 // Charge definitions carry expense_type (semantic kind) and amount_behavior
 // (does the amount stay the same each period or vary). Rent rows live in
-// the rent table and never appear in charge_definitions.
-export type ExpenseType =
-  | 'electricity'
-  | 'water'
-  | 'gas'
-  | 'internet'
-  | 'condo'
-  | 'trash'
-  | 'sewer'
-  | 'cable'
-  | 'insurance'
-  | 'maintenance'
-  | 'other'
-
-export type AmountBehavior = 'fixed' | 'variable' | 'unknown'
+// the rent table and never appear in charge_definitions. Both enums come
+// from the canonical `@/schemas/expense` (database-derived) so the read
+// shape can't drift from the DB enum.
+export type { ExpenseType, ExpenseAmountBehavior as AmountBehavior } from '@/schemas/expense'
 
 export interface ChargeDefinition {
   id: string

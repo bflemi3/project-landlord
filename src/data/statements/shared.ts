@@ -1,3 +1,4 @@
+import type { ExpenseAmountBehavior as AmountBehavior } from '@/schemas/expense'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 // --- Statement ---
@@ -49,7 +50,9 @@ export const statementQueryKey = (id: string) => ['statement', id] as const
 
 // --- Statement Charges ---
 
-export type AmountBehavior = 'fixed' | 'variable' | 'unknown'
+// `AmountBehavior` comes from the canonical `@/schemas/expense` (database-
+// derived) so the read shape can't drift from the DB enum.
+export type { ExpenseAmountBehavior as AmountBehavior } from '@/schemas/expense'
 
 export interface ChargeInstance {
   id: string

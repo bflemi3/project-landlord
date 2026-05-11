@@ -6,23 +6,22 @@ import { z } from 'zod'
 
 import { MAX_MINOR_UNITS } from '@/data/shared/currency'
 import type { ContractExpense } from '@/lib/contract-extraction/types'
+import {
+  EXPENSE_AMOUNT_BEHAVIORS as CANONICAL_EXPENSE_AMOUNT_BEHAVIORS,
+  EXPENSE_TYPES as CANONICAL_EXPENSE_TYPES,
+  expenseAmountBehaviorSchema,
+  expenseTypeSchema,
+  type ExpenseAmountBehavior,
+  type ExpenseType,
+} from '@/schemas/expense'
 
-/** Mirrors the DB `expense_type` enum plus the Phase 3 addition `insurance`. */
-export const EXPENSE_TYPES = [
-  'electricity',
-  'water',
-  'gas',
-  'internet',
-  'condo',
-  'trash',
-  'sewer',
-  'cable',
-  'insurance',
-  'maintenance',
-  'other',
-] as const
-
-export type ExpenseType = (typeof EXPENSE_TYPES)[number]
+// Re-export the canonical enum-derived arrays so the rest of the wizard
+// (selector components, taxonomy maps, tests) can import them from this
+// section file without reaching across the codebase. Single source of truth
+// stays at `@/schemas/expense`.
+export const EXPENSE_TYPES = CANONICAL_EXPENSE_TYPES
+export const EXPENSE_AMOUNT_BEHAVIORS = CANONICAL_EXPENSE_AMOUNT_BEHAVIORS
+export type { ExpenseType, ExpenseAmountBehavior }
 
 /** Primary chips, ordered by universality in BR rentals. */
 export const COMMON_EXPENSE_TYPES = [
@@ -42,15 +41,6 @@ export const MORE_EXPENSE_TYPES = [
   'maintenance',
   'other',
 ] as const satisfies readonly ExpenseType[]
-
-/** Whether the amount is stable, bill-driven, or undetermined. */
-export const EXPENSE_AMOUNT_BEHAVIORS = [
-  'fixed',
-  'variable',
-  'unknown',
-] as const
-
-export type ExpenseAmountBehavior = (typeof EXPENSE_AMOUNT_BEHAVIORS)[number]
 
 /** Switching `expense_type` always re-anchors `amount_behavior` to this map
  *  — no sticky overrides, the user re-confirms intent by picking a new type. */
@@ -74,9 +64,10 @@ export const DEFAULT_AMOUNT_BEHAVIOR_BY_TYPE: Record<
 // `expense_type` and `amount_behavior` accept `null` at the type level (the
 // slice holds null for freshly-added rows and contract-extracted rows the LLM
 // couldn't classify) but the schema rejects null — Continue stays gated until
-// the user picks one.
-const expenseTypeField = z
-  .enum(EXPENSE_TYPES, { error: 'invalidExpenseType' })
+// the user picks one. The base canonical schemas reject empty/null; the
+// wizard wraps them in `.nullable().superRefine(...)` so the section can
+// store `null` as the "not yet picked" state without coercion.
+const expenseTypeField = expenseTypeSchema
   .nullable()
   .superRefine((value, ctx) => {
     if (value === null) {
@@ -84,8 +75,7 @@ const expenseTypeField = z
     }
   })
 
-const amountBehaviorField = z
-  .enum(EXPENSE_AMOUNT_BEHAVIORS, { error: 'invalidAmountBehavior' })
+const amountBehaviorField = expenseAmountBehaviorSchema
   .nullable()
   .superRefine((value, ctx) => {
     if (value === null) {
