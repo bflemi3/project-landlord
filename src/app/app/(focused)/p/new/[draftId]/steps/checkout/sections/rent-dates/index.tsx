@@ -12,8 +12,11 @@ import {
   type RentDatesInput,
   type SupportedCurrency,
 } from './schemas'
-import * as rentDatesState from './state'
-import { setAllTouched, type RentDatesTouched } from './state'
+import {
+  clearFieldServerError,
+  setAllTouched,
+  type RentDatesTouched,
+} from './state'
 import type { SectionId } from '../../../../state/registry'
 import {
   usePropertyCreationActions,
@@ -116,7 +119,7 @@ export function RentDatesSection() {
     key: K,
     next: RentDatesInput[K],
   ) {
-    setServerErrors('rent-dates', rentDatesState.clearFieldServerError(key))
+    setServerErrors('rent-dates', clearFieldServerError(key))
     setSectionData<RentDatesInput>('rent-dates', (prev: RentDatesInput) => ({
       ...prev,
       [key]: next,
