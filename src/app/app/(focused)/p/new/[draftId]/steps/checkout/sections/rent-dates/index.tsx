@@ -141,10 +141,16 @@ export function RentDatesSection() {
   const endDateError = fieldError('end_date')
   const hasEndDateError = Boolean(endDateError)
 
+  // Only auto-promote touched on first visit when extraction populated the
+  // section (contract path). On no-contract entry, let the user fill rent
+  // / dates without inline errors firing pre-emptively.
+  const path = usePropertyCreationState((s) => s.path)
+  const onFirstVisit = path === 'contract' ? promoteAllTouched : undefined
+
   return (
     <Section
       id={SECTION_ID}
-      onFirstVisit={promoteAllTouched}
+      onFirstVisit={onFirstVisit}
       onLeave={promoteAllTouched}
     >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>

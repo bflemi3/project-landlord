@@ -41,6 +41,13 @@ export function ExpensesSection() {
   }, [setTouched, storeApi])
 
   const expenses = usePropertyCreationState((s) => s.sectionData.expenses as ExpenseRow[])
+  // Only auto-promote touched on first visit when extraction populated the
+  // section (contract path). On the no-contract path the user is filling
+  // the form from scratch — surfacing every required-field error before
+  // they've typed anything is hostile. Continue / submit still promote
+  // touched via the existing handlers, so the trust boundary holds.
+  const path = usePropertyCreationState((s) => s.path)
+  const onFirstVisit = path === 'contract' ? promoteAllTouched : undefined
 
   // Block Continue while any row is incomplete. Empty list is vacuously
   // valid (expenses is optional), so a user with zero rows can still advance.
@@ -63,7 +70,7 @@ export function ExpensesSection() {
   return (
     <Section
       id={SECTION_ID}
-      onFirstVisit={promoteAllTouched}
+      onFirstVisit={onFirstVisit}
       onLeave={promoteAllTouched}
     >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>

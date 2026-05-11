@@ -96,6 +96,13 @@ export function PropertySection() {
   const promoteAllTouched = useCallback(() => {
     setTouched<PropertyTouched>((prev) => setAllTouched(prev))
   }, [setTouched])
+  // Only auto-promote touched on first visit when extraction populated the
+  // section (contract path). The no-contract user lands here first; firing
+  // "field required" on every input before they've touched anything is
+  // hostile. Continue / submit still promote touched via the existing
+  // handlers, so the trust boundary holds.
+  const path = usePropertyCreationState((s) => s.path)
+  const onFirstVisit = path === 'contract' ? promoteAllTouched : undefined
   const serverErrors = usePropertyCreationState(
     (s) => (s.sectionServerErrors.property ?? {}) as Record<string, string[]>,
   )
@@ -244,7 +251,7 @@ export function PropertySection() {
   return (
     <Section
       id={SECTION_ID}
-      onFirstVisit={promoteAllTouched}
+      onFirstVisit={onFirstVisit}
       onLeave={promoteAllTouched}
     >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
@@ -322,6 +329,8 @@ export function PropertySection() {
               value={values.postal_code}
               onValueChange={handlePostalCodeChange}
               onAddressFound={handleAddressFound}
+              hasError={hasPostalCodeError}
+              errorId="postal_code-error"
             />
             {hasPostalCodeError && (
               <FieldError id="postal_code-error">

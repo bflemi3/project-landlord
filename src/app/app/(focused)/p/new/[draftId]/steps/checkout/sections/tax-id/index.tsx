@@ -82,10 +82,17 @@ export function TaxIdSection() {
     setTouched<TaxIdSectionTouched>(SECTION_ID, (prev) => setAllTouched(prev))
   }, [setTouched])
 
+  // Only auto-promote touched on first visit when extraction populated the
+  // section (contract path). Tax-id itself is seeded from the profile, not
+  // extraction — but the user-experience rule is the same: don't yell at
+  // the no-contract user before they engage.
+  const path = usePropertyCreationState((s) => s.path)
+  const onFirstVisit = path === 'contract' ? promoteAllTouched : undefined
+
   return (
     <Section
       id={SECTION_ID}
-      onFirstVisit={promoteAllTouched}
+      onFirstVisit={onFirstVisit}
       onLeave={promoteAllTouched}
     >
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
