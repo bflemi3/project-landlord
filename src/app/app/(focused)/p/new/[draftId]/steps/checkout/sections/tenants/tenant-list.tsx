@@ -35,8 +35,12 @@ import { TenantRow as TenantRowComponent } from './tenant-row'
 
 export function TenantList() {
   const t = useTranslations('propertyCreation.checkout.tenants')
-  const { setSectionData, setTenantsListUI, setTouched } =
-    usePropertyCreationActions()
+  const {
+    setSectionData,
+    setTenantsListUI,
+    setTouched,
+    clearRowServerErrors,
+  } = usePropertyCreationActions()
   const tenantIds = usePropertyCreationState(
     useShallow((s) => (s.sectionData.tenants as TenantRow[]).map((row) => row.id)),
   )
@@ -63,12 +67,15 @@ export function TenantList() {
         setSectionData<TenantRow[]>('tenants', (prev) =>
           prev.filter((row) => row.id !== id),
         )
+        // Per-row keying makes this trivial — drop the row's server-error
+        // bucket without shifting any sibling rows.
+        clearRowServerErrors('tenants', id)
         setTenantsListUI((current) =>
           current.activeTenantId === id ? { activeTenantId: null } : {},
         )
       })
     },
-    [remove, setSectionData, setTenantsListUI],
+    [remove, setSectionData, setTenantsListUI, clearRowServerErrors],
   )
 
   const handleActiveChange = useCallback(

@@ -9,6 +9,16 @@ import { validateProperty } from './validation'
 
 export type PropertyTouched = ReadonlySet<string>
 
+/** Server-error slice for this section. Flat sections use a `FlatFieldErrors`
+ *  map keyed by field name — the same shape `z.flattenError(error).fieldErrors`
+ *  produces, so the section component reads it with the same access pattern
+ *  as `useWizardForm.errors`. */
+export type PropertyServerErrors = Record<string, string[]>
+
+export function defaultPropertyServerErrors(): PropertyServerErrors {
+  return {}
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const slice = state.sectionData.property as PropertyInput | undefined
   const country = slice?.country_code ?? 'BR'

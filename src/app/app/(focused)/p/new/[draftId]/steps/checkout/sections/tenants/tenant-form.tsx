@@ -36,8 +36,18 @@ interface TenantFormProps {
 }
 
 export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
-  const { setSectionData } = usePropertyCreationActions()
+  const { setSectionData, clearRowFieldServerError } = usePropertyCreationActions()
   const t = useTranslations('propertyCreation.checkout.tenants')
+
+  // Row-keyed server errors for this tenant. The submit action populates
+  // `sectionServerErrors.tenants[rowId]` on failure; the merge expression
+  // below (`errors[field]?.[0] ?? rowServerErrors[field]?.[0]`) surfaces it.
+  const rowServerErrors = usePropertyCreationState((s) => {
+    const section = s.sectionServerErrors.tenants as
+      | Record<string, Record<string, string[]>>
+      | undefined
+    return section?.[id] ?? {}
+  })
 
   const tenant = usePropertyCreationState((s) =>
     (s.sectionData.tenants as TenantRow[]).find((row) => row.id === id),
@@ -83,6 +93,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
 
   const setField = useCallback(
     <K extends keyof TenantRow>(key: K, next: TenantRow[K]) => {
+      clearRowFieldServerError('tenants', id, key)
       setSectionData<TenantRow[]>('tenants', (prev) =>
         prev.map((row) => {
           if (row.id !== id) return row
@@ -96,7 +107,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
         }),
       )
     },
-    [id, setSectionData],
+    [id, setSectionData, clearRowFieldServerError],
   )
 
   if (!tenant) return null
@@ -106,12 +117,14 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
   const taxIdId = `tenant-${id}-tax-id`
   const inviteId = `tenant-${id}-invite`
 
-  // `errors` is already touch-gated by the hook — read fields directly.
-  const nameError = errors.name?.[0]
+  // `errors` is already touch-gated by the hook. Server-side row errors are
+  // always shown when present, so they merge on top of the form's filtered
+  // errors — same access pattern as flat sections.
+  const nameError = errors.name?.[0] ?? rowServerErrors.name?.[0]
   const hasNameError = Boolean(nameError)
-  const emailError = errors.email?.[0]
+  const emailError = errors.email?.[0] ?? rowServerErrors.email?.[0]
   const hasEmailError = Boolean(emailError)
-  const taxIdError = errors.taxId?.[0]
+  const taxIdError = errors.taxId?.[0] ?? rowServerErrors.taxId?.[0]
   const hasTaxIdError = Boolean(taxIdError)
 
   return (

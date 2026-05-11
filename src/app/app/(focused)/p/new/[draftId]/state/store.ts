@@ -5,7 +5,10 @@ import {
   propertyCreationWizardKey,
   type SectionStatus,
 } from './persistence'
-import { defaultSectionTouched } from './section-defaults'
+import {
+  defaultSectionServerErrors,
+  defaultSectionTouched,
+} from './section-defaults'
 import { createIdbStorage } from './idb-storage'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 import {
@@ -23,6 +26,11 @@ import { fetchProfile } from '@/data/profiles/shared'
 import { createClient } from '@/lib/supabase/client'
 import type { TaxIdInput } from '../steps/checkout/sections/tax-id/schemas'
 import type { TenantRow } from '../steps/checkout/sections/tenants/schemas'
+import type {
+  GlobalError,
+  SectionServerErrors,
+  ServerErrorsResponse,
+} from './server-errors-types'
 
 // Types
 
@@ -73,6 +81,15 @@ export interface PropertyCreationStateShape {
   visitedSectionIds: ReadonlySet<SectionId>
   tenantsListUI: TenantsListUI
   expensesListUI: ExpensesListUI
+  /** Server-side validation errors for each section, persisted alongside the
+   *  draft so a refresh mid-fix keeps errors visible. Replaced wholesale per
+   *  section on every non-ok server response; cleared on `ok: true` or when
+   *  the user edits the offending field/row. */
+  sectionServerErrors: Record<SectionId, SectionServerErrors>
+  /** Wizard-wide error codes from the server action (unauthenticated,
+   *  RPC constraint violation, …). Rendered as a destructive toast at the
+   *  top of the wizard; bypasses per-section accordion focus. */
+  globalErrors: GlobalError[]
 }
 
 export interface PropertyCreationActions {
@@ -120,6 +137,31 @@ export interface PropertyCreationActions {
    * drafts don't accumulate. The "Save for later" branch deliberately does
    * NOT call this — leaving IDB intact is what enables resume. */
   clearPersisted: () => void
+  /** Apply a server response to the persisted error slice.
+   *   - On `ok: true`: reset every section's slice to its default and clear
+   *     `globalErrors` (no UI side effects — pure data).
+   *   - On `ok: false`: REPLACE each listed section's slice with the incoming
+   *     payload (per-section authoritative for that round), replace
+   *     `globalErrors`, and add every section key in `sectionErrors` to
+   *     `visitedSectionIds` so section-header validity badges flip on.
+   *
+   * The "first failing section" lookup runs in the wizard component AFTER
+   * this action resolves, not inside the action — the store action stays
+   * pure-data. */
+  applyServerErrorsResponse: (response: ServerErrorsResponse) => void
+  /** Flat-section field clear. Called from `setField` / `handle*` handlers
+   *  the moment the user edits — the server's last word on that field is
+   *  stale as soon as the slice changes. */
+  clearFieldServerError: (section: SectionId, field: string) => void
+  /** Row-section: drop every error for a row, used on row delete. Per-row
+   *  keying makes this trivial — no index shifting, no "clear all" rule. */
+  clearRowServerErrors: (section: SectionId, rowId: string) => void
+  /** Row-section: clear a single field for a single row on edit. */
+  clearRowFieldServerError: (
+    section: SectionId,
+    rowId: string,
+    field: string,
+  ) => void
 }
 
 export interface PropertyCreationStoreValue extends PropertyCreationStateShape {
@@ -168,6 +210,8 @@ function defaultState(): PropertyCreationStateShape {
     visitedSectionIds: new Set(),
     tenantsListUI: defaultTenantsListUI(),
     expensesListUI: defaultExpensesListUI(),
+    sectionServerErrors: defaultSectionServerErrors(),
+    globalErrors: [],
   }
 }
 
@@ -297,6 +341,8 @@ function buildPersistOptions(
       visitedSectionIds: state.visitedSectionIds,
       tenantsListUI: state.tenantsListUI,
       expensesListUI: state.expensesListUI,
+      sectionServerErrors: state.sectionServerErrors,
+      globalErrors: state.globalErrors,
     }),
     merge: (persistedStateUnknown, currentState) => {
       // Persist v5 calls `merge` on every hydration — including the
@@ -373,6 +419,16 @@ function buildPersistOptions(
         ...(persisted.sectionTouched ?? {}),
       }
 
+      // Server errors: defaults under the persisted slice so a v3 payload
+      // (no slices) gets defaults; a v4 payload's slice values win. The v3→v4
+      // `migrate` hook strips the keys, so v3 reads always land here with
+      // `persisted.sectionServerErrors === undefined`.
+      const sectionServerErrors: Record<SectionId, SectionServerErrors> = {
+        ...defaultSectionServerErrors(),
+        ...(persisted.sectionServerErrors ?? {}),
+      }
+      const globalErrors: GlobalError[] = persisted.globalErrors ?? []
+
       return {
         ...currentState,
         step: resumeMidExtraction ? 1 : (persisted.step ?? currentState.step),
@@ -388,13 +444,21 @@ function buildPersistOptions(
         visitedSectionIds,
         tenantsListUI,
         expensesListUI,
+        sectionServerErrors,
+        globalErrors,
       }
     },
-    migrate: (persistedState) => {
-      // No real migrations needed yet — v3 is the first shape we ship under
-      // the persist middleware. When a future shape change requires
-      // transforming v3 → v4, accept `(persistedState, version)` and branch
-      // on `version` to reshape the payload.
+    migrate: (persistedState, version) => {
+      // v3 → v4: server-error slices were added. Server errors are transient
+      // by design — there's no value in trying to translate stale errors
+      // from a previous session into the new shape. Strip both keys so the
+      // merge phase fills them from `defaultSectionServerErrors()` / `[]`.
+      if (version < 4 && persistedState && typeof persistedState === 'object') {
+        const next = { ...(persistedState as Record<string, unknown>) }
+        delete next.sectionServerErrors
+        delete next.globalErrors
+        return next as unknown as PersistedPropertyCreationState
+      }
       return persistedState as PersistedPropertyCreationState
     },
     onRehydrateStorage: () => (state, error) => {
@@ -620,6 +684,110 @@ export function createPropertyCreationStore(draftId: string) {
 
           clearPersisted: () => {
             storeRef.current?.persist.clearStorage()
+          },
+
+          applyServerErrorsResponse: (response) => {
+            // Pure-data action. Callers (the wizard submit handler, a
+            // section's `onBeforeContinue`) decide what to do next — open
+            // the first failing section, surface global toasts, etc. —
+            // outside this function.
+            if (response.ok) {
+              set({
+                sectionServerErrors: defaultSectionServerErrors(),
+                globalErrors: [],
+              })
+              return
+            }
+            const state = get()
+            const nextSectionServerErrors: Record<SectionId, SectionServerErrors> = {
+              ...state.sectionServerErrors,
+            }
+            // Replace each listed section's slice with the incoming payload.
+            // Per the spec, this is REPLACE not merge — the server's view of
+            // a section's errors is authoritative for that round.
+            if (response.sectionErrors) {
+              for (const key of Object.keys(response.sectionErrors) as SectionId[]) {
+                const incoming = response.sectionErrors[key]
+                if (incoming !== undefined) {
+                  nextSectionServerErrors[key] = incoming
+                }
+              }
+            }
+
+            // Add every section key with errors to visitedSectionIds so the
+            // section-header validity badge flips on — otherwise an unvisited
+            // section with errors stays quiet.
+            let nextVisited = state.visitedSectionIds
+            if (response.sectionErrors) {
+              const keys = Object.keys(response.sectionErrors) as SectionId[]
+              const missing = keys.filter((k) => !nextVisited.has(k))
+              if (missing.length > 0) {
+                const replacement = new Set(nextVisited)
+                for (const k of missing) replacement.add(k)
+                nextVisited = replacement
+              }
+            }
+
+            set({
+              sectionServerErrors: nextSectionServerErrors,
+              globalErrors: response.globalErrors ?? [],
+              visitedSectionIds: nextVisited,
+            })
+          },
+
+          clearFieldServerError: (section, field) => {
+            const state = get()
+            const slice = state.sectionServerErrors[section] as
+              | Record<string, string[]>
+              | undefined
+            if (!slice || slice[field] == null) return
+            const nextSlice: Record<string, string[]> = { ...slice }
+            delete nextSlice[field]
+            set({
+              sectionServerErrors: {
+                ...state.sectionServerErrors,
+                [section]: nextSlice,
+              },
+            })
+          },
+
+          clearRowServerErrors: (section, rowId) => {
+            const state = get()
+            const slice = state.sectionServerErrors[section] as
+              | Record<string, Record<string, string[]>>
+              | undefined
+            if (!slice || slice[rowId] == null) return
+            const nextSlice: Record<string, Record<string, string[]>> = {
+              ...slice,
+            }
+            delete nextSlice[rowId]
+            set({
+              sectionServerErrors: {
+                ...state.sectionServerErrors,
+                [section]: nextSlice,
+              },
+            })
+          },
+
+          clearRowFieldServerError: (section, rowId, field) => {
+            const state = get()
+            const slice = state.sectionServerErrors[section] as
+              | Record<string, Record<string, string[]>>
+              | undefined
+            const row = slice?.[rowId]
+            if (!row || row[field] == null) return
+            const nextRow: Record<string, string[]> = { ...row }
+            delete nextRow[field]
+            const nextSlice: Record<string, Record<string, string[]>> = {
+              ...slice,
+              [rowId]: nextRow,
+            }
+            set({
+              sectionServerErrors: {
+                ...state.sectionServerErrors,
+                [section]: nextSlice,
+              },
+            })
           },
         },
       }),

@@ -47,17 +47,18 @@ function makeWrapper(draftId: string) {
 
 /**
  * Seeds the IDB-backed store as if the user had previously persisted state
- * under v3. Mirrors the envelope the persist middleware writes —
- * `{ state: <PersistedPropertyCreationState>, version: 3 }`.
+ * under the current version. Mirrors the envelope the persist middleware
+ * writes — `{ state: <PersistedPropertyCreationState>, version: N }`.
  */
 function seedPersistedState(
   draftId: string,
   state: Partial<PersistedPropertyCreationState>,
+  version: number = 4,
 ) {
   const key = propertyCreationWizardKey(draftId)
   idbStore.set(key, {
     state,
-    version: 3,
+    version,
   })
 }
 
@@ -680,7 +681,7 @@ describe('persist middleware — writes', () => {
 
     const lastCall = setSpy.mock.calls.at(-1)!
     const [, value] = lastCall as [string, { state: PersistedPropertyCreationState; version: number }]
-    expect(value.version).toBe(3)
+    expect(value.version).toBe(4)
     expect(value.state.step).toBe(2)
     // `actions` is excluded by partialize.
     expect(value.state).not.toHaveProperty('actions')

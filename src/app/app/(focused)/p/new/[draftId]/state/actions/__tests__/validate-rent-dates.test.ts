@@ -24,11 +24,13 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: {
-        amount_minor: ['required'],
-        start_date: ['required'],
-        end_date: ['required'],
+      ok: false,
+      sectionErrors: {
+        'rent-dates': {
+          amount_minor: ['required'],
+          start_date: ['required'],
+          end_date: ['required'],
+        },
       },
     })
   })
@@ -40,10 +42,7 @@ describe('validateRentDatesCore', () => {
       'no_contract',
     )
 
-    expect(result).toEqual({
-      valid: true,
-      fields: defaultRentDatesInput(),
-    })
+    expect(result).toEqual({ ok: true })
   })
 
   it('surfaces structural schema errors (tooLarge takes precedence over required)', async () => {
@@ -58,14 +57,16 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: {
-        amount_minor: ['tooLarge'],
+      ok: false,
+      sectionErrors: {
+        'rent-dates': {
+          amount_minor: ['tooLarge'],
+        },
       },
     })
   })
 
-  it('returns valid + fields on the contract path when every required field is set', async () => {
+  it('returns ok on the contract path when every required field is set', async () => {
     const result = await validateRentDatesCore(
       supabase,
       {
@@ -77,35 +78,17 @@ describe('validateRentDatesCore', () => {
       'contract',
     )
 
-    expect(result).toEqual({
-      valid: true,
-      fields: {
-        amount_minor: 250_000,
-        currency: 'BRL',
-        due_day: 5,
-        start_date: '2026-01-01',
-        end_date: '2026-12-31',
-      },
-    })
+    expect(result).toEqual({ ok: true })
   })
 
-  it('returns valid + fields on the no-contract path when amount is provided', async () => {
+  it('returns ok on the no-contract path when amount is provided', async () => {
     const result = await validateRentDatesCore(
       supabase,
       { ...defaultRentDatesInput(), amount_minor: 1_000, currency: 'USD' },
       'no_contract',
     )
 
-    expect(result).toEqual({
-      valid: true,
-      fields: {
-        amount_minor: 1_000,
-        currency: 'USD',
-        due_day: 5,
-        start_date: undefined,
-        end_date: undefined,
-      },
-    })
+    expect(result).toEqual({ ok: true })
   })
 
   it('surfaces endDateBeforeStart on the contract path when end < start', async () => {
@@ -121,8 +104,8 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: { end_date: ['endDateBeforeStart'] },
+      ok: false,
+      sectionErrors: { 'rent-dates': { end_date: ['endDateBeforeStart'] } },
     })
   })
 
@@ -138,14 +121,14 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: { end_date: ['endDateBeforeStart'] },
+      ok: false,
+      sectionErrors: { 'rent-dates': { end_date: ['endDateBeforeStart'] } },
     })
   })
 
   it('surfaces invalidDate from the schema regex up through the action', async () => {
     // Locks in the error-pipeline contract: schema regex code → field-error
-    // shape produced by zodIssuesToFieldErrors → translated by the form via
+    // shape produced by `z.flattenError` → translated by the form via
     // tRentDates(error). Regression guard against any of those layers
     // dropping or renaming the code in transit. The field is bypassing the
     // RentDatesInput type to feed the schema a malformed string — the picker
@@ -161,8 +144,8 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: { start_date: ['invalidDate'] },
+      ok: false,
+      sectionErrors: { 'rent-dates': { start_date: ['invalidDate'] } },
     })
   })
 
@@ -179,8 +162,8 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: { due_day: ['required'] },
+      ok: false,
+      sectionErrors: { 'rent-dates': { due_day: ['required'] } },
     })
   })
 
@@ -192,10 +175,12 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: {
-        amount_minor: ['required'],
-        due_day: ['required'],
+      ok: false,
+      sectionErrors: {
+        'rent-dates': {
+          amount_minor: ['required'],
+          due_day: ['required'],
+        },
       },
     })
   })
@@ -213,8 +198,8 @@ describe('validateRentDatesCore', () => {
     )
 
     expect(result).toEqual({
-      valid: false,
-      errors: { due_day: ['invalidDueDay'] },
+      ok: false,
+      sectionErrors: { 'rent-dates': { due_day: ['invalidDueDay'] } },
     })
   })
 
@@ -225,6 +210,6 @@ describe('validateRentDatesCore', () => {
       'no_contract',
     )
 
-    expect(result.valid).toBe(true)
+    expect(result).toEqual({ ok: true })
   })
 })

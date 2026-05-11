@@ -9,6 +9,13 @@ import { validateTaxId } from './validation'
 
 export type TaxIdSectionTouched = ReadonlySet<string>
 
+/** Server-error slice for this section. */
+export type TaxIdServerErrors = Record<string, string[]>
+
+export function defaultTaxIdServerErrors(): TaxIdServerErrors {
+  return {}
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const country =
     (state.sectionData.property as PropertyInput | undefined)?.country_code ??

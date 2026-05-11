@@ -7,6 +7,14 @@ import { validateExpenses } from './validation'
 
 export type ExpensesTouched = Record<string, ReadonlySet<string>>
 
+/** Server-error slice for this row section. Keyed by stable row `id`, never
+ *  index — row delete must not shift other rows' errors. */
+export type ExpensesServerErrors = Record<string /* rowId */, Record<string, string[]>>
+
+export function defaultExpensesServerErrors(): ExpensesServerErrors {
+  return {}
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   return validateExpenses(state.sectionData.expenses as ExpenseRow[]).ok
 }

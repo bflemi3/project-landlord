@@ -35,7 +35,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { IsoDatePicker } from '@/components/ui/iso-date-picker'
 import { CurrencyInput } from '@/components/ui/currency-input'
-import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'
 import { useWizardForm } from '../../../../state/use-wizard-form'
 import { validateRentDates as validateRentDatesParse } from './validation'
 
@@ -48,7 +47,11 @@ export function RentDatesSection() {
   const t = useTranslations('propertyCreation.checkout')
   const tRentDates = useTranslations('rentDates')
   const { registerHeaderRef } = useCheckoutContext()
-  const { setSectionData } = usePropertyCreationActions()
+  const {
+    setSectionData,
+    applyServerErrorsResponse,
+    clearFieldServerError,
+  } = usePropertyCreationActions()
   const storeApi = usePropertyCreationStoreApi()
   const values = usePropertyCreationState(
     (s) => s.sectionData['rent-dates'] as RentDatesInput,
@@ -74,11 +77,12 @@ export function RentDatesSection() {
     parseResult,
     touched,
   })
-  const {
-    setServerErrors,
-    clearServerErrors,
-    getServerError,
-  } = useServerValidationErrors<RentDatesInput>()
+  // Server-side errors now read from the persisted store slice. The merge
+  // expression below (`errors[field]?.[0] ?? serverErrors[field]?.[0]`) is
+  // unchanged — only the source has moved from local React state to Zustand.
+  const serverErrors = usePropertyCreationState(
+    (s) => (s.sectionServerErrors['rent-dates'] ?? {}) as Record<string, string[]>,
+  )
 
   // Append a single field to the section's touched set. The form constructs
   // the updater inline since its shape (a `Set<string>`) is the form's own
@@ -103,8 +107,8 @@ export function RentDatesSection() {
   // `validateRentDates`) are always shown when present, so they merge on
   // top of the form's filtered errors.
   const fieldError = useCallback(
-    (field: RentDatesField) => errors[field]?.[0] ?? getServerError(field),
-    [errors, getServerError],
+    (field: RentDatesField) => errors[field]?.[0] ?? serverErrors[field]?.[0],
+    [errors, serverErrors],
   )
 
   // Read values + path via storeApi so the callback identity is stable
@@ -114,20 +118,15 @@ export function RentDatesSection() {
     const state = storeApi.getState()
     const slice = state.sectionData['rent-dates'] as RentDatesInput
     const result = await validateRentDates(slice, state.path ?? 'contract')
-    if (result.valid) {
-      clearServerErrors()
-      return true
-    }
-
-    setServerErrors(result.errors ?? {})
-    return result.valid
-  }, [storeApi, setServerErrors, clearServerErrors])
+    applyServerErrorsResponse(result)
+    return result.ok
+  }, [storeApi, applyServerErrorsResponse])
 
   function setField<K extends keyof RentDatesInput>(
     key: K,
     next: RentDatesInput[K],
   ) {
-    clearServerErrors(key)
+    clearFieldServerError('rent-dates', key)
     setSectionData<RentDatesInput>('rent-dates', (prev: RentDatesInput) => ({
       ...prev,
       [key]: next,

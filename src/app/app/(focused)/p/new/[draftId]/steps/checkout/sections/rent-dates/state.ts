@@ -8,6 +8,13 @@ import { validateRentDates } from './validation'
 
 export type RentDatesTouched = ReadonlySet<string>
 
+/** Server-error slice for this section. */
+export type RentDatesServerErrors = Record<string, string[]>
+
+export function defaultRentDatesServerErrors(): RentDatesServerErrors {
+  return {}
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   return validateRentDates(
     state.sectionData['rent-dates'] as RentDatesInput,

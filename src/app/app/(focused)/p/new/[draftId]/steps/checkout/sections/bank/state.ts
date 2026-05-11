@@ -2,6 +2,13 @@
 
 export type BankTouched = ReadonlySet<string>
 
+/** Server-error slice for this section. */
+export type BankServerErrors = Record<string, string[]>
+
+export function defaultBankServerErrors(): BankServerErrors {
+  return {}
+}
+
 export function isValid(): boolean {
   return true
 }

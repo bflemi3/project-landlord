@@ -30,8 +30,7 @@ import { getAddressProvider } from '@/lib/address/provider'
 import { formatPropertyName } from '@/lib/address/format-property-name'
 import type { AddressLookupResult } from '@/lib/address/types'
 import { type PropertyInput } from '@/schemas/property'
-import { validateProperty } from '@/data/properties/actions/validate-property'
-import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'
+import { validatePropertyForCheckout } from '../../../../state/actions/validate-property-for-checkout'
 import { useWizardForm } from '../../../../state/use-wizard-form'
 import { Constants } from '@/lib/types/database'
 
@@ -72,7 +71,11 @@ export function PropertySection() {
   const tProperties = useTranslations('properties')
   const router = useRouter()
   const { registerHeaderRef } = useCheckoutContext()
-  const { setSectionData } = usePropertyCreationActions()
+  const {
+    setSectionData,
+    applyServerErrorsResponse,
+    clearFieldServerError,
+  } = usePropertyCreationActions()
   const storeApi = usePropertyCreationStoreApi()
   const values = usePropertyCreationState(
     (s) => s.sectionData.property as PropertyInput,
@@ -94,11 +97,12 @@ export function PropertySection() {
   const promoteAllTouched = useCallback(() => {
     setTouched<PropertyTouched>((prev) => setAllTouched(prev))
   }, [setTouched])
-  const {
-    setServerErrors,
-    clearServerErrors,
-    getServerError,
-  } = useServerValidationErrors<PropertyInput>()
+  // Server-side errors now read from the persisted store slice. The merge
+  // expression below (`errors[field]?.[0] ?? serverErrors[field]?.[0]`) is
+  // unchanged — only the source has moved from local React state to Zustand.
+  const serverErrors = usePropertyCreationState(
+    (s) => (s.sectionServerErrors.property ?? {}) as Record<string, string[]>,
+  )
 
   // Append a single field to the section's touched set. The form constructs
   // the updater inline since its shape (a `Set<string>`) is the form's own
@@ -116,11 +120,11 @@ export function PropertySection() {
   )
 
   // `form.errors` is already touch-gated by the hook. Server-side errors
-  // (from `validateProperty`) are always shown when present, so they merge
-  // on top of the form's filtered errors.
+  // (from `validatePropertyForCheckout`) are always shown when present, so
+  // they merge on top of the form's filtered errors.
   const fieldError = useCallback(
-    (field: PropertyField) => errors[field]?.[0] ?? getServerError(field),
-    [errors, getServerError],
+    (field: PropertyField) => errors[field]?.[0] ?? serverErrors[field]?.[0],
+    [errors, serverErrors],
   )
 
   // Read values via storeApi so the callback identity is stable across
@@ -128,13 +132,9 @@ export function PropertySection() {
   // function on every edit, cascading recomputes through Section.Actions.
   const onBeforeContinue = useCallback(async () => {
     const slice = storeApi.getState().sectionData.property as PropertyInput
-    const result = await validateProperty(slice)
-    if (result.valid) {
-      clearServerErrors()
-      return true
-    }
-
-    setServerErrors(result.errors ?? {})
+    const result = await validatePropertyForCheckout(slice)
+    applyServerErrorsResponse(result)
+    if (result.ok) return true
 
     if (result.existingPropertyId) {
       toast.warning(tProperties('duplicateAddress'), {
@@ -147,7 +147,7 @@ export function PropertySection() {
       })
     }
     return false
-  }, [storeApi, tProperties, router, clearServerErrors, setServerErrors])
+  }, [storeApi, tProperties, router, applyServerErrorsResponse])
 
   const isPostalCodeExtracted = useIsExtracted('property.postal_code')
   const cepLabelExtra = useMemo(
@@ -191,19 +191,22 @@ export function PropertySection() {
 
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
-      clearServerErrors('postal_code')
+      clearFieldServerError('property', 'postal_code')
       setSectionData<PropertyInput>('property', (prev) => ({
         ...(prev as PropertyInput),
         postal_code: formatted,
       }))
       markTouched('postal_code')
     },
-    [setSectionData, markTouched, clearServerErrors],
+    [setSectionData, markTouched, clearFieldServerError],
   )
 
   const handleAddressFound = useCallback(
     (result: AddressLookupResult) => {
-      clearServerErrors('street', 'neighborhood', 'city', 'state')
+      clearFieldServerError('property', 'street')
+      clearFieldServerError('property', 'neighborhood')
+      clearFieldServerError('property', 'city')
+      clearFieldServerError('property', 'state')
       setSectionData<PropertyInput>('property', (prev) => {
         const base = prev as PropertyInput
         return {
@@ -215,7 +218,7 @@ export function PropertySection() {
         }
       })
     },
-    [setSectionData, clearServerErrors],
+    [setSectionData, clearFieldServerError],
   )
 
   // Per-field setter. Recreated each render — fine, since it's only consumed
@@ -225,7 +228,7 @@ export function PropertySection() {
     key: K,
     next: PropertyInput[K],
   ) {
-    clearServerErrors(key)
+    clearFieldServerError('property', key)
     setSectionData<PropertyInput>('property', (prev) => ({
       ...(prev as PropertyInput),
       [key]: next,

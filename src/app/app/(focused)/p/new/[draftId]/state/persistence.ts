@@ -5,14 +5,16 @@ export type SectionStatus = 'upcoming' | 'completed' | 'skipped'
 export const PROPERTY_CREATION_WIZARD_ID = 'property-creation'
 
 /**
- * Bumped from 2 → 3. v3 is the first shape to ship under the Zustand `persist`
- * middleware, which owns serialization and version checks. The persisted
- * payload no longer carries the transient `hydrating` flag (the middleware
- * exposes hydration state via `useStore.persist.hasHydrated()`), and is
- * structured under the middleware's envelope rather than the bespoke
- * `WizardState<T>` envelope used by v2.
+ * Bumped from 3 → 4. v4 adds the `sectionServerErrors` and `globalErrors`
+ * persisted slices that carry continue / submit server-error responses across
+ * refreshes and section navigation. The shape change is additive; older
+ * snapshots are migrated by wiping just the new slices (`migrate` returns
+ * the older payload unchanged so the persist middleware's merge phase
+ * fills the new slices from `defaultState()`). Wipe-on-bump is acceptable —
+ * server errors are transient by design and a stale slice from the previous
+ * session shouldn't leak into a resumed wizard.
  */
-export const PROPERTY_CREATION_STATE_VERSION = 3
+export const PROPERTY_CREATION_STATE_VERSION = 4
 
 /**
  * Canonical key formatter for a draft's persist `name`. Kept here (rather than

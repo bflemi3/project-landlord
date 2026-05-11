@@ -9,6 +9,14 @@ import { validateTenants } from './validation'
 
 export type TenantsTouched = Record<string, ReadonlySet<string>>
 
+/** Server-error slice for this row section. Keyed by stable row `id`, never
+ *  index — row delete must not shift other rows' errors. */
+export type TenantsServerErrors = Record<string /* rowId */, Record<string, string[]>>
+
+export function defaultTenantsServerErrors(): TenantsServerErrors {
+  return {}
+}
+
 export function isValid(state: PropertyCreationStateShape): boolean {
   const country =
     (state.sectionData.property as PropertyInput | undefined)?.country_code ??
