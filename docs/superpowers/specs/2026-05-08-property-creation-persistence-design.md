@@ -38,7 +38,7 @@ This block is the **merge gate** for split workstreams (database, canonical Zod,
 2. **Generated types** — `pnpm supabase gen types --local`; commit the updated Supabase TypeScript types (e.g. `src/lib/types/database.ts`).
 3. **Canonical Zod** — `src/schemas/*`, composed `propertyCreationSubmissionSchema` (or equivalent).
 4. **Server action** — `submitPropertyCreation` (*Server Action Contract*): validate, call RPC, Storage uploads, emails, `revalidatePath`, map failures to `ServerErrorsResponse`.
-5. **Wizard** — persisted `sectionServerErrors` / `globalErrors`, `applyServerErrorsResponse`, per-section reads and clears (*Error wiring on the frontend*).
+5. **Wizard** — persisted `sectionServerErrors` / `globalErrors`, `dispatchServerErrorsResponse`, per-section reads and clears (*Error wiring on the frontend*).
 6. **Success screen** — may start earlier against a mocked `summary` if the `SubmitSummary` shape below is stable.
 7. **Integration** — wire **Create property** to the action; one happy-path verification.
 
@@ -106,7 +106,7 @@ Full payloads and behavior: *RPC Contract* and *Server Action Contract*.
 |----------------|------|
 | `sectionServerErrors` | `Record<SectionId, SectionServerErrors>` — persisted |
 | `globalErrors` | `GlobalError[]` — persisted |
-| `applyServerErrorsResponse` | Apply `ServerErrorsResponse`; on `ok: false`, **replace** each listed section slice; add those `SectionId` keys to `visitedSectionIds` |
+| `dispatchServerErrorsResponse` | Cross-section dispatcher at `state/server-errors-dispatch.ts`. On `ok: false`, **replace** each listed section slice and add those `SectionId` keys to `visitedSectionIds`. On `ok: true`, only clear `globalErrors` (section slices are owned by their caller). |
 | `clearFieldServerError` | Flat section — clear one field on edit |
 | `clearRowServerErrors` / `clearRowFieldServerError` | Row section — clear on row delete / field edit |
 
@@ -1088,7 +1088,7 @@ type WizardServerErrorsSlice = {
   sectionServerErrors: Record<SectionId, SectionServerErrors>
   globalErrors: GlobalError[]
 
-  applyServerErrorsResponse(response: ServerErrorsResponse): void
+  dispatchServerErrorsResponse(response: ServerErrorsResponse): void
   clearFieldServerError(section: SectionId, field: string): void
   clearRowServerErrors(section: SectionId, rowId: string): void
   clearRowFieldServerError(section: SectionId, rowId: string, field: string): void
@@ -1115,21 +1115,23 @@ export function defaultExpensesServerErrors(): ExpensesServerErrors { return {} 
 
 No `applyServerErrors`, no `clearServerErrorFields`, no `promoteTouched` exports. Per-section work stops at the default.
 
-#### `applyServerErrorsResponse`
+#### `dispatchServerErrorsResponse`
 
-Single store action that consumes both continue-action and submit responses (both return the same shape):
+> Lives at `state/server-errors-dispatch.ts` as a plain function rather than a store action, so the store stays pure-data per the original spec intent. The store exposes the primitive `setServerErrors(sectionId, updater)` and `setGlobalErrors(next)` actions; the dispatcher composes them.
 
-1. If `response.ok === true`: reset `sectionServerErrors` to all-defaults and `globalErrors` to `[]`. (Used implicitly when a continue resolves cleanly or submit succeeds.)
+Cross-section dispatcher that consumes both continue-action and submit responses (both return the same shape):
+
+1. If `response.ok === true`: clear `globalErrors` to `[]`. Section slices are NOT reset here — callers (continue actions) clear their own slice on success, and the submit success path wipes the persisted draft via `clearPersisted`. This keeps every other section's slice untouched on a one-section continue, avoiding the cost of six store writes (and one IDB persist) per click.
 2. Otherwise:
    - For each `(section, payload)` in `response.sectionErrors`, **replace** that section's slice in `sectionServerErrors` with `payload`.
    - Replace `globalErrors` with `response.globalErrors ?? []`.
    - Add every section key in `sectionErrors` to `visitedSectionIds` so the section header's validity badge flips on (otherwise an unvisited section with errors stays quiet).
 
-The action **replaces** rather than merges per-section payloads on a non-ok response: the server's view of that section's errors is authoritative for that round.
+The dispatcher **replaces** rather than merges per-section payloads on a non-ok response: the server's view of that section's errors is authoritative for that round.
 
 #### Continue actions
 
-Today's continue actions (e.g. `validateProperty`) return `{ valid, errors? }` and are wired via `useServerValidationErrors`'s local React state. As part of this work, they switch to returning `ServerErrorsResponse` (`ok: true` on success, `ok: false` with one section's slice on failure) and dispatch into the store via `applyServerErrorsResponse`. The wire shape per section already matches what they emit today (`Record<string, string[]>` from `zodIssuesToFieldErrors`), so this is a thin reshape, not a rewrite.
+Today's continue actions (e.g. `validateProperty`) return `{ valid, errors? }` and are wired via `useServerValidationErrors`'s local React state. As part of this work, they switch to returning `ServerErrorsResponse` (`ok: true` on success, `ok: false` with one section's slice on failure) and dispatch into the store via `dispatchServerErrorsResponse`. The wire shape per section already matches what they emit today (`Record<string, string[]>` from `zodIssuesToFieldErrors`), so this is a thin reshape, not a rewrite.
 
 Non-wizard call sites of `useServerValidationErrors` (profile editor, user-menu) are untouched.
 
@@ -1162,23 +1164,24 @@ Components own these clears, mirroring how `setField` / `handlePostalCodeChange`
 | Field edit on a flat section | `clearFieldServerError(section, field)` |
 | Field edit on a row | `clearRowFieldServerError(section, rowId, field)` |
 | Row delete | `clearRowServerErrors(section, rowId)` |
-| Successful resubmit | `applyServerErrorsResponse({ ok: true, ... })` clears everything via reset path |
+| Successful continue | Caller clears its own section slice (`setServerErrors(section, () => ({}))`) and dispatches `{ ok: true }` so `globalErrors` clears. |
+| Successful submit | `clearPersisted()` wipes the entire IDB record (including server errors) on the success path. |
 
 Per-row keying makes the row-delete path trivial — no index shifting, no "clear all row errors" rule. Other rows' errors stay correct.
 
 #### Section opening on submit failure
 
-When `applyServerErrorsResponse` writes a response with `ok: false`:
+When `dispatchServerErrorsResponse` writes a response with `ok: false`:
 
 1. Find the first section with errors in canonical order: `property` → `rent-dates` → `tenants` → `expenses` → `tax-id` → `bank`. Open it via the existing `setActiveSectionId` action.
 2. `globalErrors` surface as a destructive toast at the top of the wizard; they don't change the active section.
 3. Wizard draft state stays intact. The user fixes, re-submits.
 
-The "first failing section" lookup runs in the wizard component immediately after the action resolves, not inside `applyServerErrorsResponse` (the store action stays pure-data).
+The "first failing section" lookup runs in the wizard component immediately after the action resolves, not inside `dispatchServerErrorsResponse` (the store action stays pure-data).
 
 #### Error visibility without touched-promotion
 
-`useWizardForm.errors` is touched-gated; server errors are not. The section component's merge expression — `errors[field]?.[0] ?? serverErrors[field]?.[0]` — already renders server errors regardless of touched state. No special promotion is needed for visibility. The only related concern is the section-header validity badge, which `applyServerErrorsResponse` handles by adding error sections to `visitedSectionIds` (above).
+`useWizardForm.errors` is touched-gated; server errors are not. The section component's merge expression — `errors[field]?.[0] ?? serverErrors[field]?.[0]` — already renders server errors regardless of touched state. No special promotion is needed for visibility. The only related concern is the section-header validity badge, which `dispatchServerErrorsResponse` handles by adding error sections to `visitedSectionIds` (above).
 
 ### Storage cleanup model
 
@@ -1302,12 +1305,12 @@ The 5-minute window matches the replay path's `invitations_to_email` cutoff so a
 
 ### Behavior on `{ ok: false, sectionErrors?, globalErrors? }`
 
-1. Dispatch `applyServerErrorsResponse(response)` to the wizard store. The action:
+1. Dispatch `dispatchServerErrorsResponse(response)` to the wizard store. The action:
    - Replaces each section's `sectionServerErrors[section]` slice with the incoming payload (per-section authoritative).
    - Replaces `globalErrors` with `response.globalErrors ?? []`.
    - Adds every section key in `sectionErrors` to `visitedSectionIds` so the section validity badge flips.
    The store slice is part of the persisted shape so it survives refresh and section navigation, and it's cleared on:
-   - Successful submit (the `ok: true` reset path inside `applyServerErrorsResponse`).
+   - Successful submit, which wipes the entire IDB draft (including server-error slices) via `clearPersisted`. `dispatchServerErrorsResponse({ ok: true })` clears `globalErrors` but does not touch section slices.
    - User editing a field, via `clearFieldServerError` / `clearRowFieldServerError` calls the section component already issues from its existing `setField` / `handle*` handlers.
    - Row delete, via `clearRowServerErrors`.
 2. The wizard component finds the first section with errors in canonical order: `property` → `rent-dates` → `tenants` → `expenses` → `tax-id` → `bank`. Global errors bypass section opening and surface as a destructive toast.
@@ -1322,7 +1325,7 @@ Today the wizard has three potential error sources:
 | Source | Today's path | After this spec |
 |---|---|---|
 | Client-side schema errors (touched-only) | `useWizardForm.errors` (`z.flattenError(parseResult.error).fieldErrors` filtered by touched) | Unchanged |
-| Per-section continue-button server actions (e.g., `validateProperty`) | `useServerValidationErrors` local React state, merged inline at the section component | Continue actions return `ServerErrorsResponse` and dispatch into the persisted `sectionServerErrors[section]` slice via `applyServerErrorsResponse`. Same inline merge at the call site, just reading from a Zustand selector instead of local hook state. |
+| Per-section continue-button server actions (e.g., `validateProperty`) | `useServerValidationErrors` local React state, merged inline at the section component | Continue actions return `ServerErrorsResponse` and dispatch into the persisted `sectionServerErrors[section]` slice via `dispatchServerErrorsResponse`. Same inline merge at the call site, just reading from a Zustand selector instead of local hook state. |
 | Final submit server action errors | (does not exist yet) | Same `sectionServerErrors[section]` slice. The submit action's response can populate multiple section keys at once. `globalErrors` covers wizard-wide codes. |
 
 Each participating wizard section component swaps `useServerValidationErrors` for a Zustand selector against `sectionServerErrors[section]` plus the existing per-edit clear calls (now hitting `clearFieldServerError` / `clearRowFieldServerError` instead of `clearServerErrors`). The merge expression at the call site (`errors[field]?.[0] ?? serverErrors[field]?.[0]`) is unchanged. See *Error wiring on the frontend* for the full surface.
@@ -1344,7 +1347,7 @@ This is property-page work, not part of this spec's deliverables. The implementa
 
 ### Flow on `{ ok: true, summary }`
 
-1. Client: clear the wizard draft from IndexedDB (`actions.clearPersisted()`) — this is the only place the persisted slice (including `sectionServerErrors` and `globalErrors`) gets wiped wholesale. (The store also resets `sectionServerErrors`/`globalErrors` to defaults via the `ok: true` branch of `applyServerErrorsResponse` ahead of the wipe.)
+1. Client: clear the wizard draft from IndexedDB (`actions.clearPersisted()`) — this is the only place the persisted slice (including `sectionServerErrors` and `globalErrors`) gets wiped wholesale. `dispatchServerErrorsResponse({ ok: true })` resets `globalErrors` to `[]` ahead of the wipe; section slices ride along inside the `clearPersisted` call (the dispatcher no longer touches them on `ok: true`).
 2. Client: render the **success screen**. Do not navigate directly to the property page.
 3. Success screen reads from the `summary` payload — no follow-up fetch needed.
 
@@ -1474,8 +1477,8 @@ Engineers triaging the queue may decline a provider request (out-of-region, ille
 - All new `src/schemas/` files: `expense.ts`, `rent.ts`, `contract.ts`, `property-creation-submission.ts`.
 - Refactor of the wizard's checkout-local `steps/checkout/sections/expenses/schemas.ts` to derive types from the canonical `src/schemas/` files.
 - Frontend wiring: replace the existing `createProperty` action call with `submitPropertyCreation`. Migrate every wizard section component from local `useServerValidationErrors` to a Zustand selector against `sectionServerErrors[section]`. The inline merge expression (`errors[field]?.[0] ?? serverErrors[field]?.[0]`) and per-edit clear calls already exist in each section component — only the import / source changes. `useServerValidationErrors` itself stays untouched for non-wizard call sites.
-- Persisted `sectionServerErrors` and `globalErrors` slices on the wizard store (added to `partialize`, version bumped, wiped on successful submit). One new store action `applyServerErrorsResponse(response)`; three clear helpers `clearFieldServerError`, `clearRowServerErrors`, `clearRowFieldServerError`.
-- Continue actions (e.g. `validateProperty`) reshape their return to `ServerErrorsResponse` and dispatch via `applyServerErrorsResponse`. The per-section payload they emit today (`Record<string, string[]>`) is already the right shape; this is a thin reshape of the response envelope, not a logic change.
+- Persisted `sectionServerErrors` and `globalErrors` slices on the wizard store (added to `partialize`, version bumped, wiped on successful submit). One new store action `dispatchServerErrorsResponse(response)`; three clear helpers `clearFieldServerError`, `clearRowServerErrors`, `clearRowFieldServerError`.
+- Continue actions (e.g. `validateProperty`) reshape their return to `ServerErrorsResponse` and dispatch via `dispatchServerErrorsResponse`. The per-section payload they emit today (`Record<string, string[]>`) is already the right shape; this is a thin reshape of the response envelope, not a logic change.
 - One new `state.ts` export per section: `defaultPropertyServerErrors()`, `defaultExpensesServerErrors()`, etc. Aggregated in `state/section-defaults.ts`. No `applyServerErrors`, no `promoteTouched`, no per-section dispatcher.
 - The new success screen with the layout, content, two CTAs, and localization namespace described in *Success Behavior*.
 - Bill upload integration: server action uploads `provider_test_bills` files to the existing `test-bills` bucket and updates `upload_status`. UPDATE RLS policy for own-row `upload_status` flips lives in this spec's migrations.
@@ -1567,7 +1570,7 @@ Per `testing` skill, server actions get integration tests using the local Supaba
 - `submitPropertyCreationCore` (the testable wrapper per `testing` skill) — covers the validation phase.
 - The composed `propertyCreationSubmissionSchema` — covers cross-section invariants and bundle-graph rules.
 - `normalize_provider_name` — table-driven SQL test for known input → expected output.
-- Wizard store server-error slice — table-driven test for `applyServerErrorsResponse` covering: (a) `ok: true` resets all section slices and `globalErrors`; (b) `ok: false` with `sectionErrors` replaces (not merges) per-section payloads and adds those sections to `visitedSectionIds`; (c) `clearFieldServerError(section, field)` removes one key from a flat section; (d) `clearRowServerErrors(section, rowId)` drops a row's full record; (e) `clearRowFieldServerError(section, rowId, field)` removes one field from a row's record. Plus a persistence-bump migration test that confirms older snapshots wipe their server-error slices on load.
+- Wizard store server-error slice — table-driven test for `dispatchServerErrorsResponse` covering: (a) `ok: true` clears only `globalErrors` and leaves section slices untouched (callers own their own section's clear on success); (b) `ok: false` with `sectionErrors` replaces (not merges) per-section payloads and adds those sections to `visitedSectionIds`; (c) `clearFieldServerError(section, field)` removes one key from a flat section; (d) `clearRowServerErrors(section, rowId)` drops a row's full record; (e) `clearRowFieldServerError(section, rowId, field)` removes one field from a row's record. Plus a persistence-bump migration test that confirms older snapshots wipe their server-error slices on load.
 - A representative wizard section integration test (e.g. expenses) — covers (a) submit returns `ok: false` with row-keyed errors → first failing section opens, error renders inline on the right row; (b) editing a row field calls `clearRowFieldServerError` and the error disappears; (c) deleting a row calls `clearRowServerErrors` and other rows' errors stay intact.
 
 ### What's explicitly not tested at this layer
@@ -1649,7 +1652,7 @@ For history; do not relitigate without strong reason:
 | Error shape | `{ ok, sectionErrors?, globalErrors? }`. Per-section payload mirrors `z.flattenError(error).fieldErrors`: flat `Record<field, string[]>` for single-form sections, `Record<rowId, Record<field, string[]>>` for row sections. Same shape returned by both continue actions and the final submit. | Mirrors what the client form already consumes (`useWizardForm` does `flattenError` internally), so no client-side translation. Per-row keying sidesteps row-delete index drift. Codes are i18n keys directly. |
 | Global errors | Separate `globalErrors: GlobalError[]` array on the response | Wizard-wide codes (`unauthenticated`, `idempotency_owner_mismatch`, `rpc_constraint_violation`, `unknown`) don't fit a section, surface as a toast. |
 | Error rendering | Section components read server errors via a Zustand selector on `sectionServerErrors[section]` and merge at the call site with `useWizardForm.errors` (e.g. `errors[field]?.[0] ?? serverErrors[field]?.[0]`). No wizard-specific hook for server errors; `useServerValidationErrors` stays for non-wizard forms only. | Client validation is touch-gated `z.flattenError`; server errors always merge in when present. Persisting server errors in the store keeps them across refresh and section navigation. |
-| Server error persistence | New `sectionServerErrors` and `globalErrors` slices in the persisted wizard store; persistence version bumps | Survives refresh; cleared on success, field edit, or row delete (component-driven). Both continue and submit responses funnel through one `applyServerErrorsResponse` action. |
+| Server error persistence | New `sectionServerErrors` and `globalErrors` slices in the persisted wizard store; persistence version bumps | Survives refresh; cleared on success, field edit, or row delete (component-driven). Both continue and submit responses funnel through one `dispatchServerErrorsResponse` action. |
 | Per-section error surface | One new `state.ts` export per section: `defaultPropertyServerErrors()` (flat) or `defaultExpensesServerErrors()` (row-keyed) returning the empty default. No per-section apply / clear / promote handlers. | Section owns its shape (flat vs row-id-keyed). Reads and clears happen at the section component, where the section already knows its form scope. |
 | Row-section error keying | Row-id-keyed (`Record<rowId, Record<field, string[]>>`), not index-keyed dot-paths | Row delete drops a row's errors with no index shifting; each row form reads `sectionServerErrors[section][rowId]` to match its own `useWizardForm` instance. |
 | Skipped sections | UI omits from server payload | Simpler than server-side filtering. Server treats absence as "do not persist". |

@@ -1,6 +1,28 @@
 // Checkout-local Zod schema for expense rows. No country dispatcher: nothing
 // on the row is country-specific (currency anchors on rent, no tax-id/postal).
 // See docs/superpowers/specs/2026-05-06-expenses-checkout-architecture-guideposts.md.
+//
+// NOTE on canonical alignment (spec § 2026-05-08, *Wizard checkout-local
+// schemas*): the canonical `@/schemas/expense#expenseRowSchema` is the
+// persistence-boundary shape — `name`, `currency`, `provider_profile_id`,
+// `provider_request_draft_index` are required, `expense_type` /
+// `amount_behavior` are NOT nullable, and the whole schema is wrapped in a
+// `.superRefine` (provider attachment conflict). The wizard's row carries a
+// UI-shaped slice: `expense_type` and `amount_behavior` may be `null` until
+// the user picks, `amount_minor` may be `undefined`, and `name` / `currency`
+// are synthesized at submit-payload-build time from `expense_type` and the
+// rent slice's currency respectively.
+//
+// Today the wizard declares its row directly rather than calling
+// `canonicalExpenseRowSchema.extend(...)` because canonical's `superRefine`
+// makes it `ZodEffects`, which does not expose `.extend`. A literal
+// extension also can't loosen the nullable / optional rules on
+// `expense_type` / `amount_behavior` / `amount_minor`. Re-anchoring the
+// wizard via `.extend()` is tracked as a follow-up to factor canonical
+// into a base `ZodObject` + refined `ZodEffects`; until then, the canonical
+// enum / behavior schemas (`expenseTypeSchema`, `expenseAmountBehaviorSchema`)
+// are reused below so the field-rule alignment that matters today (enum
+// values, error codes) stays single-source.
 
 import { z } from 'zod'
 
