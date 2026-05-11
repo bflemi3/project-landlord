@@ -4,30 +4,13 @@ import { MAX_MINOR_UNITS } from '@/data/shared/currency'
 
 import { expenseTypeSchema } from './expense'
 
-// =============================================================================
-// Rent — canonical persistence-side schema.
-//
-// Mirrors the `rent` table shape (see
-// `supabase/migrations/20260510120500_rent_table.sql`) minus the server-
-// owned columns (`id`, `unit_id`, `created_by`, `created_at`, `updated_at`,
-// `deleted_at`) which the RPC populates. This schema is composed into
-// `propertyCreationSubmissionSchema` as `p_rent`.
-//
-// The wizard's checkout-local `rent-dates` section uses a wider schema with
-// per-path optionality (contract path → required fields, no_contract path →
-// all optional). This canonical schema represents the persistence payload
-// after the wizard has settled all values — the composed submission schema
-// makes the whole `rent` key optional, so an absent rent payload (no_contract
-// path) is allowed at the submission layer.
-//
-// Money: `amount_minor` (integer minor units) + `currency` (ISO 4217). No
-// floats. The split `adjustment_amount_minor` / `adjustment_basis_points`
-// columns let one column carry a flat money delta (fixed_amount) and the
-// other carry a percentage in basis points (fixed_percentage). The DB CHECK
-// constraint defends; this Zod refinement enforces the same invariant
-// earlier in the pipeline so the wizard sees a clean error code before the
-// round-trip.
-// =============================================================================
+// Persistence-side schema mirroring `rent` table columns (see
+// `supabase/migrations/20260510120500_rent_table.sql`) minus server-owned
+// columns (`id`, `unit_id`, `created_by`, timestamps). The wizard's
+// `rent-dates` section uses a path-specific schema with per-form ergonomics
+// (`undefined` instead of `null`) and consumes the inner field validators
+// below; the composed submission schema parses against `rentInputSchema`
+// after the server action transforms the wizard slice.
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
@@ -43,29 +26,66 @@ export const rentAdjustmentMethodSchema = z.enum(
 )
 export type RentAdjustmentMethod = z.infer<typeof rentAdjustmentMethodSchema>
 
+// Inner field validators — re-used by the wizard's checkout-local
+// `rent-dates` schema so structural rules can't drift between layers.
+export const rentAmountMinorSchema = z
+  .number({ error: 'required' })
+  .int({ error: 'invalidAmount' })
+  .positive({ error: 'invalidAmount' })
+  .max(MAX_MINOR_UNITS, { error: 'tooLarge' })
+
+export const rentDueDayOfMonthSchema = z
+  .number({ error: 'required' })
+  .int({ error: 'invalidDueDay' })
+  .min(1, { error: 'invalidDueDay' })
+  .max(31, { error: 'invalidDueDay' })
+
+export const rentIsoDateSchema = z
+  .string({ error: 'required' })
+  .regex(ISO_DATE, { error: 'invalidDate' })
+
+// Mirror of the DB `rent_adjustment_value_consistency` CHECK.
+function refineAdjustmentValueConsistency(
+  rent: {
+    adjustment_method: RentAdjustmentMethod | null
+    adjustment_amount_minor: number | null
+    adjustment_basis_points: number | null
+  },
+  ctx: z.RefinementCtx,
+) {
+  const { adjustment_method, adjustment_amount_minor, adjustment_basis_points } = rent
+  const requireAmount = adjustment_method === 'fixed_amount'
+  const requireBasisPoints = adjustment_method === 'fixed_percentage'
+
+  if (requireAmount && adjustment_amount_minor == null) {
+    ctx.addIssue({ code: 'custom', path: ['adjustment_amount_minor'], message: 'required' })
+  }
+  if (!requireAmount && adjustment_amount_minor != null) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['adjustment_amount_minor'],
+      message: 'invalidAdjustmentValue',
+    })
+  }
+  if (requireBasisPoints && adjustment_basis_points == null) {
+    ctx.addIssue({ code: 'custom', path: ['adjustment_basis_points'], message: 'required' })
+  }
+  if (!requireBasisPoints && adjustment_basis_points != null) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['adjustment_basis_points'],
+      message: 'invalidAdjustmentValue',
+    })
+  }
+}
+
 export const rentInputSchema = z
   .object({
-    amount_minor: z
-      .number({ error: 'required' })
-      .int({ error: 'invalidAmount' })
-      .positive({ error: 'invalidAmount' })
-      .max(MAX_MINOR_UNITS, { error: 'tooLarge' }),
+    amount_minor: rentAmountMinorSchema,
     currency: z.string().min(1, { error: 'required' }).max(8, { error: 'tooLong' }),
-    due_day_of_month: z
-      .number({ error: 'required' })
-      .int({ error: 'invalidDueDay' })
-      .min(1, { error: 'invalidDueDay' })
-      .max(31, { error: 'invalidDueDay' }),
-    start_date: z
-      .string()
-      .regex(ISO_DATE, { error: 'invalidDate' })
-      .nullable()
-      .default(null),
-    end_date: z
-      .string()
-      .regex(ISO_DATE, { error: 'invalidDate' })
-      .nullable()
-      .default(null),
+    due_day_of_month: rentDueDayOfMonthSchema,
+    start_date: rentIsoDateSchema.nullable().default(null),
+    end_date: rentIsoDateSchema.nullable().default(null),
     adjustment_frequency: rentAdjustmentFrequencySchema.nullable().default(null),
     adjustment_method: rentAdjustmentMethodSchema.nullable().default(null),
     adjustment_index: z.string().max(64, { error: 'tooLong' }).nullable().default(null),
@@ -85,73 +105,10 @@ export const rentInputSchema = z
     includes: z.array(expenseTypeSchema).nullable().default(null),
   })
   .superRefine((rent, ctx) => {
-    if (
-      rent.start_date &&
-      rent.end_date &&
-      rent.end_date < rent.start_date
-    ) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['end_date'],
-        message: 'endDateBeforeStart',
-      })
+    if (rent.start_date && rent.end_date && rent.end_date < rent.start_date) {
+      ctx.addIssue({ code: 'custom', path: ['end_date'], message: 'endDateBeforeStart' })
     }
-
-    // Mirror of the DB `rent_adjustment_value_consistency` CHECK. Exactly one
-    // of the split adjustment value columns is non-null when the method is
-    // numeric; for `index` / `other` / null both must be null.
-    switch (rent.adjustment_method) {
-      case 'fixed_amount':
-        if (rent.adjustment_amount_minor == null) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['adjustment_amount_minor'],
-            message: 'required',
-          })
-        }
-        if (rent.adjustment_basis_points != null) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['adjustment_basis_points'],
-            message: 'invalidAdjustmentValue',
-          })
-        }
-        break
-      case 'fixed_percentage':
-        if (rent.adjustment_basis_points == null) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['adjustment_basis_points'],
-            message: 'required',
-          })
-        }
-        if (rent.adjustment_amount_minor != null) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['adjustment_amount_minor'],
-            message: 'invalidAdjustmentValue',
-          })
-        }
-        break
-      case 'index':
-      case 'other':
-      case null:
-        if (rent.adjustment_amount_minor != null) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['adjustment_amount_minor'],
-            message: 'invalidAdjustmentValue',
-          })
-        }
-        if (rent.adjustment_basis_points != null) {
-          ctx.addIssue({
-            code: 'custom',
-            path: ['adjustment_basis_points'],
-            message: 'invalidAdjustmentValue',
-          })
-        }
-        break
-    }
+    refineAdjustmentValueConsistency(rent, ctx)
   })
 
 export type RentInput = z.infer<typeof rentInputSchema>

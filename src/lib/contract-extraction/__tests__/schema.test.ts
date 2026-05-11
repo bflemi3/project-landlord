@@ -4,15 +4,15 @@ import {
   contractExtractionLlmSchema,
   contractExtractionLlmResultShape,
 } from '../schema'
-import { CONTRACT_EXTRACTION_SCHEMA_VERSION } from '../schema-version'
-import type {
-  ContractExtractionResult,
-  ContractExtractionLlmResult,
-  ContractExtractionInput,
-  ContractExtractionError,
-  ContractExtractionErrorCode,
-  ContractExtractionResponse,
-  SupportedLanguage,
+import {
+  CONTRACT_EXTRACTION_SCHEMA_VERSION,
+  type ContractExtractionResult,
+  type ContractExtractionLlmResult,
+  type ContractExtractionInput,
+  type ContractExtractionError,
+  type ContractExtractionErrorCode,
+  type ContractExtractionResponse,
+  type SupportedLanguage,
 } from '../types'
 
 // Helper to get a valid full result for runtime tests

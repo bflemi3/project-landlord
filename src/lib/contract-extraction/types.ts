@@ -10,6 +10,11 @@
 
 import type { Database } from '@/lib/types/database'
 
+// Bumped on every breaking change to `ContractExtractionLlmResult`. Persistence
+// writes this onto `contracts.extraction_schema_version`; the sentinel `0` on
+// that column means "no extraction performed yet" and is never assigned here.
+export const CONTRACT_EXTRACTION_SCHEMA_VERSION = 1
+
 // ---------------------------------------------------------------------------
 // Supported languages
 // ---------------------------------------------------------------------------
@@ -145,10 +150,9 @@ export interface ContractExtractionResult extends ContractExtractionLlmResult {
   modelId: string
   /**
    * Schema version of the extraction payload — pinned to
-   * `CONTRACT_EXTRACTION_SCHEMA_VERSION` in
-   * `src/lib/contract-extraction/schema-version.ts`. Persistence writes this
-   * onto `contracts.extraction_schema_version` so future readers can gate on
-   * shape when the type evolves.
+   * `CONTRACT_EXTRACTION_SCHEMA_VERSION` declared at the top of this file.
+   * Persistence writes this onto `contracts.extraction_schema_version` so
+   * future readers can gate on shape when the type evolves.
    */
   schemaVersion: number
 }

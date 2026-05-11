@@ -3,21 +3,8 @@ import { z } from 'zod'
 import { MAX_MINOR_UNITS } from '@/data/shared/currency'
 import { Constants } from '@/lib/types/database'
 
-// =============================================================================
-// Expense — canonical, database-derived Zod schemas.
-//
-// `expense_type` and `expense_amount_behavior` are Postgres enums in
-// `supabase/migrations/...` and the regenerated `src/lib/types/database.ts`
-// surfaces them via `Constants.public.Enums.*`. Mirroring them here as hand-
-// coded literal arrays would let the DB and the schema drift; everything
-// downstream (wizard checkout-local schemas, LLM extraction schema, data-
-// access types) imports from this file.
-//
-// The wizard's checkout-local `steps/checkout/sections/expenses/schemas.ts`
-// extends `expenseRowSchema` with UI-only fields (`id`, `isExtracted`); the
-// persistence-side `propertyCreationSubmissionSchema` consumes the canonical
-// row shape after the server action strips the UI-only keys.
-// =============================================================================
+// `Constants.public.Enums.*` is regenerated from the Postgres enums — derive
+// from it so the schema can't drift from the DB.
 
 export const expenseTypeSchema = z.enum(Constants.public.Enums.expense_type, {
   error: 'invalidExpenseType',
@@ -25,9 +12,6 @@ export const expenseTypeSchema = z.enum(Constants.public.Enums.expense_type, {
 
 export type ExpenseType = z.infer<typeof expenseTypeSchema>
 
-/** Sorted as ordered in the Postgres enum; safe to iterate for UI taxonomies
- *  that need a `readonly ExpenseType[]`. Re-exported from the wizard's
- *  expenses section as `EXPENSE_TYPES` for backwards compatibility. */
 export const EXPENSE_TYPES = expenseTypeSchema.options
 
 export const expenseAmountBehaviorSchema = z.enum(
@@ -39,30 +23,12 @@ export type ExpenseAmountBehavior = z.infer<typeof expenseAmountBehaviorSchema>
 
 export const EXPENSE_AMOUNT_BEHAVIORS = expenseAmountBehaviorSchema.options
 
-// =============================================================================
-// Expense row — persistence shape (one row per `charge_definitions` insert).
-//
-// Money: `amount_minor` (integer minor units) + `currency` (ISO 4217). No
-// floats. Per `data-modeling`. The amount is optional because the wizard
-// allows the user to enter a placeholder row whose amount lands later (e.g.
-// expense_type chosen, amount unknown — `amount_behavior = 'unknown'`).
-//
 // Provider attachment is at-most-one of four states (mirrors the DB CHECK on
-// `charge_definitions`):
-//   1. provider_profile_id          — tracked, known provider
-//   2. provider_request_draft_index — pending, references a draft in
-//                                     p_provider_request_drafts (resolved
-//                                     to provider_request_id in the RPC)
-//   3. bundled_into_rent: true      — rolled into rent total
-//   4. bundled_into_expense_index   — rolled into another expense (parent
-//                                     row in this submission)
-// All four absent is valid → "unspecified" state.
-//
-// Cross-row invariants (bundle-graph integrity, exclusivity) live in
-// `property-creation-submission.ts` because they reach across the array. The
-// row-level schema validates structure only.
-// =============================================================================
-
+// `charge_definitions`): provider_profile_id (tracked), provider_request_draft_index
+// (pending, resolved by the RPC), bundled_into_rent, bundled_into_expense_index.
+// All four absent = "unspecified" — valid. Row-level superRefine catches
+// multiple-attachment violations; cross-array invariants (range, cycles)
+// live in `findExpenseBundleCycles` below and the composed submission schema.
 export const expenseRowSchema = z
   .object({
     name: z.string().trim().min(1, { error: 'required' }).max(200, { error: 'tooLong' }),
@@ -91,9 +57,6 @@ export const expenseRowSchema = z
       .default(null),
   })
   .superRefine((row, ctx) => {
-    // Row-level exclusivity check. Cross-array index validity (in-range,
-    // no cycles, no self-bundle) is enforced in `propertyCreationSubmissionSchema`
-    // because it requires the full array context.
     const attachments = [
       row.provider_profile_id !== null,
       row.provider_request_draft_index !== null,
@@ -111,3 +74,71 @@ export const expenseRowSchema = z
   })
 
 export type ExpenseRow = z.infer<typeof expenseRowSchema>
+
+/**
+ * Cycle detection over the `i → bundled_into_expense_index` directed graph.
+ * Iterative DFS with white/gray/black coloring; any back edge into a GRAY node
+ * marks every node currently on the stack as a cycle member.
+ *
+ * Returns the indices of every row participating in a cycle. The caller
+ * (`propertyCreationSubmissionSchema`) handles range checks and self-bundle
+ * checks separately and only feeds valid edges to the walk.
+ */
+export function findExpenseBundleCycles(
+  rows: readonly { bundled_into_expense_index: number | null }[],
+): Set<number> {
+  const WHITE = 0
+  const GRAY = 1
+  const BLACK = 2
+  const color = new Array<number>(rows.length).fill(WHITE)
+  const inCycle = new Set<number>()
+
+  const visit = (start: number): void => {
+    const stack: { node: number; visited: boolean }[] = [
+      { node: start, visited: false },
+    ]
+    color[start] = GRAY
+
+    while (stack.length > 0) {
+      const frame = stack[stack.length - 1]
+      const target = rows[frame.node].bundled_into_expense_index
+      const isValidEdge =
+        !frame.visited &&
+        target != null &&
+        target >= 0 &&
+        target < rows.length &&
+        target !== frame.node
+
+      if (!isValidEdge) {
+        color[frame.node] = BLACK
+        stack.pop()
+        continue
+      }
+
+      frame.visited = true
+      // `isValidEdge` already proved `target` is non-null and in-range.
+      const next = target as number
+
+      if (color[next] === GRAY) {
+        for (const s of stack) inCycle.add(s.node)
+        inCycle.add(next)
+        color[frame.node] = BLACK
+        stack.pop()
+        continue
+      }
+      if (color[next] === BLACK) {
+        color[frame.node] = BLACK
+        stack.pop()
+        continue
+      }
+      color[next] = GRAY
+      stack.push({ node: next, visited: false })
+    }
+  }
+
+  for (let i = 0; i < rows.length; i++) {
+    if (color[i] === WHITE) visit(i)
+  }
+
+  return inCycle
+}
