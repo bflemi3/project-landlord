@@ -151,11 +151,10 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
             eyebrow={t('summary.contract.title')}
           >
             {contractFailed ? (
-              <ContractUploadFailed
-                propertyId={summary.property_id}
-                message={t('summary.contract.uploadFailed')}
-                reuploadLabel={t('summary.contract.reupload')}
-              />
+              <p className="flex items-start gap-1.5 text-sm text-destructive">
+                <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+                <span>{t('summary.contract.uploadFailed')}</span>
+              </p>
             ) : (
               <p className="text-sm text-foreground sm:text-base">
                 {t('summary.contract.uploaded')}
@@ -238,16 +237,10 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
       </Card>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row-reverse sm:justify-center">
-        {/* <Link
-          href={`/app/p/${summary.property_id}`}
-          className={cn(buttonVariants({ size: 'default' }), 'w-full sm:w-auto')}
-        >
-          {t('cta.viewProperty')}
-        </Link> */}
         <Link
           href="/app"
           className={cn(
-            buttonVariants({ size: 'default', variant: 'outline' }),
+            buttonVariants({ size: 'default' }),
             'w-full sm:w-auto',
           )}
         >
@@ -293,34 +286,6 @@ function InlineWarning({ children }: { children: React.ReactNode }) {
       <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <span>{children}</span>
     </p>
-  )
-}
-
-function ContractUploadFailed({
-  propertyId,
-  message,
-  reuploadLabel,
-}: {
-  propertyId: string
-  message: string
-  reuploadLabel: string
-}) {
-  return (
-    <div className="flex flex-col gap-2">
-      <p className="flex items-start gap-1.5 text-sm text-destructive">
-        <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-        <span>{message}</span>
-      </p>
-      <Link
-        href={`/app/p/${propertyId}`}
-        className={cn(
-          buttonVariants({ size: 'xs', variant: 'outline' }),
-          'self-start',
-        )}
-      >
-        {reuploadLabel}
-      </Link>
-    </div>
   )
 }
 

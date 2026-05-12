@@ -33,7 +33,8 @@ export function RowTrailingStatus({
   return (
     <span
       className={cn(
-        'flex shrink-0 items-center gap-1.5 font-normal',
+        'shrink-0 items-center gap-1.5 font-normal',
+        variant === 'status' ? 'hidden sm:flex' : 'flex',
         className,
       )}
     >

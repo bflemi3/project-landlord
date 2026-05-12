@@ -117,9 +117,9 @@ export function ExpenseList() {
           />
         ))}
       </Accordion>
-      <Button onClick={handleAdd}>
+      <Button variant="secondary" onClick={handleAdd}>
         <Plus />
-        {t('addExpense')}
+        {t('addAnotherExpense')}
       </Button>
     </div>
   )

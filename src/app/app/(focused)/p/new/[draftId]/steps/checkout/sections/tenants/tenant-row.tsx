@@ -69,10 +69,10 @@ export function TenantRow({
       animateEntrance={animateEntrance}
       data-slot="tenant-row"
     >
-      <AccordionPrimitive.Header className="flex items-center gap-2">
+      <AccordionPrimitive.Header className="flex w-full min-w-0 items-center gap-2">
         <AccordionPrimitive.Trigger
           data-slot="tenant-row-trigger"
-          className="focus-visible:ring-ring/50 flex flex-1 items-center gap-4 rounded-lg py-3 text-left outline-none focus-visible:ring-3"
+          className="focus-visible:ring-ring/50 flex min-w-0 flex-1 items-center gap-4 rounded-lg py-3 text-left outline-none focus-visible:ring-3"
         >
           <div className="relative shrink-0">
             <TenantFormAvatar name={tenant.name} email={tenant.email} />
@@ -104,7 +104,7 @@ export function TenantRow({
           size="icon"
           onClick={onRemove}
           aria-label={t('removeAriaLabel')}
-          className="text-destructive"
+          className="hover:not-disabled:bg-destructive/10 hover:not-disabled:text-destructive"
         >
           <Trash2 />
         </Button>

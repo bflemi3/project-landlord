@@ -6,10 +6,11 @@ import { formatCurrency } from '@/lib/format'
 import { type Locale } from '@/i18n/routing'
 import { cn } from '@/lib/utils'
 
-type AmountDisplaySize = 'sm' | 'default' | 'lg' | 'xl'
+type AmountDisplaySize = 'xs' | 'sm' | 'default' | 'lg' | 'xl'
 type AmountDisplayTone = 'default' | 'muted' | 'primary' | 'destructive'
 
 const sizeClasses: Record<AmountDisplaySize, string> = {
+  xs: 'text-sm font-medium',
   sm: 'text-lg font-semibold',
   default: 'text-2xl font-bold',
   lg: 'text-3xl font-bold tracking-tight',
@@ -29,12 +30,14 @@ function AmountDisplay({
   currency = 'BRL',
   size = 'default',
   tone = 'default',
+  fractionDigits,
   ...props
 }: React.ComponentProps<'span'> & {
   amountMinor: number
   currency?: string
   size?: AmountDisplaySize
   tone?: AmountDisplayTone
+  fractionDigits?: number
 }) {
   const locale = useLocale() as Locale
 
@@ -46,7 +49,12 @@ function AmountDisplay({
       className={cn('tabular-nums', sizeClasses[size], toneClasses[tone], className)}
       {...props}
     >
-      {formatCurrency(amountMinor, currency, locale)}
+      {formatCurrency(
+        amountMinor,
+        currency,
+        locale,
+        fractionDigits !== undefined ? { fractionDigits } : undefined,
+      )}
     </span>
   )
 }

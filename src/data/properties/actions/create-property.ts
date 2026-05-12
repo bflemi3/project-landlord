@@ -6,6 +6,7 @@ import { z } from 'zod'
 import { generateInviteCode } from '@/data/invitations/generate-invite-code'
 import { sendTenantInviteEmail } from '@/data/invitations/send-invite-emails'
 import { formatAddress, formatAddressHtml } from '@/lib/address/format-address'
+import { formatPropertyName } from '@/lib/address/format-property-name'
 import { type EmailLocale } from '@/emails/i18n'
 import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
@@ -315,8 +316,16 @@ function buildRpcPayload(input: SubmitInput): RpcPayload {
   // is required by `rentInputSchema`. Both pass the composed-schema gate
   // above, so missing values here mean someone bypassed validation —
   // invariant rather than a silent fallback.
+  const derivedName = formatPropertyName({
+    name: property.name,
+    street: property.street,
+    number: property.number,
+    complement: property.complement ?? undefined,
+    country_code: property.country_code,
+  })
+
   const propertyJson: Record<string, unknown> = {
-    name: property.name || '',
+    name: derivedName,
     country_code: invariant(property.country_code, 'property.country_code'),
     property_type: property.property_type ?? null,
     street: property.street,
@@ -329,7 +338,7 @@ function buildRpcPayload(input: SubmitInput): RpcPayload {
   }
 
   const unitJson: Record<string, unknown> = {
-    name: property.name || '',
+    name: derivedName,
     currency: input.rent
       ? invariant(input.rent.currency, 'rent.currency')
       : defaultCurrencyForCountry(

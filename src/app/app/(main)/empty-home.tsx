@@ -14,9 +14,10 @@ async function EmptyGreeting() {
   const hour = new Date().getHours()
   const greetingKey = hour < 12 ? 'goodMorning' : hour < 18 ? 'goodAfternoon' : 'goodEvening'
   const greeting = t(greetingKey)
+  const draftId = crypto.randomUUID()
 
   return (
-    <EmptyState firstName={firstName} greeting={greeting} />
+    <EmptyState firstName={firstName} greeting={greeting} draftId={draftId} />
   )
 }
 

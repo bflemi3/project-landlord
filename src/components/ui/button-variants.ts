@@ -20,9 +20,9 @@ export const buttonVariants = cva(
       },
       size: {
         default:
-          'h-12 gap-2 px-6 text-lg md:text-base has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5',
+          'h-12 gap-2 px-6 text-base has-data-[icon=inline-end]:pr-5 has-data-[icon=inline-start]:pl-5',
         xs: "h-8 gap-1.5 px-3 text-sm in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2 [&_svg:not([class*='size-'])]:size-3.5",
-        sm: 'h-10 gap-1.5 px-4 text-sm in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3',
+        sm: 'h-10 gap-1.5 px-4 text-base md:text-sm in-data-[slot=button-group]:rounded-lg has-data-[icon=inline-end]:pr-3 has-data-[icon=inline-start]:pl-3',
         lg: 'h-14 gap-2.5 px-8 text-xl md:text-lg has-data-[icon=inline-end]:pr-6 has-data-[icon=inline-start]:pl-6',
         icon: 'size-8',
         'icon-xs':

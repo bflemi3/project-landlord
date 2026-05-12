@@ -80,7 +80,7 @@ function SignInForm() {
       <button
         onClick={handleGoogleSignIn}
         disabled={isLoading}
-        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
+        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground text-base font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
       >
         {loadingGoogle ? (
           <Loader2 className="size-5 animate-spin" />
@@ -137,10 +137,9 @@ function SignInForm() {
         )}
 
         <Button
-          type="submit"
-          disabled={isLoading}
           className="h-12 w-full rounded-2xl"
-          size="lg"
+          disabled={isLoading}
+          type="submit"
         >
           {loadingEmail ? <Loader2 className="size-5 animate-spin" /> : null}
           {t('signInWithEmail')}

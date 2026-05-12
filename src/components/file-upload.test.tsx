@@ -12,8 +12,8 @@ vi.mock('@/lib/storage/upload-file', () => ({
 
 // Mock next-intl
 const messages = {
-  propertyDetail: {
-    tapToAttachBill: 'Tap to attach a bill',
+  fileUpload: {
+    tapToAttach: 'Tap to attach a bill',
     uploaded: 'Uploaded',
     fileTooLarge: 'File is too large. Maximum size is {max}MB.',
     uploadFailed: 'Upload failed. Please try again.',

@@ -20,7 +20,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from './input-group'
-import { Popover, PopoverContent, PopoverTrigger } from './popover'
+import { ResponsivePopover } from '@/components/responsive-popover'
 
 // react-day-picker localization for every locale next-intl ships. Typed as
 // `Record<Locale, ...>` so adding or removing a locale in `src/i18n/routing.ts`
@@ -170,8 +170,8 @@ export function IsoDatePicker({
         onBlur={onBlur}
       />
       <InputGroupAddon align="inline-end">
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger
+        <ResponsivePopover open={open} onOpenChange={setOpen}>
+          <ResponsivePopover.Trigger
             render={
               <InputGroupButton
                 type="button"
@@ -185,7 +185,8 @@ export function IsoDatePicker({
               </InputGroupButton>
             }
           />
-          <PopoverContent
+          <ResponsivePopover.Content
+            title="Select date"
             align="end"
             alignOffset={-8}
             sideOffset={10}
@@ -207,8 +208,8 @@ export function IsoDatePicker({
               endMonth={yearBounds.endMonth}
               className="p-4 [--cell-size:--spacing(10)]"
             />
-          </PopoverContent>
-        </Popover>
+          </ResponsivePopover.Content>
+        </ResponsivePopover>
       </InputGroupAddon>
     </InputGroup>
   )

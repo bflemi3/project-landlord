@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Plus } from 'lucide-react'
@@ -9,11 +9,11 @@ import { Button } from '@/components/ui/button'
 interface AddPropertyButtonProps {
   ariaLabel: string
   label: string
+  draftId: string
 }
 
-export function AddPropertyButton({ ariaLabel, label }: AddPropertyButtonProps) {
+export function AddPropertyButton({ ariaLabel, label, draftId }: AddPropertyButtonProps) {
   const router = useRouter()
-  const draftId = useMemo(() => crypto.randomUUID(), [])
   const href = `/app/p/new/${draftId}`
   const warmPrefetch = useCallback(() => router.prefetch(href), [router, href])
 
@@ -32,7 +32,7 @@ export function AddPropertyButton({ ariaLabel, label }: AddPropertyButtonProps) 
       nativeButton={false}
       variant="ghost"
     >
-      <Plus />
+      <Plus className="size-6 sm:size-4" />
       <span className="hidden sm:inline">{label}</span>
     </Button>
   )

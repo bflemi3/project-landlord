@@ -20,13 +20,18 @@ export async function LandlordGreeting() {
   const firstName = profile?.full_name?.split(' ')[0] ?? undefined
   const greetingKey = getGreetingKey()
   const greeting = t(greetingKey)
+  const draftId = crypto.randomUUID()
 
   return (
     <div className="mb-8 flex items-center justify-between gap-4">
       <h1 className="text-3xl tracking-tight font-semibold text-foreground">
         {greeting}{firstName ? `, ${firstName}` : ''}
       </h1>
-      <AddPropertyButton ariaLabel={t('addProperty')} label={t('addProperty')} />
+      <AddPropertyButton
+        ariaLabel={t('addProperty')}
+        label={t('addProperty')}
+        draftId={draftId}
+      />
     </div>
   )
 }

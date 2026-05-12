@@ -89,7 +89,7 @@ Rather than maintain the pre-pivot pages against the new schema, this plan rebui
 - **No properties at all**: existing empty state stays (with the "Create property" CTA). Don't redesign.
 - **Property with no rent row** (no-contract path): `Earned: —` and `Monthly: —`. Card still renders the name/address/type.
 - **Property with rent row but no `start_date`** (extraction failed to capture, or no-contract manual entry): `Earned: —`. Monthly still shows from `rent.amount_minor`.
-- **Property with rent row, `start_date` in the future**: `Earned: R$ 0` (the contract hasn't started accruing). `Monthly` shows.
+- **Property with rent row, `start_date` in the future**: `Earned: —` (treat "not yet started" the same as "no contract"; only show a number when there's actually money to count). `Monthly` shows.
 
 ## Calculations
 
@@ -131,10 +131,11 @@ Currency-bucketed for the future, but the UI assumes single-currency for v1.
 | Days until `rent.end_date` | Treatment |
 |---|---|
 | > 60 days, or null | Standard text token |
-| 0–60 days | "Ending soon" emphasis (warning tone) |
+| 15–60 days | "Ending soon" emphasis (warning tone) |
+| 0–14 days | Stronger emphasis (warning tone, increased weight — exact treatment per `design-system`) |
 | Past `end_date` | Card surfaces the date and a "Lease ended" label; row no longer contributes to `monthly` |
 
-The 60-day threshold is the starting value (aligns with the Brazilian lease renewal-window window and the natural IPCA-adjustment lead-time). We can tune from real-user telemetry after launch, or split into a sub-tier (e.g., 0–14 days = stronger emphasis) if the calm "ending soon" treatment doesn't read urgent enough.
+The 60-day window aligns with the Brazilian lease renewal window and the natural IPCA-adjustment lead-time. The 0–14 day sub-tier reflects the higher pressure at the bottom of the renewal window. Tune from real-user telemetry after launch if needed.
 
 ### Approximation caveat
 
@@ -230,11 +231,14 @@ For the dispatched agent — these are deletions, not refactors:
 
 ## Open questions for revisit
 
-1. **End-date threshold** (60 days). Starting value; tune from telemetry. Sub-tier (e.g., 0–14 days = stronger emphasis) is optional if the calm "ending soon" treatment doesn't read urgent enough.
-2. **Earned = R$ 0 vs "—" treatment** for a property where rent exists but start_date is future. Currently: R$ 0. Alternative: "—" until the contract starts paying. Worth a quick UX call when the agent gets there.
-3. **Currency display for multi-currency portfolio**. MVP is single-currency. When a landlord has properties in different currencies, the totals must bucket cleanly. Defer until it actually happens.
-4. **PostHog instrumentation**: `landlord_home_viewed`, `landlord_home_lease_ending_visible`, anything else? Worth pinning before launch.
-5. **Empty-state copy when the landlord has no properties yet**: existing copy stays for now; can revisit after revenue-first redesign.
+1. **Currency display for multi-currency portfolio**. MVP is single-currency. When a landlord has properties in different currencies, the totals must bucket cleanly. Defer until it actually happens.
+2. **PostHog instrumentation**: `landlord_home_viewed`, `landlord_home_lease_ending_visible`, anything else? Worth pinning before launch. Agent should ship these two and flag any additional events it sees value in.
+3. **Empty-state copy when the landlord has no properties yet**: existing copy stays for now; can revisit after revenue-first redesign.
+
+### Resolved (2026-05-11)
+
+- **End-date threshold**: 60-day window with a 0–14 day sub-tier for stronger emphasis. Locked in the thresholds table above.
+- **Earned for future-start rent**: render `—`, not `R$ 0`. Locked in the empty-states list above.
 
 ## Next-time checklist (for the agent that picks this up)
 

@@ -80,7 +80,7 @@ function FileUpload({
   error?: ReactNode
   onValidationError?: (code: FileUploadValidationCode, file: File) => void
 }) {
-  const t = useTranslations('propertyDetail')
+  const t = useTranslations('fileUpload')
   const inputRef = useRef<HTMLInputElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const dragDepthRef = useRef(0)
@@ -347,7 +347,7 @@ function FileUpload({
           <Upload className={cn('text-muted-foreground', isLarge ? 'size-8' : 'size-5')} />
           <div className="flex flex-col items-center gap-2">
             <p className={cn('text-center text-muted-foreground', isLarge ? 'text-base' : 'text-sm')}>
-              {label('dropzone', 'tapToAttachBill')}
+              {label('dropzone', 'tapToAttach')}
             </p>
             {dragHint && (
               <p className="hidden text-sm text-muted-foreground sm:block">

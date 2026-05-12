@@ -31,6 +31,7 @@ export function CheckoutMobileBar({ className }: CheckoutMobileBarProps) {
   const validities = usePropertyCreationState(
     useShallow(deriveAllSectionValidities),
   )
+  const hasInvalidSection = Object.values(validities).some((v) => v === 'invalid')
   const remaining = usePropertyCreationState((s) =>
     getRemainingSectionCount({ sectionStates: s.sectionStates }),
   )
@@ -62,7 +63,7 @@ export function CheckoutMobileBar({ className }: CheckoutMobileBarProps) {
       )}
       <Button
         className="w-full"
-        disabled={remaining > 0 || isSubmitting}
+        disabled={remaining > 0 || hasInvalidSection || isSubmitting}
         onClick={onCreateProperty}
       >
         {isSubmitting ? t('creating') : t('create')}

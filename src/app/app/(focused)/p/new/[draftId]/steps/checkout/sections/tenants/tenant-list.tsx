@@ -123,9 +123,9 @@ export function TenantList() {
           list's add affordance and the radio chip controls, so it reads as
           part of the row rhythm rather than a small ghost button tucked at
           the bottom-left. */}
-      <Button onClick={handleAdd}>
+      <Button variant="secondary" onClick={handleAdd}>
         <Plus />
-        {t('addTenant')}
+        {t('addAnotherTenant')}
       </Button>
     </div>
   )

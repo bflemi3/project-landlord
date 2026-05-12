@@ -83,11 +83,11 @@ export function ExpenseRow({
       animateEntrance={animateEntrance}
       data-slot="expense-row"
     >
-      <AccordionPrimitive.Header className="flex items-center gap-2">
+      <AccordionPrimitive.Header className="flex w-full min-w-0 items-center gap-2">
         <AccordionPrimitive.Trigger
           data-slot="expense-row-trigger"
           className={cn(
-            'focus-visible:ring-ring/50 flex flex-1 items-center gap-3 rounded-lg py-3 text-left text-sm font-medium outline-none focus-visible:ring-3',
+            'focus-visible:ring-ring/50 flex min-w-0 flex-1 items-center gap-3 rounded-lg py-3 text-left text-sm font-medium outline-none focus-visible:ring-3',
             'text-foreground',
           )}
         >
@@ -119,7 +119,7 @@ export function ExpenseRow({
           size="icon"
           onClick={onRemove}
           aria-label={t('removeAriaLabel')}
-          className="text-destructive"
+          className="hover:not-disabled:bg-destructive/10 hover:not-disabled:text-destructive"
         >
           <Trash2 />
         </Button>

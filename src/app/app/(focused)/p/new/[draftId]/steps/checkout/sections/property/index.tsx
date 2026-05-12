@@ -2,9 +2,10 @@
 
 import { useCallback, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
-import { Building2, Home, Briefcase, MoreHorizontal } from 'lucide-react'
+import { Building2 } from 'lucide-react'
 
 import { CepField } from '@/components/forms/cep-field'
+import { PROPERTY_TYPE_ICONS } from '@/lib/property/constants'
 import {
   Field,
   FieldDescription,
@@ -56,13 +57,6 @@ const SECTION_ID: SectionId = 'property'
 const ICON = Building2
 
 const PROPERTY_TYPE_OPTIONS = Constants.public.Enums.property_type
-
-const PROPERTY_TYPE_ICONS: Record<(typeof PROPERTY_TYPE_OPTIONS)[number], React.ComponentType<{ className?: string }>> = {
-  apartment: Building2,
-  house: Home,
-  commercial: Briefcase,
-  other: MoreHorizontal,
-}
 
 type PropertyTypeValue = (typeof PROPERTY_TYPE_OPTIONS)[number]
 type PropertyField = keyof PropertyInput
