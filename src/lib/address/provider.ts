@@ -1,11 +1,14 @@
+import { getCountryProvider } from '@/lib/country/provider'
+
 import type { AddressProvider } from './types'
-import { brazilProvider } from './providers/brazil'
-import { fallbackProvider } from './providers/fallback'
 
-const providers: Record<string, AddressProvider> = {
-  BR: brazilProvider,
-}
-
+/**
+ * Returns the address-specific behavior for `countryCode`. This is now a thin
+ * wrapper over `getCountryProvider(code).address` — `src/lib/country/` is
+ * the canonical location for per-country specialization (address, tax-id,
+ * future phone/business-id/etc.). New code that needs multiple country
+ * concerns should consume `getCountryProvider` directly.
+ */
 export function getAddressProvider(countryCode: string): AddressProvider {
-  return providers[countryCode] ?? fallbackProvider
+  return getCountryProvider(countryCode).address
 }

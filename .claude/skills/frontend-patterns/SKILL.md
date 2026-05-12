@@ -1,6 +1,6 @@
 ---
 name: frontend-patterns
-description: Performance rules, data fetching architecture, component conventions, and form patterns. Use when writing any React component, hook, page, or server action.
+description: Use when adding 'use client', wrapping a section in Suspense, writing a server fetcher, configuring React Query, adding a form, or noticing a slow navigation.
 paths:
   - "src/**/*.tsx"
   - "src/**/*.ts"
@@ -9,6 +9,17 @@ paths:
 # Frontend Patterns
 
 The app must feel fast. Click → content visible within tens of milliseconds. Every rule in this skill serves that goal, or the goal of keeping the UI consistent as the product grows.
+
+## Red flags — stop if you're thinking this
+
+| Thought | Reality |
+|---|---|
+| "I'll just put `'use client'` at the page level for now" | Defeats streaming and prefetching. Push `'use client'` to leaves; only interactive components get it. |
+| "One Suspense at the top of the page is simpler" | The whole page waits on the slowest query. Wrap each independent section in its own `<SuspenseFadeIn>`. |
+| "I'll await these two in sequence, the second is fast anyway" | Adds a network round trip. Use `Promise.all`. |
+| "Framer Motion at the top of the file, I'll optimize later" | Blocks first paint. Lazy-load via top-level `import()` + `React.lazy`. |
+| "I'll skip `staleTime` for now" | Forces a loading state on every back-nav. Always set explicit `staleTime` (default 30s). |
+| "This page needs a useEffect to fetch data" | Server-render or use `useSuspenseQuery` + `HydrationBoundary`. `useEffect` for data is a defeat. |
 
 ## Performance — The App Must Feel Fast
 
@@ -43,11 +54,11 @@ Rule: fetch sibling data in parallel at the page/wrapper level, then pass IDs (o
 
 ### `React.cache()` on every server fetcher
 
-Server fetchers in `src/data/<domain>/server.ts` are wrapped in `React.cache()` for per-request deduplication. Multiple components calling the same fetcher in a single render share one DB hit. Without this, a page that reads the property in three sections does three DB trips.
+Canonical example: `src/data/properties/server.ts` (search for `cache(`). Server fetchers in `src/data/<domain>/server.ts` MUST wrap their fetch function in `React.cache()` for per-request deduplication. Without it, a page that reads the property in three sections does three DB trips.
 
 ### React Query `staleTime` for back-nav feeling instant
 
-React Query hooks must configure `staleTime` (typically 30s–5min depending on data volatility). When the user hits back after a navigation, cached data renders immediately and a refetch runs in the background. `staleTime: 0` forces a loading state on every back-nav — never the right default.
+React Query hooks MUST set explicit `staleTime`. Anti-pattern: `useSuspenseQuery({ queryKey, queryFn })` without `staleTime` in the same options object — forces a loading state on every back-nav. NEVER use `staleTime: 0`. Default to 30s; 5min for slowly-changing data.
 
 ### Dynamic import anything heavy and below-the-fold
 
@@ -140,6 +151,15 @@ Components receive only primitive IDs as props and fetch their own data via hook
 
 Principle: stable → reactive → side-effectful → behavioral.
 
+## Props Ordering
+
+Inside `type Props = { ... }` / `interface Props`:
+
+1. Value props first, sorted alphabetically
+2. Function-typed props second, sorted alphabetically
+
+The IDE color-codes the two groups differently, so this ordering matches what you already see. Stable diffs, predictable scanning, no bikeshedding over where a new prop goes.
+
 ## Navigation
 
 Use `next/link` (`<Link>`) for all internal navigation — never `<a href>`, which triggers a full page reload and breaks prefetching. `loading.tsx` on every route enables partial prefetching for `<Link>`.
@@ -166,6 +186,13 @@ Use `next/link` (`<Link>`) for all internal navigation — never `<a href>`, whi
 - CEP field at top — auto-fill via ViaCEP on valid input
 - Use the country-adaptive provider pattern (`src/lib/address/`) — the data model supports other countries even though BR is the only live locale
 - State as select dropdown, separate number and complement fields
+
+## List-row helper hooks (`src/lib/hooks/`)
+
+Two small hooks are paired with `AccordionItem` (`src/components/ui/accordion.tsx`) for animated row lists. Reach for them whenever a section renders a list the user can add/remove from (tenants, expenses).
+
+- **`useDelayedRemoval`** (`src/lib/hooks/use-delayed-removal.ts`) — `{ isRemoving, remove }`. Call `remove(id, commit)` to trigger a row's exit animation; `commit` runs after the duration (default 200ms) to drop the row from the data. The hook owns the timeout cleanup, an idempotent guard (rapid clicks no-op), a `try/finally` around `commit` so a throwing callback still cleans bookkeeping, and a mounted-ref so the post-timeout state update doesn't fire on an unmounted parent. Pair `isRemoving(id)` with `<AccordionItem isRemoving={...}>`.
+- **`useRecentlyAdded`** (`src/lib/hooks/use-recently-added.ts`) — `{ markAdded, isJustAdded }`. Tracks ids the user added during the current mount of the list. The flag drives `<AccordionItem animateEntrance={isJustAdded(id)}>` (so only newly-added rows fade in — required because all-rows-fade-in confuses parent measurement when the list mounts as part of a section opening) and `autoFocus` on the new row's first input.
 
 ## General Rules
 

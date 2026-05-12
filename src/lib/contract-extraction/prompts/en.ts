@@ -39,7 +39,7 @@ Section order varies (TERM sometimes comes before PARTIES). Trust the labeled he
 - US / English currency formatting uses "," as thousands separator and "." as decimal: "$2,500.00" = 2500.00 USD = 250000 minor units.
 - currency → "USD" for US contracts, "GBP" for UK (£), "CAD" for Canada, "AUD" for Australia, "EUR" for Ireland. Infer from the currency symbol and jurisdiction. The "$" symbol is ambiguous — resolve by address: $ in a US address → USD, $ in a Mexican address → MXN, $ in a Colombian address → COP, $ in an Argentine address → ARS.
 - dueDay → typically "on the first day of each month" or "due on the Xth of each month". Parse to the integer day. If the contract specifies a non-numeric due date ("last business day of each month", "first Friday of the month"), return null — dueDay is an integer and cannot represent those rules.
-- includes → if the lease says "Rent includes water and trash" or similar, list those here. Otherwise null.
+- includes → if the lease says "Rent includes water and trash" or similar, list the canonical ExpenseType values (e.g., ["water", "trash"]). Empty array [] if rent doesn't bundle anything.
 
 ## Contract dates
 

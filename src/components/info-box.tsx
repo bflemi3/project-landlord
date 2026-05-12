@@ -20,7 +20,7 @@ function InfoBox({
       data-slot="info-box"
       data-variant={variant}
       className={cn(
-        'flex gap-3 rounded-2xl border px-5 py-5 text-sm',
+        'flex gap-2 rounded-2xl border px-4 py-4 text-sm',
         variantClasses[variant],
         className,
       )}

@@ -106,7 +106,6 @@ export default function EnterCodePage() {
           type="submit"
           disabled={loading}
           className="h-12 w-full rounded-2xl"
-          size="lg"
         >
           {loading ? <Loader2 className="size-5 animate-spin" /> : null}
           {t('continueWithCode')}

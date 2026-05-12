@@ -9,11 +9,21 @@ paths:
 
 # Testing Rules
 
+## What to Test
+
+**Test logic, not components.** The unit-test target is pure functions: utilities in `src/lib/`, data transforms in `src/data/<domain>/shared.ts`, server actions (via the `*Core` pattern below), reducers, derivations, validators, store/state logic.
+
+**Do not unit-test feature/page components.** Pages, sections, and feature components are verified by running them in a browser and confirming behavior end-to-end. They are too coupled to layout, design, and product flow for unit tests to be worth the maintenance.
+
+**Design-system primitives are the exception.** Components in `src/components/ui/` (Badge, Button, Input, etc.) may be unit-tested when their variant logic or interaction surface is complex enough to regress silently. Keep these tests behavior-focused (rendered class names, ARIA, disabled state) — never assert against internal markup that isn't part of the public contract.
+
+**If a feature component contains non-trivial logic, extract it.** Pull the logic into a pure function in `src/lib/` (or a colocated `*-logic.ts` / custom hook), unit-test the function, and have the component call it. The component stays a thin shell of JSX + hook calls; the logic gets isolated coverage.
+
 ## Priority Areas
 
-Prioritize tests around: permissions/access control, money calculations, responsibility allocation, statement generation/revision, extraction validation, dispute flow, payment mark/confirm/reject, localization-sensitive UI, critical mobile UX regressions.
+Prioritize tests around: permissions/access control, money calculations, responsibility allocation, statement generation/revision, extraction validation, dispute flow, payment mark/confirm/reject, localization-sensitive logic, mobile UX regressions caught by browser smoke tests.
 
-Not every component needs exhaustive testing. The sensitive workflow logic does.
+Not every module needs exhaustive testing. The sensitive workflow logic does.
 
 ## Test File Location
 

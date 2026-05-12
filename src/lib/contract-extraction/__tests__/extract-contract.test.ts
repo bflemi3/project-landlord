@@ -252,14 +252,14 @@ describe('extractContract — result shape', () => {
   it('round-trips bundled rent `includes` array', async () => {
     generateTextMock.mockResolvedValue({
       output: validLlmRawOutput({
-        rent: { amount: 630000, currency: 'BRL', dueDay: 5, includes: ['rent', 'condo', 'IPTU'] },
+        rent: { amount: 630000, currency: 'BRL', dueDay: 5, includes: ['condo', 'other'] },
       }),
     })
 
     const response = await extractContract({ fileBuffer: validBuffer(), fileType: 'pdf' })
     expect(response.success).toBe(true)
     if (!response.success) return
-    expect(response.data.rent?.includes).toEqual(['rent', 'condo', 'IPTU'])
+    expect(response.data.rent?.includes).toEqual(['condo', 'other'])
     expect(response.data.rent?.amount).toBe(630000)
   })
 

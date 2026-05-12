@@ -14,8 +14,8 @@ function makeCharge(
 ): ChargeDefinitionWithRule {
   return {
     id: 'charge-1',
-    name: 'Rent',
-    chargeType: 'rent',
+    name: 'Condo',
+    amountBehavior: 'fixed',
     amountMinor: 100000,
     currency: 'BRL',
     isActive: true,
@@ -55,7 +55,7 @@ describe('generateChargeInstances', () => {
 
     expect(result).toHaveLength(1)
     expect(result[0].chargeDefinitionId).toBe('charge-1')
-    expect(result[0].name).toBe('Rent')
+    expect(result[0].name).toBe('Condo')
     expect(result[0].amountMinor).toBe(100000)
     expect(result[0].currency).toBe('BRL')
     expect(result[0].chargeSource).toBe('manual')
@@ -120,7 +120,7 @@ describe('generateChargeInstances', () => {
   it('skips variable charges with null amountMinor', () => {
     const charges = [
       makeCharge({
-        chargeType: 'variable',
+        amountBehavior: 'variable',
         amountMinor: null,
         allocations: tenantOnly,
       }),

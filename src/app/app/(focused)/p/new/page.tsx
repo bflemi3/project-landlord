@@ -1,5 +1,8 @@
-import { CreatePropertyFlow } from './create-property-flow'
+import { redirect } from 'next/navigation'
+
+export const dynamic = 'force-dynamic'
 
 export default function NewPropertyPage() {
-  return <CreatePropertyFlow />
+  const draftId = crypto.randomUUID()
+  redirect(`/app/p/new/${draftId}`)
 }

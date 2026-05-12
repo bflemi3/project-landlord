@@ -21,13 +21,15 @@ A wizard-style flow where the contract PDF drives everything. The landlord uploa
 
 The persistence utility should be reusable — not coupled to property creation. Future wizards (e.g., tenant onboarding) should be able to use the same mechanism. This spec covers the persistence mechanism only — the UI for resuming an abandoned wizard (e.g., a prompt on the dashboard) will be handled in a later spec.
 
-**Contract PDF:** Since the contract is uploaded to Supabase Storage immediately in step 1, the persisted wizard state only stores a pointer to the uploaded file (storage path/ID), not the file itself.
+**Contract PDF:** Persistence of the uploaded file depends on when Supabase Storage upload happens in the plan sequence. Before the Storage-upload plan lands, the persisted wizard state holds the raw file as a `Blob` in IndexedDB. Once Storage upload is wired, that blob is uploaded on final submit and the persisted state is replaced with a pointer (storage path/ID) so refreshes don't re-upload. Either shape is valid; the utility handles both.
 
 **Step transitions:** Steps slide in/out as the user progresses forward or goes back — slide left to advance, slide right to go back. Step 1 displays immediately on mount with no animation. Adapt the existing `SlideIn`, `StepProgress`, and composable `PropertyForm` components at `src/app/app/(focused)/p/new/` — don't rebuild these primitives from scratch.
 
-**With contract:** Upload → Property details → Contract terms → Tenants → Expenses → CPF (if missing) → Bank account → Success
+**With contract:** Upload → Property details → Contract terms → Tenants → Expenses → CPF → Bank account → Success
 
-**Without contract:** "I don't have a contract" → Manual address form → Manual rent/expenses (optional) → CPF (if missing) → Bank account → Success (tenants skipped)
+**Without contract:** "I don't have a contract" → Manual address form → Manual rent/expenses (optional) → CPF → Bank account → Success (tenants skipped)
+
+The CPF step is always visible; when `profiles.tax_id` is already set, the field renders read-only and the step is completed by confirmation rather than input.
 
 ---
 
@@ -86,7 +88,7 @@ Extracted from contract:
 - Tenant CPF(s) (if present)
 - Tenant email(s) (if present)
 
-Tenants are **invited by default** but the landlord can toggle "don't invite yet" per tenant. This toggle suppresses the invitation email but still creates the tenant association on the property.
+Tenants are **invited by default**. Each tenant row has a "Send invite email" toggle (default on) that controls whether an invite email is sent when the landlord taps "Create property." Toggling it off suppresses the email but still creates the tenant association on the property — the landlord can fire the invite later from the property page.
 
 If tenant email is missing from extraction, the landlord enters it here (required for invitation).
 
@@ -109,15 +111,19 @@ Charges extracted from the contract are presented here. For each expense:
 
 **No-contract path:** Optional — landlord can add expenses manually or skip entirely.
 
-### Step 6: CPF Collection (conditional)
+### Step 6: CPF Collection
 
-Only shown if the landlord's CPF is not already on their profile. CPF is required for:
+**Always visible.** The CPF section appears in every property creation flow — both the empty case (first property, CPF missing) and the pre-filled case (subsequent properties, CPF already on profile). CPF is required for:
 
 - Automatic bill matching (bills addressed to the LL's CPF)
 - DDA registration (future — condo fee auto-discovery)
 - Open Finance bank connection
 
-Collected inline during property creation rather than as a separate onboarding flow — least friction, collected when it's actually needed. This step is required — the user cannot proceed without entering their CPF. If CPF is already on file from a previous property setup, this step is skipped.
+Collected inline during property creation rather than as a separate onboarding flow — least friction, collected when it's actually needed. This step is required — the user cannot proceed without a CPF on file.
+
+**Pre-filled case:** When `profiles.tax_id` already has a value, the field is pre-filled and rendered **read-only**. The landlord confirms "yes, that's me" rather than being asked for data the system already has. The section satisfies the required validation in this state — no input needed. Editing a CPF already on profile is handled from profile settings, not this flow.
+
+**Empty case:** Masked input with format validation (11 digits, check digits). On submit, `profiles.tax_id` is updated with the entered value.
 
 ### Step 7: Bank Account Connection
 
@@ -205,8 +211,10 @@ Summary of what was set up:
 - Providers are manually seeded in the DB for now
 - Matched by region + CNPJ or region + name
 - If no match is found, the charge is still created but with no provider associated
-- A provider request is only created if the user explicitly taps "Don't see your provider? Let us know" — we don't auto-create requests from extraction data since it may be inaccurate
-- Provider requests are stored in the existing provider request table with associated info
+- Provider-support requests are created through two paths, both writing to the same internal record so engineering reviews them from one queue:
+  1. **Auto-queued from the resolution flow** — when a provider is recognized (either already in the DB without regional support, or recognized by CNPJ lookup but not yet in the DB), an internal signal is queued automatically. Extraction noise is tolerated because engineering reviews before acting; the signal is source='auto' so reviewers can weigh it against user-initiated ones
+  2. **User-initiated** — the explicit "Don't see your provider? Let us know" action; source='user_requested'
+- Provider records are NEVER auto-created from extraction data — creation stays gated on engineering review regardless of how the request was queued
 
 ### Bank account connections
 - Users can have multiple connections (via Pluggy) — bank accounts, debit cards, credit cards
@@ -284,8 +292,7 @@ All errors from the extraction engine are returned as strongly typed error codes
 | `unsupported_format` | Not PDF or DOCX | "Upload a PDF or DOCX" |
 | `corrupt_file` | Valid header but broken content | "Couldn't read this file" |
 | `empty_file` | Zero bytes or null input | "File is empty" |
-| `scanned_document` | PDF with no text layer (image-only) | "Scanned doc — upload digital version" |
-| `empty_content` | Valid file but no text | "No text found" |
+| `no_text_extractable` | PDF with no text layer (scanned) OR DOCX with empty body | "No text found — upload a digital version" |
 | `password_protected` | Encrypted file | "Remove password protection" |
 | `unsupported_language` | Language not EN/PT-BR/ES | "Language not supported yet" |
 | `not_a_contract` | LLM classifies as not a rental contract | "Doesn't appear to be a rental contract" |

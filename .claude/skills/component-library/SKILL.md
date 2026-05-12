@@ -1,6 +1,6 @@
 ---
 name: component-library
-description: Component catalog and selection rules for UI consistency and reuse. Use when building any UI to check for existing components before creating new ones.
+description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/InfoBox, or when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel.
 paths:
   - "src/**/*.tsx"
   - "src/components/**"
@@ -8,7 +8,7 @@ paths:
 
 # Component Library Rules
 
-**Before building any UI, check the component catalog.** Use existing components before creating new ones. If a component needs a variant that doesn't exist, add the variant — don't create a parallel component.
+**Before building any UI, check the component catalog.** MUST use existing components before creating new ones. MUST NOT create a parallel component when an existing one is close — extend it with a variant. Anti-example: adding `src/components/property-card-onboarding.tsx` next to `property-card.tsx` instead of a `size` or `variant` prop.
 
 ## Component Selection Process
 
@@ -16,6 +16,19 @@ paths:
 2. Compose screens from existing components — don't reinvent layouts
 3. Check shadcn first: `npx shadcn@latest add <component>` before building manually
 4. If you create a new reusable component, update `docs/project/components.md`
+
+**Precedence on conflict:** when this skill conflicts with `frontend-patterns` (e.g., performance push-to-leaves vs. compound composition), `frontend-patterns` wins for `'use client'` placement; this skill wins for markup/variant choices. When it conflicts with `design-system`, `design-system` wins for tokens/spacing/motion; this skill wins for component selection.
+
+## Red flags — stop if you're thinking this
+
+| Thought | Reality |
+|---|---|
+| "It's almost the same as `<X>` but slightly different — I'll just copy it." | Extend the existing component with a variant. A parallel file diverges immediately. |
+| "I just need a small wrapper for this one screen." | It'll be reinvented in 3+ files. Compose existing primitives or extract now. |
+| "Tailwind utilities are faster than reaching for `IconTile`." | Tokens drift. Use the primitive. |
+| "I'll skip `data-slot` for this one part — no one targets it yet." | Then someone does, and styling/tests break. Add `data-slot` from the start. |
+| "I'll write my own modal — `ResponsiveModal` doesn't quite fit." | First check whether you can extend `ResponsiveModal` with a prop. Forking creates two modals to maintain. |
+| "Only one file uses this pattern — I'll extract when a second consumer appears." | If the pattern applies to every member of a system (every checkout section, every form, every card), it's cross-cutting. Extract immediately — don't wait for duplication. |
 
 ## Editorial Primitives
 
@@ -46,6 +59,9 @@ Dialog on desktop, bottom Sheet on mobile. Parts: `ResponsiveModal`, `.Content` 
 ### Empty State (`src/components/empty-state.tsx`)
 Compound: `EmptyState`, `EmptyStateIcon` (wraps an `IconTile`), `EmptyStateTitle`, `EmptyStateDescription`, `EmptyStateActions`. Pass the lucide icon as children of `EmptyStateIcon`; pick `tone="primary"` for inviting first actions and `muted` for neutral "nothing here" states.
 
+### Explainer Card (`src/components/explainer-card.tsx`)
+Compound: `ExplainerCard`, `ExplainerCardTitle`, `ExplainerCardDescription`, `ExplainerCardContent`, `ExplainerCardList` / `ExplainerCardListItem`, `ExplainerCardAction`. Calm, centered "why this matters" card with `bg-muted/40` chrome — used inside checkout/wizard sections (e.g. Tenants empty state, Tax ID "why we ask", Expenses empty state). `Description` is the optional one-line value statement; `Content` is a free slot for richer bodies and auto-tints lucide icons with `text-primary`. Use `ExplainerCardList` + `ExplainerCardListItem` for bullet lists (each item renders with a `<Check>` prefix automatically — never hand-roll the `<ul>` markup). Distinct from `EmptyState` — reach for that one for full-page sparse states with a circle icon tile.
+
 ### Info Box (`src/components/info-box.tsx`)
 Variants: default, warning, success, destructive. Parts: `InfoBox`, `InfoBoxIcon`, `InfoBoxContent`, `InfoBoxDivider`.
 
@@ -64,8 +80,13 @@ Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as t
 
 ### UI Primitives (shadcn, `src/components/ui/`)
 - **Button** — has `loading` prop, handles icon sizing. Variants: default (teal), secondary, destructive, ghost, link.
-- **Input** — `h-12 rounded-2xl`, built-in clear button.
+- **Input** — `h-12 rounded-2xl`, built-in clear button. **`variant`**: `card` (default — `bg-muted dark:bg-foreground/5 dark:border-foreground/15` for inputs in `bg-card` surfaces) or `page` (transparent for inputs on `bg-background`).
+- **InputGroup** (`ui/input-group.tsx`) — input + leading/trailing addons (icons, buttons). Mirrors `Input`'s `card`/`page` variants, defaults to `card`. Parts: `InputGroup`, `InputGroupAddon` (`align`: inline-start / inline-end / block-start / block-end), `InputGroupInput`, `InputGroupButton`, `InputGroupText`.
+- **IsoDatePicker** (`ui/iso-date-picker.tsx`) — date input + popover calendar, locale-aware. Stores ISO `YYYY-MM-DD`. Forwards `variant` to `InputGroup`.
 - **Select** — matches Input styling.
+- **DropdownMenu** (`ui/dropdown-menu.tsx`) — shadcn DropdownMenu customized to the design system. Surface uses `--shadow-popover`. Use for action menus and "More" affordances.
+- **Accordion** (`ui/accordion.tsx`) — base-ui Accordion with our chrome. `AccordionItem` accepts `isRemoving` (exit animation) and `animateEntrance` (opt-in mount fade — default OFF; only set true for newly-added rows, otherwise breaks parent scrollHeight measurement when the list mounts inside an opening section). Pair with `useDelayedRemoval` and `useRecentlyAdded` (see `frontend-patterns`).
+- **RadioCardGroup** (`components/radio-card-group.tsx`) — card-style radio group. Variants: `card` (full-bleed bordered card with optional icon) or `chip` (compact pill row). Helper: `radioCardVariants` cva for composing chip-styled buttons that aren't actual radios (e.g. full-width "Add tenant" / "Add expense" trigger).
 - **Card** — composable (`Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`) plus the `cardShellClassName` helper for non-`<div>` shells (a `<Link>` or `<button>`). Props: `size` (sm / md / lg / xl / compound / none), `variant` (solid / dashed), `interactive`. Token chrome: `rounded-card`, `shadow-card`, `shadow-card-hover`.
 - **Sheet** — bottom sheet for contextual actions.
 
@@ -79,10 +100,11 @@ Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as t
 
 1. Check shadcn first
 2. Use composable/compound pattern (named sub-components, not prop soup)
-3. Add `data-slot` attributes to every compound component part
+3. MUST add `data-slot` attributes to every compound component part. Anti-pattern: a `CardHeader` rendering `<div className="...">` without `data-slot="card-header"`. Canonical example: `src/components/ui/card.tsx`.
 4. Extract to shared component when markup appears in 3+ files
 5. Product components: `src/components/`, shadcn primitives: `src/components/ui/`
 6. Always reach for semantic tokens + editorial primitives — never hardcode color utilities or reinvent `EyebrowLabel` / `SectionLabel` / `IconTile` / `ListRow`
+7. Reusable components MUST NOT set outer margin. Spacing between siblings is the parent's job via flex/grid `gap-*` or margin. Components accept `className?: string` merged via `cn()` so the parent can override when gap alone isn't sufficient.
 
 ## Full Catalog
 

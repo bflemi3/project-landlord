@@ -49,7 +49,7 @@ Spanish address conventions:
   - Argentina: "$" with ARS context → ARS.
 - currency → "MXN", "EUR", "COP", "ARS" etc. Infer from currency symbol and country.
 - dueDay → "pagadero el día X de cada mes" / "los primeros X días de cada mes" / "el día X". Parse to the integer day. If the contract specifies a range ("del 1 al 5 de cada mes") use the last day of the grace window. If the contract specifies a non-numeric due date ("último día hábil", "primer viernes del mes"), return null.
-- includes → if rent explicitly covers services ("la renta incluye agua y mantenimiento"), list them. Otherwise null.
+- includes → if rent explicitly covers services ("la renta incluye agua y mantenimiento"), list the canonical ExpenseType values (e.g., ["water", "maintenance"]). Empty array [] if rent doesn't bundle anything.
 
 ## Contract dates
 

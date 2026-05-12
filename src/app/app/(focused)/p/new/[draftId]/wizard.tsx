@@ -1,0 +1,378 @@
+'use client'
+
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
+import { WizardShell } from '@/components/wizard-shell'
+import { captureEvent } from '@/lib/analytics/capture'
+import { createProperty } from '@/data/properties/actions/create-property'
+import type { GlobalError, SubmitSummary } from '@/data/properties/actions/server-errors'
+import { propertyCreationWizardKey } from './state/persistence'
+import { PropertyCreationTopBar } from './top-bar'
+import { PropertyCheckoutShell } from './steps/checkout/checkout-shell'
+import { UploadContract } from './steps/upload-contract/upload-contract'
+import {
+  usePropertyCreationActions,
+  usePropertyCreationHasHydrated,
+  usePropertyCreationState,
+  usePropertyCreationStoreApi,
+} from './state/use-property-creation'
+import { hasWizardWork } from './state/derivations'
+import { buildSubmitInputFromStore } from './state/build-submit-input'
+import {
+  dispatchServerErrorsResponse,
+  firstFailingSectionId,
+} from './state/server-errors-dispatch'
+import { WizardHydrationFallback } from './wizard-hydration-fallback'
+import { PropertyCreationSuccessScreen } from './success-screen'
+
+const TOTAL_STEPS = 2
+const EXIT_HREF = '/app'
+
+/**
+ * Thin parent shell. All wizard data lives in the Zustand store, which is
+ * hydrated by the persist middleware on store creation. While the persist
+ * middleware loads from IndexedDB, `usePropertyCreationHasHydrated` returns
+ * `false` and we render the Step-1 hydration fallback inline. Once hydration
+ * finishes, the component re-renders and selects the rendered subtree by
+ * `step`.
+ *
+ * This component:
+ *   1. Gates render on hydration via `usePropertyCreationHasHydrated()`
+ *   2. Reads `step` to choose the rendered subtree
+ *   3. Owns local React state for the exit prompt (route-level UI concern;
+ *      not persisted)
+ *   4. Wires the WizardShell's onBack / onExit context callbacks
+ *   5. Renders the success screen when the submit action has resolved
+ *      with `{ ok: true, summary }` (Phase 4 wires the action; Phase 2C
+ *      provides the local hold + the success-screen component).
+ */
+export function PropertyCreationWizard({ draftId }: { draftId: string }) {
+  const router = useRouter()
+  const t = useTranslations('propertyCreation')
+  const wizardKey = useMemo(() => propertyCreationWizardKey(draftId), [draftId])
+
+  const hasHydrated = usePropertyCreationHasHydrated()
+
+  const [exitPromptOpen, setExitPromptOpen] = useState(false)
+
+  // Local hold for the submit response so the success screen can render
+  // once `createProperty` resolves with `{ ok: true, summary }`. Kept off the
+  // wizard store on purpose — the summary is a transient hand-off between
+  // the action and the success screen, not part of the persisted draft (the
+  // success path wipes IDB before this is rendered).
+  const [submitSummary, setSubmitSummary] = useState<SubmitSummary | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const step = usePropertyCreationState((s) => s.step)
+  const storeApi = usePropertyCreationStoreApi()
+  const {
+    goToStep,
+    clearPersisted,
+    setGlobalErrors,
+    setServerErrors,
+    markSectionVisited,
+    openSection,
+  } = usePropertyCreationActions()
+
+  // Wizard-level `globalErrors` toast pipeline. Section continue actions and
+  // (Phase 3) the submit action write into the store's `globalErrors` slice
+  // via `dispatchServerErrorsResponse`. The wizard subscribes and renders one
+  // destructive toast per error, then clears the slice so the toast doesn't
+  // refire when the user re-opens the wizard with persisted errors.
+  const globalErrors = usePropertyCreationState((s) => s.globalErrors)
+  useGlobalErrorsToast({ globalErrors, setGlobalErrors })
+
+  // Local-dev preview: open `?__preview=success` to render the success
+  // screen with a mock summary so it can be eyeballed without Phase 3's
+  // server action. The hook reads `setSubmitSummary` and `clearPersisted`
+  // so it also exercises the IDB wipe path. Production builds skip the
+  // effect via the `process.env.NODE_ENV` gate inside the hook.
+  useDevSuccessPreview({ setSubmitSummary, clearPersisted })
+
+  // Wipe the persisted draft only after the success screen has rendered.
+  // If `<PropertyCreationSuccessScreen>` throws in its render, this effect
+  // never commits and the user's draft survives a refresh.
+  useEffect(() => {
+    if (submitSummary) clearPersisted()
+  }, [submitSummary, clearPersisted])
+
+  useEffect(() => {
+    router.prefetch(EXIT_HREF)
+    // Next.js RSC prefetches for dynamic routes have a short TTL (~30s), so a
+    // long wizard session will stale the cached home RSC and force
+    // (main)/loading.tsx to flash during `router.push`. Refresh on an
+    // interval to keep the cache warm.
+    const id = setInterval(() => router.prefetch(EXIT_HREF), 20_000)
+    return () => clearInterval(id)
+  }, [router])
+
+  const handleBack = useCallback(() => {
+    // Step-level back. Section-level back inside Step 2 is owned by the
+    // checkout shell itself and routes through the store's
+    // goToPreviousSection action.
+    if (step === 2) {
+      goToStep(1)
+    }
+  }, [step, goToStep])
+
+  const handleExit = useCallback(() => {
+    // Prompt whenever there's something to lose. A bare step-1 wizard or a
+    // fresh no-contract step-2 wizard with no section data exits silently —
+    // wipe IDB + reset store, then navigate. Wrapping the push in
+    // startTransition lets React keep the wizard on screen until the home
+    // RSC is ready (avoiding a PageLoader flash from (main)/loading.tsx on
+    // a stale prefetch). Reading via `storeApi.getState()` keeps this off
+    // the render path — it runs once per click, not per keystroke.
+    if (!hasWizardWork(storeApi.getState())) {
+      clearPersisted()
+      startTransition(() => {
+        router.push(EXIT_HREF)
+      })
+      return
+    }
+    setExitPromptOpen(true)
+  }, [storeApi, router, clearPersisted])
+
+  const handleSaveForLater = useCallback(() => {
+    captureEvent('property_creation_wizard_exited', {
+      step,
+      reason: 'save_for_later',
+    })
+  }, [step])
+
+  const handleDiscard = useCallback(() => {
+    captureEvent('property_creation_wizard_exited', {
+      step,
+      reason: 'discard',
+    })
+    clearPersisted()
+  }, [step, clearPersisted])
+
+  const handleCreateProperty = useCallback(async () => {
+    if (isSubmitting) return
+    const input = buildSubmitInputFromStore(storeApi.getState(), draftId)
+    setIsSubmitting(true)
+    // Re-pack the destructured action functions into the shape the
+    // dispatcher expects. Each function reference is stable across
+    // renders (the actions bag is created once at store construction), so
+    // including the individual deps below is equivalent to including the
+    // whole bag — but explicit deps document exactly what the callback
+    // consumes.
+    const dispatchActions = {
+      setServerErrors,
+      markSectionVisited,
+      setGlobalErrors,
+    }
+    try {
+      const response = await createProperty(input)
+
+      if (response.ok && response.summary) {
+        const summary = response.summary
+        // Dispatch the success-shape envelope so `globalErrors` resets to
+        // `[]` (the spec § Success Behavior step 1 sequencing). Section
+        // slices ride along inside the `clearPersisted()` IDB wipe below
+        // — the dispatcher intentionally doesn't touch them on `ok: true`
+        // so unrelated continue-action successes don't reset siblings.
+        dispatchServerErrorsResponse(response, dispatchActions)
+        setSubmitSummary(summary)
+        captureEvent(
+          summary.is_idempotent_replay
+            ? 'property_create_replay'
+            : 'property_created',
+          {
+            property_id: summary.property_id,
+            has_contract: summary.contract !== null,
+            has_rent: summary.rent !== null,
+            expense_count: summary.expenses.count,
+            tenant_invited_count: summary.tenants.invited_count,
+            tenant_deferred_count: summary.tenants.deferred_count,
+            provider_request_new_count:
+              summary.provider_requests.new_count ?? 0,
+            is_idempotent_replay: summary.is_idempotent_replay,
+            tax_id_updated: summary.tax_id_updated,
+          },
+        )
+        return
+      }
+
+      // Failure path. Dispatcher writes section / global slices; the
+      // wizard owns the first-failing-section lookup (dispatcher stays
+      // pure-data per spec). Global errors fire as toasts via the
+      // existing `useGlobalErrorsToast` subscription.
+      dispatchServerErrorsResponse(response, dispatchActions)
+      if (!response.ok) {
+        const firstFailing = firstFailingSectionId(
+          storeApi.getState().sectionServerErrors,
+        )
+        if (firstFailing) openSection(firstFailing)
+      }
+    } catch (error) {
+      // `createProperty` never throws to the form by contract — this catch
+      // is a defensive belt for unexpected exceptions (e.g. network
+      // glitch surfacing as a thrown Error rather than a `{ ok: false }`).
+      // Falls through to the standard global-error toast.
+      console.error('[property-creation] submit threw', error)
+      setGlobalErrors([{ code: 'unknown' }])
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [
+    isSubmitting,
+    storeApi,
+    draftId,
+    clearPersisted,
+    setServerErrors,
+    markSectionVisited,
+    setGlobalErrors,
+    openSection,
+  ])
+
+  if (!hasHydrated) {
+    return <WizardHydrationFallback />
+  }
+
+  // Success path. The submit action will call `setSubmitSummary(summary)`
+  // and `clearPersisted()` together (Phase 4 wiring). Once `submitSummary`
+  // is populated, render the success screen in the focused-route shell
+  // chrome without the WizardShell progress/exit chrome — there's nothing
+  // more for the user to back into.
+  if (submitSummary) {
+    return <PropertyCreationSuccessScreen summary={submitSummary} />
+  }
+
+  return (
+    <>
+      <WizardShell
+        wizardId={wizardKey}
+        currentStep={step}
+        totalSteps={TOTAL_STEPS}
+        onBack={handleBack}
+        onExit={handleExit}
+      >
+        <PropertyCreationTopBar
+          backLabel={t('back')}
+          exitLabel={t('exit')}
+        />
+        {step === 1 ? (
+          <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
+            <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
+              <UploadContract />
+            </div>
+          </div>
+        ) : (
+          <PropertyCheckoutShell
+            onCreateProperty={handleCreateProperty}
+            isSubmitting={isSubmitting}
+          />
+        )}
+      </WizardShell>
+
+      <WizardShell.ExitPrompt
+        open={exitPromptOpen}
+        onOpenChange={setExitPromptOpen}
+        title={t('exitPrompt.title')}
+        description={t('exitPrompt.description')}
+        saveForLaterLabel={t('exitPrompt.saveForLater')}
+        discardLabel={t('exitPrompt.discard')}
+        exitHref={EXIT_HREF}
+        onSaveForLater={handleSaveForLater}
+        onDiscard={handleDiscard}
+      />
+    </>
+  )
+}
+
+// Wizard-level toast for `globalErrors`. Subscribes to the persisted slice
+// and fires one destructive toast per error code, then resets the slice so
+// the toasts don't refire on remount or re-render. `duplicate_address` is
+// the only code today that carries `data` — its toast includes a deep-link
+// to the existing property. Other codes render a one-line message.
+function useGlobalErrorsToast({
+  globalErrors,
+  setGlobalErrors,
+}: {
+  globalErrors: GlobalError[]
+  setGlobalErrors: (next: GlobalError[]) => void
+}) {
+  const router = useRouter()
+  const t = useTranslations('propertyCreation.errors')
+  const tProperties = useTranslations('properties')
+
+  useEffect(() => {
+    if (globalErrors.length === 0) return
+
+    for (const err of globalErrors) {
+      const message = t(err.code)
+      if (err.code === 'duplicate_address' && err.data?.existingPropertyId) {
+        const targetId = err.data.existingPropertyId
+        toast.warning(message, {
+          position: 'top-center',
+          duration: Infinity,
+          action: {
+            label: tProperties('viewExistingProperty'),
+            onClick: () => router.push(`/app/p/${targetId}`),
+          },
+        })
+      } else {
+        toast.error(message, { position: 'top-center' })
+      }
+    }
+
+    // Reset to [] after firing so the same error doesn't refire on the next
+    // render. Sections clear their own server-error slice on field edit;
+    // global errors are intentionally one-shot.
+    setGlobalErrors([])
+  }, [globalErrors, setGlobalErrors, t, tProperties, router])
+}
+
+// Dev-only preview hook. Activates when `?__preview=success` is on the URL
+// AND `NODE_ENV !== 'production'`. Pulls a fixture from the mock module so
+// the success screen can be eyeballed locally; calls `clearPersisted()`
+// the same way Phase 4's real wiring will. Production builds collapse this
+// to a no-op effect via the env gate; the dynamic `import()` keeps the
+// fixture module out of the production bundle.
+function useDevSuccessPreview({
+  setSubmitSummary,
+  clearPersisted,
+}: {
+  setSubmitSummary: (summary: SubmitSummary) => void
+  clearPersisted: () => void
+}) {
+  const searchParams = useSearchParams()
+  const preview = searchParams?.get('__preview') ?? null
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'production') return
+    if (!preview) return
+    let cancelled = false
+    void import('@/data/properties/actions/__fixtures__/submit-summary.mock').then(
+      (mod) => {
+        if (cancelled) return
+        const fixture =
+          preview === 'success-minimal'
+            ? mod.submitSummaryMinimal
+            : preview === 'success-warnings'
+              ? mod.submitSummaryWithWarnings
+              : preview === 'success-replay'
+                ? mod.submitSummaryReplay
+                : preview === 'success'
+                  ? mod.submitSummaryFull
+                  : null
+        if (!fixture) return
+        clearPersisted()
+        setSubmitSummary(fixture)
+      },
+    )
+    return () => {
+      cancelled = true
+    }
+  }, [preview, setSubmitSummary, clearPersisted])
+}

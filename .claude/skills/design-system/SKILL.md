@@ -1,6 +1,6 @@
 ---
 name: design-system
-description: Design system rules and visual patterns for UI consistency. Use when building, modifying, or reviewing any UI component or page layout.
+description: Use when adding/editing files under src/**/*.tsx or src/**/*.css, when reaching for a Tailwind color utility (bg-*, text-*, border-*), when adding mt-*/mb-* to a child component, or when composing a status badge.
 paths:
   - "src/**/*.tsx"
   - "src/**/*.css"
@@ -20,9 +20,16 @@ The app should feel like a calm mobile financial workspace for shared housing bi
 6. **Calm, not dull** — visually quiet but premium and polished
 7. **Desktop expands mobile** — more breathing room, not enterprise density
 
+## Precedence
+
+- When this skill conflicts with `component-library`: `component-library` wins for *which component to use*; this skill wins for *visual treatment* (tokens, spacing, motion) within that component.
+- When it conflicts with `frontend-patterns`: `frontend-patterns` wins for performance and `'use client'` placement; this skill wins for visual decisions.
+- When a shadcn primitive uses a non-token color or off-scale spacing in its defaults, override via token. Do NOT fork the component.
+- The editorial reference (`docs/project/design-editorial-reference.md`) applies only to landing / changelog / onboarding-tutorial surfaces. NEVER apply editorial styling inside `/app/*`.
+
 ## Brand and Color
 
-Always use semantic tokens from `src/app/globals.css` — never hardcode Tailwind color utilities (`bg-zinc-*`, `text-rose-500`, `amber-500/10`, etc.). The tokens are hue-locked to the semantic system so dark-mode and subtle-surface variants stay coherent.
+MUST use semantic tokens from `src/app/globals.css`. NEVER hardcode Tailwind color utilities (`bg-zinc-*`, `text-rose-500`, `amber-500/10`, etc.). The tokens are hue-locked to the semantic system so dark-mode and subtle-surface variants stay coherent. Canonical example: `src/components/status-badge.tsx` (token-driven status mapping). Token definitions: `src/app/globals.css` `:root` block (search for `--color-primary-subtle*` and `--color-success-subtle*`).
 
 - **Primary** (teal): `bg-primary`, `text-primary`, `ring-primary`. Subtle surface pair: `bg-primary-subtle` + `text-primary-subtle-foreground`.
 - **Neutrals** — warm stone family, exposed as `bg-background`, `bg-card`, `bg-muted`, `bg-secondary`, `border-border`, `text-foreground`, `text-muted-foreground`. Zinc is banned.
@@ -44,13 +51,14 @@ Always use semantic tokens from `src/app/globals.css` — never hardcode Tailwin
 
 - Use spacing to create hierarchy before borders or containers.
 - Scale: 4px (tight), 8px (compact), 12px (small internal), 16px (primary mobile), 24px (section), 32px (major block), 40–48px (page-level desktop).
-- Stick to the 4/8 rhythm. Avoid off-scale utilities like `mt-7`, `gap-5`.
+- Spacing utilities MUST come from the 4/8 scale. NEVER use `mt-7`, `gap-5`, `p-3.5`, or any odd-step Tailwind utility. Allowed: `*-1 *-2 *-3 *-4 *-6 *-8 *-10 *-12 *-16 *-24`.
+- **Parent owns vertical rhythm.** Containers set spacing via `flex flex-col gap-*` or `space-y-*`. Children MUST NOT set outer `mt-*`/`mb-*`/`my-*`. Anti-pattern: a section component opening with `<div className="mt-6 ...">`. Children don't know their siblings; the parent does. Exceptions: a child may own margin when it's a genuinely optional inline adornment (e.g., a helper line that may or may not render). Internal padding (`p-*`) is always the child's responsibility.
 
 ## Radius, Borders, Shadows
 
 - **Radius tokens:** pills `rounded-full`; controls/inputs `rounded-2xl`; cards `rounded-card` (`--radius-card: 1.25rem`); sheets `rounded-3xl`. Base `--radius: 1rem`.
 - **Borders:** subtle, low-contrast via `border-border`. Don't stack border + shadow + tint.
-- **Shadows:** use `shadow-card` / `shadow-card-hover` tokens on cards. No heavy drop shadows. Dark mode neutralizes both to border-only chrome.
+- **Shadows:** use `shadow-card` / `shadow-card-hover` tokens on cards, `shadow-popover` on popovers (dropdown menus, date pickers, combobox). No heavy drop shadows. Dark mode neutralizes the card pair to border-only chrome.
 
 ## Status Design
 

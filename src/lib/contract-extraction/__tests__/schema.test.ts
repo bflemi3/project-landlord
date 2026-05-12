@@ -4,14 +4,15 @@ import {
   contractExtractionLlmSchema,
   contractExtractionLlmResultShape,
 } from '../schema'
-import type {
-  ContractExtractionResult,
-  ContractExtractionLlmResult,
-  ContractExtractionInput,
-  ContractExtractionError,
-  ContractExtractionErrorCode,
-  ContractExtractionResponse,
-  SupportedLanguage,
+import {
+  CONTRACT_EXTRACTION_SCHEMA_VERSION,
+  type ContractExtractionResult,
+  type ContractExtractionLlmResult,
+  type ContractExtractionInput,
+  type ContractExtractionError,
+  type ContractExtractionErrorCode,
+  type ContractExtractionResponse,
+  type SupportedLanguage,
 } from '../types'
 
 // Helper to get a valid full result for runtime tests
@@ -51,12 +52,15 @@ function makeValidResult(): ContractExtractionResult {
     expenses: null,
     languageDetected: 'pt-br',
     rawExtractedText: 'Contrato de locacao residencial...',
+    modelId: 'claude-sonnet-4-6',
+    schemaVersion: CONTRACT_EXTRACTION_SCHEMA_VERSION,
   }
 }
 
 // Helper to get a valid LLM-only result (no engine-produced fields)
 function makeValidLlmResult(): ContractExtractionLlmResult {
-  const { languageDetected, rawExtractedText, ...llmFields } = makeValidResult()
+  const { languageDetected, rawExtractedText, modelId, schemaVersion, ...llmFields } =
+    makeValidResult()
   return llmFields
 }
 
@@ -78,7 +82,7 @@ describe('contractExtractionResultSchema', () => {
       amount: 250000, // R$2,500.00 in centavos
       currency: 'BRL',
       dueDay: 5,
-      includes: ['rent', 'condo'],
+      includes: ['condo'],
     },
     contractDates: {
       start: '2026-01-01',
@@ -107,6 +111,8 @@ describe('contractExtractionResultSchema', () => {
     ],
     languageDetected: 'pt-br',
     rawExtractedText: 'Contrato de locacao residencial...',
+    modelId: 'claude-sonnet-4-6',
+    schemaVersion: CONTRACT_EXTRACTION_SCHEMA_VERSION,
   }
 
   it('accepts a fully populated valid result', () => {
@@ -129,6 +135,8 @@ describe('contractExtractionResultSchema', () => {
       expenses: null,
       languageDetected: 'en' as const,
       rawExtractedText: 'This is a sales agreement...',
+      modelId: 'claude-sonnet-4-6',
+      schemaVersion: CONTRACT_EXTRACTION_SCHEMA_VERSION,
     }
     const parsed = contractExtractionResultSchema.parse(result)
     expect(parsed.isRentalContract).toBe(false)
@@ -161,6 +169,8 @@ describe('contractExtractionResultSchema', () => {
       expenses: null,
       languageDetected: 'pt-br' as const,
       rawExtractedText: 'Texto parcial do contrato...',
+      modelId: 'claude-sonnet-4-6',
+      schemaVersion: CONTRACT_EXTRACTION_SCHEMA_VERSION,
     }
     const parsed = contractExtractionResultSchema.parse(partial)
     expect(parsed.address?.street).toBe('Rua X')
@@ -318,7 +328,7 @@ describe('contractExtractionLlmSchema (LLM-facing, sentinel-shaped)', () => {
     landlords: [{ name: 'Ana', taxId: '', email: '' }],
     tenants: [{ name: 'Bob', taxId: '', email: '' }],
     expenses: [
-      { type: 'water' as const, bundledInto: 'none' as const, providerName: '', providerTaxId: '' },
+      { type: 'water' as const, bundledInto: null, providerName: '', providerTaxId: '' },
     ],
   }
 
@@ -327,7 +337,7 @@ describe('contractExtractionLlmSchema (LLM-facing, sentinel-shaped)', () => {
     expect(parsed.isRentalContract).toBe(true)
     expect(parsed.address.complement).toBe('')
     expect(parsed.rent.includes).toEqual([])
-    expect(parsed.expenses[0].bundledInto).toBe('none')
+    expect(parsed.expenses[0].bundledInto).toBeNull()
   })
 
   it('rejects null on string fields (sentinel must be "")', () => {
@@ -349,16 +359,32 @@ describe('contractExtractionLlmSchema (LLM-facing, sentinel-shaped)', () => {
     ).not.toThrow()
   })
 
-  it('accepts "none" as bundledInto sentinel', () => {
+  it('accepts null as bundledInto (the standalone-bill sentinel)', () => {
     expect(() => contractExtractionLlmSchema.parse(validSentinelInput)).not.toThrow()
   })
 
-  it('rejects bundledInto: null (LLM must emit "none")', () => {
-    const withNull = {
+  it('rejects bundledInto: "none" (legacy sentinel; LLM now emits null)', () => {
+    const withNone = {
       ...validSentinelInput,
-      expenses: [{ ...validSentinelInput.expenses[0], bundledInto: null }],
+      expenses: [{ ...validSentinelInput.expenses[0], bundledInto: 'none' }],
     }
-    expect(() => contractExtractionLlmSchema.parse(withNull)).toThrow()
+    expect(() => contractExtractionLlmSchema.parse(withNone)).toThrow()
+  })
+
+  it('rejects rent.includes with strings outside the ExpenseType enum', () => {
+    const withFreeStrings = {
+      ...validSentinelInput,
+      rent: { ...validSentinelInput.rent, includes: ['IPTU'] },
+    }
+    expect(() => contractExtractionLlmSchema.parse(withFreeStrings)).toThrow()
+  })
+
+  it('accepts rent.includes populated with canonical ExpenseType values', () => {
+    const populated = {
+      ...validSentinelInput,
+      rent: { ...validSentinelInput.rent, includes: ['water', 'condo', 'other'] as const },
+    }
+    expect(() => contractExtractionLlmSchema.parse(populated)).not.toThrow()
   })
 
   it('rejects non-integer rent amounts', () => {

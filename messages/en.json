@@ -4,7 +4,9 @@
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Try again",
-    "back": "Back"
+    "back": "Back",
+    "taxIdLabel": "Tax ID",
+    "taxIdLabelCpfOrCnpj": "CPF or CNPJ"
   },
   "auth": {
     "tagline": "Shared billing you can trust",
@@ -120,36 +122,46 @@
     "comingSoon": "Coming soon",
     "comingSoonDescription": "Tenant onboarding is coming soon. For now, ask your landlord to invite you through mabenn.",
     "roleNote": "You can always add more properties in either role later.",
-    "myProperties": "My properties",
     "addProperty": "Add property",
-    "viewByProperty": "By property",
-    "viewAllUnits": "All units",
-    "units": "{count, plural, one {# unit} other {# units}}",
-    "tenants": "{count, plural, one {# tenant} other {# tenants}}",
-    "noTenants": "No tenants yet",
-    "nudgeCharges": "Set up charges",
-    "nudgeStatement": "Publish your first statement",
-    "propertiesCount": "properties",
-    "whatsNext": "What's next",
-    "allSetUp": "Everything is set up",
-    "allSetUpDescription": "Your property is running smoothly.",
-    "pendingInviteSingular": "A tenant is waiting to join",
-    "pendingInviteNamed": "{name} is waiting to join",
-    "pendingInvitePlural": "{count} tenants are waiting to join",
-    "pendingInviteDescription": "Your invite is pending. You can resend it.",
-    "actionInviteTenants": "Invite your tenants",
-    "actionInviteTenantsDescription": "They'll see exactly what they owe and why.",
-    "actionSetUpCharges": "Set up charges",
-    "actionSetUpChargesDescription": "Define rent, utilities, and recurring fees.",
-    "actionGenerateStatement": "Generate this month's statement",
-    "actionPublishStatement": "Publish your first statement",
-    "actionPublishStatementDescription": "Review and share this month's charges.",
     "noBillingData": "No billing data yet",
     "statusAllPaid": "All paid",
     "statusUnpaid": "{count, plural, one {# unpaid} other {# unpaid}}",
     "statusBillsPending": "{count, plural, one {# bill pending} other {# bills pending}}",
     "awaitingBillsWithDueDate": "{count, plural, one {Awaiting # bill} other {Awaiting # bills}} · due {date}",
     "allPaidThisCycle": "All paid this cycle"
+  },
+  "landlordHome": {
+    "totalEarned": "Total earned",
+    "expectedMonthly": "Expected monthly",
+    "endingSoonCount": "{count, plural, one {# property has a lease ending in the next 60 days} other {# properties have leases ending in the next 60 days}}",
+    "earned": "Earned",
+    "perMonth": "mo",
+    "statusActive": "Active",
+    "statusEndsInDays": "{days, plural, one {Ends in # day} other {Ends in # days}}",
+    "statusEnded": "Ended",
+    "statusNoContract": "No contract",
+    "acrossProperties": "{count, plural, one {Across # property} other {Across # properties}}",
+    "activeLeases": "{count, plural, one {# active lease} other {# active leases}}"
+  },
+  "fileUpload": {
+    "tapToAttach": "Tap to attach a bill",
+    "uploaded": "Uploaded",
+    "fileTooLarge": "File is too large. Maximum size is {max}MB.",
+    "uploadFailed": "Upload failed. Please try again."
+  },
+  "rentDates": {
+    "rentAmount": "Monthly rent",
+    "dueDay": "Day rent is due",
+    "startDate": "Contract start",
+    "endDate": "Contract end",
+    "summaryDueDay": "day {day}",
+    "invalidAmount": "Enter a valid amount.",
+    "tooLarge": "Amount is too large.",
+    "invalidCurrency": "Choose a supported currency.",
+    "invalidDueDay": "Day must be between 1 and 31.",
+    "invalidDate": "Use the date picker.",
+    "endDateBeforeStart": "End date must be on or after the start date.",
+    "required": "This field is required."
   },
   "properties": {
     "createProperty": "Create property",
@@ -161,6 +173,14 @@
     "propertyName": "Property name",
     "propertyNamePlaceholder": "e.g. Edifício Aurora",
     "propertyNameHint": "Optional — we'll use the address if left blank.",
+    "propertyType": "Property type",
+    "propertyTypeSelectPrompt": "Choose…",
+    "propertyTypeOptions": {
+      "apartment": "Apartment",
+      "house": "House",
+      "commercial": "Commercial",
+      "other": "Other"
+    },
     "street": "Street",
     "streetPlaceholder": "e.g. Rua Augusta",
     "number": "Number",
@@ -179,7 +199,9 @@
     "postalCodeFound": "Address found!",
     "postalCodeNotFound": "CEP not found. Please fill in the address manually.",
     "addressSection": "Address",
-    "addressHint": "Enter your CEP above to auto-fill these fields.",
+    "addressHint": "We'll auto-fill the rest of the address from your CEP.",
+    "streetAddressGroupLegend": "Street address",
+    "cityStateGroupLegend": "City and state",
     "continue": "Continue",
     "back": "Back",
     "nameYourUnits": "Name your units",
@@ -223,15 +245,15 @@
     "chargeInternet": "Internet",
     "addCustomCharge": "Add custom charge",
     "configureCharge": "Set up {name}",
-    "chargeType": "Type",
-    "chargeTypeFixed": "Fixed",
-    "chargeTypeVariable": "Variable",
+    "amountBehavior": "Type",
+    "amountBehaviorFixed": "Fixed",
+    "amountBehaviorVariable": "Variable",
     "switchToVariableContext": "This amount varies?",
     "switchToVariable": "Switch to variable",
     "switchToFixedContext": "Know the exact amount?",
     "switchToFixed": "Switch to fixed",
-    "chargeTypeFixedHint": "Same amount every month, added to statements automatically.",
-    "chargeTypeVariableHint": "Amount comes from your bills each month.",
+    "amountBehaviorFixedHint": "Same amount every month, added to statements automatically.",
+    "amountBehaviorVariableHint": "Amount comes from your bills each month.",
     "variableBillUploadHint": "Bill upload coming soon",
     "chargeAmount": "Monthly amount",
     "chargeAmountPlaceholder": "e.g. 1800",
@@ -264,6 +286,7 @@
     "invalidPostalCode": "Enter a valid 8-digit CEP.",
     "invalidCity": "City name can't contain numbers.",
     "invalidState": "Select a valid state.",
+    "invalidPropertyType": "Select a valid property type.",
     "duplicateAddress": "You already have a property at this address.",
     "viewExistingProperty": "View existing property",
     "createFailed": "Something went wrong. Please try again.",
@@ -274,110 +297,337 @@
     "partialFailure": "Property created, but some invites or charges failed. You can set them up from the property page.",
     "dueDayApplied": "Applied to all charges"
   },
-  "propertyDetail": {
+  "propertyCreation": {
+    "title": "Setting up your property",
     "back": "Back",
-    "notFound": "Property not found",
-    "estimated": "estimated",
-    "variableCharges": "{count, plural, one {# variable charge} other {# variable charges}}",
-    "charges": "Charges",
-    "addCharge": "Add",
-    "noCharges": "No charges configured yet",
-    "variable": "Variable",
-    "rent": "Rent",
-    "recurring": "Fixed",
-    "tenants": "Tenants",
-    "invite": "Invite",
-    "noTenants": "No tenants yet",
-    "active": "Active",
-    "pending": "Pending",
-    "propertyInfo": "Property info",
-    "edit": "Edit",
-    "splitLabel": "Tenant {tenant}% · Landlord {landlord}%",
-    "splitFixedLabel": "Tenant {tenant} · Landlord {landlord}",
-    "landlordPays": "Landlord pays",
-    "dueDay": "Due on the {day}th of each month",
-    "dueOn": "Due {day}th",
-    "inviteTenant": "Invite tenant",
-    "tenantEmail": "Email",
-    "tenantEmailPlaceholder": "tenant@example.com",
-    "tenantName": "Name (optional)",
-    "tenantNamePlaceholder": "Their name",
-    "sendInvite": "Send invite",
-    "alreadyInvited": "This email has already been invited.",
-    "inviteFailed": "Failed to send invite. Try again.",
-    "resendInvite": "Resend invite",
-    "cancelInvite": "Cancel invite",
-    "cancelInviteConfirm": "This will cancel the invitation. The tenant won't be able to join with this invite.",
-    "confirmCancel": "Yes, cancel",
-    "cancel": "Cancel",
-    "removeTenant": "Remove tenant",
-    "removeTenantConfirm": "This will remove the tenant's access to this unit. They won't be able to view statements or charges.",
-    "confirmRemove": "Yes, remove",
-    "tenantTitle": "Tenant",
-    "pendingInviteTitle": "Pending invite",
-    "invitedOn": "Invited {date} · {relative}",
-    "joinedOn": "Joined {date} · {relative}",
-    "editProperty": "Edit property",
-    "saveChanges": "Save changes",
-    "pauseCharge": "Pause charge",
-    "resumeCharge": "Resume charge",
-    "chargeInactive": "Paused",
-    "statement": "Statement",
-    "generateStatement": "Generate {period} statement",
-    "completeStatement": "Complete statement",
-    "draft": "Draft",
-    "statementDraft": "{period} statement",
-    "statementDraftSummary": "{count, plural, one {# charge} other {# charges}} · {total}",
-    "missingCharges": "{count, plural, one {# expected charge missing} other {# expected charges missing}}",
-    "statementNotStarted": "{period} statement isn't started",
-    "dueInDays": "Due in {days, plural, one {# day} other {# days}}",
-    "statementOverdue": "{period} statement is overdue",
-    "tenantsWaiting": "Tenants are waiting",
-    "draftNotPublished": "Not yet published",
-    "daysOverdue": "{days} overdue",
-    "daysLeft": "{days} left",
-    "selectPeriod": "Select period",
-    "reviewAndPublish": "Review & Publish",
-    "draftCreated": "Draft created {date}",
-    "manual": "Manual",
-    "missingBadge": "missing",
-    "add": "Add",
-    "billAttached": "Bill attached",
-    "total": "Total",
-    "chargesOfTotal": "{count} of {total}",
-    "completenessHint": "Missing charges won't block publishing. You can revise the statement later.",
-    "review": "Review",
-    "estimatedTenantOwes": "Estimated Tenant owes",
-    "tenantOwes": "Tenant owes",
-    "paymentDue": "Payment due {date}",
-    "paymentDueMonthly": "Payment due the {day} of each month",
-    "publishOverdue": "Publish overdue — was due {date}",
-    "publishBy": "Publish by {date}",
-    "publishToday": "Publish today",
-    "publishByCountdown": "Publish by {date} ({days}d left)",
-    "totalCharges": "Total charges",
-    "youCover": "You cover",
-    "statementOverdueShort": "{period} statement is {days} overdue",
-    "statementDueIn": "{period} statement due in {days}",
-    "statementDueToday": "{period} statement is due today",
-    "dueToday": "due today",
-    "saveChanges": "Save changes",
-    "addToStatement": "Add to statement",
-    "removeCharge": "Remove charge",
-    "removeChargeConfirm": "Remove this charge from the statement?",
-    "yesRemove": "Yes, remove",
-    "saveForFuture": "Save for future statements",
-    "chargeType": "Charge type",
-    "chargeTypeFixed": "Fixed",
-    "chargeTypeVariable": "Variable",
-    "billNudge": "Attaching the bill helps your tenant verify this charge.",
-    "chargePlaceholder": "e.g. Repair fee, Late fee",
-    "tapToAttachBill": "Tap to attach a bill",
-    "uploaded": "Uploaded",
-    "fileTooLarge": "File is too large. Maximum size is {max}MB.",
-    "billRemovedOnSave": "Bill will be removed when you save.",
-    "incomplete": "incomplete",
-    "uploadFailed": "Upload failed. Please try again."
+    "exit": "Exit",
+    "step": "Step {current} of {total}",
+    "checkout": {
+      "property": {
+        "title": "Property",
+        "subtitle": "Where is it and what type?",
+        "placeholder": "Property form coming soon."
+      },
+      "rent-dates": {
+        "title": "Rent & dates",
+        "subtitle": "Amount, due day, and contract period.",
+        "rentAmount": "Monthly rent",
+        "placeholder": "Rent and dates form coming soon."
+      },
+      "tenants": {
+        "title": "Tenants",
+        "subtitle": "Invite the people who will live here.",
+        "nameLabel": "Name",
+        "emailLabel": "Email",
+        "inviteToggleLabel": "Send invite email",
+        "inviteToggleHelper": "We'll email them when you create the property.",
+        "removeAriaLabel": "Remove tenant",
+        "addTenant": "Add tenant",
+        "addAnotherTenant": "Add another tenant",
+        "required": "Required",
+        "invalidEmail": "Enter a valid email address",
+        "invalidTaxId": "Enter a valid CPF",
+        "newTenant": "New tenant",
+        "summaryWillInvite": "Will be invited",
+        "summaryNoInvite": "Invite skipped",
+        "summaryNeedsAttention": "Needs attention",
+        "summaryAndMore": "+{count} more",
+        "emptyState": {
+          "title": "Add the people who live here",
+          "leadIn": "Once you do, mabenn will automatically:",
+          "bulletPayments": "Track every payment and show what's still owed",
+          "bulletReminders": "Remind tenants when rent is due",
+          "bulletLateNotices": "Send late notices on your behalf"
+        }
+      },
+      "expenses": {
+        "title": "Expenses",
+        "subtitle": "Utilities, condo fees, and who pays them.",
+        "addExpense": "Add expense",
+        "addAnotherExpense": "Add another expense",
+        "newExpense": "New expense",
+        "removeAriaLabel": "Remove expense",
+        "remove": "Remove",
+        "summaryNeedsAttention": "Needs attention",
+        "summaryAndMore": "+{count} more",
+        "typeLabel": "Expense type",
+        "moreOptions": "More options",
+        "amountLabel": "Expected amount",
+        "amountLabelFixed": "Monthly amount",
+        "amountHelperFixed": "How much you pay each month.",
+        "amountHelperVariable": "Optional — we'll fill it in from your bills.",
+        "amountHelperUnknown": "Optional — we'll learn the pattern as bills come in.",
+        "typeRequired": "Pick an expense type.",
+        "invalidAmount": "Enter a valid amount.",
+        "tooLarge": "Amount is too large.",
+        "typeOptions": {
+          "electricity": "Electricity",
+          "water": "Water",
+          "gas": "Gas",
+          "internet": "Internet",
+          "condo": "Condo",
+          "trash": "Trash",
+          "sewer": "Sewer",
+          "cable": "Cable",
+          "insurance": "Insurance",
+          "maintenance": "Maintenance",
+          "other": "Other"
+        },
+        "amountBehavior": {
+          "fixedLabel": "Fixed amount",
+          "fixedTrigger": "Same amount each month",
+          "fixedDescription": "Same amount each month — internet, condo, insurance.",
+          "variableLabel": "Variable amount",
+          "variableTrigger": "Tracked from each bill",
+          "variableDescription": "Amount comes from the bill — utilities like electricity, water, gas.",
+          "unknownLabel": "Not sure",
+          "unknownTrigger": "We'll detect it from your bills",
+          "unknownDescription": "We'll learn the pattern as bills come in.",
+          "changeAriaLabel": "Change amount behavior"
+        },
+        "emptyState": {
+          "title": "Track every recurring charge",
+          "leadIn": "Add every recurring charge for this property — even ones your tenant pays. mabenn will:",
+          "bulletTracking": "Watch for utility, condo, and other bills automatically",
+          "bulletPayments": "Match incoming payments to the right charge",
+          "bulletResponsibility": "Figure out who pays what once bills start coming in"
+        }
+      },
+      "tax-id": {
+        "title": "Tax ID",
+        "subtitle": "We use this to keep billing tied to you.",
+        "editLinkPrompt": "If this isn't right,",
+        "editLinkAction": "change it",
+        "editingDescription": "Changing this will update your profile.",
+        "validation": {
+          "required": "Enter your CPF or CNPJ.",
+          "invalidTaxId": "That doesn't look like a valid CPF or CNPJ.",
+          "tooLong": "That's longer than expected.",
+          "tax_id_conflict": "This tax ID is already registered to another account."
+        },
+        "whyWeAsk": {
+          "title": "Why we ask",
+          "bulletTrackingBR": "We catch any boleto issued in your name — condo fees, property tax, the rest — so they never go missing.",
+          "bulletTrackingFallback": "We help track any bills issued in your name.",
+          "bulletRouting": "When a bill comes through, we know whether it's yours or the tenant's.",
+          "bulletDocuments": "It appears on the rent receipts and contracts mabenn generates for you.",
+          "privacyLink": "How we keep your information safe",
+          "privacyComingSoon": "Privacy policy coming soon."
+        }
+      },
+      "bank": {
+        "title": "Bank account",
+        "subtitle": "Where rent payments are deposited.",
+        "placeholder": "Bank account setup coming soon."
+      },
+      "summary": {
+        "title": "Property setup",
+        "remaining": "{count} of {total} sections remaining",
+        "needsAttention": "Needs attention"
+      },
+      "cta": {
+        "create": "Create property",
+        "creating": "Creating…",
+        "remaining": "{count, plural, one {# section left} other {# sections left}}",
+        "hint": "Complete the required sections to create the property."
+      },
+      "actions": {
+        "back": "Back",
+        "continue": "Continue",
+        "skip": "Skip"
+      },
+      "status": {
+        "done": "Done",
+        "skipped": "Skipped",
+        "upNext": "Up next",
+        "needsAttention": "Needs attention"
+      },
+      "extractionLegend": "Auto-filled from your contract"
+    },
+    "review": {
+      "title": "Review what we found",
+      "description": "Here's what we extracted from your contract. Editing comes in the next step.",
+      "sections": {
+        "property": "Property",
+        "rent": "Rent & dates",
+        "parties": "Parties",
+        "expenses": "Expenses"
+      },
+      "fields": {
+        "address": "Address",
+        "propertyType": "Property type",
+        "rentAmount": "Rent",
+        "dueDay": "Due day",
+        "includes": "Bundled with",
+        "startDate": "Start date",
+        "endDate": "End date",
+        "adjustmentFrequency": "Adjustment frequency",
+        "adjustmentMethod": "Adjustment method",
+        "adjustmentIndex": "Index",
+        "name": "Name",
+        "taxId": "Tax ID",
+        "email": "Email",
+        "expenseType": "Type",
+        "providerName": "Provider",
+        "providerTaxId": "Provider tax ID",
+        "bundledInto": "Bundled into"
+      },
+      "dueDayValue": "Day {day} of each month",
+      "noExpenses": "No expenses found in this contract.",
+      "next": "Next",
+      "nextStepComingSoon": "Coming in the next step.",
+      "startOver": "Start over",
+      "startOverConfirm": "This will clear everything you've uploaded. Continue?",
+      "startOverYes": "Yes, start over",
+      "startOverCancel": "Cancel",
+      "recovery": {
+        "title": "We couldn't find your contract data",
+        "description": "Your previous upload may have been cleared. Try uploading again.",
+        "cta": "Start over"
+      },
+      "empty": {
+        "title": "We couldn't extract much from this contract",
+        "description": "Try uploading a different file or continue with manual setup.",
+        "cta": "Try a different file"
+      }
+    },
+    "exitPrompt": {
+      "title": "Keep your progress?",
+      "description": "Your work is saved on this device. Pick up where you left off any time, or discard it and start over.",
+      "saveForLater": "Save for later",
+      "discard": "Discard and exit"
+    },
+    "upload": {
+      "title": "Upload your rental contract",
+      "description": "We'll read it and fill in the rest.",
+      "dropzone": "Choose a PDF or DOCX",
+      "dropzoneHintDesktop": "or drop one here",
+      "fileTooLarge": "File must be under {max} MB.",
+      "noContractLink": "Set up without a contract",
+      "noContractToast": "Manual setup is coming soon. For now, upload your contract to continue."
+    },
+    "loading": {
+      "static": "Reading your contract…",
+      "line1": "Reading your contract.",
+      "line2": "Finding addresses and dates.",
+      "line3": "Identifying the parties.",
+      "line4": "Looking for the rent amount.",
+      "line5": "Checking adjustment clauses.",
+      "line6": "Noting the expenses.",
+      "line7": "Putting it all together.",
+      "sections": {
+        "property": "Property",
+        "rent": "Rent & dates",
+        "parties": "Parties",
+        "expenses": "Expenses"
+      }
+    },
+    "errors": {
+      "file_too_large": {
+        "title": "File too large",
+        "message": "Your contract is larger than 10 MB.",
+        "cta": "Upload a smaller file"
+      },
+      "unsupported_format": {
+        "title": "Unsupported format",
+        "message": "Only PDF and DOCX are supported.",
+        "cta": "Choose another file"
+      },
+      "corrupt_file": {
+        "title": "Couldn't read this file",
+        "message": "We couldn't read this file.",
+        "cta": "Try another file"
+      },
+      "empty_file": {
+        "title": "Empty file",
+        "message": "This file is empty.",
+        "cta": "Choose another file"
+      },
+      "no_text_extractable": {
+        "title": "No readable text",
+        "message": "We couldn't find any text. Is this a scanned document?",
+        "cta": "Upload a digital version"
+      },
+      "password_protected": {
+        "title": "Password-protected file",
+        "message": "This file is password-protected.",
+        "cta": "Remove the password and try again"
+      },
+      "unsupported_language": {
+        "title": "Language not supported",
+        "message": "We don't support contracts in this language yet.",
+        "cta": "Continue without a contract"
+      },
+      "not_a_contract": {
+        "title": "Not a rental contract",
+        "message": "This doesn't look like a rental contract.",
+        "cta": "Try another file"
+      },
+      "extraction_failed": {
+        "title": "Something went wrong",
+        "message": "Something went wrong on our side.",
+        "cta": "Try again"
+      },
+      "extraction_timeout": {
+        "title": "Taking too long",
+        "message": "This took longer than expected.",
+        "cta": "Try again"
+      },
+      "rate_limited": {
+        "title": "High demand",
+        "message": "We're experiencing high demand.",
+        "cta": "Try again in a moment"
+      },
+      "api_key_missing": {
+        "title": "Extraction unavailable",
+        "message": "We're having trouble reaching our extraction service. Try again later."
+      },
+      "duplicate_address": "You already have a property at this address.",
+      "unauthenticated": "Your session expired. Sign in again to continue.",
+      "idempotency_owner_mismatch": "This wizard session can't be reused on another account. Start a fresh one.",
+      "rpc_constraint_violation": "We couldn't save this property because something doesn't line up. Review your entries and try again.",
+      "contract_validation_failed": "The contract file looks invalid. Try uploading it again.",
+      "unknown": "Something went wrong. Please try again."
+    },
+    "resumeUnavailable": "Your progress may not be saved on this device.",
+    "success": {
+      "title": "Property created.",
+      "subtitle": "Bills and payments for this property will be tracked automatically when activity arrives.",
+      "summary": {
+        "property": {
+          "title": "Property"
+        },
+        "rent": {
+          "title": "Rent",
+          "dueEvery": "Due every {ordinal} of the month",
+          "includes": "Includes {list}"
+        },
+        "contract": {
+          "title": "Contract",
+          "uploaded": "Contract uploaded",
+          "uploadFailed": "Your contract didn't finish uploading."
+        },
+        "tenants": {
+          "title": "Tenants",
+          "invited": "{count, plural, one {# invitation sent} other {# invitations sent}}",
+          "deferred": "{count, plural, one {# saved for later} other {# saved for later}}",
+          "emailFailed": "{count, plural, one {# invitation email didn't send} other {# invitation emails didn't send}}"
+        },
+        "expenses": {
+          "title": "Expenses",
+          "tracked": "{count, plural, one {# expense tracked} other {# expenses tracked}}",
+          "byTypeList": "Includes {list}"
+        },
+        "providerRequests": {
+          "title": "New providers",
+          "note": "We're adding support for one or more of your providers. We'll let you know once automatic tracking is available.",
+          "billUploadFailed": "{count, plural, one {# bill upload didn't finish} other {# bill uploads didn't finish}}"
+        }
+      },
+      "cta": {
+        "goToDashboard": "Go to dashboard"
+      }
+    }
   },
   "settings": {
     "title": "Settings",
@@ -392,9 +642,21 @@
     "pixComingSoon": "Pix key configuration coming soon",
     "fullName": "Full name",
     "fullNamePlaceholder": "Your name",
+    "email": "Email",
+    "emailDescription": "Linked to your sign-in. Not editable here.",
+    "taxIdDescription": "Used to recognize bills issued in your name and on receipts and contracts.",
     "save": "Save",
     "theme": "Theme",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "validation": {
+      "required": "This field is required.",
+      "tooLong": "That's longer than expected.",
+      "invalidTaxId": "That doesn't look like a valid CPF or CNPJ.",
+      "cnpjNotFound": "We couldn't find that CNPJ. Double-check the number.",
+      "cnpjVerificationUnavailable": "We couldn't verify that CNPJ right now. Try again in a moment.",
+      "unauthenticated": "Sign in again to continue.",
+      "updateFailed": "We couldn't save that. Try again."
+    }
   },
   "theme": {
     "light": "Light",

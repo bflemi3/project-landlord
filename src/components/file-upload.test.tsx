@@ -12,8 +12,8 @@ vi.mock('@/lib/storage/upload-file', () => ({
 
 // Mock next-intl
 const messages = {
-  propertyDetail: {
-    tapToAttachBill: 'Tap to attach a bill',
+  fileUpload: {
+    tapToAttach: 'Tap to attach a bill',
     uploaded: 'Uploaded',
     fileTooLarge: 'File is too large. Maximum size is {max}MB.',
     uploadFailed: 'Upload failed. Please try again.',
@@ -88,6 +88,32 @@ describe('FileUpload', () => {
       fireEvent.click(clearButton)
 
       expect(onClear).toHaveBeenCalled()
+    })
+  })
+
+  describe('labels override', () => {
+    it('renders custom dropzone label when labels prop is provided', () => {
+      renderWithIntl(
+        <FileUpload labels={{ dropzone: 'Drop your contract here' }} />,
+      )
+      expect(screen.getByText('Drop your contract here')).toBeInTheDocument()
+      expect(screen.queryByText('Tap to attach a bill')).not.toBeInTheDocument()
+    })
+
+    it('falls back to i18n translations when labels prop is absent', () => {
+      renderWithIntl(<FileUpload />)
+      expect(screen.getByText('Tap to attach a bill')).toBeInTheDocument()
+    })
+  })
+
+  describe('hint styling', () => {
+    it('uses semantic warning tokens for hint pill, not hardcoded amber', () => {
+      renderWithIntl(<FileUpload hint="Max 10MB" />)
+      const hintEl = screen.getByText('Max 10MB')
+      expect(hintEl).toBeInTheDocument()
+      expect(hintEl.className).toContain('bg-warning-subtle')
+      expect(hintEl.className).toContain('text-warning-subtle-foreground')
+      expect(hintEl.className).not.toContain('amber')
     })
   })
 
@@ -198,6 +224,141 @@ describe('FileUpload', () => {
 
       expect(signal.aborted).toBe(true)
       expect(onClear).toHaveBeenCalled()
+    })
+  })
+
+  describe('error slot', () => {
+    it('replaces dropzone with the provided error node when error prop is set', () => {
+      renderWithIntl(
+        <FileUpload error={<div>Something broke</div>} />,
+      )
+
+      expect(screen.getByText('Something broke')).toBeInTheDocument()
+      expect(screen.queryByText('Tap to attach a bill')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('onValidationError', () => {
+    it('fires file_too_large and suppresses the built-in error text when handler is provided', () => {
+      const onValidationError = vi.fn()
+      const onFileSelect = vi.fn()
+      renderWithIntl(
+        <FileUpload
+          maxSizeMB={1}
+          onFileSelect={onFileSelect}
+          onValidationError={onValidationError}
+        />,
+      )
+
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement
+      const big = new File([new Uint8Array(2 * 1024 * 1024)], 'huge.pdf', {
+        type: 'application/pdf',
+      })
+      fireEvent.change(input, { target: { files: [big] } })
+
+      expect(onValidationError).toHaveBeenCalledWith('file_too_large', big)
+      expect(onFileSelect).not.toHaveBeenCalled()
+      expect(screen.queryByText(/too large/i)).not.toBeInTheDocument()
+    })
+
+    it('falls back to local error text when onValidationError is not provided', () => {
+      renderWithIntl(<FileUpload maxSizeMB={1} />)
+
+      const input = document.querySelector('input[type="file"]') as HTMLInputElement
+      const big = new File([new Uint8Array(2 * 1024 * 1024)], 'huge.pdf', {
+        type: 'application/pdf',
+      })
+      fireEvent.change(input, { target: { files: [big] } })
+
+      expect(screen.getByText(/too large/i)).toBeInTheDocument()
+    })
+  })
+
+  describe('desktop drag hint', () => {
+    it('renders labels.dropzoneDrag when provided', () => {
+      renderWithIntl(
+        <FileUpload labels={{ dropzoneDrag: 'or drop one here' }} />,
+      )
+      expect(screen.getByText('or drop one here')).toBeInTheDocument()
+    })
+
+    it('omits the drag hint when not provided', () => {
+      renderWithIntl(<FileUpload />)
+      expect(screen.queryByText(/drop one here/i)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('drag and drop', () => {
+    function getDropzone(container: HTMLElement) {
+      // Card element is the first child of FileUpload's outer div
+      return container.querySelector('[role="button"]') as HTMLElement
+    }
+
+    function makeDataTransfer(file: File | null) {
+      return {
+        files: file ? ([file] as unknown as FileList) : ([] as unknown as FileList),
+        types: ['Files'],
+        dropEffect: 'none',
+      }
+    }
+
+    it('accepts a dropped file via onFileSelect', () => {
+      const onFileSelect = vi.fn()
+      const { container } = renderWithIntl(<FileUpload onFileSelect={onFileSelect} />)
+      const dropzone = getDropzone(container)
+      const file = new File(['x'], 'dragged.pdf', { type: 'application/pdf' })
+
+      fireEvent.drop(dropzone, { dataTransfer: makeDataTransfer(file) })
+
+      expect(onFileSelect).toHaveBeenCalledWith(file, undefined)
+    })
+
+    it('marks dropzone with data-dragging during dragenter', () => {
+      const { container } = renderWithIntl(<FileUpload />)
+      const dropzone = getDropzone(container)
+
+      fireEvent.dragEnter(dropzone, { dataTransfer: makeDataTransfer(null) })
+
+      expect(dropzone).toHaveAttribute('data-dragging', 'true')
+    })
+
+    it('clears dragging state on dragleave', () => {
+      const { container } = renderWithIntl(<FileUpload />)
+      const dropzone = getDropzone(container)
+
+      fireEvent.dragEnter(dropzone, { dataTransfer: makeDataTransfer(null) })
+      expect(dropzone).toHaveAttribute('data-dragging', 'true')
+
+      fireEvent.dragLeave(dropzone, { dataTransfer: makeDataTransfer(null) })
+
+      expect(dropzone).not.toHaveAttribute('data-dragging')
+    })
+
+    it('rejects an oversized dropped file with the fileTooLarge label', () => {
+      const onFileSelect = vi.fn()
+      const { container } = renderWithIntl(
+        <FileUpload onFileSelect={onFileSelect} maxSizeMB={1} />,
+      )
+      const dropzone = getDropzone(container)
+      const big = new File([new Uint8Array(2 * 1024 * 1024)], 'huge.pdf', {
+        type: 'application/pdf',
+      })
+
+      fireEvent.drop(dropzone, { dataTransfer: makeDataTransfer(big) })
+
+      expect(onFileSelect).not.toHaveBeenCalled()
+      expect(screen.getByText(/too large/i)).toBeInTheDocument()
+    })
+
+    it('ignores drag events that are not file drags', () => {
+      const { container } = renderWithIntl(<FileUpload />)
+      const dropzone = getDropzone(container)
+
+      fireEvent.dragEnter(dropzone, {
+        dataTransfer: { files: [] as unknown as FileList, types: ['text/plain'] },
+      })
+
+      expect(dropzone).not.toHaveAttribute('data-dragging')
     })
   })
 })

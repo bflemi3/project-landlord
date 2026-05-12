@@ -5,12 +5,17 @@ import { cn } from '@/lib/utils'
 type CardSize = 'sm' | 'md' | 'lg' | 'xl' | 'compound' | 'none'
 type CardVariant = 'solid' | 'dashed'
 
+// On-scale (4/8 rhythm) padding ladder. Each step ≈ +50% so sizes remain
+// visually distinct without leaving the allowed token set. `compound` is the
+// vertical-only variant for cards composing CardHeader / CardContent /
+// CardFooter — the inner parts add their own `px-4` so the visual padding
+// stays consistent with the `md` outer.
 const sizeClasses: Record<CardSize, string> = {
-  sm: 'p-4',
-  md: 'p-5',
+  sm: 'p-3',
+  md: 'p-4',
   lg: 'p-6',
-  xl: 'p-7',
-  compound: 'py-5',
+  xl: 'p-8',
+  compound: 'py-4',
   none: '',
 }
 
@@ -64,7 +69,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="card-header"
       className={cn(
-        '@container/card-header grid auto-rows-min items-start gap-1 px-5',
+        '@container/card-header grid auto-rows-min items-start gap-1 px-4',
         'has-data-[slot=card-action]:grid-cols-[1fr_auto]',
         'has-data-[slot=card-description]:grid-rows-[auto_auto]',
         className,
@@ -105,20 +110,14 @@ function CardAction({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="card-content"
-      className={cn('px-5', className)}
-      {...props}
-    />
-  )
+  return <div data-slot="card-content" className={cn('px-4', className)} {...props} />
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="card-footer"
-      className={cn('flex items-center border-t border-border px-5 pt-4', className)}
+      className={cn('border-border flex items-center border-t px-4 pt-4', className)}
       {...props}
     />
   )

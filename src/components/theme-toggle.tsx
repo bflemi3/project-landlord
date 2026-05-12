@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 import { useTranslations } from 'next-intl'
 import { Sun, Moon, Monitor } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useHasHydrated } from '@/lib/hooks/use-has-hydrated'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 const options = [
@@ -16,9 +16,7 @@ const options = [
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme()
   const t = useTranslations('theme')
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
+  const hydrated = useHasHydrated()
 
   function handleThemeChange(value: string) {
     setTheme(value)
@@ -27,7 +25,7 @@ export function ThemeToggle() {
     }
   }
 
-  if (!mounted) return null
+  if (!hydrated) return null
 
   return (
     <div className="inline-flex items-center gap-1 rounded-full bg-secondary p-1">

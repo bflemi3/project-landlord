@@ -10,13 +10,14 @@ async function EmptyGreeting() {
     getTranslations('home'),
   ])
 
-  const firstName = profile?.fullName?.split(' ')[0] ?? undefined
+  const firstName = profile?.full_name?.split(' ')[0] ?? undefined
   const hour = new Date().getHours()
   const greetingKey = hour < 12 ? 'goodMorning' : hour < 18 ? 'goodAfternoon' : 'goodEvening'
   const greeting = t(greetingKey)
+  const draftId = crypto.randomUUID()
 
   return (
-    <EmptyState firstName={firstName} greeting={greeting} />
+    <EmptyState firstName={firstName} greeting={greeting} draftId={draftId} />
   )
 }
 

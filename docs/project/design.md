@@ -551,6 +551,28 @@ Suggested semantic mapping:
 
 ---
 
+## Domain Icon Map
+
+Consistent lucide icon per domain object throughout the app — cards, lists, nav, section headers, empty states. Use these instead of ad-hoc icon choices.
+
+| Domain object | Lucide icon | Notes |
+|---|---|---|
+| Property | `Home` | |
+| Rent | `DollarSign` | Revenue / money coming in |
+| Tenants | `Users` | People on a property |
+| Expenses | `Zap` | Utilities and recurring charges |
+| CPF / Identity | `CreditCard` | Tax ID / identity document |
+| Bank account | `Landmark` | Financial institution |
+| Contract | `FileText` | Legal document |
+| Payments | `ArrowDownLeft` | Money received |
+| Disputes | `MessageSquareWarning` | Contested charge |
+| Notifications | `Bell` | |
+| Adjustments (IPCA) | `TrendingUp` | Rent adjustment over time |
+
+When adding a new domain object, add it here first. If an icon feels wrong in context, propose the change here rather than overriding locally.
+
+---
+
 ## Screen Guidance
 
 ### Home

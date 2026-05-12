@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { Constants } from '@/lib/types/database'
+import { expenseTypeSchema as canonicalExpenseTypeSchema } from '@/schemas/expense'
 import type {
   ContractExtractionLlmResult,
   ContractExtractionResult,
@@ -46,6 +47,23 @@ const llmAddressSchema = z.object({
   country: z.string().describe('ISO 3166-1 alpha-2 country code (e.g., BR, US, MX, ES, CO). Infer from address format, currency, or language if not explicitly stated. Empty string "" only if truly undeterminable.'),
 })
 
+// Re-use the canonical `expenseTypeSchema` (database-derived) with extraction-
+// specific guidance attached. The LLM call passes this schema to
+// `Output.object({ schema })`, so the `.describe()` is what reaches the model.
+const expenseTypeSchema = canonicalExpenseTypeSchema.describe(
+  'Canonical expense category. Normalize the contract\'s native term to this set — do not translate literally, classify semantically. ' +
+    'Mapping guidance: ' +
+    'PT-BR "luz"/"energia elétrica" → electricity; "água" → water; "gás" → gas; "internet" → internet; ' +
+    '"condomínio"/"taxa condominial" → condo; "IPTU" → other; "lixo" → trash; "esgoto" → sewer; "manutenção" → maintenance. ' +
+    'ES "energía eléctrica"/"electricidad"/"luz" → electricity; "agua" → water; "gas"/"gas natural" → gas; ' +
+    '"comunidad"/"gastos de comunidad" → condo; "mantenimiento"/"cuota de mantenimiento" → maintenance; ' +
+    '"IBI"/"predial" → other. ' +
+    'EN "electricity"/"electric" → electricity; "water" → water; "gas"/"natural gas" → gas; "HOA dues" → condo; ' +
+    '"trash"/"garbage"/"waste" → trash; "sewer" → sewer; "cable"/"TV" → cable. ' +
+    'Use "other" for any expense that does not fit an explicit category (IPTU, IBI, predial, security fees, pool fees, etc.). ' +
+    'Bundled expenses like "água e esgoto" should be split into separate entries (one "water", one "sewer").',
+)
+
 const llmRentSchema = z.object({
   amount: z
     .number()
@@ -66,8 +84,10 @@ const llmRentSchema = z.object({
       'Day of month rent is due. Whole integer in the range 1..31 (inclusive). Null if the contract does not specify a numeric due day.',
     ),
   includes: z
-    .array(z.string())
-    .describe('What the stated amount covers, e.g. ["rent", "condo", "IPTU"]. Empty array [] if the contract does not break this out.'),
+    .array(expenseTypeSchema)
+    .describe(
+      'Expense types covered by the rent payment (e.g., "the rent includes water and IPTU"). Use the canonical ExpenseType values — map IPTU/IBI/predial to "other". Empty array [] if rent does not bundle any expenses.',
+    ),
 })
 
 const llmContractDatesSchema = z.object({
@@ -92,43 +112,13 @@ const llmPartySchema = z.object({
   email: z.string().describe('Email address. Empty string "" if not stated.'),
 })
 
-const expenseTypeSchema = z
-  .enum([
-    'electricity',
-    'water',
-    'gas',
-    'internet',
-    'condo',
-    'trash',
-    'sewer',
-    'cable',
-    'maintenance',
-    'other',
-  ])
-  .describe(
-    'Canonical expense category. Normalize the contract\'s native term to this set — do not translate literally, classify semantically. ' +
-      'Mapping guidance: ' +
-      'PT-BR "luz"/"energia elétrica" → electricity; "água" → water; "gás" → gas; "internet" → internet; ' +
-      '"condomínio"/"taxa condominial" → condo; "IPTU" → other; "lixo" → trash; "esgoto" → sewer; "manutenção" → maintenance. ' +
-      'ES "energía eléctrica"/"electricidad"/"luz" → electricity; "agua" → water; "gas"/"gas natural" → gas; ' +
-      '"comunidad"/"gastos de comunidad" → condo; "mantenimiento"/"cuota de mantenimiento" → maintenance; ' +
-      '"IBI"/"predial" → other. ' +
-      'EN "electricity"/"electric" → electricity; "water" → water; "gas"/"natural gas" → gas; "HOA dues" → condo; ' +
-      '"trash"/"garbage"/"waste" → trash; "sewer" → sewer; "cable"/"TV" → cable. ' +
-      'Use "other" for any expense that does not fit an explicit category (IPTU, IBI, predial, security fees, pool fees, etc.). ' +
-      'Bundled expenses like "água e esgoto" should be split into separate entries (one "water", one "sewer").',
-  )
-
-// `bundledInto` uses "none" as the sentinel for "expense has its own dedicated
-// bill" to avoid adding a third `.nullable()` union branch on top of the
-// existing expense-type + "rent" literal union. The engine maps "none" → null.
 const llmExpenseBundledIntoSchema = z
-  .union([expenseTypeSchema, z.literal('rent'), z.literal('none')])
+  .union([expenseTypeSchema, z.literal('rent'), z.null()])
   .describe(
     'Where this expense is paid from: ' +
       '"rent" → the amount rolls up into the monthly rent payment (e.g., "the rent includes IPTU"); ' +
       'an expense type like "condo" → the bill is paid together with that category (e.g., a condo fee that covers water); ' +
-      '"none" → this expense has its own dedicated bill. ' +
+      'null → this expense has its own dedicated bill. ' +
       'Every recurring service the contract mentions should be a first-class expense entry — if multiple services share one bill, the "secondary" services set bundledInto to the type of the primary bill.',
   )
 
@@ -208,8 +198,8 @@ const contractRentSchema = z.object({
       message: 'dueDay must be an integer between 1 and 31',
     })
     .nullable(),
-  // Always an array — empty means "no bundling info", not "field absent".
-  includes: z.array(z.string()),
+  // Always an array of canonical expense types — empty means "rent doesn't bundle anything", not "field absent".
+  includes: z.array(expenseTypeSchema),
 })
 
 const contractDatesSchema = z.object({
@@ -260,6 +250,16 @@ const contractExtractionLlmResultSchema = z.object({
 export const contractExtractionResultSchema = contractExtractionLlmResultSchema.extend({
   languageDetected: supportedLanguageSchema.describe('Language detected in the document by the engine'),
   rawExtractedText: z.string().describe('Full text extracted from the document'),
+  modelId: z
+    .string()
+    .describe('Model id that produced the extraction (e.g. claude-sonnet-4-6)'),
+  schemaVersion: z
+    .number()
+    .int()
+    .describe(
+      'Pinned to CONTRACT_EXTRACTION_SCHEMA_VERSION at the time of extraction. ' +
+        'Persistence writes this onto contracts.extraction_schema_version.',
+    ),
 })
 
 // Back-compat export — some tests / consumers want the "expected result" shape

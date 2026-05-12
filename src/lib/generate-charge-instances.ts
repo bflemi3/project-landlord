@@ -8,6 +8,8 @@
  * this with DB reads/writes.
  */
 
+import type { ExpenseAmountBehavior as AmountBehavior } from '@/schemas/expense'
+
 // =============================================================================
 // Types
 // =============================================================================
@@ -25,10 +27,14 @@ export interface AllocationRow {
   fixed_minor: number | null
 }
 
+// `AmountBehavior` comes from the canonical `@/schemas/expense` (database-
+// derived) so this module can't drift from the DB enum.
+export type { ExpenseAmountBehavior as AmountBehavior } from '@/schemas/expense'
+
 export interface ChargeDefinitionWithRule {
   id: string
   name: string
-  chargeType: 'rent' | 'recurring' | 'variable'
+  amountBehavior: AmountBehavior
   amountMinor: number | null
   currency: string
   isActive: boolean

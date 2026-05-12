@@ -256,7 +256,7 @@ export default function NewProviderPage() {
                     <Loader2 className="size-4 animate-spin text-muted-foreground" />
                   )}
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="icon"
                     type="button"
                     onClick={handleClearBill}

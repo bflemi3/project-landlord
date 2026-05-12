@@ -1,6 +1,6 @@
 'use client'
 
-import { motion, AnimatePresence } from 'motion/react'
+import { useReducedMotion, motion, AnimatePresence } from 'motion/react'
 
 interface SlideInProps {
   children: React.ReactNode
@@ -15,6 +15,16 @@ export function SlideIn({
   duration = 0.3,
   className,
 }: SlideInProps) {
+  const prefersReducedMotion = useReducedMotion()
+
+  if (prefersReducedMotion) {
+    return (
+      <div key={activeKey} className={className}>
+        {children}
+      </div>
+    )
+  }
+
   return (
     <AnimatePresence mode="wait">
       <motion.div

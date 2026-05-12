@@ -4,7 +4,9 @@
     "loading": "Carregando...",
     "error": "Algo deu errado",
     "retry": "Tentar novamente",
-    "back": "Voltar"
+    "back": "Voltar",
+    "taxIdLabel": "ID fiscal",
+    "taxIdLabelCpfOrCnpj": "CPF ou CNPJ"
   },
   "auth": {
     "tagline": "Cobrança compartilhada com confiança",
@@ -120,36 +122,46 @@
     "comingSoon": "Em breve",
     "comingSoonDescription": "O onboarding para inquilinos está chegando. Por enquanto, peça ao seu proprietário para convidá-lo pelo mabenn.",
     "roleNote": "Você pode adicionar mais imóveis em qualquer papel depois.",
-    "myProperties": "Meus imóveis",
     "addProperty": "Adicionar imóvel",
-    "viewByProperty": "Por imóvel",
-    "viewAllUnits": "Todas as unidades",
-    "units": "{count, plural, one {# unidade} other {# unidades}}",
-    "tenants": "{count, plural, one {# inquilino} other {# inquilinos}}",
-    "noTenants": "Nenhum inquilino ainda",
-    "nudgeCharges": "Configurar cobranças",
-    "nudgeStatement": "Publicar seu primeiro extrato",
-    "propertiesCount": "imóveis",
-    "whatsNext": "Próximos passos",
-    "allSetUp": "Tudo configurado",
-    "allSetUpDescription": "Seu imóvel está funcionando normalmente.",
-    "pendingInviteSingular": "Um inquilino está esperando para entrar",
-    "pendingInviteNamed": "{name} está esperando para entrar",
-    "pendingInvitePlural": "{count} inquilinos estão esperando para entrar",
-    "pendingInviteDescription": "Seu convite está pendente. Você pode reenviá-lo.",
-    "actionInviteTenants": "Convide seus inquilinos",
-    "actionInviteTenantsDescription": "Eles verão exatamente o que devem e por quê.",
-    "actionSetUpCharges": "Configure as cobranças",
-    "actionSetUpChargesDescription": "Defina aluguel, utilidades e taxas recorrentes.",
-    "actionGenerateStatement": "Gere a fatura deste mês",
-    "actionPublishStatement": "Publique seu primeiro extrato",
-    "actionPublishStatementDescription": "Revise e compartilhe as cobranças deste mês.",
     "noBillingData": "Sem dados de cobrança ainda",
     "statusAllPaid": "Tudo pago",
     "statusUnpaid": "{count, plural, one {# não pago} other {# não pagos}}",
     "statusBillsPending": "{count, plural, one {# conta pendente} other {# contas pendentes}}",
     "awaitingBillsWithDueDate": "{count, plural, one {Aguardando # conta} other {Aguardando # contas}} · vence {date}",
     "allPaidThisCycle": "Tudo pago neste ciclo"
+  },
+  "landlordHome": {
+    "totalEarned": "Total recebido",
+    "expectedMonthly": "Receita mensal",
+    "endingSoonCount": "{count, plural, one {# imóvel tem contrato terminando nos próximos 60 dias} other {# imóveis têm contratos terminando nos próximos 60 dias}}",
+    "earned": "Recebido",
+    "perMonth": "mês",
+    "statusActive": "Ativo",
+    "statusEndsInDays": "{days, plural, one {Termina em # dia} other {Termina em # dias}}",
+    "statusEnded": "Encerrado",
+    "statusNoContract": "Sem contrato",
+    "acrossProperties": "{count, plural, one {Em # imóvel} other {Em # imóveis}}",
+    "activeLeases": "{count, plural, one {# contrato ativo} other {# contratos ativos}}"
+  },
+  "fileUpload": {
+    "tapToAttach": "Toque para anexar uma conta",
+    "uploaded": "Enviado",
+    "fileTooLarge": "O arquivo é grande demais. Tamanho máximo: {max}MB.",
+    "uploadFailed": "O envio falhou. Tente novamente."
+  },
+  "rentDates": {
+    "rentAmount": "Aluguel mensal",
+    "dueDay": "Dia de vencimento do aluguel",
+    "startDate": "Início do contrato",
+    "endDate": "Fim do contrato",
+    "summaryDueDay": "dia {day}",
+    "invalidAmount": "Informe um valor válido.",
+    "tooLarge": "O valor é muito alto.",
+    "invalidCurrency": "Escolha uma moeda compatível.",
+    "invalidDueDay": "O dia deve estar entre 1 e 31.",
+    "invalidDate": "Use o seletor de data.",
+    "endDateBeforeStart": "A data de término deve ser igual ou posterior à de início.",
+    "required": "Este campo é obrigatório."
   },
   "properties": {
     "createProperty": "Criar imóvel",
@@ -161,6 +173,14 @@
     "propertyName": "Nome do imóvel",
     "propertyNamePlaceholder": "ex: Edifício Aurora",
     "propertyNameHint": "Opcional — usaremos o endereço se deixado em branco.",
+    "propertyType": "Tipo de imóvel",
+    "propertyTypeSelectPrompt": "Escolha…",
+    "propertyTypeOptions": {
+      "apartment": "Apartamento",
+      "house": "Casa",
+      "commercial": "Comercial",
+      "other": "Outro"
+    },
     "street": "Rua",
     "streetPlaceholder": "ex: Rua Augusta",
     "number": "Número",
@@ -179,7 +199,9 @@
     "postalCodeFound": "Endereço encontrado!",
     "postalCodeNotFound": "CEP não encontrado. Preencha o endereço manualmente.",
     "addressSection": "Endereço",
-    "addressHint": "Insira seu CEP acima para preencher automaticamente.",
+    "addressHint": "Vamos preencher o resto do endereço a partir do seu CEP.",
+    "streetAddressGroupLegend": "Endereço",
+    "cityStateGroupLegend": "Cidade e estado",
     "continue": "Continuar",
     "back": "Voltar",
     "nameYourUnits": "Nomeie suas unidades",
@@ -223,15 +245,15 @@
     "chargeInternet": "Internet",
     "addCustomCharge": "Adicionar cobrança personalizada",
     "configureCharge": "Configurar {name}",
-    "chargeType": "Tipo",
-    "chargeTypeFixed": "Fixo",
-    "chargeTypeVariable": "Variável",
+    "amountBehavior": "Tipo",
+    "amountBehaviorFixed": "Fixo",
+    "amountBehaviorVariable": "Variável",
     "switchToVariableContext": "Este valor varia?",
     "switchToVariable": "Mudar para variável",
     "switchToFixedContext": "Sabe o valor exato?",
     "switchToFixed": "Mudar para fixo",
-    "chargeTypeFixedHint": "Mesmo valor todo mês, adicionado automaticamente aos extratos.",
-    "chargeTypeVariableHint": "Valor vem das suas contas a cada mês.",
+    "amountBehaviorFixedHint": "Mesmo valor todo mês, adicionado automaticamente aos extratos.",
+    "amountBehaviorVariableHint": "Valor vem das suas contas a cada mês.",
     "variableBillUploadHint": "Upload de contas em breve",
     "chargeAmount": "Valor mensal",
     "chargeAmountPlaceholder": "ex: 1800",
@@ -264,6 +286,7 @@
     "invalidPostalCode": "Insira um CEP válido de 8 dígitos.",
     "invalidCity": "O nome da cidade não pode conter números.",
     "invalidState": "Selecione um estado válido.",
+    "invalidPropertyType": "Selecione um tipo de imóvel válido.",
     "duplicateAddress": "Você já tem um imóvel neste endereço.",
     "viewExistingProperty": "Ver imóvel existente",
     "createFailed": "Algo deu errado. Tente novamente.",
@@ -274,110 +297,338 @@
     "partialFailure": "Imóvel criado, mas alguns convites ou cobranças falharam. Você pode configurá-los na página do imóvel.",
     "dueDayApplied": "Aplicado a todas as cobranças"
   },
-  "propertyDetail": {
+  "propertyCreation": {
+    "title": "Configurando seu imóvel",
     "back": "Voltar",
-    "notFound": "Imóvel não encontrado",
-    "estimated": "estimado",
-    "variableCharges": "{count, plural, one {# cobrança variável} other {# cobranças variáveis}}",
-    "charges": "Cobranças",
-    "addCharge": "Adicionar",
-    "noCharges": "Nenhuma cobrança configurada ainda",
-    "variable": "Variável",
-    "rent": "Aluguel",
-    "recurring": "Fixo",
-    "tenants": "Inquilinos",
-    "invite": "Convidar",
-    "noTenants": "Nenhum inquilino ainda",
-    "active": "Ativo",
-    "pending": "Pendente",
-    "propertyInfo": "Informações do imóvel",
-    "edit": "Editar",
-    "splitLabel": "Inquilino {tenant}% · Proprietário {landlord}%",
-    "splitFixedLabel": "Inquilino {tenant} · Proprietário {landlord}",
-    "landlordPays": "Proprietário paga",
-    "dueDay": "Vencimento no dia {day} de cada mês",
-    "dueOn": "Dia {day}",
-    "inviteTenant": "Convidar inquilino",
-    "tenantEmail": "E-mail",
-    "tenantEmailPlaceholder": "inquilino@exemplo.com",
-    "tenantName": "Nome (opcional)",
-    "tenantNamePlaceholder": "Nome do inquilino",
-    "sendInvite": "Enviar convite",
-    "alreadyInvited": "Este e-mail já foi convidado.",
-    "inviteFailed": "Falha ao enviar convite. Tente novamente.",
-    "resendInvite": "Reenviar convite",
-    "cancelInvite": "Cancelar convite",
-    "cancelInviteConfirm": "Isso cancelará o convite. O inquilino não poderá entrar com este convite.",
-    "confirmCancel": "Sim, cancelar",
-    "cancel": "Cancelar",
-    "removeTenant": "Remover inquilino",
-    "removeTenantConfirm": "Isso removerá o acesso do inquilino a esta unidade. Ele não poderá ver extratos ou cobranças.",
-    "confirmRemove": "Sim, remover",
-    "tenantTitle": "Inquilino",
-    "pendingInviteTitle": "Convite pendente",
-    "invitedOn": "Convidado em {date} · {relative}",
-    "joinedOn": "Entrou em {date} · {relative}",
-    "editProperty": "Editar imóvel",
-    "saveChanges": "Salvar alterações",
-    "pauseCharge": "Pausar cobrança",
-    "resumeCharge": "Retomar cobrança",
-    "chargeInactive": "Pausada",
-    "statement": "Fatura",
-    "generateStatement": "Gerar fatura de {period}",
-    "completeStatement": "Completar fatura",
-    "draft": "Rascunho",
-    "statementDraft": "Fatura de {period}",
-    "statementDraftSummary": "{count, plural, one {# cobrança} other {# cobranças}} · {total}",
-    "missingCharges": "{count, plural, one {# cobrança esperada faltando} other {# cobranças esperadas faltando}}",
-    "statementNotStarted": "Fatura de {period} não foi iniciada",
-    "dueInDays": "Vence em {days, plural, one {# dia} other {# dias}}",
-    "statementOverdue": "Fatura de {period} está atrasada",
-    "tenantsWaiting": "Inquilinos estão esperando",
-    "draftNotPublished": "Ainda não publicada",
-    "daysOverdue": "{days} atrasada",
-    "daysLeft": "{days} restantes",
-    "selectPeriod": "Selecionar período",
-    "reviewAndPublish": "Revisar e Publicar",
-    "draftCreated": "Rascunho criado {date}",
-    "manual": "Manual",
-    "missingBadge": "faltando",
-    "add": "Adicionar",
-    "billAttached": "Conta anexada",
-    "total": "Total",
-    "chargesOfTotal": "{count} de {total}",
-    "completenessHint": "Cobranças faltantes não bloqueiam a publicação. Você pode revisar a fatura depois.",
-    "review": "Revisar",
-    "estimatedTenantOwes": "Estimado Inquilino deve",
-    "tenantOwes": "Inquilino deve",
-    "paymentDue": "Pagamento em {date}",
-    "paymentDueMonthly": "Pagamento no dia {day} de cada mês",
-    "publishOverdue": "Publicação atrasada — era para {date}",
-    "publishBy": "Publicar até {date}",
-    "publishToday": "Publicar hoje",
-    "publishByCountdown": "Publicar até {date} ({days}d restantes)",
-    "totalCharges": "Total de cobranças",
-    "youCover": "Você cobre",
-    "statementOverdueShort": "Fatura de {period} está {days} atrasada",
-    "statementDueIn": "Fatura de {period} vence em {days}",
-    "statementDueToday": "Fatura de {period} vence hoje",
-    "dueToday": "vence hoje",
-    "saveChanges": "Salvar alterações",
-    "addToStatement": "Adicionar à fatura",
-    "removeCharge": "Remover cobrança",
-    "removeChargeConfirm": "Remover esta cobrança da fatura?",
-    "yesRemove": "Sim, remover",
-    "saveForFuture": "Salvar para futuras faturas",
-    "chargeType": "Tipo de cobrança",
-    "chargeTypeFixed": "Fixa",
-    "chargeTypeVariable": "Variável",
-    "billNudge": "Anexar a conta ajuda o inquilino a verificar esta cobrança.",
-    "chargePlaceholder": "ex. Taxa de reparo, Multa",
-    "tapToAttachBill": "Toque para anexar uma conta",
-    "uploaded": "Enviado",
-    "fileTooLarge": "Arquivo muito grande. Tamanho máximo é {max}MB.",
-    "billRemovedOnSave": "A conta será removida ao salvar.",
-    "incomplete": "incompleta",
-    "uploadFailed": "Falha no upload. Tente novamente."
+    "exit": "Sair",
+    "step": "Etapa {current} de {total}",
+    "checkout": {
+      "property": {
+        "title": "Imóvel",
+        "subtitle": "Onde fica e qual o tipo?",
+        "placeholder": "Formulário do imóvel em breve."
+      },
+      "rent-dates": {
+        "title": "Aluguel e datas",
+        "subtitle": "Valor, dia de vencimento e período do contrato.",
+        "rentAmount": "Aluguel mensal",
+        "placeholder": "Formulário de aluguel e datas em breve."
+      },
+      "tenants": {
+        "title": "Inquilinos",
+        "subtitle": "Convide quem vai morar aqui.",
+        "nameLabel": "Nome",
+        "emailLabel": "E-mail",
+        "inviteToggleLabel": "Enviar convite por e-mail",
+        "inviteToggleHelper": "Enviaremos um e-mail quando você criar o imóvel.",
+        "removeAriaLabel": "Remover inquilino",
+        "addTenant": "Adicionar inquilino",
+        "addAnotherTenant": "Adicionar outro inquilino",
+        "required": "Obrigatório",
+        "invalidEmail": "Informe um e-mail válido",
+        "invalidTaxId": "Informe um CPF válido",
+        "newTenant": "Novo inquilino",
+        "summaryWillInvite": "Receberá convite",
+        "summaryNoInvite": "Sem convite",
+        "summaryNeedsAttention": "Precisa de atenção",
+        "summaryAndMore": "+{count} outros",
+        "emptyState": {
+          "title": "Adicione quem mora aqui",
+          "leadIn": "Depois disso, mabenn vai automaticamente:",
+          "bulletPayments": "Acompanhar cada pagamento e mostrar o que ainda está em aberto",
+          "bulletReminders": "Lembrar os inquilinos quando o aluguel vence",
+          "bulletLateNotices": "Enviar avisos de atraso em seu nome"
+        }
+      },
+      "expenses": {
+        "title": "Despesas",
+        "subtitle": "Contas de consumo, condomínio e quem paga.",
+        "addExpense": "Adicionar despesa",
+        "addAnotherExpense": "Adicionar outra despesa",
+        "newExpense": "Nova despesa",
+        "removeAriaLabel": "Remover despesa",
+        "remove": "Remover",
+        "summaryNeedsAttention": "Precisa de atenção",
+        "summaryAndMore": "+{count} a mais",
+        "typeLabel": "Tipo de despesa",
+        "moreOptions": "Mais opções",
+        "amountLabel": "Valor esperado",
+        "amountLabelFixed": "Valor mensal",
+        "amountHelperFixed": "Quanto você paga todo mês.",
+        "amountHelperVariable": "Opcional — vamos preencher com base nas suas contas.",
+        "amountHelperUnknown": "Opcional — vamos aprender o padrão conforme as contas chegarem.",
+        "typeRequired": "Escolha um tipo de despesa.",
+        "invalidAmount": "Informe um valor válido.",
+        "tooLarge": "O valor é muito alto.",
+        "typeOptions": {
+          "electricity": "Energia",
+          "water": "Água",
+          "gas": "Gás",
+          "internet": "Internet",
+          "condo": "Condomínio",
+          "trash": "Lixo",
+          "sewer": "Esgoto",
+          "cable": "TV",
+          "insurance": "Seguro",
+          "maintenance": "Manutenção",
+          "other": "Outra"
+        },
+        "amountBehavior": {
+          "fixedLabel": "Valor fixo",
+          "fixedTrigger": "Mesmo valor todo mês",
+          "fixedDescription": "Mesmo valor todo mês — internet, condomínio, seguro.",
+          "variableLabel": "Valor variável",
+          "variableTrigger": "Acompanhado pela conta",
+          "variableDescription": "Valor vem da conta — utilidades como energia, água, gás.",
+          "unknownLabel": "Não tenho certeza",
+          "unknownTrigger": "Vamos detectar pelas suas contas",
+          "unknownDescription": "Vamos aprender o padrão conforme as contas chegarem.",
+          "changeAriaLabel": "Alterar comportamento do valor"
+        },
+        "emptyState": {
+          "title": "Acompanhe toda despesa recorrente",
+          "leadIn": "Adicione todas as despesas recorrentes deste imóvel — mesmo as que seu inquilino paga. A mabenn vai:",
+          "bulletTracking": "Ficar de olho em contas de consumo, condomínio e outros boletos automaticamente",
+          "bulletPayments": "Conciliar cada pagamento com a despesa certa",
+          "bulletResponsibility": "Descobrir quem paga o quê assim que as contas começarem a chegar"
+        }
+      },
+      "tax-id": {
+        "title": "CPF/CNPJ",
+        "subtitle": "Usamos para vincular as cobranças a você.",
+        "editLinkPrompt": "Se não estiver certo,",
+        "editLinkAction": "alterar",
+        "editingDescription": "Alterar este valor vai atualizar seu perfil.",
+        "validation": {
+          "required": "Informe seu CPF ou CNPJ.",
+          "invalidTaxId": "Esse CPF ou CNPJ não parece válido.",
+          "tooLong": "Está mais longo do que o esperado.",
+          "tax_id_conflict": "Este CPF/CNPJ já está cadastrado em outra conta."
+        },
+        "whyWeAsk": {
+          "title": "Por que pedimos",
+          "bulletTrackingBR": "Capturamos qualquer boleto emitido no seu nome — condomínio, IPTU, o que vier — para que nada passe despercebido.",
+          "bulletTrackingFallback": "Ajudamos a acompanhar qualquer cobrança emitida no seu nome.",
+          "bulletRouting": "Quando uma cobrança chega, sabemos se é sua ou do inquilino.",
+          "bulletDocuments": "Aparece nos recibos de aluguel e contratos que a mabenn gera para você.",
+          "privacyLink": "Como protegemos suas informações",
+          "privacyComingSoon": "Política de privacidade em breve."
+        }
+      },
+      "bank": {
+        "title": "Conta bancária",
+        "subtitle": "Onde os aluguéis serão depositados.",
+        "placeholder": "Configuração da conta bancária em breve."
+      },
+      "summary": {
+        "title": "Configurar imóvel",
+        "remaining": "{count} de {total} seções restantes",
+        "needsAttention": "Precisa de atenção"
+      },
+      "cta": {
+        "create": "Criar imóvel",
+        "creating": "Criando…",
+        "remaining": "{count, plural, one {falta # seção} other {faltam # seções}}",
+        "hint": "Conclua as seções obrigatórias para criar o imóvel."
+      },
+      "actions": {
+        "back": "Voltar",
+        "continue": "Continuar",
+        "skip": "Pular"
+      },
+      "status": {
+        "done": "Concluído",
+        "skipped": "Pulado",
+        "upNext": "Próxima",
+        "needsAttention": "Precisa de atenção"
+      },
+      "extractionLegend": "Preenchido automaticamente do seu contrato"
+    },
+    "review": {
+      "title": "Revise o que encontramos",
+      "description": "Aqui está o que extraímos do seu contrato. A edição vem na próxima etapa.",
+      "sections": {
+        "property": "Imóvel",
+        "rent": "Aluguel e datas",
+        "parties": "Partes",
+        "expenses": "Despesas"
+      },
+      "fields": {
+        "address": "Endereço",
+        "propertyType": "Tipo de imóvel",
+        "rentAmount": "Aluguel",
+        "dueDay": "Dia de vencimento",
+        "includes": "Inclui",
+        "startDate": "Data de início",
+        "endDate": "Data de término",
+        "adjustmentFrequency": "Frequência de reajuste",
+        "adjustmentMethod": "Método de reajuste",
+        "adjustmentIndex": "Índice",
+        "name": "Nome",
+        "taxId": "CPF/CNPJ",
+        "email": "E-mail",
+        "expenseType": "Tipo",
+        "providerName": "Fornecedor",
+        "providerTaxId": "CNPJ do fornecedor",
+        "bundledInto": "Incluído em"
+      },
+      "dueDayValue": "Dia {day} de cada mês",
+      "noExpenses": "Nenhuma despesa encontrada neste contrato.",
+      "next": "Próximo",
+      "nextStepComingSoon": "Disponível na próxima etapa.",
+      "startOver": "Recomeçar",
+      "startOverConfirm": "Isso vai apagar tudo que você enviou. Continuar?",
+      "startOverYes": "Sim, recomeçar",
+      "startOverCancel": "Cancelar",
+      "recovery": {
+        "title": "Não encontramos os dados do seu contrato",
+        "description": "Seu envio anterior pode ter sido apagado. Tente enviar novamente.",
+        "cta": "Recomeçar"
+      },
+      "empty": {
+        "title": "Não conseguimos extrair muito deste contrato",
+        "description": "Tente enviar um arquivo diferente ou continue com a configuração manual.",
+        "cta": "Tentar outro arquivo"
+      }
+    },
+    "exitPrompt": {
+      "title": "Guardar seu progresso?",
+      "description": "Seu trabalho fica salvo neste aparelho. Continue de onde parou a qualquer momento, ou descarte e comece de novo.",
+      "saveForLater": "Guardar para depois",
+      "discard": "Descartar e sair"
+    },
+    "upload": {
+      "title": "Envie seu contrato de aluguel",
+      "description": "A gente lê o contrato e preenche o resto.",
+      "dropzone": "Escolha um PDF ou DOCX",
+      "dropzoneHintDesktop": "ou solte um aqui",
+      "fileTooLarge": "O arquivo precisa ter menos de {max} MB.",
+      "noContractLink": "Configurar sem contrato",
+      "noContractToast": "A configuração manual chega em breve. Por enquanto, envie seu contrato para continuar."
+    },
+    "loading": {
+      "static": "Lendo seu contrato…",
+      "line1": "Lendo seu contrato.",
+      "line2": "Encontrando endereços e datas.",
+      "line3": "Identificando as partes.",
+      "line4": "Procurando o valor do aluguel.",
+      "line5": "Conferindo as cláusulas de reajuste.",
+      "line6": "Anotando as despesas.",
+      "line7": "Juntando tudo.",
+      "sections": {
+        "property": "Imóvel",
+        "rent": "Aluguel e datas",
+        "parties": "Partes",
+        "expenses": "Despesas"
+      }
+    },
+    "errors": {
+      "file_too_large": {
+        "title": "Arquivo muito grande",
+        "message": "Seu contrato tem mais de 10 MB.",
+        "cta": "Envie um arquivo menor"
+      },
+      "unsupported_format": {
+        "title": "Formato não suportado",
+        "message": "Aceitamos apenas PDF e DOCX.",
+        "cta": "Escolha outro arquivo"
+      },
+      "corrupt_file": {
+        "title": "Não conseguimos ler este arquivo",
+        "message": "Não conseguimos ler este arquivo.",
+        "cta": "Tente outro arquivo"
+      },
+      "empty_file": {
+        "title": "Arquivo vazio",
+        "message": "Este arquivo está vazio.",
+        "cta": "Escolha outro arquivo"
+      },
+      "no_text_extractable": {
+        "title": "Sem texto legível",
+        "message": "Não encontramos nenhum texto. Este documento é escaneado?",
+        "cta": "Envie a versão digital"
+      },
+      "password_protected": {
+        "title": "Arquivo protegido por senha",
+        "message": "Este arquivo está protegido por senha.",
+        "cta": "Remova a senha e tente de novo"
+      },
+      "unsupported_language": {
+        "title": "Idioma não suportado",
+        "message": "Ainda não aceitamos contratos neste idioma.",
+        "cta": "Continuar sem um contrato"
+      },
+      "not_a_contract": {
+        "title": "Não é um contrato de aluguel",
+        "message": "Isto não parece um contrato de aluguel.",
+        "cta": "Tente outro arquivo"
+      },
+      "extraction_failed": {
+        "title": "Algo deu errado",
+        "message": "Algo deu errado do nosso lado.",
+        "cta": "Tente de novo"
+      },
+      "extraction_timeout": {
+        "title": "Demorando demais",
+        "message": "Demorou mais do que o esperado.",
+        "cta": "Tente de novo"
+      },
+      "rate_limited": {
+        "title": "Alta demanda",
+        "message": "Estamos com muita demanda no momento.",
+        "cta": "Tente de novo em instantes"
+      },
+      "api_key_missing": {
+        "title": "Extração indisponível",
+        "message": "Estamos com dificuldade de acessar o serviço de extração. Tente de novo mais tarde."
+      },
+      "duplicate_address": "Você já tem um imóvel neste endereço.",
+      "unauthenticated": "Sua sessão expirou. Faça login novamente para continuar.",
+      "idempotency_owner_mismatch": "Esta sessão do assistente não pode ser reutilizada em outra conta. Comece uma nova.",
+      "rpc_constraint_violation": "Não conseguimos salvar este imóvel porque algo não bate. Revise as informações e tente novamente.",
+      "contract_validation_failed": "O arquivo do contrato parece inválido. Tente enviá-lo novamente.",
+      "unknown": "Algo deu errado. Tente novamente."
+    },
+    "resumeUnavailable": "Seu progresso pode não ser salvo neste dispositivo.",
+    "success": {
+      "title": "Imóvel criado.",
+      "subtitle": "As contas e pagamentos deste imóvel serão acompanhados automaticamente assim que as movimentações chegarem.",
+      "summary": {
+        "property": {
+          "title": "Imóvel"
+        },
+        "rent": {
+          "title": "Aluguel",
+          "dueEvery": "Vence todo dia {ordinal} do mês",
+          "includes": "Inclui {list}"
+        },
+        "contract": {
+          "title": "Contrato",
+          "uploaded": "Contrato enviado",
+          "uploadFailed": "Seu contrato não terminou de ser enviado.",
+          "reupload": "Reenviar contrato"
+        },
+        "tenants": {
+          "title": "Inquilinos",
+          "invited": "{count, plural, one {# convite enviado} other {# convites enviados}}",
+          "deferred": "{count, plural, one {# salvo para depois} other {# salvos para depois}}",
+          "emailFailed": "{count, plural, one {# e-mail de convite não foi enviado} other {# e-mails de convite não foram enviados}}"
+        },
+        "expenses": {
+          "title": "Despesas",
+          "tracked": "{count, plural, one {# despesa registrada} other {# despesas registradas}}",
+          "byTypeList": "Inclui {list}"
+        },
+        "providerRequests": {
+          "title": "Novos fornecedores",
+          "note": "Estamos adicionando suporte a um ou mais dos seus fornecedores. Avisaremos quando o acompanhamento automático estiver disponível.",
+          "billUploadFailed": "{count, plural, one {# fatura não terminou de ser enviada} other {# faturas não terminaram de ser enviadas}}"
+        }
+      },
+      "cta": {
+        "goToDashboard": "Ir para o painel"
+      }
+    }
   },
   "settings": {
     "title": "Configurações",
@@ -392,9 +643,21 @@
     "pixComingSoon": "Configuração de chave Pix em breve",
     "fullName": "Nome completo",
     "fullNamePlaceholder": "Seu nome",
+    "email": "Email",
+    "emailDescription": "Vinculado ao seu login. Não pode ser alterado aqui.",
+    "taxIdDescription": "Usado para reconhecer cobranças no seu nome e em recibos e contratos.",
     "save": "Salvar",
     "theme": "Tema",
-    "signOut": "Sair"
+    "signOut": "Sair",
+    "validation": {
+      "required": "Este campo é obrigatório.",
+      "tooLong": "Está mais longo do que o esperado.",
+      "invalidTaxId": "Esse CPF ou CNPJ não parece válido.",
+      "cnpjNotFound": "Não encontramos esse CNPJ. Verifique o número.",
+      "cnpjVerificationUnavailable": "Não conseguimos verificar esse CNPJ agora. Tente novamente em instantes.",
+      "unauthenticated": "Faça login novamente para continuar.",
+      "updateFailed": "Não conseguimos salvar. Tente novamente."
+    }
   },
   "theme": {
     "light": "Claro",

@@ -330,11 +330,11 @@ Centered icon + title + description + optional actions. Used for "no records yet
 
 | Primitive | Purpose |
 |---|---|
-| `EmptyState` | Container. `flex flex-col items-center justify-center py-16 text-center`. |
+| `EmptyState` | Container. `flex flex-col items-center justify-center gap-4 py-16 text-center` — owns the vertical rhythm; children carry no outer margins. |
 | `EmptyStateIcon` | Renders the glyph inside a circle `IconTile` (size `lg`). Accepts `tone` (defaults `muted`). Pass the lucide icon as children. |
 | `EmptyStateTitle` | `text-lg font-semibold tracking-tight`. |
 | `EmptyStateDescription` | `text-sm leading-relaxed text-muted-foreground` with `max-w-sm`. |
-| `EmptyStateActions` | Container for buttons. `mt-6 flex gap-3`. Omit when no action. |
+| `EmptyStateActions` | Container for buttons. `flex gap-2`. Omit when no action. |
 
 ### Example
 
@@ -352,6 +352,54 @@ Centered icon + title + description + optional actions. Used for "no records yet
 ```
 
 Use `tone="primary"` on `EmptyStateIcon` when the empty state represents an inviting first action (e.g. "Add your first X"); keep `muted` for neutral "nothing here" states.
+
+---
+
+## Explainer Card
+
+**File:** `src/components/explainer-card.tsx`
+
+Calm, centered "why this matters" card. Used inside checkout sections, settings pages, and other surfaces where a short value statement (and optionally a CTA) precedes or replaces a form. Distinct from `EmptyState`: this is an explainer with a muted background and rounded card chrome, not a sparse "nothing here yet" page state with a large icon.
+
+### Primitives
+
+| Primitive | Purpose |
+|---|---|
+| `ExplainerCard` | Container. `bg-muted/40 flex flex-col items-center gap-6 rounded-card px-6 py-8 text-center md:px-10 md:py-10`. Dark mode: `dark:bg-foreground/10` (lifts past the muted ceiling). |
+| `ExplainerCardTitle` | `text-foreground text-base font-semibold`. Renders `<h3>`. |
+| `ExplainerCardDescription` | Optional one-line value statement. `text-muted-foreground text-sm leading-relaxed`. Renders `<p>`. |
+| `ExplainerCardContent` | Free-form slot for richer body content (bullet lists, custom layouts). `text-foreground text-sm` so bullet text reads stronger than the muted `Description`. Lucide icons inside it get `text-primary` automatically — size and alignment stay on the call site. Override the centered alignment per-element (e.g. `text-left` on a `<ul>`) when bullet text reads better left-aligned. |
+| `ExplainerCardList` / `ExplainerCardListItem` | Compositional bullet list. `List` renders `<ul className="flex flex-col gap-2 text-left">`; `ListItem` renders `<li>` with a `<Check>` icon prefix and wraps children in a `<span>`. Use this instead of hand-rolling bullet markup — three call sites (Tenants empty state, Tax-ID "why we ask", Expenses empty state) consume it. |
+| `ExplainerCardAction` | Container for a primary CTA, link, or pair of buttons. Centered. Omit when no action. |
+
+### Example
+
+```tsx
+<ExplainerCard>
+  <ExplainerCardTitle>Track every recurring charge</ExplainerCardTitle>
+  <ExplainerCardDescription>
+    Add every recurring charge for this property — even ones your tenant pays.
+  </ExplainerCardDescription>
+  <ExplainerCardContent>
+    <ExplainerCardList>
+      <ExplainerCardListItem>
+        Watch for utility, condo, and other bills automatically
+      </ExplainerCardListItem>
+      <ExplainerCardListItem>
+        Spot bill changes (price hikes, new fees) the moment they appear
+      </ExplainerCardListItem>
+    </ExplainerCardList>
+  </ExplainerCardContent>
+  <ExplainerCardAction>
+    <Button onClick={onAdd}>
+      <Plus />
+      Add expense
+    </Button>
+  </ExplainerCardAction>
+</ExplainerCard>
+```
+
+Use this for wizard/section explainers (Tenants empty state, Tax ID "why we ask", Expenses empty state). Reach for `EmptyState` instead when you want a full-page-style sparse state with a circle icon tile.
 
 ---
 
@@ -446,20 +494,31 @@ Persistent bottom action bar for primary CTAs on mobile.
 
 **File:** `src/components/responsive-modal.tsx`
 
-Dialog on desktop (`md:` and up), bottom Sheet on mobile. The standard pattern for all modals in the app.
+Dialog on desktop (`md:` and up), bottom Sheet on mobile. The standard pattern for all modals in the app. Fully compound API — the root takes no `title`/`description` props; compose the header explicitly.
 
-**Parts:** `ResponsiveModal` (root), `ResponsiveModal.Content` (scrollable area), `ResponsiveModal.Footer` (sticky bottom with conditional fade mask)
+**Parts:**
+- `ResponsiveModal` — root, renders Dialog (desktop) or Sheet (mobile)
+- `ResponsiveModal.Header` — header container (`pb-4 space-y-1`)
+- `ResponsiveModal.Title` — `text-lg font-semibold text-foreground`; wraps `DialogTitle`/`SheetTitle`. Hide visually with `className="sr-only"` if you need an accessible title without visible chrome
+- `ResponsiveModal.Description` — `text-base text-muted-foreground`; wraps `DialogDescription`/`SheetDescription`
+- `ResponsiveModal.Content` — scrollable area with `scrollbar-gutter: stable`
+- `ResponsiveModal.Footer` — sticky bottom with conditional fade mask
 
 **Key behaviors:**
-- **Optional title** — when omitted, the header is visually hidden (`sr-only`) but remains accessible. A `pt-2` spacer is added on mobile sheets for breathing room.
+- **Accessibility fallback** — if no `Title` is composed, a dev-only `console.warn` fires and an `sr-only` `DialogTitle` is rendered so screen readers still announce the dialog. Always prefer composing a real Title.
 - **Conditional fade mask** — `ResponsiveModal.Footer` only shows the `fade-mask-top` gradient when `ResponsiveModal.Content` is actually scrollable. Uses ResizeObserver in `useLayoutEffect`, shared via context. Defaults to no mask (no flash).
 - **Consistent spacing** — `ResponsiveModal.Content` uses `scrollbar-gutter: stable` so content width is the same whether or not a scrollbar is present. No more `-mr-4 pr-4` hacks.
+- **Surfaces** — desktop uses `rounded-card bg-card shadow-card p-6`; mobile uses `rounded-t-3xl bg-background` with safe-area padding.
 
-**When to use Content/Footer parts:** For modals with scrollable content and a sticky action button (e.g., edit property, edit charge). For small modals (invite tenant, confirm dialogs), skip the parts and just render content directly inside `ResponsiveModal`.
+**When to use Content/Footer parts:** For modals with scrollable content and a sticky action button (e.g., edit property, edit charge). For small confirm/info modals, skip Content/Footer and render directly inside the root.
 
 **Usage:**
 ```tsx
-<ResponsiveModal open={open} onOpenChange={setOpen} title="Edit property">
+<ResponsiveModal open={open} onOpenChange={setOpen}>
+  <ResponsiveModal.Header>
+    <ResponsiveModal.Title>Edit property</ResponsiveModal.Title>
+    <ResponsiveModal.Description>Update this property's address.</ResponsiveModal.Description>
+  </ResponsiveModal.Header>
   <ResponsiveModal.Content className="px-0.5">
     {/* scrollable form fields */}
   </ResponsiveModal.Content>
@@ -618,11 +677,40 @@ These live in `src/components/ui/` and are shadcn-based with product customizati
 ### Input (`ui/input.tsx`)
 - `h-12 rounded-2xl` — generous height, soft radius
 - Has built-in clear (X) button for text-based types
-- Dark mode: `dark:bg-zinc-800`
+- **`variant`** picks the idle background:
+  - `card` (default) — `bg-muted dark:bg-foreground/5 dark:border-foreground/15`. Use when the input sits inside a `bg-card` surface (sections, sheets, dialogs). Dark mode: `muted` and `input` collapse to nearly-`card` lightness, so we tint with `foreground/N` to lift past that ceiling.
+  - `page` — `bg-transparent dark:bg-input/30`. Use when the input sits directly on `bg-background`.
+
+### InputGroup (`ui/input-group.tsx`)
+- Wrapper for inputs with leading/trailing addons (icons, buttons, prefixes). Mirrors `Input`'s `card`/`page` variants — defaults to `card` so groups blend with sibling Inputs out of the box. The `IsoDatePicker` is the canonical consumer.
+- Parts: `InputGroup`, `InputGroupAddon` (with `align` prop: `inline-start | inline-end | block-start | block-end`), `InputGroupInput`, `InputGroupButton` (size: `xs | sm | icon-xs | icon-sm`), `InputGroupText`.
+
+### IsoDatePicker (`ui/iso-date-picker.tsx`)
+- Date input + popover calendar. Stores ISO `YYYY-MM-DD`; renders the user's locale format in the input.
+- Forwards a `variant` prop to the underlying `InputGroup` (`card` default).
+- Locale-aware (en, pt-BR, es). `min`/`max` bound selectable dates.
 
 ### Select (`ui/select.tsx`)
 - Styled to match Input: `h-12 rounded-2xl dark:bg-zinc-800`
 - Dropdown items use `pl-3 pr-9` for check indicator room
+
+### DropdownMenu (`ui/dropdown-menu.tsx`)
+- Standard shadcn DropdownMenu, customized to the design system. Use for action menus and "More" affordances (e.g. the Expense type selector's "More options" trigger).
+- Tokens: surface uses `--shadow-popover` (a softer popover-specific shadow distinct from `--shadow-card`).
+
+### Accordion (`ui/accordion.tsx`)
+- Wraps base-ui's Accordion primitive with our chrome and animation contract. Used for nested accordions inside sections (tenant rows, expense rows). The wizard's section accordion is its own primitive in `steps/checkout/section.tsx`.
+- Parts: `Accordion`, `AccordionItem`, `AccordionTrigger`, `AccordionContent`.
+- **`AccordionItem` props:**
+  - `isRemoving?: boolean` — swap the entrance for an exit animation. Pair with a `setTimeout(..., 200)` in the caller (or `useDelayedRemoval`) to drop the row from the data after the animation finishes.
+  - `animateEntrance?: boolean` — opt-in mount-in fade. Default `false` so rows render at full height immediately. Set true only for rows the user just added (typically driven by `useRecentlyAdded`'s `isJustAdded(id)`). The default-off was forced by a measurement bug: when an `AccordionItem` mounts inside a parent that's also animating its scrollHeight (e.g. a section accordion opening), an entrance-collapsed item pulls the parent's measurement down and the parent snaps to its real size at animation end.
+
+### RadioCardGroup (`components/radio-card-group.tsx`)
+- Card-style radio control. Each option renders as a tappable card with optional icon. Used for picking property type, expense type, amount behavior.
+- **`variant`** (cva):
+  - `card` — full-bleed bordered card: `bg-muted dark:bg-foreground/5 dark:border-foreground/15`. Two-line form factor with optional icon + label + description.
+  - `chip` — compact pill row, single line. Used for the "More options" affordance and the Add-row affordance in row lists.
+- Helpers: `radioCardVariants` cva (for composing chip-styled buttons that aren't actual radios — e.g., the full-width "Add tenant" / "Add expense" trigger styled as a chip).
 
 ### Card (`ui/card.tsx`)
 - Composable: `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`, plus the `cardShellClassName` helper for non-`<div>` shells (e.g., a `<Link>` or `<button>`).

@@ -34,26 +34,27 @@ describe('fetchProfile', () => {
     expect(result).toBeNull()
   })
 
-  it('maps profile data correctly', async () => {
+  it('returns the profile row verbatim from Supabase', async () => {
+    const row = {
+      id: 'u1',
+      acquisition_channel: null,
+      analytics_opt_out: false,
+      avatar_url: 'https://example.com/avatar.jpg',
+      created_at: '2026-01-01T00:00:00Z',
+      deleted_at: null,
+      email: 'joao@test.com',
+      full_name: 'João Silva',
+      has_redeemed_invite: true,
+      phone: null,
+      preferred_locale: 'pt-BR',
+      tax_id: '040.032.329-09',
+      updated_at: '2026-01-01T00:00:00Z',
+    }
     const result = await fetchProfile(mockSupabase({
       user: { id: 'u1' },
-      profileData: {
-        id: 'u1',
-        full_name: 'João Silva',
-        email: 'joao@test.com',
-        avatar_url: 'https://example.com/avatar.jpg',
-        preferred_locale: 'pt-BR',
-      },
+      profileData: row,
     }))
-    expect(result).toEqual({
-      id: 'u1',
-      fullName: 'João Silva',
-      email: 'joao@test.com',
-      avatarUrl: 'https://example.com/avatar.jpg',
-      preferredLocale: 'pt-BR',
-      pixKey: null,
-      pixKeyType: null,
-    })
+    expect(result).toEqual(row)
   })
 })
 

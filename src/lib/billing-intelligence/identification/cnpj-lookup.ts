@@ -111,19 +111,27 @@ async function saveToCache(info: CompanyInfo): Promise<void> {
   }
 }
 
-/** Fetch company info from BrasilAPI using the external dependency monitor. */
-async function fetchFromBrasilApi(cnpj: string): Promise<CompanyInfo> {
-  const result = await externalFetch<Record<string, unknown>>({
+// Raw API fetchers — return the externalFetch result so callers can branch on
+// status codes (404 vs 5xx vs network), reused by both `lookupCnpj` (parses
+// into CompanyInfo and caches) and `verifyCnpjExists` (existence-only probe).
+
+async function fetchBrasilApiCnpjData(cnpj: string) {
+  return externalFetch<Record<string, unknown>>({
     service: 'brasilapi',
     operation: 'cnpj-lookup',
     url: `https://brasilapi.com.br/api/cnpj/v1/${cnpj}`,
   })
+}
 
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message ?? 'BrasilAPI lookup failed')
-  }
+async function fetchReceitaWsCnpjData(cnpj: string) {
+  return externalFetch<Record<string, unknown>>({
+    service: 'receitaws',
+    operation: 'cnpj-lookup',
+    url: `https://receitaws.com.br/v1/cnpj/${cnpj}`,
+  })
+}
 
-  const data = result.data
+function brasilApiToCompanyInfo(data: Record<string, unknown>): CompanyInfo {
   return {
     cnpj: String(data.cnpj),
     companyName: String(data.nome_fantasia || data.razao_social),
@@ -139,22 +147,15 @@ async function fetchFromBrasilApi(cnpj: string): Promise<CompanyInfo> {
   }
 }
 
-/** Fetch company info from ReceitaWS using the external dependency monitor. */
-async function fetchFromReceitaWs(cnpj: string): Promise<CompanyInfo> {
-  const result = await externalFetch<Record<string, unknown>>({
-    service: 'receitaws',
-    operation: 'cnpj-lookup',
-    url: `https://receitaws.com.br/v1/cnpj/${cnpj}`,
-  })
-
-  if (!result.success || !result.data) {
-    throw new Error(result.error?.message ?? 'ReceitaWS lookup failed')
-  }
-
-  const data = result.data
-  const atividades = data.atividade_principal as Array<{ code: string; text: string }> | undefined
+function receitaWsToCompanyInfo(
+  data: Record<string, unknown>,
+  fallbackCnpj: string,
+): CompanyInfo {
+  const atividades = data.atividade_principal as
+    | Array<{ code: string; text: string }>
+    | undefined
   return {
-    cnpj: String(data.cnpj ?? '').replace(/[.\-/]/g, '') || cnpj,
+    cnpj: String(data.cnpj ?? '').replace(/[.\-/]/g, '') || fallbackCnpj,
     companyName: String(data.fantasia || data.nome),
     legalName: String(data.nome),
     activityCode: atividades?.[0]?.code
@@ -168,6 +169,24 @@ async function fetchFromReceitaWs(cnpj: string): Promise<CompanyInfo> {
     source: 'receitaws',
     lastUpdated: new Date().toISOString(),
   }
+}
+
+/** Throws on failure; for the lookup-with-cache path. */
+async function fetchFromBrasilApi(cnpj: string): Promise<CompanyInfo> {
+  const result = await fetchBrasilApiCnpjData(cnpj)
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message ?? 'BrasilAPI lookup failed')
+  }
+  return brasilApiToCompanyInfo(result.data)
+}
+
+/** Throws on failure; for the lookup-with-cache path. */
+async function fetchFromReceitaWs(cnpj: string): Promise<CompanyInfo> {
+  const result = await fetchReceitaWsCnpjData(cnpj)
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.message ?? 'ReceitaWS lookup failed')
+  }
+  return receitaWsToCompanyInfo(result.data, cnpj)
 }
 
 /**
@@ -194,4 +213,36 @@ export async function lookupCnpj(cnpj: string): Promise<CompanyInfo> {
   } catch { /* fallthrough */ }
 
   throw new Error('CNPJ lookup failed: cache miss and both BrasilAPI and ReceitaWS returned errors')
+}
+
+export type CnpjVerificationStatus = 'exists' | 'not-found' | 'unreachable'
+
+/**
+ * Existence probe for a CNPJ — does it exist in Receita Federal data?
+ *
+ * Reuses the same API primitives as `lookupCnpj` (BrasilAPI, then ReceitaWS
+ * fallback) but skips the cache and the CompanyInfo shaping. Used by the
+ * profile tax-id update flow to catch typo'd-but-algorithmically-valid CNPJs
+ * before persisting them. Caching is intentionally skipped — that cache is
+ * scoped to vendor/utility CNPJs, and mixing in user-identity CNPJs would
+ * blur orthogonal concerns.
+ */
+export async function verifyCnpjExists(
+  cnpj: string,
+): Promise<CnpjVerificationStatus> {
+  const clean = cnpj.replace(/[.\-/]/g, '')
+
+  const primary = await fetchBrasilApiCnpjData(clean)
+  if (primary.success) return 'exists'
+  if (primary.error?.statusCode === 404) return 'not-found'
+
+  const fallback = await fetchReceitaWsCnpjData(clean)
+  if (fallback.success) {
+    // ReceitaWS returns 200 with `{ status: 'ERROR' }` for non-existent CNPJs
+    // rather than a 404. Normalize that to a clean 'not-found'.
+    return fallback.data?.status === 'ERROR' ? 'not-found' : 'exists'
+  }
+  if (fallback.error?.statusCode === 404) return 'not-found'
+
+  return 'unreachable'
 }

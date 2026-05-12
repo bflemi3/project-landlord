@@ -1,25 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
 /**
- * Returns true when the given media query matches.
- * Returns false during SSR and on the first client render (safe default).
+ * Returns whether the given CSS media query currently matches. Returns `false`
+ * during SSR and the hydration render (safe default), then the real value on
+ * subsequent renders. Subscribes to changes for the lifetime of the component.
+ *
+ * Implemented with `useSyncExternalStore` so server / client snapshots are
+ * handled by React directly — no manual mounted-flag bookkeeping or
+ * synchronous-setState-in-effect anti-patterns.
  */
 export function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(false)
+  const subscribe = useCallback(
+    (notify: () => void) => {
+      const mql = window.matchMedia(query)
+      mql.addEventListener('change', notify)
+      return () => mql.removeEventListener('change', notify)
+    },
+    [query],
+  )
 
-  useEffect(() => {
-    const mql = window.matchMedia(query)
-    setMatches(mql.matches)
+  const getSnapshot = useCallback(() => window.matchMedia(query).matches, [query])
 
-    function onChange(e: MediaQueryListEvent) {
-      setMatches(e.matches)
-    }
-
-    mql.addEventListener('change', onChange)
-    return () => mql.removeEventListener('change', onChange)
-  }, [query])
-
-  return matches
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 }
+
+const getServerSnapshot = () => false

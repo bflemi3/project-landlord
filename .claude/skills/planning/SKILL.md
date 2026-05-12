@@ -15,9 +15,9 @@ Write small, focused implementation plans that an executing agent can reliably c
 - **No code in plans.** Describe everything in prose — including verification steps ("Run the type checker and test suite to verify"). The executor reads the current file and writes the code. It knows the exact commands from the codebase.
 - **Small plans, iterative delivery.** Each plan = one testable deliverable. Implement it, verify it, then plan the next deliverable in a new session with real code to reference.
 - **Deliverable-first, dependencies-backward.** Start with the end result — the page, the API, the component the user will see. Then work backward into what's needed to build it. This keeps every task tethered to the deliverable. Never front-load infrastructure divorced from the thing it serves.
-- **Build up from small working pieces.** Create the deliverable first (even if it can't fully work yet), then build each dependency with tests first, then wire it into the parent. Each piece is small, tested, and composed into the whole — not "build all deps, then assemble."
+- **Build up from small working pieces.** Create the deliverable first (even if it can't fully work yet), then build each pure-logic dependency with tests first; UI dependencies are smoke-verified after composition. Each piece is small and composed into the whole — not "build all deps, then assemble."
 - **Codebase-first.** Read the files before planning changes to them. Plans that assume file state are plans that drift.
-- **TDD by default.** Tasks that produce testable logic direct the executor to write tests first.
+- **TDD for logic, not UI.** Tasks that produce pure functions, utilities, transforms, server actions, or design-system primitives direct the executor to write tests first. UI components (pages, sections, feature components) are verified by browser smoke test, not unit-tested.
 
 ## Process
 
@@ -80,6 +80,7 @@ Wait for the user to confirm or correct before proceeding. If corrected, re-read
 1. **Files that will be modified** — understand current state, not assume it
 2. **Adjacent files** — imports, callers, tests that might be affected
 3. **Established patterns** — how does the codebase already do this kind of thing? Follow it.
+4. **Templates for new abstractions** — If the plan introduces a new component, hook, action, or other reusable abstraction, identify the closest existing equivalent in the codebase and follow its shape. Don't invent a new shape when an established one fits.
 
 Reference what you read in the plan. "The existing data layer pattern in `src/data/properties/` uses `shared.ts` + `server.ts` + `client.ts` — follow this for the new domain."
 
@@ -153,14 +154,14 @@ The plan document has these sections in order: Header, Codebase Context, File St
 **Tasks** — ordered deliverable-first, built up from small working pieces:
 
 1. Start with the deliverable — the route, page, or component the user will see. It won't fully work yet, but it establishes what we're building.
-2. Work backward into each dependency it needs. For each dependency: write tests first (TDD), build the implementation to pass the tests, then wire it into the parent that needs it.
+2. Work backward into each dependency it needs. For pure-logic dependencies (functions, utilities, transforms, server actions, design-system primitives): write tests first (TDD), build the implementation to pass the tests, then wire it into the parent. For UI dependencies: build, compose, then smoke-verify in the browser.
 3. Each task produces a small, tested, working piece that composes into the whole.
 
 Each task states: what to change, why, where, and how to verify. Describe changes in prose — no code blocks. Include `**Check:**` pointers to relevant skills/rules.
 
 If a task needs something that doesn't exist yet (a hook, a utility, a table), create it in the same task or the task immediately before — not in a front-loaded "infrastructure" block divorced from what uses it. Dependencies are pulled in by the deliverable, not pushed ahead of it.
 
-**TDD by default.** For tasks that produce testable logic (functions, utilities, data transformations, server actions), direct the executor to write tests first — state what the test should assert, then describe the implementation. The executor uses `superpowers:test-driven-development`. Pure scaffolding tasks (route files, dependency installs, migrations) don't need TDD.
+**TDD for logic, not UI.** For pure logic (functions, utilities, transforms, server actions, design-system primitives like Badge/Button/Input), the executor writes tests first using `superpowers:test-driven-development` — state what the test should assert, then describe the implementation. For UI components — pages, sections, feature components — do NOT direct unit tests; verify by running the component in a browser. **If a UI component has non-trivial logic, the plan must direct the executor to extract that logic into a pure function in `src/lib/` (or a colocated `*-logic.ts` / custom hook), unit-test the function, and have the component call it.** Pure scaffolding tasks (route files, dependency installs, migrations) don't need any tests.
 
 **Do not commit during execution.** The executor must NOT create git commits after individual tasks. All work stays uncommitted until the user has tested and approved everything. The final commit happens manually after user review.
 

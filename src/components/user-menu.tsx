@@ -1,16 +1,46 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import posthog from 'posthog-js'
-import { LogOut, User, CreditCard, Palette, Camera, Sun, Moon, Monitor, Check } from 'lucide-react'
+import { LogOut, User, CreditCard, Palette, Camera, Sun, Moon, Monitor } from 'lucide-react'
+
+import {
+  type UseMutationResult,
+  useQueryClient,
+} from '@tanstack/react-query'
+
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
+import {
+  Field,
+  FieldActionRow,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { ResponsiveModal } from '@/components/responsive-modal'
+import { TaxIdInput, TaxIdLabel } from '@/components/ui/tax-id'
 import { createClient } from '@/lib/supabase/client'
+import {
+  useProfile,
+  useUpdateNameMutation,
+  useUpdateTaxIdMutation,
+} from '@/data/profiles/client'
+import { profileQueryKey } from '@/data/profiles/shared'
+import { nameInputSchema, taxIdInputSchema } from '@/schemas/profile'
+import { useHasHydrated } from '@/lib/hooks/use-has-hydrated'
+import {
+  useFormValidation,
+  zodValidator,
+  type Validator,
+} from '@/lib/forms/use-form-validation'
+import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'
+import type { ValidationFieldErrors } from '@/lib/validation'
 import { cn } from '@/lib/utils'
 import { type Locale, locales } from '@/i18n/routing'
 
@@ -27,13 +57,12 @@ const localeLabels: Record<Locale, { short: string; native: string }> = {
   es: { short: 'ES', native: 'Español' },
 }
 
-interface UserMenuTriggerProps {
-  userName?: string
-  avatarUrl?: string
-}
-
-export function UserMenuTrigger({ userName, avatarUrl }: UserMenuTriggerProps) {
+export function UserMenuTrigger() {
+  const { data: profile } = useProfile()
   const [open, setOpen] = useState(false)
+
+  const userName = profile?.full_name ?? undefined
+  const avatarUrl = profile?.avatar_url ?? undefined
 
   return (
     <>
@@ -41,18 +70,13 @@ export function UserMenuTrigger({ userName, avatarUrl }: UserMenuTriggerProps) {
         onClick={() => setOpen(true)}
         className="rounded-full transition-opacity hover:opacity-80"
       >
-        <Avatar size="default">
+        <Avatar size="lg">
           {avatarUrl && <AvatarImage src={avatarUrl} alt={userName ?? ''} />}
           <AvatarFallback>{getInitials(userName)}</AvatarFallback>
         </Avatar>
       </button>
 
-      <UserSettingsModal
-        open={open}
-        onOpenChange={setOpen}
-        userName={userName}
-        avatarUrl={avatarUrl}
-      />
+      <UserSettingsModal open={open} onOpenChange={setOpen} />
     </>
   )
 }
@@ -66,13 +90,9 @@ type SettingsSection = 'profile' | 'payment' | 'appearance'
 function UserSettingsModal({
   open,
   onOpenChange,
-  userName,
-  avatarUrl,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  userName?: string
-  avatarUrl?: string
 }) {
   const t = useTranslations('settings')
   const [activeSection, setActiveSection] = useState<SettingsSection>('profile')
@@ -94,113 +114,186 @@ function UserSettingsModal({
     <ResponsiveModal
       open={open}
       onOpenChange={onOpenChange}
-      title={t('title')}
       className="sm:max-w-2xl"
     >
-      {/* Nav — segmented on mobile, sidebar on desktop */}
-      <div className="mt-2 md:mt-4 md:flex md:gap-6">
-        <div className="flex flex-col md:w-44 md:shrink-0 md:rounded-xl md:bg-muted md:p-2">
-          {/* Mobile: pill segmented control */}
-          <div className="mb-6 flex gap-1 rounded-xl bg-secondary/60 p-1 md:mb-0 md:flex-col md:rounded-none md:bg-transparent md:p-0">
-            {sections.map((section) => {
-              const isActive = activeSection === section.key
-              return (
-                <button
-                  key={section.key}
-                  onClick={() => setActiveSection(section.key)}
-                  className={cn(
-                    'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors md:flex-none md:justify-start md:px-3',
-                    isActive
-                      ? 'bg-background text-foreground shadow-sm md:bg-primary/10 md:text-primary md:shadow-none'
-                      : 'text-muted-foreground hover:text-foreground md:hover:bg-secondary',
-                  )}
-                >
-                  <section.icon className="size-4" />
-                  <span className="md:inline">{section.label}</span>
-                </button>
-              )
-            })}
+      <ResponsiveModal.Header>
+        <ResponsiveModal.Title>{t('title')}</ResponsiveModal.Title>
+      </ResponsiveModal.Header>
+      <ResponsiveModal.Content>
+        {/* Nav — segmented on mobile, sidebar on desktop */}
+        <div className="md:flex md:gap-6">
+          <div className="flex flex-col md:w-44 md:shrink-0 md:rounded-xl md:bg-muted md:p-2">
+            {/* Mobile: pill segmented control */}
+            <div className="mb-6 flex gap-1 rounded-xl bg-secondary/60 p-1 md:mb-0 md:flex-col md:rounded-none md:bg-transparent md:p-0">
+              {sections.map((section) => {
+                const isActive = activeSection === section.key
+                return (
+                  <button
+                    key={section.key}
+                    onClick={() => setActiveSection(section.key)}
+                    className={cn(
+                      'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors md:flex-none md:justify-start md:px-3',
+                      isActive
+                        ? 'bg-background text-foreground shadow-sm md:bg-primary/10 md:text-primary md:shadow-none'
+                        : 'text-muted-foreground hover:text-foreground md:hover:bg-secondary',
+                    )}
+                  >
+                    <section.icon className="size-4" />
+                    <span className="md:inline">{section.label}</span>
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Sign out at bottom of nav — desktop only */}
+            <div className="mt-auto hidden pt-4 md:block">
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive"
+              >
+                <LogOut className="size-4" />
+                {t('signOut')}
+              </button>
+            </div>
           </div>
 
-          {/* Sign out at bottom of nav — desktop only */}
-          <div className="mt-auto hidden pt-4 md:block">
-            <button
-              onClick={handleSignOut}
-              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive"
-            >
-              <LogOut className="size-4" />
-              {t('signOut')}
-            </button>
+          {/* Content */}
+          <div className="min-h-[200px] flex-1 md:min-h-[280px]">
+            {activeSection === 'profile' && <ProfileSection />}
+            {activeSection === 'payment' && <PaymentSection />}
+            {activeSection === 'appearance' && <AppearanceSection />}
           </div>
         </div>
-
-        {/* Content */}
-        <div className="min-h-[200px] flex-1 md:min-h-[280px]">
-          {activeSection === 'profile' && (
-            <ProfileSection userName={userName} avatarUrl={avatarUrl} />
-          )}
-          {activeSection === 'payment' && <PaymentSection />}
-          {activeSection === 'appearance' && <AppearanceSection />}
-        </div>
-      </div>
+      </ResponsiveModal.Content>
 
       {/* Sign out — mobile only */}
-      <div className="mt-6 flex justify-center md:hidden">
-        <button
-          onClick={handleSignOut}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive"
-        >
-          <LogOut className="size-3.5" />
-          {t('signOut')}
-        </button>
-      </div>
+      <ResponsiveModal.Footer className="flex justify-center md:hidden">
+        <div>
+          <button
+            onClick={handleSignOut}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive"
+          >
+            <LogOut className="size-3.5" />
+            {t('signOut')}
+          </button>
+        </div>
+      </ResponsiveModal.Footer>
     </ResponsiveModal>
   )
 }
 
 // =============================================================================
-// Profile section — editable name, avatar, language
+// Profile section — pure composition; each child owns its own state
 // =============================================================================
 
-function ProfileSection({ userName, avatarUrl }: { userName?: string; avatarUrl?: string }) {
+function ProfileSection() {
+  return (
+    <div className="space-y-6">
+      <AvatarField />
+      <FieldGroup>
+        <EmailField />
+        <NameField />
+        <TaxIdField />
+      </FieldGroup>
+      <LanguageField />
+    </div>
+  )
+}
+
+// =============================================================================
+// useEditableProfileField — shared lifecycle for single-field text inputs
+// (Name, Tax ID): local edit state, dirty tracking, validation, save mutation,
+// server-error surface, touched-reset on success. Avatar/email/language don't
+// share this shape and stay self-contained.
+// =============================================================================
+
+type EditableMutation<T> = UseMutationResult<
+  T,
+  { errors: ValidationFieldErrors<T> },
+  string
+>
+
+interface UseEditableProfileFieldOptions<TInput> {
+  fieldKey: keyof TInput & string
+  initialValue: string
+  validator: Validator<TInput>
+  mutation: EditableMutation<TInput>
+}
+
+function useEditableProfileField<TInput>({
+  fieldKey,
+  initialValue,
+  validator,
+  mutation,
+}: UseEditableProfileFieldOptions<TInput>) {
+  const [value, setValue] = useState(initialValue)
+  const [savedValue, setSavedValue] = useState(initialValue)
+
+  const values = useMemo(
+    () => ({ [fieldKey]: value }) as unknown as TInput,
+    [fieldKey, value],
+  )
+  const form = useFormValidation({ values, validator })
+  const serverErrors = useServerValidationErrors<TInput>()
+
+  const dirty = value !== savedValue
+  const isPending = mutation.isPending
+
+  const save = useCallback(() => {
+    if (!dirty || !form.isValid) return
+    serverErrors.clearServerErrors()
+    mutation.mutate(value, {
+      onSuccess: (_data, raw) => {
+        setSavedValue(raw)
+        form.clearTouched(fieldKey)
+      },
+      onError: (err) => serverErrors.setServerErrors(err.errors),
+    })
+  }, [dirty, fieldKey, form, mutation, serverErrors, value])
+
+  const generalError = serverErrors.serverErrors.general?.[0]
+  const fieldError =
+    (form.hasError(fieldKey) ? form.errors[fieldKey]?.[0] : undefined) ??
+    serverErrors.getServerError(fieldKey) ??
+    generalError
+
+  return {
+    value,
+    setValue,
+    dirty,
+    isPending,
+    save,
+    isValid: form.isValid,
+    markTouched: () => form.markTouched(fieldKey),
+    clearFieldError: () => serverErrors.clearServerErrors(fieldKey),
+    error: fieldError,
+    showError: !!fieldError,
+  }
+}
+
+// =============================================================================
+// AvatarField — image upload + invalidate
+// =============================================================================
+
+function AvatarField() {
   const t = useTranslations('settings')
-  const currentLocale = useLocale()
+  const { data: profile } = useProfile()
+  const queryClient = useQueryClient()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [name, setName] = useState(userName ?? '')
-  const [currentAvatarUrl, setCurrentAvatarUrl] = useState(avatarUrl)
-  const [saving, setSaving] = useState(false)
-  const [uploadingAvatar, setUploadingAvatar] = useState(false)
-  const [dirty, setDirty] = useState(false)
+  const [uploading, setUploading] = useState(false)
 
-  function handleNameChange(value: string) {
-    setName(value)
-    setDirty(value.trim() !== (userName ?? '').trim())
-  }
+  const userName = profile?.full_name ?? undefined
+  const avatarUrl = profile?.avatar_url ?? undefined
 
-  async function handleSaveName() {
-    if (!dirty || !name.trim()) return
-    setSaving(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({ full_name: name.trim(), updated_at: new Date().toISOString() })
-        .eq('id', user.id)
-    }
-    setSaving(false)
-    setDirty(false)
-  }
-
-  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setUploadingAvatar(true)
+    setUploading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
-      setUploadingAvatar(false)
+      setUploading(false)
       return
     }
 
@@ -216,108 +309,236 @@ function ProfileSection({ userName, avatarUrl }: { userName?: string; avatarUrl?
         .from('avatars')
         .getPublicUrl(filePath)
 
-      // Add cache buster so the browser shows the new image
+      // Cache buster so the browser shows the new image immediately.
       const freshUrl = `${publicUrl}?t=${Date.now()}`
 
       await supabase
         .from('profiles')
-        .update({ avatar_url: freshUrl, updated_at: new Date().toISOString() })
+        .update({ avatar_url: freshUrl })
         .eq('id', user.id)
 
-      setCurrentAvatarUrl(freshUrl)
+      // All consumers read via useProfile() — invalidate refreshes them in lockstep.
+      await queryClient.invalidateQueries({ queryKey: profileQueryKey() })
     }
 
-    setUploadingAvatar(false)
-    // Reset input so the same file can be re-selected
+    setUploading(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  function handleLocaleChange(locale: Locale) {
+  return (
+    <div className="flex items-center gap-4">
+      <div className="relative">
+        <Avatar size="lg">
+          {avatarUrl && <AvatarImage src={avatarUrl} alt={userName ?? ''} />}
+          <AvatarFallback className="text-base">{getInitials(userName)}</AvatarFallback>
+        </Avatar>
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
+        >
+          <Camera className="size-3" />
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          onChange={handleUpload}
+          className="hidden"
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-foreground">{userName || t('noName')}</p>
+        <p className="text-sm text-muted-foreground">{t('profileDescription')}</p>
+      </div>
+    </div>
+  )
+}
+
+// =============================================================================
+// EmailField — read-only display, sourced from auth identity
+// =============================================================================
+
+function EmailField() {
+  const t = useTranslations('settings')
+  const { data: profile } = useProfile()
+  const email = profile?.email ?? ''
+
+  return (
+    <Field>
+      <FieldLabel htmlFor="settings-email">{t('email')}</FieldLabel>
+      <Input
+        id="settings-email"
+        type="email"
+        value={email}
+        readOnly
+        autoComplete="email"
+      />
+      <FieldDescription>{t('emailDescription')}</FieldDescription>
+    </Field>
+  )
+}
+
+// =============================================================================
+// NameField — full name input with inline save
+// =============================================================================
+
+function NameField() {
+  const t = useTranslations('settings')
+  const { data: profile } = useProfile()
+  const mutation = useUpdateNameMutation()
+  const validator = useMemo(() => zodValidator(nameInputSchema), [])
+  const field = useEditableProfileField({
+    fieldKey: 'full_name',
+    initialValue: profile?.full_name ?? '',
+    validator,
+    mutation,
+  })
+
+  return (
+    <Field data-invalid={field.showError || undefined}>
+      <FieldLabel htmlFor="settings-name">{t('fullName')}</FieldLabel>
+      <FieldActionRow
+        actionVisible={field.dirty}
+        action={
+          <Button
+            onClick={field.save}
+            loading={field.isPending}
+            disabled={!field.isValid}
+            className="shrink-0"
+          >
+            {t('save')}
+          </Button>
+        }
+      >
+        <Input
+          id="settings-name"
+          value={field.value}
+          onChange={(e) => {
+            field.setValue(e.target.value)
+            field.clearFieldError()
+          }}
+          onBlur={field.markTouched}
+          placeholder={t('fullNamePlaceholder')}
+          autoComplete="name"
+          aria-invalid={field.showError}
+          aria-describedby={field.showError ? 'settings-name-error' : undefined}
+        />
+      </FieldActionRow>
+      {field.showError && field.error && (
+        <FieldError id="settings-name-error">
+          {t(`validation.${field.error}`)}
+        </FieldError>
+      )}
+    </Field>
+  )
+}
+
+// =============================================================================
+// TaxIdField — CPF/CNPJ input with inline save
+// =============================================================================
+
+function TaxIdField() {
+  const t = useTranslations('settings')
+  const { data: profile } = useProfile()
+  const mutation = useUpdateTaxIdMutation()
+  const validator = useMemo(() => zodValidator(taxIdInputSchema), [])
+  const field = useEditableProfileField({
+    fieldKey: 'tax_id',
+    initialValue: profile?.tax_id ?? '',
+    validator,
+    mutation,
+  })
+
+  return (
+    <Field data-invalid={field.showError || undefined}>
+      <TaxIdLabel
+        htmlFor="settings-tax-id"
+        countryCode="BR"
+        mode="cpf-or-cnpj"
+        value={field.value}
+      />
+      <FieldActionRow
+        actionVisible={field.dirty}
+        action={
+          <Button
+            onClick={field.save}
+            loading={field.isPending}
+            disabled={!field.isValid}
+            className="shrink-0"
+          >
+            {t('save')}
+          </Button>
+        }
+      >
+        <TaxIdInput
+          id="settings-tax-id"
+          countryCode="BR"
+          mode="cpf-or-cnpj"
+          value={field.value}
+          onValueChange={(next) => {
+            field.setValue(next)
+            field.clearFieldError()
+          }}
+          onBlur={field.markTouched}
+          aria-invalid={field.showError}
+          aria-describedby={
+            field.showError ? 'settings-tax-id-error' : 'settings-tax-id-description'
+          }
+        />
+      </FieldActionRow>
+      <FieldDescription id="settings-tax-id-description">
+        {t('taxIdDescription')}
+      </FieldDescription>
+      {field.showError && field.error && (
+        <FieldError id="settings-tax-id-error">
+          {t(`validation.${field.error}`)}
+        </FieldError>
+      )}
+    </Field>
+  )
+}
+
+// =============================================================================
+// LanguageField — locale selector (cookie + reload)
+// =============================================================================
+
+function LanguageField() {
+  const t = useTranslations('settings')
+  const currentLocale = useLocale()
+
+  function handleChange(locale: Locale) {
     if (locale === currentLocale) return
+    // eslint-disable-next-line react-hooks/immutability
     document.cookie = `NEXT_LOCALE=${locale};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`
     window.location.reload()
   }
 
   return (
-    <div className="space-y-6">
-      {/* Avatar */}
-      <div className="flex items-center gap-4">
-        <div className="relative">
-          <Avatar size="lg">
-            {currentAvatarUrl && <AvatarImage src={currentAvatarUrl} alt={userName ?? ''} />}
-            <AvatarFallback className="text-base">{getInitials(name || userName)}</AvatarFallback>
-          </Avatar>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploadingAvatar}
-            className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
-          >
-            <Camera className="size-3" />
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            onChange={handleAvatarUpload}
-            className="hidden"
-          />
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="font-semibold text-foreground">{name || t('noName')}</p>
-          <p className="text-sm text-muted-foreground">{t('profileDescription')}</p>
-        </div>
-      </div>
-
-      {/* Name */}
-      <div>
-        <Label htmlFor="settings-name" className="mb-2">{t('fullName')}</Label>
-        <div className="flex gap-2">
-          <Input
-            id="settings-name"
-            value={name}
-            onChange={(e) => handleNameChange(e.target.value)}
-            placeholder={t('fullNamePlaceholder')}
-            autoComplete="name"
-          />
-          {dirty && (
-            <Button
-              onClick={handleSaveName}
-              loading={saving}
-              size="default"
-              className="shrink-0"
+    <div>
+      <Label className="mb-2">{t('language')}</Label>
+      <div className="grid grid-cols-3 gap-2">
+        {locales.map((locale) => {
+          const isActive = locale === currentLocale
+          const label = localeLabels[locale]
+          return (
+            <button
+              key={locale}
+              onClick={() => handleChange(locale)}
+              className={cn(
+                'flex items-center justify-center rounded-xl border px-3 py-2.5 transition-colors',
+                isActive
+                  ? 'border-primary bg-primary/5 dark:bg-primary/10'
+                  : 'border-border hover:border-primary/30',
+              )}
             >
-              {t('save')}
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Language */}
-      <div>
-        <Label className="mb-2">{t('language')}</Label>
-        <div className="grid grid-cols-3 gap-2">
-          {locales.map((locale) => {
-            const isActive = locale === currentLocale
-            const label = localeLabels[locale]
-            return (
-              <button
-                key={locale}
-                onClick={() => handleLocaleChange(locale)}
-                className={cn(
-                  'flex items-center justify-center rounded-xl border px-3 py-2.5 transition-colors',
-                  isActive
-                    ? 'border-primary bg-primary/5 dark:bg-primary/10'
-                    : 'border-border hover:border-primary/30',
-                )}
-              >
-                <span className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-foreground')}>
-                  <span className="md:hidden">{label.short}</span>
-                  <span className="hidden md:inline">{label.native}</span>
-                </span>
-              </button>
-            )
-          })}
-        </div>
+              <span className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-foreground')}>
+                <span className="md:hidden">{label.short}</span>
+                <span className="hidden md:inline">{label.native}</span>
+              </span>
+            </button>
+          )
+        })}
       </div>
     </div>
   )
@@ -355,9 +576,7 @@ function AppearanceSection() {
   const t = useTranslations('settings')
   const tTheme = useTranslations('theme')
   const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => setMounted(true), [])
+  const hydrated = useHasHydrated()
 
   function handleThemeChange(value: string) {
     setTheme(value)
@@ -366,7 +585,7 @@ function AppearanceSection() {
     }
   }
 
-  if (!mounted) return null
+  if (!hydrated) return null
 
   return (
     <div>
@@ -396,4 +615,3 @@ function AppearanceSection() {
     </div>
   )
 }
-

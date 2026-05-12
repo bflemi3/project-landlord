@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { formatAddress, formatAddressHtml } from '../format-address'
+import type { PropertyInput } from '@/schemas/property'
 
 describe('formatAddress', () => {
   // ===========================================================================
@@ -8,15 +9,20 @@ describe('formatAddress', () => {
 
   describe('BR format', () => {
     it('formats full address', () => {
-      expect(formatAddress({
+      const propertyInput: PropertyInput = {
+        name: '',
         street: 'Rua Augusta',
         number: '123',
         complement: 'Apto 4B',
         neighborhood: 'Consolação',
         city: 'São Paulo',
         state: 'SP',
-        countryCode: 'BR',
-      })).toBe('Rua Augusta, 123, Apto 4B, Consolação, São Paulo, SP')
+        country_code: 'BR',
+        postal_code: '01310-100',
+        property_type: null,
+      }
+
+      expect(formatAddress(propertyInput)).toBe('Rua Augusta, 123, Apto 4B, Consolação, São Paulo, SP')
     })
 
     it('formats without complement', () => {
@@ -26,7 +32,7 @@ describe('formatAddress', () => {
         neighborhood: 'Campeche',
         city: 'Florianópolis',
         state: 'SC',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Avenida Campeche, 533, Campeche, Florianópolis, SC')
     })
 
@@ -36,7 +42,7 @@ describe('formatAddress', () => {
         number: '123',
         city: 'São Paulo',
         state: 'SP',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, 123, São Paulo, SP')
     })
 
@@ -44,7 +50,7 @@ describe('formatAddress', () => {
       expect(formatAddress({
         street: 'Rua Augusta',
         number: '123',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, 123')
     })
 
@@ -52,35 +58,35 @@ describe('formatAddress', () => {
       expect(formatAddress({
         city: 'São Paulo',
         state: 'SP',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('São Paulo, SP')
     })
 
     it('formats city only', () => {
       expect(formatAddress({
         city: 'Florianópolis',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Florianópolis')
     })
 
     it('formats state only', () => {
       expect(formatAddress({
         state: 'SC',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('SC')
     })
 
     it('formats neighborhood only', () => {
       expect(formatAddress({
         neighborhood: 'Campeche',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Campeche')
     })
 
     it('formats street only', () => {
       expect(formatAddress({
         street: 'Rua Augusta',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta')
     })
 
@@ -95,7 +101,7 @@ describe('formatAddress', () => {
       expect(formatAddress({
         street: 'Rua Augusta',
         number: '123',
-        countryCode: 'br',
+        country_code: 'br',
       })).toBe('Rua Augusta, 123')
     })
   })
@@ -113,7 +119,7 @@ describe('formatAddress', () => {
         neighborhood: 'Downtown',
         city: 'Austin',
         state: 'TX',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('123 Main St, Apt 4B, Downtown, Austin, TX')
     })
 
@@ -123,21 +129,21 @@ describe('formatAddress', () => {
         number: '456',
         city: 'Austin',
         state: 'TX',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('456 Main St, Austin, TX')
     })
 
     it('formats street only', () => {
       expect(formatAddress({
         street: 'Main St',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('Main St')
     })
 
     it('formats number only', () => {
       expect(formatAddress({
         number: '789',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('789')
     })
   })
@@ -181,7 +187,7 @@ describe('formatAddress', () => {
         neighborhood: ' Consolação ',
         city: ' São Paulo ',
         state: ' SP ',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, 123, Apto 4B, Consolação, São Paulo, SP')
     })
 
@@ -193,7 +199,7 @@ describe('formatAddress', () => {
         neighborhood: undefined,
         city: undefined,
         state: undefined,
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('')
     })
 
@@ -202,7 +208,7 @@ describe('formatAddress', () => {
         street: '',
         number: '42',
         complement: '',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('42')
     })
 
@@ -212,7 +218,7 @@ describe('formatAddress', () => {
         number: '1',
         neighborhood: 'Centro',
         state: 'RJ',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua X, 1, Centro, RJ')
     })
   })
@@ -228,7 +234,7 @@ describe('formatAddressHtml', () => {
         neighborhood: 'Consolação',
         city: 'São Paulo',
         state: 'SP',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, 123<br>Apto 4B<br>Consolação<br>São Paulo, SP')
     })
 
@@ -239,7 +245,7 @@ describe('formatAddressHtml', () => {
         neighborhood: 'Campeche',
         city: 'Florianópolis',
         state: 'SC',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Avenida Campeche, 533<br>Campeche<br>Florianópolis, SC')
     })
 
@@ -249,7 +255,7 @@ describe('formatAddressHtml', () => {
         number: '123',
         city: 'São Paulo',
         state: 'SP',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('Rua Augusta, 123<br>São Paulo, SP')
     })
 
@@ -257,7 +263,7 @@ describe('formatAddressHtml', () => {
       expect(formatAddressHtml({
         city: 'São Paulo',
         state: 'SP',
-        countryCode: 'BR',
+        country_code: 'BR',
       })).toBe('São Paulo, SP')
     })
   })
@@ -271,7 +277,7 @@ describe('formatAddressHtml', () => {
         neighborhood: 'Downtown',
         city: 'Austin',
         state: 'TX',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('123 Main St<br>Apt 4B<br>Downtown<br>Austin, TX')
     })
 
@@ -281,7 +287,7 @@ describe('formatAddressHtml', () => {
         number: '456',
         city: 'Portland',
         state: 'OR',
-        countryCode: 'US',
+        country_code: 'US',
       })).toBe('456 Oak Ave<br>Portland, OR')
     })
   })
