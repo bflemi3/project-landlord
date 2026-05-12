@@ -52,7 +52,8 @@ values (
   false,
   52428800, -- 50MB
   array['application/pdf']
-);
+)
+on conflict (id) do nothing;
 
 -- Engineers can manage all test bill files
 create policy "Engineers can manage test bills"

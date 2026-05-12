@@ -15,7 +15,8 @@ values (
   false,
   26214400,                                       -- 25 MB
   array['application/pdf', 'image/jpeg', 'image/png', 'image/webp']
-);
+)
+on conflict (id) do nothing;
 
 -- =============================================================================
 -- Contract bucket RLS — unit-membership-driven via the path-extracted unit id.

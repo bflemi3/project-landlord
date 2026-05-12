@@ -763,7 +763,8 @@ insert into storage.buckets (id, name, public)
 values
   ('source-documents', 'source-documents', false),
   ('payment-receipts', 'payment-receipts', false),
-  ('example-documents', 'example-documents', true);
+  ('example-documents', 'example-documents', true)
+on conflict (id) do nothing;
 
 -- Source documents: only property members can access
 create policy "Property members can view source documents"

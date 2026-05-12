@@ -78,7 +78,8 @@ values (
   true,
   2097152, -- 2MB
   array['image/jpeg', 'image/png', 'image/webp']
-);
+)
+on conflict (id) do nothing;
 
 -- Users can upload their own avatar
 create policy "Users can upload their own avatar"
