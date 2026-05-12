@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.0.0 — Long-term rentals
+
+mabenn is now a platform for long-term rental landlords and their tenants in Brazil — your alternative to paying 8–12% a month for property management. Track rent, expenses, and lease milestones in one place. You stay in control of your income and your tax obligations.
+
 ## v0.11.1
 
 - Fixed a loop where the app could bounce you back to the invite-code screen right after signing up or entering a valid code
