@@ -6,6 +6,22 @@
 
 ---
 
+## Status (last updated 2026-05-16, shipped in v1.0.0)
+
+**Shipped:**
+- Accordion shell with all four section states (upcoming / active / completed / skipped), IconTile tones, "Done" / "Skipped" badges, summary text, smooth-scroll on transitions
+- Section-level progress bar inline in the Step-2 TopBar, mobile sticky bottom bar with dot row, desktop sticky summary panel
+- 5 of 6 sections fully built: Property details, Rent & dates, Tenants, Expenses (partial — see below), CPF
+- `createProperty` server action: single-transaction writes, contract upload before DB writes, idempotent via `draftId`, returns structured error envelope
+- Reusable primitives: `<TaxId>`, `src/lib/country/` provider, `<TenantForm>` / `<TenantList>`
+- Wizard state schema extended in the existing Zustand + IDB persistence layer; version bump handled
+
+**Outstanding:**
+- **Bank account section (Pluggy OAuth).** Section renders in the accordion but the OAuth consent flow, trust-copy content, "already connected" detection, and dual-side payment-state plumbing are not implemented. Privacy policy link uses the "Coming soon" toast until the policy ships. Tracked in parent spec.
+- **Provider matching for expenses.** Section accepts free-text provider entry and reads from the seeded `providers` table. The four-case resolution flow, CNPJ cache, fuzzy name search (pg_trgm or alternative), regional support detection, landlord-facing RLS on `providers`, and the auto-queued support-request signals are deferred. Research notes: memory `project_provider_matching_research.md`.
+
+---
+
 ## Context
 
 After the landlord uploads a contract (or skips it), they land on a single page where all property setup sections are presented as an accordion. This replaces the original multi-step wizard approach (steps 2-8 in the parent spec) with a progressive-disclosure checkout flow. The user completes sections top-to-bottom, with completed sections collapsing into summaries and upcoming sections staying muted until reached.

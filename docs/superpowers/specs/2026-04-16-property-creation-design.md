@@ -5,6 +5,22 @@
 
 ---
 
+## Status (last updated 2026-05-16, shipped in v1.0.0)
+
+**Shipped:**
+- Steps 1–6 and Step 8 (Upload → Property details → Contract terms → Tenants → Expenses → CPF → Success)
+- No-contract path, including manual fallback flow
+- Contract extraction (PDF + DOCX, EN / PT-BR / ES, structured error codes, partial extraction, bundled rent, `isRentalContract` classifier)
+- IDB-backed wizard state persistence; contract Blob → Supabase Storage path on submit
+- Full data model: `contracts`, `rent`, `property_type` enum, `charge_definitions`, `invitations` (incl. `tax_id` column + `not_invited` status), `profiles.tax_id`
+
+**Outstanding:**
+- **Step 7 — Bank account / Pluggy OAuth.** Section is stubbed in the wizard; the actual OAuth consent flow, trust-copy content, "already connected" handling, dual-side payment detection, and Pluggy API integration are not implemented. This is the Phase 0 infrastructure spike from the pivot doc and is the largest remaining gap.
+- **Provider matching for expenses.** Current state is free-text + a sparse seeded `providers` table. The four-case resolution flow (fully supported / recognized-not-supported / CNPJ-resolvable / unknown), regional support detection, fuzzy name search, CNPJ cache, and auto-queued provider-support signals are deferred. Research notes in memory: `project_provider_matching_research.md`.
+- **Privacy policy page** at `/privacidade`. Required dependency for the bank flow (linked from trust copy). Currently the link can be a "Coming soon" toast per the checkout-shell spec.
+
+---
+
 ## Context
 
 Mabenn is pivoting from short-term rental billing to long-term rental management. The property creation flow is the first thing a landlord touches. It needs to be simple, enjoyable, and demonstrate the platform's value immediately — "I uploaded a contract and the platform understood my property."
