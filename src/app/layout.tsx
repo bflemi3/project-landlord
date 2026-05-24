@@ -21,11 +21,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: 'mabenn — Shared billing for landlords and tenants',
+    default: 'mabenn — Rental management for Brazilian landlords',
     template: '%s | mabenn',
   },
   description:
-    'Replace spreadsheets and email threads with a shared billing workspace everyone can trust. Clear statements, transparent charges, less friction.',
+    'Rent tracking, contracts, and payment visibility for Brazilian landlords — everything a property manager does, without the 8–12% fee.',
   metadataBase: new URL('https://mabenn.com'),
   alternates: {
     canonical: '/',
@@ -48,17 +48,17 @@ export const metadata: Metadata = {
     locale: 'en_US',
     alternateLocale: ['pt_BR', 'es_AR'],
     siteName: 'mabenn',
-    title: 'mabenn — Shared billing for landlords and tenants',
+    title: 'Everything a property manager does. None of the fee.',
     description:
-      'Replace spreadsheets and email threads with a shared billing workspace everyone can trust.',
+      'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
     url: 'https://mabenn.com',
-    images: [{ url: '/og-image', width: 1200, height: 630, alt: 'mabenn — Shared billing you can trust' }],
+    images: [{ url: '/og-image', width: 1200, height: 630, alt: 'mabenn — Rental management for Brazilian landlords' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'mabenn — Shared billing for landlords and tenants',
+    title: 'Everything a property manager does. None of the fee.',
     description:
-      'Replace spreadsheets and email threads with a shared billing workspace everyone can trust.',
+      'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
     images: ['/og-image'],
   },
   applicationName: 'mabenn',

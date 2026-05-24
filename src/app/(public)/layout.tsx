@@ -1,19 +1,22 @@
-import { LanguageSwitcher } from '@/components/language-switcher'
-import { ThemeToggle } from '@/components/theme-toggle'
+import { Fraunces, Geist } from 'next/font/google'
+
+const fraunces = Fraunces({
+  variable: '--font-display',
+  subsets: ['latin'],
+  axes: ['opsz', 'SOFT'],
+  display: 'swap',
+})
+
+const geistSans = Geist({
+  variable: '--font-editorial',
+  subsets: ['latin'],
+  display: 'swap',
+})
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-svh flex-col">
-      <div className="flex-1">{children}</div>
-      <footer className="border-t border-border py-6">
-        <div className="flex items-center justify-center gap-8">
-          <LanguageSwitcher />
-          <ThemeToggle />
-        </div>
-        <p className="mt-4 text-center text-xs text-muted-foreground/60">
-          © 2026 mabenn · Privacy · Terms
-        </p>
-      </footer>
+    <div className={`${fraunces.variable} ${geistSans.variable} flex min-h-svh flex-col`}>
+      {children}
     </div>
   )
 }
