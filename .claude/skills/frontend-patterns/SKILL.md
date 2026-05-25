@@ -1,6 +1,6 @@
 ---
 name: frontend-patterns
-description: Use when adding 'use client', wrapping a section in Suspense, writing a server fetcher, configuring React Query, adding a form, or noticing a slow navigation.
+description: Performance and data-fetching discipline for the Next.js App Router product — streaming, Suspense boundaries, server fetchers, React Query, server-vs-client split, the src/data/<domain> layer, hooks, and forms. Use whenever you add 'use client', wrap a section in Suspense, write or edit a server fetcher, configure React Query (staleTime, useSuspenseQuery), build a form, touch the data layer, or notice a navigation that feels slow — even if the user only describes the symptom ("this page is janky", "loading flicker on back") rather than naming the pattern.
 paths:
   - "src/**/*.tsx"
   - "src/**/*.ts"
@@ -35,7 +35,7 @@ The goal: the user sees the page shell immediately, then real content streams in
 
 ### Always use `<SuspenseFadeIn>`, never raw `<Suspense>`
 
-`src/components/suspense-fade-in.tsx` wraps `Suspense + FadeIn`. Content fades in when data resolves instead of popping in. Do NOT use raw `<Suspense>` + `<FadeIn>` separately — use the composed component.
+`src/components/suspense-fade-in.tsx` wraps `Suspense + FadeIn` so content fades in when data resolves instead of popping in. Use the composed component rather than wiring `<Suspense>` + `<FadeIn>` together by hand — it keeps the streaming transition uniform across the app, and hand-rolled pairs tend to drift (mismatched timings, a forgotten fallback).
 
 ### Fetch in parallel — never in sequence
 
@@ -54,11 +54,11 @@ Rule: fetch sibling data in parallel at the page/wrapper level, then pass IDs (o
 
 ### `React.cache()` on every server fetcher
 
-Canonical example: `src/data/properties/server.ts` (search for `cache(`). Server fetchers in `src/data/<domain>/server.ts` MUST wrap their fetch function in `React.cache()` for per-request deduplication. Without it, a page that reads the property in three sections does three DB trips.
+Server fetchers in `src/data/<domain>/server.ts` wrap their fetch function in `React.cache()` so the per-request cache dedupes repeated reads. Without it, a page that reads the same property in three sections does three identical DB trips — the cache collapses them into one. Canonical example: `src/data/landlord-home/server.ts`, where one `cache()`'d `getLandlordHomeData` feeds several exported fetchers.
 
 ### React Query `staleTime` for back-nav feeling instant
 
-React Query hooks MUST set explicit `staleTime`. Anti-pattern: `useSuspenseQuery({ queryKey, queryFn })` without `staleTime` in the same options object — forces a loading state on every back-nav. NEVER use `staleTime: 0`. Default to 30s; 5min for slowly-changing data.
+Always set an explicit `staleTime` on React Query hooks. Without it (or with `staleTime: 0`), React Query treats cached data as immediately stale and refetches on every mount — so a back-nav that should be instant instead flashes a loading state. The anti-pattern is `useSuspenseQuery({ queryKey, queryFn })` with no `staleTime` in the same options object. Default to 30s; 5min for slowly-changing data.
 
 ### Dynamic import anything heavy and below-the-fold
 
@@ -120,8 +120,8 @@ All data fetching code is domain-organized:
 Rules:
 
 - Server fetchers call `createClient()` (Supabase server client with cookies) and delegate to `shared.ts`
-- Never fetch your own API routes from server components — call the data function directly
-- Server actions that mutate data MUST call `revalidatePath()` or `revalidateTag()` to bust caches
+- Call the data function directly from server components — fetching your own API route adds an HTTP round trip back into your own server and loses the `React.cache()` dedup and types
+- Server actions that mutate data call `revalidatePath()` or `revalidateTag()` — otherwise the Next.js cache keeps serving the pre-mutation data and the user sees a stale screen after a successful write
 - Prefer `useSuspenseQuery` over `useQuery`, wrap with `<SuspenseFadeIn>` boundaries
 - `useSuspenseQuery` query functions should **throw** on error (not return `null`) — keeps `data` non-nullable and eliminates null-check early returns
 - Strong loading / empty / error / success states for every query
@@ -170,17 +170,15 @@ Use `next/link` (`<Link>`) for all internal navigation — never `<a href>`, whi
 - `useActionState` for all form submissions: `[state, formAction, isPending]`
 - `useFormStatus` in child components for pending state
 - Pass `formAction` to `<form action={formAction}>`
-- Actions return `{ errors: { fieldName: 'message' }, success: false }` — never throw
+- Actions return `{ errors: { fieldName: 'message' }, success: false }` rather than throwing — `useActionState` surfaces the returned value as `state`, so a thrown error escapes that channel and the form can't show field-level messages
 - Field-level errors near the input, not a banner at the top
 - `<fieldset disabled={isPending}>` to disable during submission
 
-**Validation policy:**
-- Server-side validation is the source of truth — always validate in the server action
-- MVP: server validation only, returned via `useActionState`
-- Never use native HTML validation (`required`, `pattern`) for user-facing UX
-- Do NOT add zod or react-hook-form unless genuinely needed for complex conditional validation
-- Do NOT validate on blur for MVP — submit only
-- Do NOT block submission on optional fields
+**Validation policy:** the server action is the source of truth — always validate there and return errors via `useActionState`. The client can't be trusted, so client-side validation only ever duplicates work that has to happen on the server anyway. For the MVP that means server-only validation. Specifically:
+- Skip native HTML validation (`required`, `pattern`) — its browser-default UX is inconsistent and can't be styled or localized to match the rest of the form
+- Don't reach for zod or react-hook-form unless a form has genuinely complex conditional validation that hand-written checks can't express cleanly — they're weight the typical form doesn't need
+- Validate on submit, not on blur — blur-time validation is more work and nags the user mid-entry; revisit only if a form proves error-prone
+- Don't block submission on optional fields
 
 **Brazil address forms (country-adaptive):**
 - CEP field at top — auto-fill via ViaCEP on valid input
