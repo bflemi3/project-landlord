@@ -96,7 +96,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
         <IconTile tone="success" size="lg" shape="circle" aria-hidden="true">
           <CheckCircle2 />
         </IconTile>
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+        <h1 className="mt-6 text-2xl font-display font-medium tracking-[-0.015em] text-foreground sm:text-3xl">
           {t('title')}
         </h1>
         <p className="mt-3 text-sm text-muted-foreground sm:text-base">
@@ -125,7 +125,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
             icon={<Wallet aria-hidden="true" />}
             eyebrow={t('summary.rent.title')}
           >
-            <p className="text-sm font-bold text-foreground sm:text-base">
+            <p className="font-mono text-sm font-bold tabular-nums text-foreground sm:text-base">
               {formatCurrency(summary.rent.amount_minor, summary.rent.currency, locale)}
             </p>
             <p className="text-sm text-muted-foreground">

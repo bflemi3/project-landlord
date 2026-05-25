@@ -102,8 +102,10 @@ function SummaryStat({
     <div className="px-5 py-5 sm:px-6 sm:py-7">
       <EyebrowLabel tone="muted">{eyebrow}</EyebrowLabel>
       <p
-        className={`mt-2 text-2xl font-semibold tracking-tight tabular-nums sm:mt-3 sm:text-5xl ${
-          emphasize ? 'text-primary-subtle-foreground' : 'text-foreground'
+        className={`mt-2 text-3xl tabular-nums sm:mt-3 sm:text-4xl ${
+          emphasize
+            ? 'font-display font-medium tracking-[-0.015em] text-primary-subtle-foreground'
+            : 'font-mono font-medium text-foreground'
         }`}
       >
         {value}

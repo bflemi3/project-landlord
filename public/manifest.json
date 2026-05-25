@@ -1,10 +1,10 @@
 {
   "name": "mabenn",
   "short_name": "mabenn",
-  "description": "Shared billing workspace for landlords and tenants",
+  "description": "Rental management for Brazilian landlords — everything a property manager does, without the fee.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fafafa",
+  "background_color": "#141413",
   "theme_color": "#14b8a6",
   "icons": [
     {

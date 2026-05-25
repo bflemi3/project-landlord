@@ -10,7 +10,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     <>
       {/* Desktop header — fixed positioning, hidden on mobile */}
       <div className="fixed top-5 left-8 z-30 hidden md:block">
-        <Wordmark className="h-6" href="/app" />
+        <Wordmark className="text-[20px]" href="/app" />
       </div>
       <Suspense fallback={null}>
         <UserAvatarMenu />

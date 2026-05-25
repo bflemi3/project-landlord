@@ -258,7 +258,7 @@ export function UploadContract() {
       data-slot="upload-contract"
     >
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-bold text-foreground">{t('upload.title')}</h1>
+        <h1 className="text-3xl font-display font-medium tracking-[-0.015em] text-foreground">{t('upload.title')}</h1>
         <p className="text-base text-muted-foreground">
           {t('upload.description')}
         </p>

@@ -94,7 +94,7 @@ function AccordionTrigger({ className, children, ...props }: AccordionPrimitive.
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          'group/accordion-trigger hover:bg-muted/50 focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 items-start justify-between gap-2 rounded-lg border border-transparent py-3 text-left text-sm font-medium transition-colors outline-none focus-visible:ring-3 aria-disabled:pointer-events-none aria-disabled:opacity-70',
+          'group/accordion-trigger hover:bg-muted/50 focus-visible:border-ring focus-visible:ring-ring/25 flex flex-1 items-start justify-between gap-2 rounded-lg border border-transparent py-3 text-left text-sm font-medium transition-colors outline-none focus-visible:ring-2 aria-disabled:pointer-events-none aria-disabled:opacity-70',
           className,
         )}
         {...props}

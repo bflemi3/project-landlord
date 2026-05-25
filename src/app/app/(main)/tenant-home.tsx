@@ -15,7 +15,7 @@ async function TenantGreeting() {
   const greeting = t(greetingKey)
 
   return (
-    <h1 className="text-2xl font-bold">
+    <h1 className="text-3xl font-display font-medium tracking-[-0.015em]">
       {greeting}{firstName ? `, ${firstName}` : ''}
     </h1>
   )

@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
 type StatusBadgeVariant =
@@ -11,33 +12,48 @@ type StatusBadgeVariant =
   | 'disputed'
   | 'rejected'
 
-const variantClasses: Record<StatusBadgeVariant, string> = {
-  default: 'bg-secondary text-secondary-foreground',
-  draft: 'border border-dashed border-border bg-secondary/50 text-muted-foreground',
-  published: 'bg-primary/10 text-primary',
-  paid: 'bg-success/10 text-emerald-700 dark:text-emerald-400',
-  pending: 'bg-warning/10 text-amber-700 dark:text-amber-400',
-  overdue: 'bg-destructive/10 text-destructive',
-  disputed: 'bg-warning/10 text-amber-700 dark:text-amber-400',
-  rejected: 'bg-destructive/10 text-destructive',
+// Map each status to an editorial Badge variant. Status semantics live here;
+// the pill chrome (shape, tint, ring) lives in Badge.
+const variantMap: Record<StatusBadgeVariant, React.ComponentProps<typeof Badge>['variant']> = {
+  default: 'secondary',
+  draft: 'outline',
+  published: 'primary-subtle',
+  paid: 'success-subtle',
+  pending: 'warning-subtle',
+  overdue: 'destructive-subtle',
+  disputed: 'warning-subtle',
+  rejected: 'destructive-subtle',
 }
+
+// Draft reads as a quiet dashed chip with no leading dot.
+const NO_DOT = new Set<StatusBadgeVariant>(['draft'])
 
 function StatusBadge({
   className,
   variant = 'default',
+  spotlight,
+  children,
   ...props
-}: React.ComponentProps<'span'> & { variant?: StatusBadgeVariant }) {
+}: React.ComponentProps<'span'> & { variant?: StatusBadgeVariant; spotlight?: boolean }) {
   return (
-    <span
+    <Badge
+      variant={variantMap[variant]}
+      spotlight={spotlight}
       data-slot="status-badge"
       data-variant={variant}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium [&_svg]:size-3',
-        variantClasses[variant],
+        'gap-1.5',
+        variant === 'default' && 'text-muted-foreground',
+        variant === 'draft' && 'border-dashed border-white/20 text-muted-foreground',
         className,
       )}
       {...props}
-    />
+    >
+      {!NO_DOT.has(variant) && (
+        <span className="size-1.5 shrink-0 rounded-full bg-current" aria-hidden />
+      )}
+      {children}
+    </Badge>
   )
 }
 

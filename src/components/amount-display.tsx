@@ -7,7 +7,7 @@ import { type Locale } from '@/i18n/routing'
 import { cn } from '@/lib/utils'
 
 type AmountDisplaySize = 'xs' | 'sm' | 'default' | 'lg' | 'xl'
-type AmountDisplayTone = 'default' | 'muted' | 'primary' | 'destructive'
+type AmountDisplayTone = 'default' | 'muted' | 'primary' | 'destructive' | 'highlight'
 
 const sizeClasses: Record<AmountDisplaySize, string> = {
   xs: 'text-sm font-medium',
@@ -22,6 +22,7 @@ const toneClasses: Record<AmountDisplayTone, string> = {
   muted: 'text-muted-foreground',
   primary: 'text-primary',
   destructive: 'text-destructive',
+  highlight: 'text-highlight',
 }
 
 function AmountDisplay({
@@ -46,7 +47,7 @@ function AmountDisplay({
       data-slot="amount-display"
       data-size={size}
       data-tone={tone}
-      className={cn('tabular-nums', sizeClasses[size], toneClasses[tone], className)}
+      className={cn('font-mono tabular-nums', sizeClasses[size], toneClasses[tone], className)}
       {...props}
     >
       {formatCurrency(

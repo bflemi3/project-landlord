@@ -10,6 +10,7 @@ type IconTileTone =
   | 'warning'
   | 'info'
   | 'destructive'
+  | 'highlight'
 
 const sizeClasses: Record<IconTileSize, string> = {
   sm: 'size-8 [&_svg]:size-4',
@@ -39,6 +40,7 @@ const toneClasses: Record<IconTileTone, string> = {
   warning: 'bg-warning-subtle text-warning-subtle-foreground',
   info: 'bg-info-subtle text-info-subtle-foreground',
   destructive: 'bg-destructive-subtle text-destructive-subtle-foreground',
+  highlight: 'bg-highlight-subtle text-highlight-subtle-foreground',
 }
 
 function IconTile({

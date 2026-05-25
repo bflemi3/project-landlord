@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Fraunces } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -9,7 +9,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { SerwistProvider } from '@/components/serwist-provider'
 import './globals.css'
 
-const inter = Inter({
+const geistSans = Geist({
   variable: '--font-sans',
   subsets: ['latin'],
 })
@@ -19,13 +19,20 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 })
 
+const fraunces = Fraunces({
+  variable: '--font-display',
+  subsets: ['latin'],
+  axes: ['opsz', 'SOFT'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
   title: {
-    default: 'mabenn — Shared billing for landlords and tenants',
+    default: 'mabenn | Rental management for Brazilian landlords',
     template: '%s | mabenn',
   },
   description:
-    'Replace spreadsheets and email threads with a shared billing workspace everyone can trust. Clear statements, transparent charges, less friction.',
+    'Rent tracking, contracts, and payment visibility for Brazilian landlords — everything a property manager does, without the 8–12% fee.',
   metadataBase: new URL('https://mabenn.com'),
   alternates: {
     canonical: '/',
@@ -48,18 +55,18 @@ export const metadata: Metadata = {
     locale: 'en_US',
     alternateLocale: ['pt_BR', 'es_AR'],
     siteName: 'mabenn',
-    title: 'mabenn — Shared billing for landlords and tenants',
+    title: 'Everything a property manager does. None of the fee.',
     description:
-      'Replace spreadsheets and email threads with a shared billing workspace everyone can trust.',
+      'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
     url: 'https://mabenn.com',
-    images: [{ url: '/og-image', width: 1200, height: 630, alt: 'mabenn — Shared billing you can trust' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'mabenn — Rental management for Brazilian landlords' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'mabenn — Shared billing for landlords and tenants',
+    title: 'Everything a property manager does. None of the fee.',
     description:
-      'Replace spreadsheets and email threads with a shared billing workspace everyone can trust.',
-    images: ['/og-image'],
+      'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
+    images: ['/og-image.png'],
   },
   applicationName: 'mabenn',
   appleWebApp: {
@@ -74,10 +81,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages()
 
   return (
-    <html lang={locale} className={`${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <QueryProvider>
               <TooltipProvider>
                 <SerwistProvider>

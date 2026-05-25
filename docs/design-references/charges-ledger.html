@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabenn design reference — Charges ledger</title>
+
+  <!-- Reference-only: Tailwind Play CDN + Google Fonts so the file is self-contained.
+       Open directly in a browser. Not production code — this is a visual north star
+       captured from src/app/(public)/landing.tsx (HeroPeek / Pillar1 mockup). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Fraunces', 'serif'],
+            editorial: ['Geist', 'sans-serif'],
+            mono: ['"Geist Mono"', 'monospace'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { background: #141413; }
+    /* tabular figures everywhere money appears */
+    .font-mono { font-feature-settings: 'tnum' 1; }
+  </style>
+</head>
+
+<body class="font-editorial text-[#f5f5f4] antialiased">
+  <main class="mx-auto flex min-h-screen max-w-[860px] flex-col justify-center px-6 py-16">
+
+    <!-- caption (reference metadata — not part of the UI) -->
+    <p class="mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#57534e]">
+      Design reference · Charges ledger · captured from landing.tsx
+    </p>
+
+    <!-- ============================================================
+         The product screen. This is the "body" inside the marketing
+         frame — shown complete (no glow / no edge-blur) so every
+         column and status pill is legible for reference.
+         ============================================================ -->
+    <div class="overflow-hidden rounded-[18px] border border-white/[0.10] bg-[#1a1a19] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+
+      <!-- Tabs -->
+      <div class="flex items-center gap-1 border-b border-white/[0.05] px-4 pt-3 pb-0">
+        <span class="relative px-3 py-2 text-[12px] font-medium text-[#f5f5f4] after:absolute after:inset-x-3 after:-bottom-px after:h-px after:bg-[#f5f5f4]">All charges</span>
+        <span class="px-3 py-2 text-[12px] font-medium text-[#78716c]">Rent</span>
+        <span class="px-3 py-2 text-[12px] font-medium text-[#78716c]">Bills</span>
+        <span class="px-3 py-2 text-[12px] font-medium text-[#78716c]">Contract</span>
+        <div class="ml-auto flex items-center gap-1.5 text-[11px] text-[#78716c]">
+          <span class="relative flex size-1.5">
+            <span class="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-70"></span>
+            <span class="relative inline-flex size-1.5 rounded-full bg-emerald-400"></span>
+          </span>
+          <span>Live</span>
+        </div>
+      </div>
+
+      <!-- Section header: serif title + muted meta + period -->
+      <div class="flex items-baseline justify-between border-b border-white/[0.05] px-6 py-4">
+        <div class="flex items-baseline gap-2.5">
+          <p class="font-display text-[18px] font-medium tracking-tight text-[#f5f5f4]">Apt 23B</p>
+          <p class="text-[12.5px] text-[#78716c]">Vila Mariana · São Paulo</p>
+        </div>
+        <p class="text-[12.5px] text-[#a8a29e]">April 2026</p>
+      </div>
+
+      <!-- Aggregate stat strip -->
+      <div class="grid grid-cols-3 border-b border-white/[0.05]">
+        <div class="border-r border-white/[0.05] px-6 py-3.5">
+          <p class="text-[10.5px] uppercase tracking-[0.12em] text-[#78716c]">Expected</p>
+          <p class="mt-1 font-mono text-[16px] tabular-nums text-[#a8a29e]">R$ 4.350</p>
+        </div>
+        <div class="border-r border-white/[0.05] px-6 py-3.5">
+          <p class="text-[10.5px] uppercase tracking-[0.12em] text-[#78716c]">Paid</p>
+          <p class="mt-1 font-mono text-[16px] tabular-nums font-medium text-[#f5f5f4]">R$ 3.280</p>
+        </div>
+        <div class="px-6 py-3.5">
+          <p class="text-[10.5px] uppercase tracking-[0.12em] text-[#78716c]">Pending</p>
+          <p class="mt-1 font-mono text-[16px] tabular-nums text-[#a8a29e]">R$ 1.070</p>
+        </div>
+      </div>
+
+      <!-- Ledger rows -->
+      <div class="px-6">
+
+        <!-- spotlight row: paid, just detected -->
+        <div class="flex items-center gap-3 border-t border-white/[0.04] py-3 first:border-t-0">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-2">
+              <p class="truncate text-[13.5px] text-[#f5f5f4]">Rent · April</p>
+              <span class="text-[11.5px] text-[#78716c]">· Apr 5</span>
+            </div>
+            <p class="mt-0.5 text-[11px] text-[#78716c]">detected yesterday</p>
+          </div>
+          <p class="w-[88px] shrink-0 text-right font-mono text-[13px] tabular-nums text-[#d6d3d1]">R$ 2.800</p>
+          <div class="w-[100px] shrink-0 text-right">
+            <span class="relative inline-flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300 ring-2 ring-[#e9408f]/40 ring-offset-2 ring-offset-[#1a1a19]">
+              <span class="size-1.5 rounded-full bg-emerald-400"></span>Paid
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 border-t border-white/[0.04] py-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-2">
+              <p class="truncate text-[13.5px] text-[#f5f5f4]">Condomínio</p>
+              <span class="text-[11.5px] text-[#78716c]">· Apr 10</span>
+            </div>
+          </div>
+          <p class="w-[88px] shrink-0 text-right font-mono text-[13px] tabular-nums text-[#d6d3d1]">R$ 480</p>
+          <div class="w-[100px] shrink-0 text-right">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-400/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+              <span class="size-1.5 rounded-full bg-emerald-400"></span>Paid
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 border-t border-white/[0.04] py-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-2">
+              <p class="truncate text-[13.5px] text-[#f5f5f4]">Energia · ENEL</p>
+              <span class="text-[11.5px] text-[#78716c]">· Apr 15</span>
+            </div>
+          </div>
+          <p class="w-[88px] shrink-0 text-right font-mono text-[13px] tabular-nums text-[#d6d3d1]">R$ 320</p>
+          <div class="w-[100px] shrink-0 text-right">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-400/10 px-2.5 py-0.5 text-[11px] font-medium text-amber-300">
+              <span class="size-1.5 rounded-full bg-amber-400"></span>Due
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 border-t border-white/[0.04] py-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-2">
+              <p class="truncate text-[13.5px] text-[#f5f5f4]">Água · Sabesp</p>
+              <span class="text-[11.5px] text-[#78716c]">· Apr 20</span>
+            </div>
+          </div>
+          <p class="w-[88px] shrink-0 text-right font-mono text-[13px] tabular-nums text-[#d6d3d1]">R$ 95</p>
+          <div class="w-[100px] shrink-0 text-right">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-medium text-[#a8a29e]">
+              <span class="size-1.5 rounded-full bg-[#78716c]"></span>Awaiting
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 border-t border-white/[0.04] py-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-2">
+              <p class="truncate text-[13.5px] text-[#f5f5f4]">Internet · Vivo</p>
+              <span class="text-[11.5px] text-[#78716c]">· Apr 25</span>
+            </div>
+          </div>
+          <p class="w-[88px] shrink-0 text-right font-mono text-[13px] tabular-nums text-[#d6d3d1]">R$ 165</p>
+          <div class="w-[100px] shrink-0 text-right">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-medium text-[#a8a29e]">
+              <span class="size-1.5 rounded-full bg-[#78716c]"></span>Awaiting
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 border-t border-white/[0.04] py-3">
+          <div class="min-w-0 flex-1">
+            <div class="flex items-baseline gap-2">
+              <p class="truncate text-[13.5px] text-[#f5f5f4]">IPTU · Prefeitura SP</p>
+              <span class="text-[11.5px] text-[#78716c]">· Apr 28</span>
+            </div>
+          </div>
+          <p class="w-[88px] shrink-0 text-right font-mono text-[13px] tabular-nums text-[#d6d3d1]">R$ 240</p>
+          <div class="w-[100px] shrink-0 text-right">
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-white/[0.04] px-2.5 py-0.5 text-[11px] font-medium text-[#a8a29e]">
+              <span class="size-1.5 rounded-full bg-[#78716c]"></span>Awaiting
+            </span>
+          </div>
+        </div>
+
+      </div>
+      <div class="h-2"></div>
+    </div>
+
+    <!-- key, for whoever references this -->
+    <div class="mt-8 grid gap-2 font-mono text-[11px] leading-relaxed text-[#78716c]">
+      <p><span class="text-[#f5f5f4]">surface</span> #1a1a19 card on #141413 canvas · borders white/4–10</p>
+      <p><span class="text-[#f5f5f4]">type</span> Fraunces (title) · Geist (labels) · Geist Mono tabular (money + meta)</p>
+      <p><span class="text-[#f5f5f4]">text ladder</span> #f5f5f4 → #a8a29e → #78716c</p>
+      <p><span class="text-[#e9408f]">magenta #e9408f</span> = secondary accent — here only the spotlight ring on the row that matters</p>
+      <p><span class="text-emerald-300">emerald</span> paid · <span class="text-amber-300">amber</span> due · muted awaiting</p>
+    </div>
+
+  </main>
+</body>
+</html>

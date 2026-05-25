@@ -1,12 +1,13 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-type EyebrowLabelTone = 'primary' | 'muted' | 'foreground'
+type EyebrowLabelTone = 'primary' | 'muted' | 'foreground' | 'highlight'
 
 const toneClasses: Record<EyebrowLabelTone, string> = {
   primary: 'text-primary',
   muted: 'text-muted-foreground',
   foreground: 'text-foreground/70',
+  highlight: 'text-highlight',
 }
 
 function EyebrowLabel({
@@ -21,7 +22,7 @@ function EyebrowLabel({
       data-slot="eyebrow-label"
       data-tone={tone}
       className={cn(
-        'text-xs font-semibold uppercase tracking-widest',
+        'font-mono text-xs font-medium uppercase tracking-widest',
         toneClasses[tone],
         className,
       )}

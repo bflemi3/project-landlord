@@ -5,8 +5,15 @@
 @custom-variant dark (&:is(.dark *));
 
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
   max-width: 100vw;
+}
+
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Thin scrollbar with transparent track */
@@ -104,6 +111,8 @@ html, body {
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --font-editorial: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -124,6 +133,7 @@ html, body {
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
@@ -149,6 +159,10 @@ html, body {
   --color-destructive-subtle-foreground: var(--destructive-subtle-foreground);
   --color-primary-subtle: var(--primary-subtle);
   --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-highlight-subtle: var(--highlight-subtle);
+  --color-highlight-subtle-foreground: var(--highlight-subtle-foreground);
   --shadow-card: var(--shadow-card);
   --shadow-card-hover: var(--shadow-card-hover);
   --shadow-popover: var(--shadow-popover);
@@ -161,7 +175,7 @@ html, body {
   --radius-4xl: calc(var(--radius) * 2.6);
   /* Editorial card radius — 20px, matches reference design */
   --radius-card: 1.25rem;
-  /* Typography scale per design.md */
+  /* Typography scale per /DESIGN.md */
   --font-size-xs: 0.8125rem;
   --font-size-xs--line-height: 1.125rem;
   --font-size-sm: 0.875rem;
@@ -196,6 +210,11 @@ html, body {
   /* teal-500/10 tinted surface + teal-700 glyph, hue-locked to --primary */
   --primary-subtle: oklch(0.704 0.14 182.503 / 0.10);
   --primary-subtle-foreground: oklch(0.49 0.092 182.503);
+  /* magenta accent (editorial "highlight"/secondary) ≈ #e9408f — constant across light/dark like --primary */
+  --highlight: oklch(0.63 0.23 357);
+  --highlight-foreground: oklch(1 0 0);
+  --highlight-subtle: oklch(0.63 0.23 357 / 0.10);
+  --highlight-subtle-foreground: oklch(0.8 0.11 357);
   /* stone-100 secondary */
   --secondary: oklch(0.97 0.001 106.424);
   --secondary-foreground: oklch(0.216 0.006 56.043);
@@ -203,6 +222,8 @@ html, body {
   --muted: oklch(0.97 0.001 106.424);
   /* stone-500 muted-foreground */
   --muted-foreground: oklch(0.553 0.013 58.071);
+  /* stone-400 subtle-foreground — tier-3 text (dates, eyebrows, meta) */
+  --subtle-foreground: oklch(0.709 0.01 56.259);
   /* stone-100 accent */
   --accent: oklch(0.97 0.001 106.424);
   --accent-foreground: oklch(0.216 0.006 56.043);
@@ -214,7 +235,7 @@ html, body {
   --input: oklch(0.869 0.005 56.366);
   /* teal-500 ring */
   --ring: oklch(0.704 0.14 182.503);
-  /* 1rem radius per DESIGN.md */
+  /* 1rem radius per /DESIGN.md */
   --radius: 1rem;
   /* Editorial card shadow — soft diffused, no visible hard edge */
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.035), 0 8px 24px -12px oklch(0 0 0 / 0.06);
@@ -262,14 +283,14 @@ html, body {
 }
 
 .dark {
-  /* stone-950 background */
-  --background: oklch(0.147 0.004 49.25);
-  /* stone-50 foreground */
+  /* warm near-black canvas ≈ #141413 */
+  --background: oklch(0.185 0.002 106);
+  /* warm off-white foreground ≈ #fafaf9 (stone-50) */
   --foreground: oklch(0.985 0.001 106.423);
-  /* stone-900 card */
-  --card: oklch(0.216 0.006 56.043);
+  /* warm card ≈ #1a1a19 */
+  --card: oklch(0.225 0.003 106);
   --card-foreground: oklch(0.985 0.001 106.423);
-  --popover: oklch(0.216 0.006 56.043);
+  --popover: oklch(0.225 0.003 106);
   --popover-foreground: oklch(0.985 0.001 106.423);
   /* teal-500 primary */
   --primary: oklch(0.704 0.14 182.503);
@@ -277,22 +298,29 @@ html, body {
   /* teal-500/15 surface + teal-300 glyph, hue-locked to --primary */
   --primary-subtle: oklch(0.704 0.14 182.503 / 0.15);
   --primary-subtle-foreground: oklch(0.855 0.138 182.503);
-  /* stone-800 secondary */
-  --secondary: oklch(0.268 0.007 34.298);
+  /* magenta accent (editorial "highlight"/secondary) ≈ #e9408f — constant across light/dark like --primary */
+  --highlight: oklch(0.63 0.23 357);
+  --highlight-foreground: oklch(1 0 0);
+  --highlight-subtle: oklch(0.63 0.23 357 / 0.15);
+  --highlight-subtle-foreground: oklch(0.8 0.11 357);
+  /* warm neutral surface ≈ #232220 */
+  --secondary: oklch(0.255 0.003 106);
   --secondary-foreground: oklch(0.985 0.001 106.423);
-  /* stone-800 muted */
-  --muted: oklch(0.268 0.007 34.298);
-  /* stone-400 muted-foreground */
+  /* warm neutral surface ≈ #232220 */
+  --muted: oklch(0.255 0.003 106);
+  /* stone-400 muted-foreground ≈ #a8a29e */
   --muted-foreground: oklch(0.709 0.01 56.259);
-  /* stone-800 accent */
-  --accent: oklch(0.268 0.007 34.298);
+  /* stone-500 subtle-foreground ≈ #78716c — tier-3 text (dates, eyebrows, meta) */
+  --subtle-foreground: oklch(0.553 0.013 58.071);
+  /* warm neutral surface ≈ #232220 */
+  --accent: oklch(0.255 0.003 106);
   --accent-foreground: oklch(0.985 0.001 106.423);
   /* rose-500 destructive */
   --destructive: oklch(0.645 0.246 16.439);
-  /* stone-800 border */
-  --border: oklch(0.268 0.007 34.298);
-  /* stone-800 input */
-  --input: oklch(0.268 0.007 34.298);
+  /* hairline white @ 15% — editorial dividers */
+  --border: oklch(1 0 0 / 0.15);
+  /* slightly stronger than border so form fields read */
+  --input: oklch(1 0 0 / 0.2);
   /* teal-400 ring */
   --ring: oklch(0.777 0.152 181.912);
   /* Dark mode — no card shadow, rely on border */
@@ -328,13 +356,13 @@ html, body {
   --destructive-subtle: oklch(0.645 0.246 16.439 / 0.15);
   --destructive-subtle-foreground: oklch(0.81 0.117 11.638);
   /* sidebar */
-  --sidebar: oklch(0.216 0.006 56.043);
+  --sidebar: oklch(0.225 0.003 106);
   --sidebar-foreground: oklch(0.985 0.001 106.423);
   --sidebar-primary: oklch(0.704 0.14 182.503);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.268 0.007 34.298);
+  --sidebar-accent: oklch(0.255 0.003 106);
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(0.268 0.007 34.298);
+  --sidebar-border: oklch(1 0 0 / 0.15);
   --sidebar-ring: oklch(0.777 0.152 181.912);
 }
 

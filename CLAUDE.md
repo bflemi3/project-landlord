@@ -14,7 +14,7 @@ See `docs/project/product-pivot-long-term-rentals.md` for the full product shape
 
 ## Source of Truth
 
-1. `.claude/skills/design-system/` — visual design, UX, spacing, hierarchy, motion
+1. `.claude/skills/design-system/` — visual design, UX, spacing, hierarchy, motion. Design tokens + full spec: `/DESIGN.md`
 2. `.claude/skills/component-library/` — approved components, variants, composition
 3. `.claude/skills/frontend-patterns/` — performance, data fetching, component discipline
 4. Domain skills — `billing-automation`, `contract-management`, `data-modeling`, `analytics`, `testing`, `email-templates`
@@ -93,7 +93,7 @@ Do not optimize prematurely for: hypothetical scale, extreme customization, comp
 
 ### Performance is a product feature
 
-Navigation must feel instant. The user clicks, and within tens of ms they see the page shell + per-section skeletons that structurally match the final content. Content streams in section by section. The recipe: `loading.tsx` on every route, `'use client'` pushed to leaves, per-section `<SuspenseFadeIn fallback={<SectionSkeleton />}>`. Canonical examples: `src/components/suspense-fade-in.tsx` (boundary primitive); `src/data/properties/server.ts` (`React.cache()` server fetcher pattern); `src/app/app/(focused)/p/new/[draftId]/page.tsx` (route shell). See `frontend-patterns` for the full pattern.
+Navigation must feel instant. The user clicks, and within tens of ms they see the page shell + per-section skeletons that structurally match the final content. Content streams in section by section. The recipe: `loading.tsx` on every route, `'use client'` pushed to leaves, per-section `<SuspenseFadeIn fallback={<SectionSkeleton />}>`. Canonical examples: `src/components/suspense-fade-in.tsx` (boundary primitive); `src/data/landlord-home/server.ts` (`React.cache()` server fetcher pattern); `src/app/app/(focused)/p/new/[draftId]/page.tsx` (route shell). See `frontend-patterns` for the full pattern.
 
 ### Red flags — stop if you're thinking any of these
 

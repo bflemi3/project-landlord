@@ -126,7 +126,7 @@ export function LandlordHomeCard({ card }: { card: LandlordHomePropertyCard }) {
             <ChevronRight className="size-4 text-muted-foreground/50" aria-hidden="true" />
           </div>
           <h3
-            className={`text-base font-semibold tracking-tight sm:truncate ${
+            className={`text-base font-display font-medium sm:truncate ${
               hasActiveContract ? 'text-foreground' : 'text-muted-foreground'
             }`}
           >

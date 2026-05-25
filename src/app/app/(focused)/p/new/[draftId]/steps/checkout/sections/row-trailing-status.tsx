@@ -40,7 +40,10 @@ export function RowTrailingStatus({
     >
       {Icon && <Icon aria-hidden className={cn('size-3', TONE_CLASS[tone])} />}
       <span
-        className={cn(variant === 'status' && 'text-xs', TONE_CLASS[tone])}
+        className={cn(
+          variant === 'status' ? 'text-xs' : 'font-mono tabular-nums',
+          TONE_CLASS[tone],
+        )}
       >
         {children}
       </span>

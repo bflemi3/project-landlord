@@ -20,7 +20,7 @@ export async function MobileHeader() {
 
   return (
     <div className="flex shrink-0 items-center justify-between px-5 pt-4 md:hidden">
-      <Wordmark className="h-5" href="/app" />
+      <Wordmark className="text-[20px]" href="/app" />
       <HydrationBoundary state={dehydrate(queryClient)}>
         <Suspense fallback={null}>
           <FadeIn>

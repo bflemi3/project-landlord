@@ -4,9 +4,9 @@
 
 Design rules extracted from a set of reference screenshots (Claude.ai onboarding and "ecosystem" modals) that we want mabenn to embody.
 
-This is a **reference / aesthetic direction**, not a replacement for `design.md`. It defines the look and tone for surfaces where the product is being **shown**, **introduced**, or **narrated** — landing page, marketing, onboarding tutorials, empty states that teach, feature announcements, changelog highlights, "how it works" modals.
+This is a **reference / aesthetic direction**, not a replacement for `/DESIGN.md`. It defines the look and tone for surfaces where the product is being **shown**, **introduced**, or **narrated** — landing page, marketing, onboarding tutorials, empty states that teach, feature announcements, changelog highlights, "how it works" modals.
 
-Where this conflicts with the core in-app design system (which is light-mode-first and calm-financial), treat this reference as dominant for **storytelling surfaces**, and the core system as dominant for **day-to-day billing workflows**.
+The app and these storytelling surfaces now share **one** warm-dark editorial language — its foundation (tokens, type, restraint) is defined in `/DESIGN.md`. This reference does **not** define a separate palette; it adds the *presentation layer* — hero shells, ambient glows, hand-drawn tutorial marks, real-UI-as-illustration — for surfaces where the product is being *introduced*, not *operated*. The split is **operating density vs storytelling presentation**, not calm-vs-editorial.
 
 ---
 
@@ -59,7 +59,7 @@ When this aesthetic is inverted to light mode, the same principles hold with rev
 - Background: warm off-white (`#faf9f7`)
 - Card: white with warm hairline
 - Primary text: near-black warm (`#1c1917`)
-- Do **not** copy the current core-product light palette (zinc-50 / teal accent) into editorial surfaces. Editorial surfaces stay warm-neutral even in light mode.
+- The app's light mode is now warm-neutral too (`/DESIGN.md`), so storytelling and operating surfaces stay consistent in either theme. Keep everything warm-stone — never cool zinc.
 
 ---
 
@@ -155,6 +155,16 @@ This is the defining element of the aesthetic. The product itself is the illustr
 - Actual screenshots framed inside cards, slightly tilted or peeking, not floating in vacuum.
 - Mini reproductions of real UI — terminal window with `> Fix the auth bug / * Cooking…`, browser download bar with file name and size — reconstructed at scale inside illustration areas.
 - For mabenn: a real charge row, a real statement card, a real payment match event, a real ledger row — these become the illustrations.
+
+### Device frames & ambient glow
+
+The signature "device peek" — a product surface glimpsed inside a warm-lit frame, glowing faintly magenta, edges dissolving into blur. Use for any "here's the product" hero moment. **Storytelling-only — never on operating app screens.**
+
+- **Blurred magenta halo** behind the frame: oversized `-inset`, `blur-3xl`, `radial-gradient(rgba(233,64,143,0.14–0.16) → transparent)`.
+- **Warm gradient frame:** `rounded-[32px]`, `border-white/[0.12]`, a warm-brown diagonal gradient (`#3a312b → #2b2521 → #1d1916 → #141110`, angle varied per frame), a deep far-thrown shadow (`shadow-[0_40px_120px_-40px_rgba(0,0,0,0.85)]`), and a 1px top hairline highlight (`linear-gradient(to right, transparent, rgba(255,255,255,0.18), transparent)`).
+- **Inner app card:** `#1a1a19`, `rounded-[18px]`, `border-white/[0.10]`, positioned to **bleed off one edge** so it reads larger than the frame.
+- **Edge dissolve:** `backdrop-blur-md` overlays masked with `linear-gradient(to right/bottom, transparent X%, black)` so the card's far edges blur into nothing — content fades, never hard-crops.
+- **Ambient page glows:** heroes / CTAs float 3 stacked magenta radials (increasing size + blur, opacity `0.42 → 0.22 → 0.10`), `pointer-events-none`. The glow is the only color temperature on an otherwise neutral page.
 
 ### Hand-drawn accents
 
@@ -272,10 +282,10 @@ Use this editorial reference for:
 - "How it works" explainer modals inside the app
 - Brand moments (about page, trust page, data-handling explainer)
 
-Use the core design system (`design.md`) for:
+Use the core design system (`/DESIGN.md`) for:
 - Authenticated billing workflows — statements, charges, ledger, disputes
 - Data-entry forms, settings, account management
 - Day-to-day notifications and in-app alerts
 - Any surface where the user's job is *to act on money*, not *to understand the product*
 
-When a surface sits in both worlds (e.g. a tutorial overlay on top of a real statement screen), the underlying surface follows `design.md` and the overlay follows this reference — and both must feel like they belong to the same product through shared type, shared radius language, and shared restraint.
+When a surface sits in both worlds (e.g. a tutorial overlay on top of a real statement screen), the underlying surface follows `/DESIGN.md` and the overlay follows this reference — and both must feel like they belong to the same product through shared type, shared radius language, and shared restraint.

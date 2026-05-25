@@ -110,7 +110,7 @@ function EmptyState({ firstName }: { firstName: string }) {
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
         <div className="w-full max-w-2xl">
           <div className="mb-8 text-center">
-            <Wordmark className="mx-auto h-7" />
+            <Wordmark className="text-[22px]" />
           </div>
           <div className="mb-10 text-center">
             <h1 className="text-2xl font-bold text-foreground md:text-3xl">

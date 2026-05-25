@@ -7,7 +7,7 @@ Project documentation for mabenn — a Brazil-first rental billing and utility c
 ### [`project/`](project/)
 Core product and design documentation.
 - [**Project Plan**](project/) — MVP scope, user journeys, personas, roadmap, metrics, and technical direction
-- [**design.md**](project/design.md) — Visual design system, typography, spacing, component guidance, and UX patterns
+- [**DESIGN.md**](../DESIGN.md) — App design system: tokens, typography, spacing, component patterns, UX (warm-dark editorial)
 
 ### [`sales/`](sales/)
 Materials for pitching and onboarding early users.

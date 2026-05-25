@@ -153,7 +153,7 @@ function RowSummary({
 
   if (amountMinor !== undefined && amountMinor > 0) {
     return (
-      <RowTrailingStatus tone="muted" variant="data" className="tabular-nums">
+      <RowTrailingStatus tone="muted" variant="data">
         {formatCurrency(amountMinor, currency)}
       </RowTrailingStatus>
     )

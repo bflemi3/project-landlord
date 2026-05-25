@@ -26,7 +26,7 @@ export function EmptyState({ firstName, greeting, draftId }: EmptyStateProps) {
   return (
     <div className="w-full max-w-2xl">
       <div className="mb-10 text-center">
-        <h1 className="text-2xl font-bold text-foreground md:text-3xl">
+        <h1 className="text-2xl font-display font-medium tracking-[-0.015em] text-foreground md:text-3xl">
           {greeting}{firstName ? `, ${firstName}` : ''}
         </h1>
         <p className="mt-2 text-base text-muted-foreground md:text-lg">
