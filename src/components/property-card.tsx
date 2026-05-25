@@ -177,7 +177,7 @@ function PropertyCardAmount({ className, ...props }: React.ComponentProps<'p'>) 
     <p
       data-slot="property-card-amount"
       className={cn(
-        'mt-8 text-3xl font-bold tracking-tight tabular-nums text-foreground',
+        'mt-8 font-mono text-3xl font-bold tracking-tight tabular-nums text-foreground',
         className,
       )}
       {...props}

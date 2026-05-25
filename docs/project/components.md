@@ -688,7 +688,7 @@ These live in `src/components/ui/` and are shadcn-based with product customizati
 - Variants: `default` (teal), `secondary` (muted fill), `destructive` (rose), `ghost`, `link`
 
 ### Input (`ui/input.tsx`)
-- `h-12 rounded-2xl` — generous height, soft radius
+- `h-12 rounded-md` — generous height, tight instrument-precise radius (~13px)
 - Has built-in clear (X) button for text-based types
 - **`variant`** picks the idle background:
   - `card` (default) — `bg-muted dark:bg-foreground/5 dark:border-foreground/15`. Use when the input sits inside a `bg-card` surface (sections, sheets, dialogs). Dark mode: `muted` and `input` collapse to nearly-`card` lightness, so we tint with `foreground/N` to lift past that ceiling.
@@ -704,7 +704,7 @@ These live in `src/components/ui/` and are shadcn-based with product customizati
 - Locale-aware (en, pt-BR, es). `min`/`max` bound selectable dates.
 
 ### Select (`ui/select.tsx`)
-- Styled to match Input: `h-12 rounded-2xl dark:bg-zinc-800`
+- Styled to match Input: `h-12 rounded-md`, `card`/`page` fill variants (tokenized — no zinc)
 - Dropdown items use `pl-3 pr-9` for check indicator room
 
 ### DropdownMenu (`ui/dropdown-menu.tsx`)

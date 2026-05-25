@@ -135,15 +135,15 @@ const currencyInputVariants = cva(
     variants: {
       variant: {
         card: [
-          'border-input bg-muted rounded-2xl border',
-          'focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-3',
-          'data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:ring-3',
+          'border-input bg-muted rounded-md border',
+          'focus-within:border-ring focus-within:ring-ring/25 focus-within:ring-2',
+          'data-[active=true]:border-ring data-[active=true]:ring-ring/25 data-[active=true]:ring-2',
           'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
         ].join(' '),
         page: [
-          'border-input rounded-2xl border bg-transparent',
-          'focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-3',
-          'data-[active=true]:border-ring data-[active=true]:ring-ring/50 data-[active=true]:ring-3',
+          'border-input rounded-md border bg-transparent',
+          'focus-within:border-ring focus-within:ring-ring/25 focus-within:ring-2',
+          'data-[active=true]:border-ring data-[active=true]:ring-ring/25 data-[active=true]:ring-2',
           'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
           'dark:bg-input/30',
         ].join(' '),
@@ -166,7 +166,7 @@ const currencyInputVariants = cva(
   },
 )
 
-const symbolVariants = cva('shrink-0 font-bold transition-colors select-none', {
+const symbolVariants = cva('shrink-0 font-mono font-medium transition-colors select-none', {
   variants: {
     size: {
       default: 'text-base',
@@ -178,7 +178,7 @@ const symbolVariants = cva('shrink-0 font-bold transition-colors select-none', {
 })
 
 const inputVariants = cva(
-  'min-w-0 flex-1 bg-transparent p-0 font-bold tabular-nums text-foreground outline-none placeholder:text-muted-foreground/40 disabled:cursor-not-allowed',
+  'min-w-0 flex-1 bg-transparent p-0 font-mono font-medium tabular-nums text-foreground outline-none placeholder:text-muted-foreground/40 disabled:cursor-not-allowed',
   {
     variants: {
       size: {
@@ -191,7 +191,7 @@ const inputVariants = cva(
   },
 )
 
-const displayIntegerVariants = cva('font-bold tabular-nums text-foreground', {
+const displayIntegerVariants = cva('font-mono font-medium tabular-nums text-foreground', {
   variants: {
     size: {
       default: 'text-base',
@@ -202,7 +202,7 @@ const displayIntegerVariants = cva('font-bold tabular-nums text-foreground', {
   defaultVariants: { size: 'default' },
 })
 
-const displayDecimalVariants = cva('font-bold tabular-nums', {
+const displayDecimalVariants = cva('font-mono font-medium tabular-nums', {
   variants: {
     size: {
       default: 'text-base text-foreground',

@@ -45,7 +45,7 @@ MUST use semantic tokens from `src/app/globals.css`. NEVER hardcode Tailwind col
 
 ## Typography
 
-- **Fonts:** body + UI labels = **Geist** (`--font-sans`); display titles + the one hero figure = **Fraunces** (`--font-display`, serif, medium weight); money + dates + eyebrow/meta = **Geist Mono** (`--font-mono`). Apply **`tabular-nums`** wherever money or aligned figures appear — it's a class you add, not a font default.
+- **Fonts:** body + UI labels = **Geist** (`--font-sans`); display titles + the one hero figure = **Fraunces** (`--font-display`, serif, medium weight); money/currency + eyebrow/meta = **Geist Mono** (`--font-mono`). Apply **`tabular-nums`** wherever money or aligned figures appear — it's a class you add, not a font default.
 - **Serif discipline:** Fraunces for page/section titles and the single hero amount (e.g. a revenue total) — never for body, tables, or buttons.
 - **Scale:** via `--font-size-*` tokens (`text-4xl` = 36px is the ceiling). Page title 28–32px, section heading 20–24px, hero amount 32–36px, card title 16–20px, body 15–17px, secondary 14px. Never below 13px on mobile. (Need a bigger figure than 36px? Add a `5xl` token — don't reach for an arbitrary px value.)
 - **Rules:** money amounts prominent. Don't shrink text to fit — remove content instead.
@@ -59,7 +59,7 @@ MUST use semantic tokens from `src/app/globals.css`. NEVER hardcode Tailwind col
 
 ## Radius, Borders, Shadows
 
-- **Radius tokens:** pills `rounded-full`; controls/inputs `rounded-2xl`; cards `rounded-card` (`--radius-card: 1.25rem`); sheets `rounded-3xl`. Base `--radius: 1rem`.
+- **Radius tokens:** pills `rounded-full`; controls/inputs `rounded-md` (~13px, tight/instrument-precise — Mercury/Linear); cards `rounded-card` (`--radius-card: 1.25rem`); sheets `rounded-3xl`. Base `--radius: 1rem`.
 - **Borders:** subtle, low-contrast via `border-border`. Don't stack border + shadow + tint.
 - **Shadows:** use `shadow-card` / `shadow-card-hover` tokens on cards, `shadow-popover` on popovers (dropdown menus, date pickers, combobox). No heavy drop shadows. Dark mode neutralizes the card pair to border-only chrome.
 

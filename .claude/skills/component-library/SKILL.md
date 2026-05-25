@@ -86,7 +86,7 @@ Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as t
 
 ### UI Primitives (shadcn, `src/components/ui/`)
 - **Button** — has `loading` prop, handles icon sizing. Variants: default (teal), secondary, destructive, ghost, link.
-- **Input** — `h-12 rounded-2xl`, built-in clear button. **`variant`**: `card` (default — `bg-muted dark:bg-foreground/5 dark:border-foreground/15` for inputs in `bg-card` surfaces) or `page` (transparent for inputs on `bg-background`).
+- **Input** — `h-12 rounded-md`, built-in clear button. **`variant`**: `card` (default — `bg-muted dark:bg-foreground/5 dark:border-foreground/15` for inputs in `bg-card` surfaces) or `page` (transparent for inputs on `bg-background`).
 - **InputGroup** (`ui/input-group.tsx`) — input + leading/trailing addons (icons, buttons). Mirrors `Input`'s `card`/`page` variants, defaults to `card`. Parts: `InputGroup`, `InputGroupAddon` (`align`: inline-start / inline-end / block-start / block-end), `InputGroupInput`, `InputGroupButton`, `InputGroupText`.
 - **IsoDatePicker** (`ui/iso-date-picker.tsx`) — date input + popover calendar, locale-aware. Stores ISO `YYYY-MM-DD`. Forwards `variant` to `InputGroup`.
 - **Select** — matches Input styling.

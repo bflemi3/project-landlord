@@ -86,7 +86,7 @@ typography:
 
 rounded:
   pill: 9999px                   # rounded-full — pills, badges, primary CTA
-  control: 1.8rem                # rounded-2xl — inputs, controls
+  control: 0.8rem                # rounded-md — inputs, controls (Mercury/Linear-tight)
   card: 1.25rem                  # rounded-card
   sheet: 2.2rem                  # rounded-3xl — bottom sheets
 
@@ -177,7 +177,7 @@ Three families, three jobs — never blur them.
 
 - **Fraunces** (`--font-display`, serif, medium) — page/section titles and the single hero figure. Tight leading, negative tracking. **Never** body, tables, or buttons.
 - **Geist** (`--font-sans`) — body, UI labels, card titles, buttons.
-- **Geist Mono** (`--font-mono`) — money, dates, eyebrow/meta. Apply **`tabular-nums`** wherever money or aligned figures appear (it's a class you add).
+- **Geist Mono** (`--font-mono`) — money/currency and eyebrow/meta only. Apply **`tabular-nums`** wherever money or aligned figures appear (it's a class you add).
 
 **Scale** via `--font-size-*` tokens (`text-4xl` = 36px is the ceiling): page title 28–32px, section heading 20–24px, hero amount 32–36px, card title 16–20px, body 15–17px, secondary 14px. Never below 13px on mobile. Don't shrink text to fit — remove content instead. Need a bigger figure than 36px? Add a `5xl` token, don't use an arbitrary px.
 
@@ -203,7 +203,7 @@ Layering comes from **surface color + hairline borders**, not heavy shadows.
 Radius decreases as nesting deepens.
 
 - **Pills / badges / primary CTA** → `rounded-full` (`{rounded.pill}`).
-- **Inputs / controls** → `rounded-2xl` (`{rounded.control}`).
+- **Inputs / controls** → `rounded-md` (`{rounded.control}`) — tight, instrument-precise (Mercury/Linear), not pill-round.
 - **Cards** → `rounded-card` (1.25rem / 20px).
 - **Bottom sheets** → `rounded-3xl` (`{rounded.sheet}`).
 - Base `--radius: 1rem`. Corners are rounded, never sharp — sharp reads cold.

@@ -37,7 +37,7 @@ function PageHeaderTitle({ className, ...props }: React.ComponentProps<'h1'>) {
   return (
     <h1
       data-slot="page-header-title"
-      className={cn('text-2xl font-bold text-foreground', className)}
+      className={cn('text-2xl font-display font-medium tracking-[-0.015em] text-foreground', className)}
       {...props}
     />
   )
