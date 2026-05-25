@@ -28,7 +28,7 @@ const fraunces = Fraunces({
 
 export const metadata: Metadata = {
   title: {
-    default: 'mabenn — Rental management for Brazilian landlords',
+    default: 'mabenn | Rental management for Brazilian landlords',
     template: '%s | mabenn',
   },
   description:

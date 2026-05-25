@@ -1,9 +1,8 @@
 ---
 name: component-library
-description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/InfoBox, or when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel.
+description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/InfoBox, when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel, when hand-rolling a status pill / dot+label chip (use StatusBadge or Badge) or a tabbed/segmented nav (use ui/tabs), or when reaching for the magenta highlight/spotlight accent.
 paths:
   - "src/**/*.tsx"
-  - "src/components/**"
 ---
 
 # Component Library Rules
@@ -34,10 +33,17 @@ paths:
 
 Small building blocks for consistent editorial surfaces. Always compose these instead of reaching for raw utility classes for eyebrows, section labels, icon surfaces, or list rows.
 
-- **EyebrowLabel** (`src/components/eyebrow-label.tsx`) — uppercase micro-label above a title. `tone`: primary / muted / foreground.
+- **EyebrowLabel** (`src/components/eyebrow-label.tsx`) — uppercase micro-label above a title. `tone`: primary / muted / foreground / highlight.
 - **SectionLabel** (`src/components/section-label.tsx`) — section heading above a grouped block (`<h3>` default; override via `as="h2" | "h4"`).
-- **IconTile** (`src/components/icon-tile.tsx`) — rounded surface for a single lucide icon. `size` sm/md/lg, `shape` square/circle, `tone` primary/muted/success/warning/info/destructive. Uses semantic subtle pairs — never hardcode color utilities for icon surfaces.
+- **IconTile** (`src/components/icon-tile.tsx`) — rounded surface for a single lucide icon. `size` sm/md/lg, `shape` square/circle, `tone` primary/muted/success/warning/info/destructive/highlight. Uses semantic subtle pairs — never hardcode color utilities for icon surfaces.
 - **ListRow** family (`src/components/list-row.tsx`) — `List`, `ListRow` / `ListRowButton`, `ListRowLeading`, `ListRowBody`, `ListRowTitle`, `ListRowDescription`, `ListRowTrailing`, `ListRowChevron`, plus `listRowClassName()` helper. Variants: `solid` and `dashed` render their own chrome; `embedded` is chromeless for rows inside a `Card size="none"` + `List`.
+- **StatusBadge** (`src/components/status-badge.tsx`) — dot-led status pill. Pass intent (`paid` / `pending` / `overdue` / `disputed` / `rejected` / `published` / `draft` / `default`), not chrome — it composes `ui/badge` and prepends a `bg-current` dot. Reach for this for any status indicator; never hand-roll a pill or dot+label. Forwards `spotlight`.
+
+### Status pills, badges & tabs
+
+- **Status indicator → `StatusBadge`** (above). Don't reconstruct a tinted pill + dot in raw markup, and don't build it on `Badge` at the call site — the status→variant mapping lives in `StatusBadge`. Reach for `Badge` (`src/components/ui/badge.tsx`) directly only for *non-status* pills (counts, taxonomy, plain labels).
+- **Tabbed navigation → `ui/tabs`** (`Tabs` / `TabsList` / `TabsTrigger` / `TabsContent`) — the editorial underline-active tabs. Don't hand-build a segmented control out of buttons. If you need compact pill/segmented selection of a value (not view-switching), that's `RadioCardGroup variant="chip"`, not a tabs reimplementation.
+- **The magenta `highlight` family is the secondary accent — emphasis, one per view, never the default.** It lives on `Badge` (`highlight` / `highlight-subtle` variants), and as `tone="highlight"` on `IconTile`, `AmountDisplay` (`src/components/amount-display.tsx`), and `EyebrowLabel`. Teal acts (interactive primary); magenta points. The `spotlight` boolean on `Badge` / `StatusBadge` adds the emphasis ring marking the single pill worth noticing — at most one per view.
 
 ## Key Components
 
@@ -89,6 +95,8 @@ Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as t
 - **RadioCardGroup** (`components/radio-card-group.tsx`) — card-style radio group. Variants: `card` (full-bleed bordered card with optional icon) or `chip` (compact pill row). Helper: `radioCardVariants` cva for composing chip-styled buttons that aren't actual radios (e.g. full-width "Add tenant" / "Add expense" trigger).
 - **Card** — composable (`Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardAction`, `CardContent`, `CardFooter`) plus the `cardShellClassName` helper for non-`<div>` shells (a `<Link>` or `<button>`). Props: `size` (sm / md / lg / xl / compound / none), `variant` (solid / dashed), `interactive`. Token chrome: `rounded-card`, `shadow-card`, `shadow-card-hover`.
 - **Sheet** — bottom sheet for contextual actions.
+- **Badge** (`ui/badge.tsx`) — editorial pill; full variant set incl. `highlight` + the `spotlight` ring. For status indicators use **StatusBadge** (see "Status pills, badges & tabs" above), not `Badge` directly.
+- **Tabs** (`ui/tabs.tsx`) — composable base-ui (`Tabs` / `TabsList` / `TabsTrigger` / `TabsContent`), editorial underline-active. See "Status pills, badges & tabs" above.
 
 ## Layout Rules
 

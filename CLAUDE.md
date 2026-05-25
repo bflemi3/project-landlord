@@ -14,7 +14,7 @@ See `docs/project/product-pivot-long-term-rentals.md` for the full product shape
 
 ## Source of Truth
 
-1. `.claude/skills/design-system/` — visual design, UX, spacing, hierarchy, motion
+1. `.claude/skills/design-system/` — visual design, UX, spacing, hierarchy, motion. Design tokens + full spec: `/DESIGN.md`
 2. `.claude/skills/component-library/` — approved components, variants, composition
 3. `.claude/skills/frontend-patterns/` — performance, data fetching, component discipline
 4. Domain skills — `billing-automation`, `contract-management`, `data-modeling`, `analytics`, `testing`, `email-templates`

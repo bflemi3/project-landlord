@@ -2,7 +2,7 @@
 
 This document catalogs every approved component pattern in the product. When building a new feature, check here first — use existing components before creating new ones.
 
-This is the source of truth for **what components exist, when to use them, and how to lay them out**. For visual philosophy and design tokens, see `design.md`. For engineering patterns (hooks, forms, queries), see `CLAUDE.md`.
+This is the source of truth for **what components exist, when to use them, and how to lay them out**. For visual philosophy and design tokens, see `/DESIGN.md`. For engineering patterns (hooks, forms, queries), see `CLAUDE.md`.
 
 ---
 
@@ -76,7 +76,7 @@ Small, reusable building blocks that form the base of the editorial surface laye
 
 Uppercase micro-label rendered above a title. Used for category, section context, or taxonomy cues. `text-xs font-semibold uppercase tracking-widest`.
 
-**Props:** `tone` — `primary` (default) / `muted` / `foreground`.
+**Props:** `tone` — `primary` (default) / `muted` / `foreground` / `highlight` (magenta emphasis).
 
 ```tsx
 <EyebrowLabel>Billing cycle</EyebrowLabel>
@@ -105,7 +105,7 @@ Rounded surface holding a single lucide icon. Used in list rows, empty states, a
 |---|---|---|
 | `size` | `sm` / `md` / `lg` | `md` |
 | `shape` | `square` / `circle` | `square` |
-| `tone` | `primary` / `muted` / `success` / `warning` / `info` / `destructive` | `primary` |
+| `tone` | `primary` / `muted` / `success` / `warning` / `info` / `destructive` / `highlight` | `primary` |
 
 ```tsx
 <IconTile size="lg" shape="circle" tone="warning">
@@ -173,6 +173,19 @@ Compound primitives for list rows — a leading icon/avatar, body text, and trai
 ```
 
 ---
+
+### StatusBadge
+
+**File:** `src/components/status-badge.tsx`
+
+Dot-led status pill. Composes `ui/badge` — maps a status to a Badge variant and prepends a `bg-current` dot. Callers pass intent, not chrome.
+
+**Props:** `variant` — `paid` / `pending` / `overdue` / `disputed` / `rejected` / `published` / `draft` / `default`. `spotlight?: boolean` forwards the magenta emphasis ring (the one to notice). Mapping: paid→`success-subtle`, pending/disputed→`warning-subtle`, overdue/rejected→`destructive-subtle`, published→`primary-subtle`, default→muted neutral, draft→dashed outline (no dot).
+
+```tsx
+<StatusBadge variant="paid" spotlight>Paid</StatusBadge>
+<StatusBadge variant="pending">Due</StatusBadge>
+```
 
 ## Property Cards
 
@@ -724,15 +737,26 @@ These live in `src/components/ui/` and are shadcn-based with product customizati
 - Bottom sheet pattern for contextual actions
 - Use for configuration panels, charge editing, secondary flows
 
+### Badge (`ui/badge.tsx`)
+- Editorial pill: `rounded-full`, `font-sans`, `text-[12px]`, dot-or-icon + label. The base for status pills.
+- **`variant`**: `default` (solid teal) / `secondary` / `outline` / `ghost` / `link` / `success` (solid) / the tinted-subtle set (`success-subtle`, `primary-subtle`, `warning-subtle`, `info-subtle`, `destructive`, `highlight-subtle`) / `highlight` (solid magenta).
+- **`spotlight`** (boolean): adds the magenta emphasis ring (`ring-highlight/40` + card-offset) — marks the one pill to notice. One per view.
+- The `--highlight` (magenta) variants are the secondary accent; never the default. Teal acts; magenta points.
+
+### Tabs (`ui/tabs.tsx`)
+- Composable base-ui (`@base-ui/react/tabs`) primitive, restyled editorial: underline on the active trigger, muted inactive, `text-sm`. No pill/segmented chrome.
+- Parts: `Tabs` (Root), `TabsList`, `TabsTrigger`, `TabsContent`. Active state binds to base-ui's `data-active` (not Radix's `data-state`).
+- A live-status dot or filter affordance is consumer-added beside the list, not part of the primitive.
+
 ---
 
 ## Wordmark
 
 **File:** `src/components/wordmark.tsx`
 
-The mabenn logo. Theme-aware — automatically swaps between light and dark variants.
+The mabenn wordmark — **live Fraunces text** (`font-display font-semibold`), not an image. Auto light/dark via `text-foreground`. Size with a `text-[Npx]` class (auth ~30px, headers ~20px). The SVG/PNG wordmark assets remain only for email (which can't load web fonts).
 
-**Usage:** `<Wordmark className="h-7" />`
+**Usage:** `<Wordmark className="text-[20px]" href="/app" />`
 
 ---
 

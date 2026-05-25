@@ -133,6 +133,7 @@ html, body {
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
@@ -174,7 +175,7 @@ html, body {
   --radius-4xl: calc(var(--radius) * 2.6);
   /* Editorial card radius — 20px, matches reference design */
   --radius-card: 1.25rem;
-  /* Typography scale per design.md */
+  /* Typography scale per /DESIGN.md */
   --font-size-xs: 0.8125rem;
   --font-size-xs--line-height: 1.125rem;
   --font-size-sm: 0.875rem;
@@ -221,6 +222,8 @@ html, body {
   --muted: oklch(0.97 0.001 106.424);
   /* stone-500 muted-foreground */
   --muted-foreground: oklch(0.553 0.013 58.071);
+  /* stone-400 subtle-foreground — tier-3 text (dates, eyebrows, meta) */
+  --subtle-foreground: oklch(0.709 0.01 56.259);
   /* stone-100 accent */
   --accent: oklch(0.97 0.001 106.424);
   --accent-foreground: oklch(0.216 0.006 56.043);
@@ -232,7 +235,7 @@ html, body {
   --input: oklch(0.869 0.005 56.366);
   /* teal-500 ring */
   --ring: oklch(0.704 0.14 182.503);
-  /* 1rem radius per DESIGN.md */
+  /* 1rem radius per /DESIGN.md */
   --radius: 1rem;
   /* Editorial card shadow — soft diffused, no visible hard edge */
   --shadow-card: 0 1px 2px oklch(0 0 0 / 0.035), 0 8px 24px -12px oklch(0 0 0 / 0.06);
@@ -282,7 +285,7 @@ html, body {
 .dark {
   /* warm near-black canvas ≈ #141413 */
   --background: oklch(0.185 0.002 106);
-  /* warm off-white foreground ≈ #f5f5f4 */
+  /* warm off-white foreground ≈ #fafaf9 (stone-50) */
   --foreground: oklch(0.985 0.001 106.423);
   /* warm card ≈ #1a1a19 */
   --card: oklch(0.225 0.003 106);
@@ -307,15 +310,17 @@ html, body {
   --muted: oklch(0.255 0.003 106);
   /* stone-400 muted-foreground ≈ #a8a29e */
   --muted-foreground: oklch(0.709 0.01 56.259);
+  /* stone-500 subtle-foreground ≈ #78716c — tier-3 text (dates, eyebrows, meta) */
+  --subtle-foreground: oklch(0.553 0.013 58.071);
   /* warm neutral surface ≈ #232220 */
   --accent: oklch(0.255 0.003 106);
   --accent-foreground: oklch(0.985 0.001 106.423);
   /* rose-500 destructive */
   --destructive: oklch(0.645 0.246 16.439);
-  /* hairline white — editorial dividers */
-  --border: oklch(1 0 0 / 0.1);
-  /* stronger hairline so form fields read */
-  --input: oklch(1 0 0 / 0.14);
+  /* hairline white @ 15% — editorial dividers */
+  --border: oklch(1 0 0 / 0.15);
+  /* slightly stronger than border so form fields read */
+  --input: oklch(1 0 0 / 0.2);
   /* teal-400 ring */
   --ring: oklch(0.777 0.152 181.912);
   /* Dark mode — no card shadow, rely on border */
@@ -357,7 +362,7 @@ html, body {
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.255 0.003 106);
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
-  --sidebar-border: oklch(1 0 0 / 0.1);
+  --sidebar-border: oklch(1 0 0 / 0.15);
   --sidebar-ring: oklch(0.777 0.152 181.912);
 }
 
