@@ -47,7 +47,7 @@ function AmountDisplay({
       data-slot="amount-display"
       data-size={size}
       data-tone={tone}
-      className={cn('tabular-nums', sizeClasses[size], toneClasses[tone], className)}
+      className={cn('font-mono tabular-nums', sizeClasses[size], toneClasses[tone], className)}
       {...props}
     >
       {formatCurrency(

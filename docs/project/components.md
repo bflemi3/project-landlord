@@ -57,7 +57,7 @@ Desktop-only floating elements — logo (top-left) and avatar (top-right) with `
 The greeting header used on the home screen. Adapts based on context.
 
 **Structure:**
-- Line 1: Greeting or page title (`text-2xl font-bold`)
+- Line 1: Greeting or page title (Fraunces — `font-display font-medium tracking-[-0.015em]`, `text-2xl`/`text-3xl`)
 - Line 2 (optional): Property count or contextual subtitle (`text-lg`)
 
 **Home page layout:**
@@ -74,7 +74,7 @@ Small, reusable building blocks that form the base of the editorial surface laye
 
 **File:** `src/components/eyebrow-label.tsx`
 
-Uppercase micro-label rendered above a title. Used for category, section context, or taxonomy cues. `text-xs font-semibold uppercase tracking-widest`.
+Uppercase micro-label rendered above a title. Used for category, section context, or taxonomy cues. `font-mono text-xs font-medium uppercase tracking-widest` — Geist Mono per the eyebrow/meta type role.
 
 **Props:** `tone` — `primary` (default) / `muted` / `foreground` / `highlight` (magenta emphasis).
 
