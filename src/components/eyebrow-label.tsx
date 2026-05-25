@@ -1,12 +1,13 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 
-type EyebrowLabelTone = 'primary' | 'muted' | 'foreground'
+type EyebrowLabelTone = 'primary' | 'muted' | 'foreground' | 'highlight'
 
 const toneClasses: Record<EyebrowLabelTone, string> = {
   primary: 'text-primary',
   muted: 'text-muted-foreground',
   foreground: 'text-foreground/70',
+  highlight: 'text-highlight',
 }
 
 function EyebrowLabel({

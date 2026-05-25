@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabenn design reference — Reputation cards</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: {
+      display: ['Fraunces', 'serif'], editorial: ['Geist', 'sans-serif'], mono: ['"Geist Mono"', 'monospace'],
+    } } } }
+  </script>
+  <style> body { background: #141413; } .font-mono { font-feature-settings: 'tnum' 1; } </style>
+</head>
+
+<body class="font-editorial text-[#f5f5f4] antialiased">
+  <main class="mx-auto flex min-h-screen max-w-[560px] flex-col justify-center px-6 py-16">
+    <p class="mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#57534e]">
+      Design reference · Reputation cards · captured from landing.tsx
+    </p>
+
+    <div class="space-y-6">
+
+      <!-- Tenant -->
+      <div class="overflow-hidden rounded-[18px] border border-white/[0.10] bg-[#1a1a19] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+        <div class="flex items-center justify-between border-b border-white/[0.05] px-6 py-4">
+          <div class="flex items-baseline gap-2.5">
+            <p class="font-display text-[16px] font-medium tracking-tight text-[#f5f5f4]">Carla Andrade</p>
+            <p class="text-[11.5px] text-[#78716c]">· Tenant</p>
+          </div>
+          <div class="inline-flex items-baseline gap-1.5">
+            <svg viewBox="0 0 12 12" class="size-3 translate-y-[1px] fill-[#e9408f]"><path d="M6 0.5 L7.66 4.32 L11.78 4.7 L8.66 7.44 L9.56 11.5 L6 9.36 L2.44 11.5 L3.34 7.44 L0.22 4.7 L4.34 4.32 Z" /></svg>
+            <p class="font-mono text-[15px] tabular-nums font-medium text-[#f5f5f4]">4.87</p>
+          </div>
+        </div>
+        <ul class="grid grid-cols-2 gap-x-6 gap-y-1 border-b border-white/[0.05] px-6 py-4">
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">24/24</span><span class="text-[12px] text-[#a8a29e]">rent payments on time</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">17/18</span><span class="text-[12px] text-[#a8a29e]">bills paid on time</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">1.4 days</span><span class="text-[12px] text-[#a8a29e]">early on average</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">No disputes</span><span class="text-[12px] text-[#a8a29e]">in 2 years</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">2</span><span class="text-[12px] text-[#a8a29e]">rentals on Mabenn</span></li>
+        </ul>
+        <ul class="px-6 py-3">
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5 first:border-t-0"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">May 5</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Paid rent on time</span><span class="shrink-0 font-mono text-[12px] tabular-nums text-[#a8a29e]">R$ 2.800</span></li>
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">Apr 28</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Paid condo 3 days early</span><span class="shrink-0 font-mono text-[12px] tabular-nums text-[#a8a29e]">R$ 480</span></li>
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">Apr 15</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Paid Energia ENEL on time</span><span class="shrink-0 font-mono text-[12px] tabular-nums text-[#a8a29e]">R$ 320</span></li>
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">Mar 5</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Accepted IPCA adjustment</span><span class="shrink-0 font-mono text-[12px] tabular-nums text-[#a8a29e]">+4.89%</span></li>
+        </ul>
+      </div>
+
+      <!-- Landlord -->
+      <div class="overflow-hidden rounded-[18px] border border-white/[0.10] bg-[#1a1a19] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+        <div class="flex items-center justify-between border-b border-white/[0.05] px-6 py-4">
+          <div class="flex items-baseline gap-2.5">
+            <p class="font-display text-[16px] font-medium tracking-tight text-[#f5f5f4]">Rafael Oliveira</p>
+            <p class="text-[11.5px] text-[#78716c]">· Owner</p>
+          </div>
+          <div class="inline-flex items-baseline gap-1.5">
+            <svg viewBox="0 0 12 12" class="size-3 translate-y-[1px] fill-[#e9408f]"><path d="M6 0.5 L7.66 4.32 L11.78 4.7 L8.66 7.44 L9.56 11.5 L6 9.36 L2.44 11.5 L3.34 7.44 L0.22 4.7 L4.34 4.32 Z" /></svg>
+            <p class="font-mono text-[15px] tabular-nums font-medium text-[#f5f5f4]">4.92</p>
+          </div>
+        </div>
+        <ul class="grid grid-cols-2 gap-x-6 gap-y-1 border-b border-white/[0.05] px-6 py-4">
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">1.2 days</span><span class="text-[12px] text-[#a8a29e]">median response time</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">All</span><span class="text-[12px] text-[#a8a29e]">IPCA adjustments at or below inflation</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">6/6</span><span class="text-[12px] text-[#a8a29e]">contracts completed</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">4 of 5</span><span class="text-[12px] text-[#a8a29e]">tenants renewed</span></li>
+          <li class="flex items-baseline gap-2 py-1"><span class="font-mono text-[12.5px] tabular-nums font-medium text-[#f5f5f4]">3</span><span class="text-[12px] text-[#a8a29e]">properties · 22 months</span></li>
+        </ul>
+        <ul class="px-6 py-3">
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5 first:border-t-0"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">May 12</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Replied to tenant in 4 hours</span></li>
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">Apr 22</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Sent IPCA adjustment at inflation rate</span><span class="shrink-0 font-mono text-[12px] tabular-nums text-[#a8a29e]">+4.89%</span></li>
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">Apr 10</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Renewed contract · Apt 12A</span></li>
+          <li class="flex items-center gap-3 border-t border-white/[0.04] py-2.5"><span class="w-[52px] shrink-0 font-mono text-[11px] tabular-nums text-[#78716c]">Mar 15</span><span class="min-w-0 flex-1 truncate text-[12.5px] text-[#f5f5f4]">Resolved dispute in 8 days</span></li>
+        </ul>
+      </div>
+
+    </div>
+
+    <div class="mt-8 grid gap-2 font-mono text-[11px] leading-relaxed text-[#78716c]">
+      <p><span class="text-[#e9408f]">magenta star</span> = rating glyph · rating + all metrics in Geist Mono tabular</p>
+      <p><span class="text-[#f5f5f4]">structure</span> header (serif name · role · rating) → metrics grid → dated activity feed</p>
+    </div>
+  </main>
+</body>
+</html>

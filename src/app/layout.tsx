@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Inter, Geist_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Fraunces } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -9,7 +9,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { SerwistProvider } from '@/components/serwist-provider'
 import './globals.css'
 
-const inter = Inter({
+const geistSans = Geist({
   variable: '--font-sans',
   subsets: ['latin'],
 })
@@ -17,6 +17,13 @@ const inter = Inter({
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+})
+
+const fraunces = Fraunces({
+  variable: '--font-display',
+  subsets: ['latin'],
+  axes: ['opsz', 'SOFT'],
+  display: 'swap',
 })
 
 export const metadata: Metadata = {
@@ -52,14 +59,14 @@ export const metadata: Metadata = {
     description:
       'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
     url: 'https://mabenn.com',
-    images: [{ url: '/og-image', width: 1200, height: 630, alt: 'mabenn — Rental management for Brazilian landlords' }],
+    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'mabenn — Rental management for Brazilian landlords' }],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Everything a property manager does. None of the fee.',
     description:
       'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
-    images: ['/og-image'],
+    images: ['/og-image.png'],
   },
   applicationName: 'mabenn',
   appleWebApp: {
@@ -74,10 +81,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const messages = await getMessages()
 
   return (
-    <html lang={locale} className={`${inter.variable} ${geistMono.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${geistSans.variable} ${geistMono.variable} ${fraunces.variable}`} suppressHydrationWarning>
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
             <QueryProvider>
               <TooltipProvider>
                 <SerwistProvider>

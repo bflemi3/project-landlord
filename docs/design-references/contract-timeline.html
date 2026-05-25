@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabenn design reference — Contract timeline</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: {
+      display: ['Fraunces', 'serif'], editorial: ['Geist', 'sans-serif'], mono: ['"Geist Mono"', 'monospace'],
+    } } } }
+  </script>
+  <style> body { background: #141413; } .font-mono { font-feature-settings: 'tnum' 1; } </style>
+</head>
+
+<body class="font-editorial text-[#f5f5f4] antialiased">
+  <main class="mx-auto flex min-h-screen max-w-[720px] flex-col justify-center px-6 py-16">
+    <p class="mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#57534e]">
+      Design reference · Contract timeline · captured from landing.tsx
+    </p>
+
+    <div class="overflow-hidden rounded-[18px] border border-white/[0.10] bg-[#1a1a19] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+      <!-- header -->
+      <div class="border-b border-white/[0.05] px-6 py-4">
+        <p class="font-display text-[16px] font-medium tracking-tight text-[#f5f5f4]">Contract · Apt 23B, Vila Mariana</p>
+        <p class="mt-1 text-[12px] text-[#78716c]">Started August 2024 · Ends January 2027</p>
+      </div>
+
+      <!-- timeline -->
+      <div class="relative px-6 py-6">
+        <div class="absolute left-[34px] top-10 bottom-10 w-px bg-white/[0.08]"></div>
+
+        <!-- past -->
+        <div class="relative pl-12 pb-7">
+          <span class="absolute left-[26px] top-0.5 inline-flex size-4 items-center justify-center rounded-full bg-white/[0.06] ring-1 ring-white/[0.10]">
+            <svg viewBox="0 0 8 8" class="size-[9px]"><path d="M1.2 4 L3.3 6 L6.8 1.8" fill="none" stroke="#a8a29e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+          </span>
+          <p class="text-[13.5px] text-[#a8a29e]">Contract drafted · Aug 5, 2024</p>
+        </div>
+
+        <!-- today -->
+        <div class="relative pl-12 pb-7">
+          <span class="absolute left-[26px] top-0.5 inline-flex size-4 items-center justify-center rounded-full bg-[#e9408f]/15 ring-2 ring-[#e9408f]/60">
+            <span class="size-1.5 rounded-full bg-[#e9408f]"></span>
+          </span>
+          <p class="text-[13.5px] font-medium text-[#f5f5f4]">Today</p>
+          <p class="mt-1 text-[12px] text-[#a8a29e]">Rent R$ 2.800/mo</p>
+        </div>
+
+        <!-- future · adjustment -->
+        <div class="relative pl-12 pb-7">
+          <span class="absolute left-[26px] top-0.5 inline-flex size-4 items-center justify-center rounded-full border border-white/[0.20] bg-[#1a1a19]"></span>
+          <p class="text-[13.5px] text-[#f5f5f4]">Next adjustment · Aug 5, 2026</p>
+          <span class="mt-1.5 inline-flex items-baseline gap-2 font-mono text-[12px] tabular-nums text-[#f5f5f4]">
+            <span>R$ 2.800</span><span class="text-[#78716c]">→</span><span>R$ 2.937</span>
+            <span class="text-[10.5px] text-[#a8a29e]">IPCA +4.89%</span>
+          </span>
+          <div>
+            <span class="mt-2 inline-flex items-center gap-1.5 rounded-full border border-white/[0.10] bg-white/[0.03] px-2.5 py-0.5 text-[11px] text-[#a8a29e]">
+              <span class="size-1 rounded-full bg-amber-400"></span>Sent to tenant · awaiting reply
+            </span>
+          </div>
+        </div>
+
+        <!-- future · renewal -->
+        <div class="relative pl-12 pb-7">
+          <span class="absolute left-[26px] top-0.5 inline-flex size-4 items-center justify-center rounded-full border border-white/[0.20] bg-[#1a1a19]"></span>
+          <p class="text-[13.5px] text-[#f5f5f4]">Renewal window · Nov 2026</p>
+        </div>
+
+        <!-- end -->
+        <div class="relative pl-12">
+          <span class="absolute left-[26px] top-0.5 inline-flex size-4 items-center justify-center rounded-full border-2 border-[#f5f5f4]/60 bg-[#1a1a19] ring-1 ring-white/[0.06] ring-offset-1 ring-offset-[#1a1a19]"></span>
+          <p class="text-[13.5px] text-[#f5f5f4]">Contract ends · Jan 5, 2027</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-2 font-mono text-[11px] leading-relaxed text-[#78716c]">
+      <p><span class="text-[#f5f5f4]">nodes</span> past = check · <span class="text-[#e9408f]">today = magenta dot in ring</span> · future = hollow · end = white terminal</p>
+      <p><span class="text-[#f5f5f4]">accent</span> rent step + IPCA % in Geist Mono · amber chip = pending action</p>
+    </div>
+  </main>
+</body>
+</html>

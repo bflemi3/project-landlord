@@ -1,20 +1,16 @@
-/* eslint-disable @next/next/no-img-element */
-
 import Link from 'next/link'
+import { cn } from '@/lib/utils'
 
 export function Wordmark({ className, href = '/' }: { className?: string; href?: string }) {
   return (
-    <Link href={href}>
-      <img
-        src="/brand/wordmark-light.svg"
-        alt="mabenn"
-        className={`dark:hidden ${className ?? 'mx-auto h-10'}`}
-      />
-      <img
-        src="/brand/wordmark-dark.svg"
-        alt="mabenn"
-        className={`hidden dark:block ${className ?? 'mx-auto h-10'}`}
-      />
+    <Link
+      href={href}
+      className={cn(
+        'inline-block font-display font-semibold tracking-tight text-foreground',
+        className ?? 'text-[30px]',
+      )}
+    >
+      mabenn
     </Link>
   )
 }

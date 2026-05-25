@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabenn design reference — Revenue dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: {
+      display: ['Fraunces', 'serif'], editorial: ['Geist', 'sans-serif'], mono: ['"Geist Mono"', 'monospace'],
+    } } } }
+  </script>
+  <style> body { background: #141413; } .font-mono { font-feature-settings: 'tnum' 1; } </style>
+</head>
+
+<body class="font-editorial text-[#f5f5f4] antialiased">
+  <main class="mx-auto flex min-h-screen max-w-[820px] flex-col justify-center px-6 py-16">
+    <p class="mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#57534e]">
+      Design reference · Revenue dashboard · captured from landing.tsx
+    </p>
+
+    <div class="overflow-hidden rounded-[18px] border border-white/[0.10] bg-[#1a1a19] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+      <!-- header -->
+      <div class="border-b border-white/[0.05] px-7 py-4">
+        <p class="font-display text-[14.5px] font-medium tracking-tight text-[#f5f5f4]">Income · 2024 — 2026</p>
+      </div>
+
+      <!-- metric strip — note: big figures are Fraunces (font-display) -->
+      <div class="grid grid-cols-3 divide-x divide-white/[0.05] border-b border-white/[0.05]">
+        <div class="px-6 py-5">
+          <p class="font-display text-[28px] font-medium leading-none tracking-[-0.015em] text-[#f5f5f4] md:text-[32px]">R$ 28.400</p>
+          <p class="mt-2 text-[11.5px] uppercase tracking-[0.10em] text-[#78716c]">this year</p>
+          <p class="mt-1.5 inline-flex items-center gap-1.5 rounded-full bg-[#e9408f]/10 px-2 py-0.5 font-mono text-[10.5px] tabular-nums text-[#f0a4c5]">
+            <span class="size-1 rounded-full bg-[#e9408f]"></span>+12% vs 2025
+          </p>
+        </div>
+        <div class="px-6 py-5">
+          <p class="font-display text-[28px] font-medium leading-none tracking-[-0.015em] text-[#f5f5f4] md:text-[32px]">R$ 85.200</p>
+          <p class="mt-2 text-[11.5px] uppercase tracking-[0.10em] text-[#78716c]">projected year-end</p>
+          <p class="mt-1.5 inline-flex items-center gap-1 text-[10.5px] text-[#a8a29e]">
+            <svg viewBox="0 0 12 12" class="size-2.5"><path d="M2 9 L6 4 L10 9" fill="none" stroke="#e9408f" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" /></svg>
+            on track
+          </p>
+        </div>
+        <div class="px-6 py-5">
+          <p class="font-display text-[28px] font-medium leading-none tracking-[-0.015em] text-[#f5f5f4] md:text-[32px]">R$ 172.500</p>
+          <p class="mt-2 text-[11.5px] uppercase tracking-[0.10em] text-[#78716c]">lifetime collected</p>
+          <p class="mt-1.5 text-[10.5px] text-[#78716c]">since Aug 2024</p>
+        </div>
+      </div>
+
+      <!-- chart (rendered by script below — data-exact port of RevenueChartSVG) -->
+      <div id="chart" class="px-2 pt-4 pb-2"></div>
+
+      <!-- footer -->
+      <div class="flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.05] px-7 py-3.5 text-[12px] text-[#a8a29e]">
+        <span>3 properties · R$ 8.937 collected in April</span>
+        <span class="inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-2.5 py-1 text-[11.5px] font-medium text-emerald-300">
+          <span class="size-1 rounded-full bg-emerald-400"></span>18 months without a missed payment
+        </span>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-2 font-mono text-[11px] leading-relaxed text-[#78716c]">
+      <p><span class="text-[#f5f5f4]">figures</span> Fraunces (font-display) for the big numbers · labels uppercase Geist · deltas Geist Mono</p>
+      <p><span class="text-[#e9408f]">magenta</span> = the income line, area fill, "now" marker, and the delta chip — one accent, the growth story</p>
+      <p><span class="text-[#f5f5f4]">chart</span> solid = actual · dashed = projected · dotted gridlines at year boundaries</p>
+    </div>
+  </main>
+
+  <script>
+    // Data-exact port of RevenueChartSVG from landing.tsx
+    const cumulative = [
+      5.7, 11.4, 17.1, 22.8, 28.5, 34.2, 39.9, 45.6, 51.3, 57.0, 62.7, 68.0,
+      74.3, 80.7, 87.0, 93.4, 99.7, 106.0, 112.4, 118.7, 125.1, 131.4, 137.8, 144.1,
+      151.2, 158.3, 165.4, 172.5,
+      179.6, 186.7, 193.8, 200.9, 208.0, 215.1, 222.2, 229.3,
+    ]
+    const actualCount = 28, max = 240, width = 760, height = 200, padX = 32
+    const innerW = width - padX * 2
+    const pts = cumulative.map((v, i) => ({
+      x: padX + (i / (cumulative.length - 1)) * innerW,
+      y: height - (v / max) * (height - 32) - 16,
+    }))
+    const actual = pts.slice(0, actualCount)
+    const projected = pts.slice(actualCount - 1)
+    const d = (arr) => arr.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(' ')
+    const actualD = d(actual), projD = d(projected)
+    const years = [{ l: '2024', i: 0 }, { l: '2025', i: 12 }, { l: '2026', i: 24 }]
+    const nowI = actualCount - 1, nowX = pts[nowI].x, nowY = pts[nowI].y
+    const last = pts[pts.length - 1]
+
+    const svg = `
+      <svg viewBox="0 0 ${width} ${height + 32}" class="block h-auto w-full">
+        <defs>
+          <linearGradient id="line" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0%" stop-color="#e9408f" stop-opacity="0.1" />
+            <stop offset="40%" stop-color="#e9408f" stop-opacity="0.35" />
+            <stop offset="100%" stop-color="#e9408f" stop-opacity="1" />
+          </linearGradient>
+          <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stop-color="#e9408f" stop-opacity="0.16" />
+            <stop offset="100%" stop-color="#e9408f" stop-opacity="0" />
+          </linearGradient>
+        </defs>
+        ${years.map((m) => `
+          <line x1="${pts[m.i].x}" y1="16" x2="${pts[m.i].x}" y2="${height - 16}" stroke="rgba(255,255,255,0.05)" stroke-width="1" stroke-dasharray="2 4" />
+          <text x="${pts[m.i].x}" y="${height + 18}" text-anchor="start" fill="#78716c" style="font:10px ui-monospace,monospace">${m.l}</text>
+        `).join('')}
+        <line x1="${nowX}" y1="16" x2="${nowX}" y2="${height - 16}" stroke="rgba(233,64,143,0.25)" stroke-width="1" stroke-dasharray="3 3" />
+        <text x="${nowX + 6}" y="26" fill="#e9408f" style="font:10px ui-monospace,monospace">now</text>
+        <path d="${actualD} L ${actual[actual.length - 1].x} ${height - 16} L ${actual[0].x} ${height - 16} Z" fill="url(#area)" />
+        <path d="${actualD}" fill="none" stroke="url(#line)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="${projD}" fill="none" stroke="#e9408f" stroke-width="1.5" stroke-opacity="0.55" stroke-dasharray="3 4" stroke-linecap="round" stroke-linejoin="round" />
+        <circle cx="${nowX}" cy="${nowY}" r="3.5" fill="#e9408f" />
+        <circle cx="${nowX}" cy="${nowY}" r="7" fill="#e9408f" fill-opacity="0.18" />
+        <circle cx="${last.x}" cy="${last.y}" r="3" fill="none" stroke="#e9408f" stroke-opacity="0.6" stroke-width="1.2" />
+        <text x="${last.x - 4}" y="${last.y - 8}" text-anchor="end" fill="#a8a29e" style="font:9.5px ui-monospace,monospace">projected</text>
+      </svg>`
+    document.getElementById('chart').innerHTML = svg
+  </script>
+</body>
+</html>
