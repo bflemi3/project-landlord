@@ -290,7 +290,7 @@ function HeroPeek(props: HeroPeekProps) {
             className="pointer-events-none absolute inset-0"
             style={{
               background:
-                'linear-gradient(to right, transparent 70%, rgba(15,13,12,0.30) 100%)',
+                'linear-gradient(to right, transparent 58%, rgba(15,13,12,0.42) 84%, rgba(15,13,12,0.72) 100%)',
             }}
             aria-hidden
           />
