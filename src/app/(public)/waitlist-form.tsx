@@ -23,8 +23,9 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
     e.preventDefault()
     if (!email) return
     setLoading(true)
-    await joinWaitlist(email, locale)
-    posthog.capture('waitlist_joined', { email, locale })
+    const result = await joinWaitlist(email, locale)
+    posthog.identify(email, { email })
+    posthog.capture('waitlist_joined', { email, locale, resend_ok: result.success })
     setSubmitted(true)
     setLoading(false)
   }
