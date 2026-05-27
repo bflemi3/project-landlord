@@ -19,7 +19,7 @@ export function WaitlistContent({ locale = 'en', role }: WaitlistContentProps) {
   const t = tw[role]
 
   const headerContent = (
-    <Section className="p-8" style={{ backgroundColor: '#1c1917' }}>
+    <Section className="em-pad-section p-8" style={{ backgroundColor: '#1c1917' }}>
       <Text
         className="text-highlight text-xs font-semibold uppercase m-0"
         style={{ letterSpacing: '0.1em' }}
