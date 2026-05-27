@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { Geist, Geist_Mono, Fraunces } from 'next/font/google'
 import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
+import { marketingLocaleFromHost, MARKETING_META, MARKETING_ORIGIN } from '@/lib/marketing-meta'
 import { ThemeProvider } from '@/components/theme-provider'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { QueryProvider } from '@/components/query-provider'
@@ -26,54 +28,63 @@ const fraunces = Fraunces({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  title: {
-    default: 'mabenn | Rental management for Brazilian landlords',
-    template: '%s | mabenn',
-  },
-  description:
-    'Rent tracking, contracts, and payment visibility for Brazilian landlords — everything a property manager does, without the 8–12% fee.',
-  metadataBase: new URL('https://mabenn.com'),
-  alternates: {
-    canonical: '/',
-    languages: {
-      en: 'https://mabenn.com',
-      'pt-BR': 'https://mabenn.com.br',
-      es: 'https://mabenn.com',
+// Metadata is resolved per request from the host, not the NEXT_LOCALE cookie:
+// social crawlers send no cookie, so the host is the only locale signal they
+// carry (mabenn.com → en, mabenn.com.br → pt-BR). OG/Twitter images are supplied
+// by src/app/(public)/opengraph-image.tsx + twitter-image.tsx (also host-aware).
+export async function generateMetadata(): Promise<Metadata> {
+  const host = (await headers()).get('host')
+  const locale = marketingLocaleFromHost(host)
+  const meta = MARKETING_META[locale]
+  const origin = MARKETING_ORIGIN[locale]
+
+  return {
+    title: {
+      default: meta.title,
+      template: '%s | Mabenn',
     },
-  },
-  manifest: '/manifest.json',
-  icons: {
-    icon: [
-      { url: '/icons/favicon-16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
-    ],
-    apple: '/icons/apple-touch-icon.png',
-  },
-  openGraph: {
-    type: 'website',
-    locale: 'en_US',
-    alternateLocale: ['pt_BR', 'es_AR'],
-    siteName: 'mabenn',
-    title: 'Everything a property manager does. None of the fee.',
-    description:
-      'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
-    url: 'https://mabenn.com',
-    images: [{ url: '/og-image.png', width: 1200, height: 630, alt: 'mabenn — Rental management for Brazilian landlords' }],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'Everything a property manager does. None of the fee.',
-    description:
-      'Rental management for Brazilian landlords — rent tracking, contracts, payment visibility. Without paying 8–12% in management fees.',
-    images: ['/og-image.png'],
-  },
-  applicationName: 'mabenn',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'mabenn',
-  },
+    description: meta.description,
+    // Per-host so the file-convention OG image (and other relative metadata URLs)
+    // resolve to the SAME origin the crawler is on — otherwise a mabenn.com.br page
+    // would advertise an og:image on mabenn.com, which renders the en card.
+    metadataBase: new URL(origin),
+    alternates: {
+      canonical: origin,
+      languages: {
+        en: MARKETING_ORIGIN.en,
+        'pt-BR': MARKETING_ORIGIN['pt-BR'],
+        'x-default': MARKETING_ORIGIN.en,
+      },
+    },
+    manifest: '/manifest.json',
+    icons: {
+      icon: [
+        { url: '/icons/favicon-16.png', sizes: '16x16', type: 'image/png' },
+        { url: '/icons/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      ],
+      apple: '/icons/apple-touch-icon.png',
+    },
+    openGraph: {
+      type: 'website',
+      locale: meta.ogLocale,
+      alternateLocale: locale === 'pt-BR' ? ['en_US'] : ['pt_BR'],
+      siteName: 'Mabenn',
+      title: meta.ogTitle,
+      description: meta.description,
+      url: origin,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: meta.ogTitle,
+      description: meta.description,
+    },
+    applicationName: 'mabenn',
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: 'default',
+      title: 'mabenn',
+    },
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

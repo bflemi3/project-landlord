@@ -1802,6 +1802,30 @@ export type Database = {
           },
         ]
       }
+      waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          locale: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          locale?: string
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          locale?: string
+          role?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       home_action_items: {
@@ -1894,6 +1918,10 @@ export type Database = {
       is_property_member: { Args: { prop_id: string }; Returns: boolean }
       is_unit_landlord: { Args: { p_unit_id: string }; Returns: boolean }
       is_unit_member: { Args: { p_unit_id: string }; Returns: boolean }
+      join_waitlist: {
+        Args: { p_email: string; p_locale?: string; p_role?: string }
+        Returns: boolean
+      }
       normalize_provider_name: { Args: { p_input: string }; Returns: string }
       redeem_invite: { Args: { invite_code: string }; Returns: Json }
       replace_allocations: {
