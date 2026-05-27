@@ -4,7 +4,7 @@ export type TenantInviteParams = { tenantName: string | null; landlordName: stri
 
 export const emailTranslations = {
   en: {
-    footer: '© 2026 mabenn · Shared billing you can trust',
+    footer: '© 2026 mabenn · Renting, made transparent',
     confirmEmail: {
       subject: 'Confirm your email',
       preview: 'Confirm your email to get started with mabenn',
@@ -23,16 +23,28 @@ export const emailTranslations = {
       hint: 'If you didn\'t request this, you can safely ignore this email. Your password won\'t change.',
     },
     waitlistWelcome: {
-      subject: "You're on the mabenn waitlist!",
-      preview: "You're on the mabenn waitlist — here's what's coming",
-      heading: "You're on the list!",
-      body: "Thanks for signing up for early access. We'll send you an invite code when your spot is ready.",
-      whatsComingTitle: "Here's what's coming:",
-      benefit1: 'Set up properties, configure rent and bills in minutes',
-      benefit2: 'Forward bills and we pull out the numbers for you',
-      benefit3: 'Publish clear monthly statements everyone can trust',
-      closingLine: "We're building mabenn for people who want billing to be simple and transparent. Stay tuned.",
-      signoff: '— The mabenn team',
+      heading: "You're on the list.",
+      whatsComingTitle: "What you'll get with Mabenn:",
+      closingLine: "We'll email you the moment Mabenn opens — nothing before then.",
+      signoff: '— The Mabenn team',
+      landlord: {
+        subject: "You're in — every rental free for your first year",
+        preview: "Founding member locked in. We'll email you the moment Mabenn opens.",
+        eyebrow: 'Founding member',
+        body: "You joined as a founding member — every rental free for the first year, then R$ 39/month per rental, locked for life. We've saved your spot.",
+        benefit1: 'See what every rental earns and what it costs — all in one place.',
+        benefit2: 'Rent and bills tracked for you — payments matched in the background, no chasing.',
+        benefit3: 'Contracts, IPCA adjustments, and late-rent notices, handled — the structure of a property manager, without the 8–12%.',
+      },
+      tenant: {
+        subject: "You're in — Mabenn is free for you, forever",
+        preview: "Free forever. We'll email you the moment Mabenn opens.",
+        eyebrow: 'Free forever',
+        body: "Mabenn is free for tenants, forever — with or without your landlord. We've saved your spot.",
+        benefit1: "A clear view of your rent and bills — what's due, what's paid, no surprises.",
+        benefit2: 'Build a payment record you keep — proof of on-time rent that travels with you.',
+        benefit3: 'One place for everything with your landlord — messages, requests, and agreements, all on the record.',
+      },
     },
     inviteCode: {
       waitlist: {
@@ -63,7 +75,7 @@ export const emailTranslations = {
     },
   },
   'pt-BR': {
-    footer: '© 2026 mabenn · Cobrança compartilhada em que você confia',
+    footer: '© 2026 mabenn · Aluguel com transparência',
     confirmEmail: {
       subject: 'Confirme seu e-mail',
       preview: 'Confirme seu e-mail para começar a usar o mabenn',
@@ -82,16 +94,28 @@ export const emailTranslations = {
       hint: 'Se você não solicitou isso, pode ignorar este e-mail com segurança. Sua senha não será alterada.',
     },
     waitlistWelcome: {
-      subject: 'Você está na lista de espera do mabenn!',
-      preview: 'Você está na lista de espera do mabenn — veja o que está por vir',
-      heading: 'Você está na lista!',
-      body: 'Obrigado por se inscrever para acesso antecipado. Enviaremos um código de convite quando sua vaga estiver pronta.',
-      whatsComingTitle: 'O que está por vir:',
-      benefit1: 'Configure imóveis, defina aluguel e contas em minutos',
-      benefit2: 'Encaminhe contas e nós separamos os valores para você',
-      benefit3: 'Publique extratos mensais claros em que todos confiam',
-      closingLine: 'Estamos construindo o mabenn para pessoas que querem que a cobrança seja simples e transparente. Fique atento.',
-      signoff: '— A equipe mabenn',
+      heading: 'Você está na lista.',
+      whatsComingTitle: 'O que você vai ter com o Mabenn:',
+      closingLine: 'Avisaremos no instante em que o Mabenn abrir — nada antes disso.',
+      signoff: '— A equipe Mabenn',
+      landlord: {
+        subject: 'Você entrou — cada aluguel grátis no primeiro ano',
+        preview: 'Vaga de membro fundador garantida. Avisaremos quando o Mabenn abrir.',
+        eyebrow: 'Membro fundador',
+        body: 'Você entrou como membro fundador — cada aluguel grátis no primeiro ano, depois R$ 39/mês por aluguel, travado para sempre. Guardamos sua vaga.',
+        benefit1: 'Veja quanto cada aluguel rende e quanto custa — tudo em um só lugar.',
+        benefit2: 'Aluguel e contas acompanhados para você — pagamentos identificados em segundo plano, sem precisar cobrar.',
+        benefit3: 'Contratos, reajustes pelo IPCA e avisos de atraso, resolvidos — a estrutura de uma imobiliária, sem os 8–12%.',
+      },
+      tenant: {
+        subject: 'Você entrou — o Mabenn é grátis para você, para sempre',
+        preview: 'Grátis para sempre. Avisaremos quando o Mabenn abrir.',
+        eyebrow: 'Grátis para sempre',
+        body: 'O Mabenn é grátis para inquilinos, para sempre — com ou sem o seu locador. Guardamos sua vaga.',
+        benefit1: 'Uma visão clara do seu aluguel e contas — o que vence, o que está pago, sem surpresas.',
+        benefit2: 'Construa um histórico de pagamentos que é seu — comprovante de aluguel em dia que vai com você.',
+        benefit3: 'Um só lugar para tudo com o seu locador — mensagens, solicitações e acordos, tudo registrado.',
+      },
     },
     inviteCode: {
       waitlist: {
@@ -122,7 +146,7 @@ export const emailTranslations = {
     },
   },
   es: {
-    footer: '© 2026 mabenn · Facturación compartida en la que puedes confiar',
+    footer: '© 2026 mabenn · Alquiler con transparencia',
     confirmEmail: {
       subject: 'Confirma tu correo',
       preview: 'Confirma tu correo para empezar a usar mabenn',
@@ -141,16 +165,28 @@ export const emailTranslations = {
       hint: 'Si no solicitaste esto, puedes ignorar este correo de forma segura. Tu contraseña no cambiará.',
     },
     waitlistWelcome: {
-      subject: '¡Estás en la lista de espera de mabenn!',
-      preview: 'Estás en la lista de espera de mabenn — esto es lo que viene',
-      heading: '¡Estás en la lista!',
-      body: 'Gracias por inscribirte para acceso anticipado. Te enviaremos un código de invitación cuando tu lugar esté listo.',
-      whatsComingTitle: 'Esto es lo que viene:',
-      benefit1: 'Configura propiedades, define renta y cuentas en minutos',
-      benefit2: 'Reenvía facturas y separamos los números por ti',
-      benefit3: 'Publica estados de cuenta mensuales claros en los que todos confían',
-      closingLine: 'Estamos construyendo mabenn para personas que quieren que la facturación sea simple y transparente. Mantente atento.',
-      signoff: '— El equipo mabenn',
+      heading: 'Estás en la lista.',
+      whatsComingTitle: 'Lo que tendrás con Mabenn:',
+      closingLine: 'Te avisaremos en el momento en que Mabenn abra — nada antes.',
+      signoff: '— El equipo de Mabenn',
+      landlord: {
+        subject: 'Estás dentro — cada alquiler gratis tu primer año',
+        preview: 'Lugar de miembro fundador asegurado. Te avisaremos cuando Mabenn abra.',
+        eyebrow: 'Miembro fundador',
+        body: 'Entraste como miembro fundador — cada alquiler gratis el primer año, luego R$ 39/mes por alquiler, fijo de por vida. Te guardamos tu lugar.',
+        benefit1: 'Mira cuánto rinde cada alquiler y cuánto cuesta — todo en un solo lugar.',
+        benefit2: 'Alquiler y cuentas controlados por ti — pagos conciliados en segundo plano, sin perseguir a nadie.',
+        benefit3: 'Contratos, ajustes por IPCA y avisos de atraso, resueltos — la estructura de una inmobiliaria, sin el 8–12%.',
+      },
+      tenant: {
+        subject: 'Estás dentro — Mabenn es gratis para ti, para siempre',
+        preview: 'Gratis para siempre. Te avisaremos cuando Mabenn abra.',
+        eyebrow: 'Gratis para siempre',
+        body: 'Mabenn es gratis para inquilinos, para siempre — con o sin tu arrendador. Te guardamos tu lugar.',
+        benefit1: 'Una vista clara de tu alquiler y cuentas — qué vence, qué está pagado, sin sorpresas.',
+        benefit2: 'Crea un historial de pagos que es tuyo — comprobante de alquiler al día que viaja contigo.',
+        benefit3: 'Un solo lugar para todo con tu arrendador — mensajes, solicitudes y acuerdos, todo registrado.',
+      },
     },
     inviteCode: {
       waitlist: {

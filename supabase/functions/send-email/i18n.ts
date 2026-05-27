@@ -2,7 +2,7 @@ export type EmailLocale = 'en' | 'pt-BR' | 'es'
 
 const translations = {
   en: {
-    footer: '© 2026 mabenn · Shared billing you can trust',
+    footer: '© 2026 mabenn · Renting, made transparent',
     confirmEmail: {
       subject: 'Confirm your email',
       preview: 'Confirm your email to get started with mabenn',
@@ -22,7 +22,7 @@ const translations = {
     },
   },
   'pt-BR': {
-    footer: '© 2026 mabenn · Cobrança compartilhada em que você confia',
+    footer: '© 2026 mabenn · Aluguel com transparência',
     confirmEmail: {
       subject: 'Confirme seu e-mail',
       preview: 'Confirme seu e-mail para começar a usar o mabenn',
@@ -42,7 +42,7 @@ const translations = {
     },
   },
   es: {
-    footer: '© 2026 mabenn · Facturación compartida en la que puedes confiar',
+    footer: '© 2026 mabenn · Alquiler con transparencia',
     confirmEmail: {
       subject: 'Confirma tu correo',
       preview: 'Confirma tu correo para empezar a usar mabenn',
