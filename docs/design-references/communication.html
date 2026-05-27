@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabenn design reference — Communication inbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: {
+      display: ['Fraunces', 'serif'], editorial: ['Geist', 'sans-serif'], mono: ['"Geist Mono"', 'monospace'],
+    } } } }
+  </script>
+  <style> body { background: #141413; } .font-mono { font-feature-settings: 'tnum' 1; } </style>
+</head>
+
+<body class="font-editorial text-[#f5f5f4] antialiased">
+  <main class="mx-auto flex min-h-screen max-w-[760px] flex-col justify-center px-6 py-16">
+    <p class="mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#57534e]">
+      Design reference · Communication inbox · captured from landing.tsx
+    </p>
+
+    <div class="overflow-hidden rounded-[18px] border border-white/[0.10] bg-[#1a1a19] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+      <!-- header -->
+      <div class="border-b border-white/[0.05] px-5 py-3.5">
+        <p class="font-display text-[15px] font-medium tracking-tight text-[#f5f5f4]">Conversations · Apt 23B, Vila Mariana</p>
+        <p class="mt-0.5 text-[11.5px] text-[#78716c]">3 threads · avg. reply 5h</p>
+      </div>
+
+      <!-- two-pane -->
+      <div class="flex">
+        <!-- left: message list -->
+        <div class="w-[42%] shrink-0 border-r border-white/[0.05] py-1.5">
+          <!-- selected -->
+          <div class="border-l-2 border-white/[0.30] bg-white/[0.05] px-4 py-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="truncate text-[12px] font-medium text-[#f5f5f4]">Carla Andrade</span>
+              <span class="shrink-0 text-[10.5px] text-[#78716c]">May 12</span>
+            </div>
+            <p class="mt-0.5 truncate text-[12px] text-[#a8a29e]">Washing machine — leak</p>
+            <span class="mt-1 inline-block text-[9.5px] font-medium uppercase tracking-[0.10em] text-[#78716c]">Maintenance</span>
+          </div>
+          <!-- item -->
+          <div class="border-l-2 border-transparent px-4 py-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="truncate text-[12px] text-[#d6d3d1]">Rafael Oliveira</span>
+              <span class="shrink-0 text-[10.5px] text-[#78716c]">May 5</span>
+            </div>
+            <p class="mt-0.5 truncate text-[12px] text-[#a8a29e]">Renewal terms · 2027</p>
+            <span class="mt-1 inline-block text-[9.5px] font-medium uppercase tracking-[0.10em] text-[#78716c]">Renewal</span>
+          </div>
+          <!-- item -->
+          <div class="border-l-2 border-transparent px-4 py-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="truncate text-[12px] text-[#d6d3d1]">Carla Andrade</span>
+              <span class="shrink-0 text-[10.5px] text-[#78716c]">Apr 28</span>
+            </div>
+            <p class="mt-0.5 truncate text-[12px] text-[#a8a29e]">Condomínio — June charge</p>
+            <span class="mt-1 inline-block text-[9.5px] font-medium uppercase tracking-[0.10em] text-[#78716c]">Dispute</span>
+          </div>
+        </div>
+
+        <!-- right: open message -->
+        <div class="min-w-0 flex-1 px-5 py-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="inline-flex items-center rounded-full border border-white/[0.10] bg-white/[0.03] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.08em] text-[#a8a29e]">Maintenance</span>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-[#e9408f]/10 px-2.5 py-0.5 text-[11px] font-medium text-[#f0a4c5] ring-1 ring-[#e9408f]/30">
+              <span class="size-1.5 rounded-full bg-[#e9408f]"></span>Responded in 4h
+            </span>
+          </div>
+          <p class="mt-2.5 font-display text-[17px] font-medium leading-tight text-[#f5f5f4]">Washing machine — leak</p>
+          <p class="mt-1 text-[11.5px] text-[#78716c]">Carla Andrade · May 12</p>
+          <p class="mt-3.5 text-[12.5px] leading-[1.55] text-[#d6d3d1]">The washing machine is leaking and the pump seems dead. Photos attached.</p>
+          <span class="mt-3 inline-flex items-center gap-1.5 rounded-full border border-white/[0.10] bg-white/[0.03] px-2.5 py-0.5 text-[11px] text-[#a8a29e]">
+            <svg viewBox="0 0 12 12" class="size-3"><rect x="1.4" y="3" width="9.2" height="6.6" rx="1.3" fill="none" stroke="#a8a29e" stroke-width="1" /><circle cx="6" cy="6.3" r="1.7" fill="none" stroke="#a8a29e" stroke-width="1" /></svg>
+            2 photos
+          </span>
+          <div class="mt-4 rounded-[12px] border-l-2 border-white/[0.12] bg-white/[0.02] py-2.5 pl-3.5 pr-3">
+            <p class="text-[11.5px] font-medium text-[#f5f5f4]">Rafael Oliveira <span class="font-normal text-[#78716c]">· 4h later</span></p>
+            <p class="mt-1 text-[12px] leading-[1.5] text-[#a8a29e]">Plumber booked for tomorrow morning — I'll confirm the time tonight.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-2 font-mono text-[11px] leading-relaxed text-[#78716c]">
+      <p><span class="text-[#f5f5f4]">layout</span> two-pane inbox · left = message list per property (selected = white left-border + subtle fill) · right = open message</p>
+      <p><span class="text-[#f5f5f4]">accent</span> <span class="text-[#e9408f]">single magenta pill = "Responded in 4h"</span> (response-time signal) · reply block uses neutral left-border, not accent</p>
+      <p><span class="text-[#f5f5f4]">content</span> Maintenance / Renewal / Dispute threads · real BR names · "2 photos" + source-doc chips · Geist Mono dates</p>
+    </div>
+  </main>
+</body>
+</html>

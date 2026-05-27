@@ -7,6 +7,9 @@
 html, body {
   overflow-x: clip;
   max-width: 100vw;
+  scroll-behavior: smooth;
+  /* Clear the pinned top nav when jumping to an anchor. */
+  scroll-padding-top: 5rem;
 }
 
 .scrollbar-hide {
@@ -84,6 +87,139 @@ html, body {
 }
 .animate-fade-up {
   animation: fade-up 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+}
+
+/* Respect reduced-motion: render final states immediately, no reveals/transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Continual radar pulse for the revenue chart "now" marker. */
+@keyframes now-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(3.4);
+    opacity: 0;
+  }
+}
+.now-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: now-pulse 1.8s ease-out infinite;
+}
+
+/* Revenue chart reveal: area wipes in left-to-right behind the drawing line. */
+@keyframes reveal-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Glowing comet riding the line's leading edge as it draws. */
+@keyframes comet-run {
+  0% {
+    offset-distance: 0%;
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    offset-distance: 100%;
+    opacity: 0;
+  }
+}
+.rev-comet {
+  animation: comet-run 1.6s ease-out both;
+}
+
+/* Mobile floating nav: hidden on load (the header alone is enough — two bars reads as busy),
+   then fades in at the top once the header scrolls out of view. Scroll-driven on the compositor
+   — no JS. Falls back to the opacity toggle in landing.tsx where scroll-timeline is unsupported. */
+@keyframes nav-reveal {
+  from {
+    opacity: 0;
+    pointer-events: none;
+  }
+  to {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+@media (max-width: 639px) {
+  @supports (animation-timeline: scroll()) {
+    .nav-reveal {
+      animation: nav-reveal linear both;
+      animation-timeline: scroll(root);
+      animation-range: 26px 56px;
+    }
+  }
+}
+
+/* Waitlist success: the icon container pops in, then the check draws itself, then the text rises.
+   Reduced-motion is handled by the global reset above (animations collapse to ~instant). */
+@keyframes success-pop {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes success-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes success-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.success-pop {
+  animation: success-pop 400ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.success-check {
+  animation: success-draw 600ms ease-out 400ms both;
+}
+.success-text {
+  animation: success-rise 400ms ease-out 1000ms both;
 }
 
 @keyframes text-shimmer {
