@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "mabenn",
+    "appName": "Mabenn",
     "loading": "Loading...",
     "error": "Something went wrong",
     "retry": "Try again",
@@ -48,7 +48,7 @@
     "emailVerified": "Email verified",
     "emailVerifiedMessage": "Your email has been confirmed. You can close this tab and return to the one where you signed up.",
     "orContinueHere": "Or continue here →",
-    "welcome": "Welcome to mabenn",
+    "welcome": "Welcome to Mabenn",
     "avatarPreview": "Avatar preview",
     "inviteCode": "Invite code",
     "inviteCodePlaceholder": "Enter your invite code",
@@ -66,8 +66,8 @@
   "pwa": {
     "whatsNew": "What's new in v{version}",
     "viewPastUpdates": "View past updates",
-    "installTitle": "Install mabenn",
-    "installDescription": "Add mabenn to your home screen for the best experience.",
+    "installTitle": "Install Mabenn",
+    "installDescription": "Add Mabenn to your home screen for the best experience.",
     "install": "Install",
     "installIosSafari": "Tap the share button, then \"Add to Home Screen\".",
     "installIosChrome": "Tap the share button, then \"Add to Home Screen\". For the best experience, use Safari.",
@@ -347,7 +347,7 @@
     "iRentProperty": "I rent a property",
     "iRentPropertyDescription": "View statements, track payments, and coordinate with roommates.",
     "comingSoon": "Coming soon",
-    "comingSoonDescription": "Tenant onboarding is coming soon. For now, ask your landlord to invite you through mabenn.",
+    "comingSoonDescription": "Tenant onboarding is coming soon. For now, ask your landlord to invite you through Mabenn.",
     "roleNote": "You can always add more properties in either role later.",
     "addProperty": "Add property",
     "noBillingData": "No billing data yet",
@@ -441,7 +441,7 @@
     "removeUnit": "Remove",
     "atLeastOneUnit": "Add at least one unit to continue.",
     "inviteTenants": "Invite tenants",
-    "inviteDescription": "When tenants are on mabenn, they see exactly what they owe and why — no more back-and-forth about bills. You can always invite them later too.",
+    "inviteDescription": "When tenants are on Mabenn, they see exactly what they owe and why — no more back-and-forth about bills. You can always invite them later too.",
     "tenantEmail": "Tenant's email",
     "tenantEmailPlaceholder": "tenant@example.com",
     "tenantName": "Name (optional)",
@@ -561,7 +561,7 @@
         "summaryAndMore": "+{count} more",
         "emptyState": {
           "title": "Add the people who live here",
-          "leadIn": "Once you do, mabenn will automatically:",
+          "leadIn": "Once you do, Mabenn will automatically:",
           "bulletPayments": "Track every payment and show what's still owed",
           "bulletReminders": "Remind tenants when rent is due",
           "bulletLateNotices": "Send late notices on your behalf"
@@ -614,7 +614,7 @@
         },
         "emptyState": {
           "title": "Track every recurring charge",
-          "leadIn": "Add every recurring charge for this property — even ones your tenant pays. mabenn will:",
+          "leadIn": "Add every recurring charge for this property — even ones your tenant pays. Mabenn will:",
           "bulletTracking": "Watch for utility, condo, and other bills automatically",
           "bulletPayments": "Match incoming payments to the right charge",
           "bulletResponsibility": "Figure out who pays what once bills start coming in"
@@ -637,7 +637,7 @@
           "bulletTrackingBR": "We catch any boleto issued in your name — condo fees, property tax, the rest — so they never go missing.",
           "bulletTrackingFallback": "We help track any bills issued in your name.",
           "bulletRouting": "When a bill comes through, we know whether it's yours or the tenant's.",
-          "bulletDocuments": "It appears on the rent receipts and contracts mabenn generates for you.",
+          "bulletDocuments": "It appears on the rent receipts and contracts Mabenn generates for you.",
           "privacyLink": "How we keep your information safe",
           "privacyComingSoon": "Privacy policy coming soon."
         }
@@ -889,5 +889,15 @@
     "light": "Light",
     "dark": "Dark",
     "system": "System"
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "description": "How Mabenn collects, uses, and protects your personal data under Brazil's LGPD."
+    },
+    "terms": {
+      "title": "Terms of Use",
+      "description": "Terms governing your use of Mabenn — your rights, what we provide, and what Mabenn isn't."
+    }
   }
 }

@@ -1,11 +1,19 @@
 'use client'
 
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
-export function BackButton() {
+type BackButtonProps = {
+  className?: string
+  label?: string
+  href?: string
+  onClick?: VoidFunction
+}
+
+export function BackButton({ className, label, href, onClick }: BackButtonProps) {
   const router = useRouter()
   const t = useTranslations('common')
 
@@ -17,10 +25,19 @@ export function BackButton() {
     }
   }
 
+  if (href) {
+    return (
+      <Button className={className} variant="link" render={<Link href={href} />}>
+        <ChevronLeft />
+        {label ?? t('back')}
+      </Button>
+    )
+  }
+
   return (
-    <Button variant="ghost" onClick={handleClick}>
+    <Button className={className} variant="ghost" onClick={onClick ?? handleClick}>
       <ChevronLeft />
-      {t('back')}
+      {label ?? t('back')}
     </Button>
   )
 }
