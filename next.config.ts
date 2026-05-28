@@ -2,6 +2,7 @@ import type { NextConfig } from 'next'
 import { withSerwist } from '@serwist/turbopack'
 import createNextIntlPlugin from 'next-intl/plugin'
 import fs from 'node:fs'
+import { localizedRedirects, localizedRewrites } from './src/lib/i18n/localized-paths'
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts')
 
@@ -29,24 +30,23 @@ const nextConfig: NextConfig = {
   // The legal pages read markdown at request time with a dynamic `${locale}` path,
   // which file tracing can't follow — include it so the content ships to prod.
   outputFileTracingIncludes: {
-    '/privacidade': ['./src/content/legal/privacy/**/*'],
-    '/termos': ['./src/content/legal/terms/**/*'],
+    '/privacy': ['./src/content/legal/privacy/**/*'],
+    '/terms': ['./src/content/legal/terms/**/*'],
   },
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,
     NEXT_PUBLIC_RELEASE_NOTES: releaseNotes,
   },
-  // Exclude preview routes from production builds
-  ...(process.env.NODE_ENV === 'production' && {
-    async rewrites() {
-      return [
-        {
-          source: '/preview/:path*',
-          destination: '/404',
-        },
-      ]
-    },
-  }),
+  async rewrites() {
+    const rewrites = localizedRewrites()
+    if (process.env.NODE_ENV === 'production') {
+      return [...rewrites, { source: '/preview/:path*', destination: '/404' }]
+    }
+    return rewrites
+  },
+  async redirects() {
+    return localizedRedirects()
+  },
 }
 
 export default withSerwist(withNextIntl(nextConfig))

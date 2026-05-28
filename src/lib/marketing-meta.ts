@@ -1,8 +1,7 @@
 import { detectLocaleFromDomain } from '@/lib/i18n/detect-locale'
+import { type MarketingLocale } from '@/lib/i18n/localized-paths'
 
-// Marketing surfaces are only publicly routed for these two locales.
-// ES has no domain/path yet — when it gets one, add it here and to MARKETING_META.
-export type MarketingLocale = 'en' | 'pt-BR'
+export type { MarketingLocale }
 
 /**
  * Resolve the marketing locale from the request host. Social crawlers send no

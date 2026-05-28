@@ -1,4 +1,6 @@
-# Changelog
+# What's new
+
+See what we've been working on to make Mabenn better for you.
 
 ## v1.0.0 — Long-term rentals
 

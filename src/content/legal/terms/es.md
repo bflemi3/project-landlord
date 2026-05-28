@@ -10,7 +10,7 @@ Si no está de acuerdo con estos Términos, no use la Plataforma.
 
 ## 1. Aceptación de los Términos
 
-Al acceder o usar la Plataforma, usted declara que ha leído, comprendido y aceptado estos Términos y la [Política de Privacidad](/privacidade), que es parte integrante de este documento. Si usa la Plataforma en nombre de una persona jurídica, declara tener poderes para vincularla a estos Términos.
+Al acceder o usar la Plataforma, usted declara que ha leído, comprendido y aceptado estos Términos y la [Política de Privacidad](/privacy), que es parte integrante de este documento. Si usa la Plataforma en nombre de una persona jurídica, declara tener poderes para vincularla a estos Términos.
 
 La relación entre usted y Mabenn es una relación de consumo, regida — en lo que resulte aplicable — por el Código de Defensa del Consumidor (Lei nº 8.078/1990 — "CDC"), el Marco Civil de Internet (Lei nº 12.965/2014), el Código Civil (Lei nº 10.406/2002) y la Ley General de Protección de Datos (LGPD, Lei nº 13.709/2018) de Brasil.
 
@@ -61,7 +61,7 @@ Usted acepta cargar **únicamente documentos relacionados con el cobro y la admi
 - Datos personales sensibles según el art. 5, II, de la LGPD — origen racial o étnico, convicción religiosa, opinión política, afiliación sindical o a organización de carácter religioso, filosófico o político, datos sobre salud o vida sexual, datos genéticos o biométricos;
 - Cualquier contenido ilícito, que viole derechos de terceros o ajeno a la finalidad de administración del alquiler.
 
-Usted es responsable de la legalidad del contenido que carga y nos autoriza a tratarlo para las finalidades descritas en la [Política de Privacidad](/privacidade). Podemos eliminar contenido que viole esta sección.
+Usted es responsable de la legalidad del contenido que carga y nos autoriza a tratarlo para las finalidades descritas en la [Política de Privacidad](/privacy). Podemos eliminar contenido que viole esta sección.
 
 ## 7. Suscripción, precios y derecho de arrepentimiento
 
@@ -95,7 +95,7 @@ La Plataforma se ofrece "tal como está". No garantizamos que Mabenn esté libre
 
 ## 11. Vigencia y rescisión
 
-Estos Términos rigen mientras usted use la Plataforma. Usted puede cerrar su cuenta en cualquier momento. Podemos suspender o terminar el acceso en caso de violación de estos Términos o de la ley, con aviso cuando corresponda. El cierre de la cuenta observa las reglas de retención y eliminación de datos descritas en la [Política de Privacidad](/privacidade). Las disposiciones que por su naturaleza deban subsistir — como propiedad intelectual, limitación de responsabilidad y foro — permanecen vigentes tras la rescisión.
+Estos Términos rigen mientras usted use la Plataforma. Usted puede cerrar su cuenta en cualquier momento. Podemos suspender o terminar el acceso en caso de violación de estos Términos o de la ley, con aviso cuando corresponda. El cierre de la cuenta observa las reglas de retención y eliminación de datos descritas en la [Política de Privacidad](/privacy). Las disposiciones que por su naturaleza deban subsistir — como propiedad intelectual, limitación de responsabilidad y foro — permanecen vigentes tras la rescisión.
 
 ## 12. Cambios en estos Términos
 
@@ -115,4 +115,4 @@ Estos Términos no apartan ningún derecho que el CDC le garantiza. En caso de c
 
 ## 16. Contacto
 
-¿Dudas sobre estos Términos? Escríbanos a [CORREO DE CONTACTO]. Para asuntos de privacidad y protección de datos, consulte la [Política de Privacidad](/privacidade).
+¿Dudas sobre estos Términos? Escríbanos a [CORREO DE CONTACTO]. Para asuntos de privacidad y protección de datos, consulte la [Política de Privacidad](/privacy).

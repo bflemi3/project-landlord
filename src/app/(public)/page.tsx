@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { headers } from 'next/headers'
-import { marketingLocaleFromHost, MARKETING_META } from '@/lib/marketing-meta'
+import { marketingLocaleFromHost, MARKETING_META, MARKETING_ORIGIN } from '@/lib/marketing-meta'
+import { localizedPath } from '@/lib/i18n/localized-paths'
 import { Landing } from './landing'
 
 export default async function LandingPage() {
@@ -9,6 +10,10 @@ export default async function LandingPage() {
   const host = (await headers()).get('host')
   const locale = marketingLocaleFromHost(host)
   const meta = MARKETING_META[locale]
+  const origin = MARKETING_ORIGIN[locale]
+  const orgId = `${origin}/#organization`
+  const privacyHref = localizedPath(locale, 'privacy')
+  const termsHref = localizedPath(locale, 'terms')
   const t = await getTranslations({ locale, namespace: 'landing' })
 
   // FAQ Q/A sourced from the same message files the visible FAQ renders from —
@@ -30,10 +35,10 @@ export default async function LandingPage() {
     '@graph': [
       {
         '@type': 'Organization',
-        '@id': 'https://mabenn.com/#organization',
+        '@id': orgId,
         name: 'Mabenn',
-        url: 'https://mabenn.com',
-        logo: 'https://mabenn.com/icons/icon-512.png',
+        url: origin,
+        logo: `${origin}/icons/icon-512.png`,
         slogan: meta.ogTitle,
         description: meta.description,
         areaServed: 'Brazil',
@@ -56,8 +61,8 @@ export default async function LandingPage() {
         description: meta.description,
         applicationCategory: 'FinanceApplication',
         operatingSystem: 'Web',
-        url: 'https://mabenn.com',
-        publisher: { '@id': 'https://mabenn.com/#organization' },
+        url: origin,
+        publisher: { '@id': orgId },
       },
       {
         '@type': 'FAQPage',
@@ -76,7 +81,7 @@ export default async function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Landing />
+      <Landing privacyHref={privacyHref} termsHref={termsHref} />
     </>
   )
 }

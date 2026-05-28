@@ -10,7 +10,7 @@ If you do not agree to these Terms, do not use the Platform.
 
 ## 1. Acceptance of the Terms
 
-By accessing or using the Platform, you confirm that you have read, understood, and accepted these Terms and the [Privacy Policy](/privacidade), which forms an integral part of this document. If you use the Platform on behalf of a legal entity, you represent that you have authority to bind it to these Terms.
+By accessing or using the Platform, you confirm that you have read, understood, and accepted these Terms and the [Privacy Policy](/privacy), which forms an integral part of this document. If you use the Platform on behalf of a legal entity, you represent that you have authority to bind it to these Terms.
 
 The relationship between you and Mabenn is a consumer relationship, governed — where applicable — by the Brazilian Consumer Protection Code (Lei nº 8.078/1990 — "CDC"), the Brazilian Internet Civil Framework (Marco Civil da Internet, Lei nº 12.965/2014), the Brazilian Civil Code (Lei nº 10.406/2002), and the Brazilian General Data Protection Law (LGPD, Lei nº 13.709/2018).
 
@@ -61,7 +61,7 @@ You agree to upload **only documents related to billing and rental administratio
 - Sensitive personal data as defined in Article 5, II, of the LGPD — racial or ethnic origin, religious belief, political opinion, union or religious/philosophical/political organization membership, health or sex-life data, genetic or biometric data;
 - Any unlawful content, content that violates third-party rights, or content unrelated to rental administration.
 
-You are responsible for the legality of the content you upload and authorize us to process it for the purposes described in the [Privacy Policy](/privacidade). We may remove content that violates this section.
+You are responsible for the legality of the content you upload and authorize us to process it for the purposes described in the [Privacy Policy](/privacy). We may remove content that violates this section.
 
 ## 7. Subscription, pricing, and right of withdrawal
 
@@ -95,7 +95,7 @@ The Platform is provided "as is." We do not warrant that Mabenn will be error-fr
 
 ## 11. Term and termination
 
-These Terms apply for as long as you use the Platform. You may close your account at any time. We may suspend or terminate access if you violate these Terms or the law, with notice where appropriate. Account closure follows the data retention and deletion rules described in the [Privacy Policy](/privacidade). Provisions that by their nature should survive — such as intellectual property, limitation of liability, and governing law — remain in effect after termination.
+These Terms apply for as long as you use the Platform. You may close your account at any time. We may suspend or terminate access if you violate these Terms or the law, with notice where appropriate. Account closure follows the data retention and deletion rules described in the [Privacy Policy](/privacy). Provisions that by their nature should survive — such as intellectual property, limitation of liability, and governing law — remain in effect after termination.
 
 ## 12. Changes to these Terms
 
@@ -115,4 +115,4 @@ These Terms do not waive any rights the CDC grants you. In case of conflict betw
 
 ## 16. Contact
 
-Questions about these Terms? Reach us at [CONTACT EMAIL]. For privacy and data protection matters, see the [Privacy Policy](/privacidade).
+Questions about these Terms? Reach us at [CONTACT EMAIL]. For privacy and data protection matters, see the [Privacy Policy](/privacy).

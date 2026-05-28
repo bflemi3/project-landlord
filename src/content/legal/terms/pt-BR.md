@@ -10,7 +10,7 @@ Se você não concordar com estes Termos, não use a Plataforma.
 
 ## 1. Aceitação dos Termos
 
-Ao acessar ou usar a Plataforma, você declara ter lido, compreendido e aceitado estes Termos e a [Política de Privacidade](/privacidade), que é parte integrante deste documento. Caso utilize a Plataforma em nome de uma pessoa jurídica, você declara ter poderes para vinculá-la a estes Termos.
+Ao acessar ou usar a Plataforma, você declara ter lido, compreendido e aceitado estes Termos e a [Política de Privacidade](/privacy), que é parte integrante deste documento. Caso utilize a Plataforma em nome de uma pessoa jurídica, você declara ter poderes para vinculá-la a estes Termos.
 
 A relação entre você e a Mabenn é uma relação de consumo, regida pelo Código de Defesa do Consumidor (Lei nº 8.078/1990 — "CDC"), pelo Marco Civil da Internet (Lei nº 12.965/2014), pelo Código Civil (Lei nº 10.406/2002) e pela Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — "LGPD"), no que for aplicável.
 
@@ -61,7 +61,7 @@ Você concorda em enviar **apenas documentos relacionados à cobrança e à admi
 - Dados pessoais sensíveis nos termos do art. 5º, II, da LGPD — origem racial ou étnica, convicção religiosa, opinião política, filiação a sindicato ou a organização de caráter religioso, filosófico ou político, dados referentes à saúde ou à vida sexual, dados genéticos ou biométricos;
 - Qualquer conteúdo ilícito, que viole direitos de terceiros, ou alheio à finalidade de administração da locação.
 
-Você é responsável pela legalidade do conteúdo enviado e nos autoriza a tratá-lo para as finalidades descritas na [Política de Privacidade](/privacidade). Podemos remover conteúdo que viole esta seção.
+Você é responsável pela legalidade do conteúdo enviado e nos autoriza a tratá-lo para as finalidades descritas na [Política de Privacidade](/privacy). Podemos remover conteúdo que viole esta seção.
 
 ## 7. Assinatura, preços e direito de arrependimento
 
@@ -95,7 +95,7 @@ A Plataforma é fornecida "no estado em que se encontra". Não garantimos que a 
 
 ## 11. Vigência e rescisão
 
-Estes Termos vigoram enquanto você usar a Plataforma. Você pode encerrar sua conta a qualquer momento. Podemos suspender ou encerrar o acesso em caso de violação destes Termos ou da lei, mediante aviso quando cabível. O encerramento da conta observa as regras de retenção e exclusão de dados descritas na [Política de Privacidade](/privacidade). As disposições que, por sua natureza, devam subsistir — como propriedade intelectual, limitação de responsabilidade e foro — permanecem em vigor após a rescisão.
+Estes Termos vigoram enquanto você usar a Plataforma. Você pode encerrar sua conta a qualquer momento. Podemos suspender ou encerrar o acesso em caso de violação destes Termos ou da lei, mediante aviso quando cabível. O encerramento da conta observa as regras de retenção e exclusão de dados descritas na [Política de Privacidade](/privacy). As disposições que, por sua natureza, devam subsistir — como propriedade intelectual, limitação de responsabilidade e foro — permanecem em vigor após a rescisão.
 
 ## 12. Alterações nestes Termos
 
@@ -115,4 +115,4 @@ Estes Termos não afastam nenhum direito que o CDC garante a você. Em caso de c
 
 ## 16. Contato
 
-Dúvidas sobre estes Termos? Fale conosco em [E-MAIL DE CONTATO]. Para assuntos de privacidade e proteção de dados, consulte a [Política de Privacidade](/privacidade).
+Dúvidas sobre estes Termos? Fale conosco em [E-MAIL DE CONTATO]. Para assuntos de privacidade e proteção de dados, consulte a [Política de Privacidade](/privacy).

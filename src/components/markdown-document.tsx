@@ -25,19 +25,23 @@ const components: Components = {
     <h3 className="mt-8 text-[15px] font-medium uppercase tracking-[0.10em] text-[#d6d3d1]" {...omitNode(props)} />
   ),
   p: (props) => <p className="mt-5 text-[15.5px] leading-[1.7] text-[#a8a29e]" {...omitNode(props)} />,
-  ul: (props) => <ul className="mt-5 space-y-2.5 pl-5 marker:text-[#78716c]" {...omitNode(props)} />,
+  ul: (props) => <ul className="mt-5 list-disc space-y-2.5 pl-5 marker:text-[#78716c]" {...omitNode(props)} />,
   ol: (props) => <ol className="mt-5 list-decimal space-y-2.5 pl-5 marker:text-[#78716c]" {...omitNode(props)} />,
   li: (props) => (
-    <li className="list-disc text-[15.5px] leading-[1.65] text-[#a8a29e] marker:text-[#78716c]" {...omitNode(props)} />
+    <li className="text-[15.5px] leading-[1.65] text-[#a8a29e] marker:text-[#78716c]" {...omitNode(props)} />
   ),
   a: ({ href, ...props }) => {
     const className =
       'font-medium text-[#f0a4c5] underline underline-offset-4 transition-colors hover:text-[#f5f5f4]'
-    return href?.startsWith('/') ? (
-      <Link href={href} className={className} {...omitNode(props)} />
-    ) : (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={className} {...omitNode(props)} />
-    )
+    const cleaned = omitNode(props)
+    if (href?.startsWith('http')) {
+      return <a href={href} target="_blank" rel="noopener noreferrer" {...cleaned} className={className} />
+    }
+    // The `//` guard keeps protocol-relative URLs out of next/link.
+    if (href?.startsWith('/') && !href.startsWith('//')) {
+      return <Link href={href} {...cleaned} className={className} />
+    }
+    return <a href={href} {...cleaned} className={className} />
   },
   strong: (props) => <strong className="font-medium text-[#f5f5f4]" {...omitNode(props)} />,
   code: (props) => (
@@ -54,8 +58,6 @@ const components: Components = {
   ),
   hr: () => <hr className="mt-12 border-white/[0.08]" />,
 }
-
-const componentsNoH1: Components = { ...components, h1: () => null }
 
 function MarkdownDocument({
   className,
@@ -77,39 +79,18 @@ function MarkdownDocument({
   )
 }
 
-function MarkdownDocumentHeader({
-  title,
-  subtitle,
-  className,
-}: {
-  title: string
-  subtitle?: string
-  className?: string
-}) {
-  return (
-    <div data-slot="markdown-document-header" className={cn('mt-10', className)}>
-      <h1 className="font-display text-[34px] font-medium leading-[1.08] tracking-[-0.02em] text-[#f5f5f4] md:text-[44px]">
-        {title}
-      </h1>
-      {subtitle && <p className="mt-3 text-[15.5px] leading-[1.7] text-[#a8a29e]">{subtitle}</p>}
-    </div>
-  )
-}
-
 function MarkdownDocumentContent({
   children,
-  hideH1,
   className,
 }: {
   children: string
-  hideH1?: boolean
   className?: string
 }) {
   return (
     <article data-slot="markdown-document-content" className={cn('mt-10', className)}>
-      <Markdown components={hideH1 ? componentsNoH1 : components}>{children}</Markdown>
+      <Markdown components={components}>{children}</Markdown>
     </article>
   )
 }
 
-export { MarkdownDocument, MarkdownDocumentHeader, MarkdownDocumentContent }
+export { MarkdownDocument, MarkdownDocumentContent }
