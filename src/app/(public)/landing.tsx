@@ -10,7 +10,13 @@ import { LanguageSwitcher } from '@/components/language-switcher'
 import { WaitlistForm } from './waitlist-form'
 import { useWaitlist, WaitlistProvider } from './waitlist-context'
 
-export function Landing() {
+export function Landing({
+  privacyHref,
+  termsHref,
+}: {
+  privacyHref: string
+  termsHref: string
+}) {
   const t = useTranslations('landing')
 
   return (
@@ -48,7 +54,7 @@ export function Landing() {
           <Pricing />
           <TwoSides />
           <TrustBand />
-          <Faq />
+          <Faq privacyHref={privacyHref} />
           <div className="mx-auto max-w-3xl">
             <FinalCta
               title={t('ctaTitle')}
@@ -58,6 +64,8 @@ export function Landing() {
               copyright={t('footerCopyright')}
               privacy={t('footerPrivacy')}
               terms={t('footerTerms')}
+              privacyHref={privacyHref}
+              termsHref={termsHref}
             />
           </div>
         </div>
@@ -659,14 +667,14 @@ function StatusPill({
 }
 
 
-function Faq() {
+function Faq({ privacyHref }: { privacyHref: string }) {
   const t = useTranslations('landing')
   const { setRole, submitted } = useWaitlist()
   const items: Array<{ q: string; a: string; linkHref?: string; linkLabel?: string }> = [
     { q: t('faqQ1'), a: t('faqA1') },
     { q: t('faqQ2'), a: t('faqA2') },
     { q: t('faqQ6'), a: t('faqA6') },
-    { q: t('faqQ3'), a: t('faqA3'), linkHref: '/privacidade', linkLabel: t('faqA3Link') },
+    { q: t('faqQ3'), a: t('faqA3'), linkHref: privacyHref, linkLabel: t('faqA3Link') },
     // Drop the tenant waitlist CTA once they've joined — one email = one role.
     { q: t('faqQ7'), a: t('faqA7'), ...(submitted ? {} : { linkHref: '#waitlist', linkLabel: t('ctaTenantCta') }) },
     { q: t('faqQ8'), a: t('faqA8') },
@@ -884,10 +892,14 @@ function Footer({
   copyright,
   privacy,
   terms,
+  privacyHref,
+  termsHref,
 }: {
   copyright: string
   privacy: string
   terms: string
+  privacyHref: string
+  termsHref: string
 }) {
   return (
     <footer className="relative border-t border-white/[0.06] px-6 py-8">
@@ -899,10 +911,10 @@ function Footer({
           <span className="text-[11px] text-[#78716c]">{copyright}</span>
         </div>
         <nav className="flex items-center gap-5 text-[12.5px] text-[#a8a29e]">
-          <Link href="/privacidade" className="transition-colors hover:text-[#f5f5f4]">
+          <Link href={privacyHref} className="transition-colors hover:text-[#f5f5f4]">
             {privacy}
           </Link>
-          <Link href="/termos" className="transition-colors hover:text-[#f5f5f4]">
+          <Link href={termsHref} className="transition-colors hover:text-[#f5f5f4]">
             {terms}
           </Link>
           <LanguageSwitcher />

@@ -890,5 +890,15 @@
     "light": "Claro",
     "dark": "Oscuro",
     "system": "Sistema"
+  },
+  "legal": {
+    "privacy": {
+      "title": "Política de Privacidad",
+      "description": "Cómo Mabenn recopila, usa y protege tus datos personales conforme a la LGPD."
+    },
+    "terms": {
+      "title": "Términos de Uso",
+      "description": "Términos que rigen el uso de Mabenn — tus derechos, lo que ofrecemos y lo que Mabenn no es."
+    }
   }
 }

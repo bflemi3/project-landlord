@@ -2,28 +2,32 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 import { LOCALE_COOKIE, detectLocaleFromHeader } from '@/lib/i18n/detect-locale'
 import { marketingLocaleFromHost } from '@/lib/marketing-meta'
+import { ptBrPathFor } from '@/lib/i18n/localized-paths'
 
 // Production English host(s). Portuguese-preferring visitors who land here are
 // bounced to mabenn.com.br. Localhost, previews, and .com.br are never matched,
 // so they're never redirected (and there's no loop — the target isn't an EN host).
 const EN_HOSTS = new Set(['mabenn.com', 'www.mabenn.com'])
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const hostname = (request.headers.get('host') ?? '').split(':')[0].toLowerCase()
   const hasLocaleCookie = Boolean(request.cookies.get(LOCALE_COOKIE))
 
   // On the English domain, send a Portuguese-preferring visitor to mabenn.com.br
-  // (temporary redirect, path + query preserved). Gated to real page loads
-  // (Accept: text/html) and skipped once the user has made an explicit choice (the
-  // locale cookie). Crawlers/unfurlers send en or no Accept-Language and so are
-  // never redirected — both domains stay independently indexable.
+  // (temporary redirect, query preserved). Path is translated to its pt-BR
+  // canonical via ptBrPathFor so deep-links like /privacy land at .com.br/privacidade
+  // in one hop instead of 307→308 chaining through localizedRedirects(). Gated to
+  // real page loads (Accept: text/html) and skipped once the user has made an
+  // explicit choice (the locale cookie). Crawlers/unfurlers send en or no
+  // Accept-Language and so are never redirected — both domains stay indexable.
   if (
     EN_HOSTS.has(hostname) &&
     !hasLocaleCookie &&
     request.headers.get('accept')?.includes('text/html') &&
     detectLocaleFromHeader(request.headers.get('accept-language')) === 'pt-BR'
   ) {
-    const target = new URL(request.nextUrl.pathname + request.nextUrl.search, 'https://mabenn.com.br')
+    const ptBrPath = ptBrPathFor(request.nextUrl.pathname)
+    const target = new URL(ptBrPath + request.nextUrl.search, 'https://mabenn.com.br')
     return NextResponse.redirect(target, 307)
   }
 
