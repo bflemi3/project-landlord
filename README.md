@@ -1,10 +1,10 @@
-# mabenn
+# Mabenn
 
 Long-term rental management for small Brazilian landlords and their tenants — the structure and visibility of a property manager without the 8-12% fee.
 
 ## What it does
 
-mabenn helps landlords manage rent and recurring property charges across multiple properties while giving tenants clear visibility into what they owe and why.
+Mabenn helps landlords manage rent and recurring property charges across multiple properties while giving tenants clear visibility into what they owe and why.
 
 ### For landlords
 

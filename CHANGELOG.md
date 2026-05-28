@@ -2,7 +2,7 @@
 
 ## v1.0.0 — Long-term rentals
 
-mabenn is now a platform for long-term rental landlords and their tenants in Brazil — your alternative to paying 8–12% a month for property management. Track rent, expenses, and lease milestones in one place. You stay in control of your income and your tax obligations.
+Mabenn is now a platform for long-term rental landlords and their tenants in Brazil — your alternative to paying 8–12% a month for property management. Track rent, expenses, and lease milestones in one place. You stay in control of your income and your tax obligations.
 
 ## v0.11.1
 
@@ -61,7 +61,7 @@ mabenn is now a platform for long-term rental landlords and their tenants in Bra
 
 ## v0.5.0
 
-- New landing page — see what mabenn is all about
+- New landing page — see what Mabenn is all about
 - Join the waitlist to get early access
 - Sign up requires an invite code — we'll send you one when your spot is ready
 - Branded email notifications for account confirmation, password reset, and waitlist updates
@@ -78,7 +78,7 @@ mabenn is now a platform for long-term rental landlords and their tenants in Bra
 
 ## v0.4.0
 
-- Install mabenn to your home screen for quick access
+- Install Mabenn to your home screen for quick access
 - See what's new after each update with in-app release notes
 - View the full update history anytime from the "What's new" page
 - The app now works offline with a friendly fallback page
