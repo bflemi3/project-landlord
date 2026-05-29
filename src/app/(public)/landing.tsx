@@ -75,9 +75,9 @@ function StickyNav() {
   const [active, setActive] = useState('')
   const [pinned, setPinned] = useState(false)
   const links = [
-    { id: 'pillar-1', label: t('navHowItWorks') },
-    { id: 'pricing', label: t('navPricing') },
-    { id: 'faq', label: t('navFaq') },
+    { id: 'pillar-1', label: t('navHowItWorks'), shortLabel: t('navHowItWorksShort') },
+    { id: 'pricing', label: t('navPricing'), shortLabel: t('navPricing') },
+    { id: 'faq', label: t('navFaq'), shortLabel: t('navFaq') },
   ]
   useEffect(() => {
     // Active = the last nav section whose top has passed the viewport midline. Computed from live
@@ -135,7 +135,7 @@ function StickyNav() {
           pinned ? 'pointer-events-auto' : 'pointer-events-none'
         }`}
       >
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 whitespace-nowrap">
           {links.map((l) => (
             <a
               key={l.id}
@@ -147,7 +147,8 @@ function StickyNav() {
                   : 'rounded-full px-2.5 py-1.5 text-sm font-medium text-[#a8a29e] transition-colors hover:text-[#f5f5f4] sm:px-3.5 sm:text-[13px]'
               }
             >
-              {l.label}
+              <span className="sm:hidden">{l.shortLabel}</span>
+              <span className="hidden sm:inline">{l.label}</span>
             </a>
           ))}
         </div>
@@ -217,8 +218,7 @@ function WaitlistCta({ variant }: { variant: 'nav' | 'hero' | 'pricing' }) {
         href="#waitlist"
         className="group inline-flex shrink-0 items-center gap-1.5 rounded-full bg-[#f5f0e8] px-3.5 py-1.5 text-sm font-medium text-[#1c1917] transition-colors hover:bg-[#ebe5d9] sm:px-4 sm:text-[13px]"
       >
-        <span className="sm:hidden">{t('navJoinShort')}</span>
-        <span className="hidden sm:inline">{t('heroCtaPrimary')}</span>
+        <span>{t('navJoinShort')}</span>
         <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
       </a>
     )
