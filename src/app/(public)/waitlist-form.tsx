@@ -2,9 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import posthog from 'posthog-js'
 import { joinWaitlist } from '@/app/actions/waitlist'
+import { localizedPath } from '@/lib/i18n/localized-paths'
 import { type EmailLocale } from '@/emails/i18n'
 import { useWaitlist } from './waitlist-context'
 
@@ -96,6 +98,8 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
   }
 
   const label = error ? t('waitlistRetry') : (buttonLabel ?? t('ctaButton'))
+  // es has no localized legal route — it shares the en URL (no /privacidad).
+  const privacyHref = localizedPath(locale === 'pt-BR' ? 'pt-BR' : 'en', 'privacy')
 
   return (
     <div>
@@ -167,6 +171,18 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
       </button>
       </form>
       <p className="mt-5 text-center text-[12.5px] leading-[1.5] text-[#78716c]">{t('ctaFinePrint')}</p>
+      <p className="mt-1.5 text-center text-[12.5px] leading-[1.5] text-[#78716c]">
+        {t.rich('ctaConsent', {
+          privacy: (chunks) => (
+            <Link
+              href={privacyHref}
+              className="underline underline-offset-2 transition-colors hover:text-[#a8a29e]"
+            >
+              {chunks}
+            </Link>
+          ),
+        })}
+      </p>
       {/* Reserved line so a failed submit doesn't shift the layout; fades in only on error. */}
       <p
         className={`mt-2 text-center text-[12.5px] leading-[1.4] text-red-400 transition-opacity duration-200 ${

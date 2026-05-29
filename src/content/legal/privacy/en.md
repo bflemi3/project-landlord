@@ -8,11 +8,7 @@ Mabenn is a rental management platform for landlords who manage their own proper
 
 ## Controller identity
 
-The controller of your personal data is:
-
-- **Legal name:** [Razão social — a definir]
-- **CNPJ:** [CNPJ — a definir]
-- **Address:** [Endereço — a definir]
+In this pre-launch phase, the controller of your personal data is **Brandon Fleming**, the founder operating Mabenn as an individual (pessoa física). Mabenn is not yet incorporated as a legal entity; once the company is incorporated, this policy will be updated with the controller's legal name, CNPJ, and address. Until then, contact is via the privacy email below.
 
 The controller is the party responsible for decisions about how your personal data is processed.
 
@@ -20,8 +16,8 @@ The controller is the party responsible for decisions about how your personal da
 
 For any question about this policy, about how we process your data, or to exercise your rights, contact us:
 
-- **Privacy email:** privacidade@mabenn.com
-- **Data Protection Officer (encarregado):** [Nome do encarregado — a definir]
+- **Privacy email:** privacidade@mabenn.com.br
+- **Data Protection Officer (encarregado):** during this pre-launch phase, the controller (Brandon Fleming) acts as the privacy point of contact, via the email above.
 
 The Data Protection Officer is the channel of communication between you, Mabenn, and Brazil's National Data Protection Authority (ANPD).
 
@@ -106,11 +102,11 @@ The LGPD grants you, the data subject, the following rights. We respond to any r
 - **Information about sharing** — know which entities we share your data with.
 - **Complaint to the ANPD** — file a complaint with Brazil's National Data Protection Authority.
 
-To exercise any of these rights, write to privacidade@mabenn.com.
+To exercise any of these rights, write to privacidade@mabenn.com.br.
 
 ## Cookies and tracking technologies
 
-On public pages, Mabenn uses **anonymous** usage analytics under legitimate interest — we do not identify visitors before signup. Inside the authenticated product, analytics are identified, also under legitimate interest, and you can turn them off at any time through an opt-out toggle in your account. We do not track identified users before signup.
+While you are only browsing the public pages, Mabenn uses **anonymous** usage analytics under legitimate interest — we do not identify visitors who are only browsing. When you join the waitlist and give us your email, we begin associating your analytics activity with your email, on the basis of the consent you give by joining the list, to measure conversion and prepare for launch. Inside the authenticated product, analytics are identified under legitimate interest, and you can turn them off at any time through an opt-out toggle in your account.
 
 ## Security and incidents
 
@@ -120,6 +116,6 @@ We apply technical and organizational measures to protect your data, including r
 
 We may update this policy to reflect changes in the product, the law, or our practices. When a change is material, we will notify you through the appropriate channels. The date of the last update is shown below.
 
-**Last updated:** [Data de vigência — a definir]
+**Last updated:** May 29, 2026
 
 > This is a draft pending review by qualified Brazilian legal counsel. It does not constitute legal advice.

@@ -82,6 +82,7 @@ For architecture deep-dives see `docs/project/architecture-auth.md`, `docs/proje
 ### Research
 
 - **`docs/project/research-dda-open-finance.md`** — DDA and Open Finance findings from the Phase 0 spike.
+- **`docs/research/interview-imobiliarias.md`** — customer-discovery interview script (consent + questions) for validating the target audience and problem with imobiliárias, property managers, and landlords.
 
 ### Specs and plans
 

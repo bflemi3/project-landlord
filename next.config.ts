@@ -31,7 +31,6 @@ const nextConfig: NextConfig = {
   // which file tracing can't follow — include it so the content ships to prod.
   outputFileTracingIncludes: {
     '/privacy': ['./src/content/legal/privacy/**/*'],
-    '/terms': ['./src/content/legal/terms/**/*'],
   },
   env: {
     NEXT_PUBLIC_APP_VERSION: appVersion,

@@ -9,7 +9,6 @@ export type MarketingLocale = 'en' | 'pt-BR'
 // localized route, add an entry here and create the folder at that en path.
 export const LOCALIZED_PATHS = {
   privacy: { en: '/privacy', 'pt-BR': '/privacidade' },
-  terms: { en: '/terms', 'pt-BR': '/termos' },
 } as const satisfies Record<string, Record<MarketingLocale, string>>
 
 export type LocalizedRouteKey = keyof typeof LOCALIZED_PATHS
@@ -32,7 +31,7 @@ export function ptBrPathFor(path: string): string {
 // Production matches mabenn.com.br; localhost and *.vercel.app are included
 // so dev and preview deployments can resolve the PT-BR URLs too. Without
 // these, the rewrite (PT-BR URL → EN folder) only fires in prod, and the
-// folder rename means /privacidade + /termos 404 on every other host.
+// folder rename means /privacidade 404s on every other host.
 const PT_BR_HOST = '(?:www\\.)?mabenn\\.com\\.br|localhost(?::\\d+)?|.*\\.vercel\\.app'
 
 // `next.config.ts` rewrites: on .com.br, serve the EN-named folder when the

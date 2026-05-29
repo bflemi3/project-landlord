@@ -332,10 +332,10 @@
     "ctaSubtitle": "Everyone who joins the waitlist becomes a founding member — every rental free for a year, then R$ 39/month per rental, locked for life.",
     "ctaButton": "Get on the list",
     "ctaFinePrint": "No spam. We'll only email you when Mabenn is ready for you.",
+    "ctaConsent": "By joining the waitlist, you agree to our <privacy>Privacy Policy</privacy>.",
     "ctaTenantCta": "Get on the tenant waitlist →",
     "footerCopyright": "© 2026 mabenn",
-    "footerPrivacy": "Privacy",
-    "footerTerms": "Terms"
+    "footerPrivacy": "Privacy"
   },
   "home": {
     "goodMorning": "Good morning",
@@ -894,10 +894,6 @@
     "privacy": {
       "title": "Privacy Policy",
       "description": "How Mabenn collects, uses, and protects your personal data under Brazil's LGPD."
-    },
-    "terms": {
-      "title": "Terms of Use",
-      "description": "Terms governing your use of Mabenn — your rights, what we provide, and what Mabenn isn't."
     }
   }
 }

@@ -17,7 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ES is intentionally excluded from hreflang/sitemap: there's no public ES URL
   // (no /es prefix, no ES domain), so we don't claim ES coverage to crawlers.
   // ES users still get Spanish content in-product via the NEXT_LOCALE cookie.
-  const legalLanguages = (doc: 'privacy' | 'terms') => ({
+  const legalLanguages = (doc: 'privacy') => ({
     languages: {
       en: `${MARKETING_ORIGIN.en}${localizedPath('en', doc)}`,
       'pt-BR': `${MARKETING_ORIGIN['pt-BR']}${localizedPath('pt-BR', doc)}`,
@@ -44,13 +44,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'yearly',
       priority: 0.3,
       alternates: legalLanguages('privacy'),
-    },
-    {
-      url: `${origin}${localizedPath(locale, 'terms')}`,
-      lastModified: new Date(),
-      changeFrequency: 'yearly',
-      priority: 0.3,
-      alternates: legalLanguages('terms'),
     },
   ]
 }

@@ -51,9 +51,10 @@ Publish at `/privacidade` in Portuguese (minimum). Must include: controller iden
 
 ## Analytics Tracking
 
-- Public pages: anonymous tracking under legitimate interest
+- Public pages: anonymous tracking under legitimate interest while the visitor is only browsing
+- Waitlist signup: once a visitor submits their email to join the waitlist, their analytics may be identified by that email on the basis of their consent — the waitlist signup is treated as the sign-up (cadastro) for the pre-launch phase, so `posthog.identify(email)` on submit is permitted
 - Authenticated app: identified tracking under legitimate interest with opt-out toggle
-- Do not track identified users before sign-up
+- Do not identify visitors who are only browsing public pages — no de-anonymizing passive traffic before an affirmative signup
 
 ## Data Breach
 

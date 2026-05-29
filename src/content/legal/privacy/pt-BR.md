@@ -6,11 +6,7 @@ A Mabenn é uma plataforma de gestão de aluguéis para locadores que administra
 
 ## Identificação do controlador
 
-O controlador dos dados pessoais é:
-
-- **Razão social:** [Razão social — a definir]
-- **CNPJ:** [CNPJ — a definir]
-- **Endereço:** [Endereço — a definir]
+Nesta fase de pré-lançamento, o controlador dos dados pessoais é **Brandon Fleming**, fundador responsável pela operação da Mabenn como pessoa física. A Mabenn ainda não está constituída como pessoa jurídica; quando a empresa for constituída, esta política será atualizada com a razão social, o CNPJ e o endereço do controlador. Até lá, o contato se dá pelo e-mail de privacidade indicado abaixo.
 
 O controlador é a parte responsável pelas decisões sobre o tratamento dos seus dados pessoais.
 
@@ -18,8 +14,8 @@ O controlador é a parte responsável pelas decisões sobre o tratamento dos seu
 
 Para qualquer questão sobre esta política, sobre o tratamento dos seus dados ou para exercer os seus direitos, fale conosco:
 
-- **E-mail de privacidade:** privacidade@mabenn.com
-- **Encarregado pelo Tratamento de Dados Pessoais (DPO):** [Nome do encarregado — a definir]
+- **E-mail de privacidade:** privacidade@mabenn.com.br
+- **Encarregado pelo Tratamento de Dados Pessoais (DPO):** nesta fase de pré-lançamento, o próprio controlador (Brandon Fleming) atua como ponto de contato para questões de privacidade, pelo e-mail acima.
 
 O encarregado é o canal de comunicação entre você, a Mabenn e a Autoridade Nacional de Proteção de Dados (ANPD).
 
@@ -104,11 +100,11 @@ A LGPD garante a você, titular dos dados, os seguintes direitos. Respondemos a 
 - **Informação sobre compartilhamento** — saber com quais entidades compartilhamos os seus dados.
 - **Reclamação à ANPD** — apresentar reclamação à Autoridade Nacional de Proteção de Dados.
 
-Para exercer qualquer um desses direitos, escreva para privacidade@mabenn.com.
+Para exercer qualquer um desses direitos, escreva para privacidade@mabenn.com.br.
 
 ## Cookies e tecnologias de rastreamento
 
-Nas páginas públicas, a Mabenn usa análise de uso de forma **anônima**, com base em legítimo interesse — não identificamos visitantes antes do cadastro. Dentro do produto autenticado, a análise é identificada, também com base em legítimo interesse, e você pode desativá-la a qualquer momento por meio de uma opção de exclusão (opt-out) na sua conta. Não rastreamos usuários identificados antes do cadastro.
+Enquanto você apenas navega pelas páginas públicas, a Mabenn usa análise de uso de forma **anônima**, com base em legítimo interesse — não identificamos visitantes que apenas navegam. Quando você entra na lista de espera e nos fornece o seu e-mail, passamos a associar a sua atividade de análise ao seu e-mail, com base no consentimento que você dá ao entrar na lista, para medir a conversão e preparar o lançamento. Dentro do produto autenticado, a análise é identificada com base em legítimo interesse, e você pode desativá-la a qualquer momento por meio de uma opção de exclusão (opt-out) na sua conta.
 
 ## Segurança e incidentes
 
@@ -118,6 +114,6 @@ Adotamos medidas técnicas e organizacionais para proteger os seus dados, inclui
 
 Podemos atualizar esta política para refletir mudanças no produto, na legislação ou nas nossas práticas. Quando a alteração for relevante, avisaremos pelos canais apropriados. A data da última atualização está indicada abaixo.
 
-**Última atualização:** [Data de vigência — a definir]
+**Última atualização:** 29 de maio de 2026
 
 > Esta é uma versão preliminar, pendente de revisão por advogado(a) qualificado(a) no Brasil. Não constitui aconselhamento jurídico.
