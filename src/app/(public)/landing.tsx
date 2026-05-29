@@ -125,12 +125,16 @@ function StickyNav() {
   }, [])
   return (
     <nav
-      className={`nav-reveal fixed inset-x-0 top-3 z-50 flex justify-center px-3 transition-opacity duration-300 ease-out sm:top-5 sm:opacity-100 sm:pointer-events-auto ${
-        pinned ? 'opacity-100' : 'opacity-0 pointer-events-none'
+      className={`nav-reveal pointer-events-none fixed inset-x-0 top-3 z-50 flex justify-center px-3 transition-opacity duration-300 ease-out sm:top-5 sm:opacity-100 ${
+        pinned ? 'opacity-100' : 'opacity-0'
       }`}
       aria-label={t('navAriaLabel')}
     >
-      <div className="flex w-full max-w-md items-center justify-between gap-1 rounded-full border border-white/[0.10] bg-[#1a1a19]/80 px-1.5 py-1.5 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6)] backdrop-blur-md sm:w-auto sm:justify-center">
+      <div
+        className={`flex w-full max-w-md items-center justify-between gap-1 rounded-full border border-white/[0.10] bg-[#1a1a19]/80 px-1.5 py-1.5 shadow-[0_8px_30px_-8px_rgba(0,0,0,0.6)] backdrop-blur-md sm:w-auto sm:justify-center sm:pointer-events-auto ${
+          pinned ? 'pointer-events-auto' : 'pointer-events-none'
+        }`}
+      >
         <div className="flex items-center gap-0.5">
           {links.map((l) => (
             <a
@@ -240,7 +244,7 @@ function Nav({ signInLabel }: { signInLabel: string }) {
       </span>
       <Link
         href="/auth/sign-in"
-        className="rounded-full border border-white/[0.12] px-4 py-1.5 text-[13px] font-medium text-[#f5f5f4] transition-colors hover:bg-white/[0.04]"
+        className="rounded-full border border-white/[0.12] px-4 py-2 text-sm font-medium text-[#f5f5f4] transition-colors hover:border-white/[0.2] hover:bg-white/[0.06]"
       >
         {signInLabel}
       </Link>
