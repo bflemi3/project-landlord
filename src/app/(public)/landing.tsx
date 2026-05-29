@@ -12,10 +12,8 @@ import { useWaitlist, WaitlistProvider } from './waitlist-context'
 
 export function Landing({
   privacyHref,
-  termsHref,
 }: {
   privacyHref: string
-  termsHref: string
 }) {
   const t = useTranslations('landing')
 
@@ -63,9 +61,7 @@ export function Landing({
             <Footer
               copyright={t('footerCopyright')}
               privacy={t('footerPrivacy')}
-              terms={t('footerTerms')}
               privacyHref={privacyHref}
-              termsHref={termsHref}
             />
           </div>
         </div>
@@ -891,15 +887,11 @@ function FinalCtaGlow() {
 function Footer({
   copyright,
   privacy,
-  terms,
   privacyHref,
-  termsHref,
 }: {
   copyright: string
   privacy: string
-  terms: string
   privacyHref: string
-  termsHref: string
 }) {
   return (
     <footer className="relative border-t border-white/[0.06] px-6 py-8">
@@ -913,9 +905,6 @@ function Footer({
         <nav className="flex items-center gap-5 text-[12.5px] text-[#a8a29e]">
           <Link href={privacyHref} className="transition-colors hover:text-[#f5f5f4]">
             {privacy}
-          </Link>
-          <Link href={termsHref} className="transition-colors hover:text-[#f5f5f4]">
-            {terms}
           </Link>
           <LanguageSwitcher />
         </nav>

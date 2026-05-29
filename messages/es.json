@@ -332,10 +332,10 @@
     "ctaSubtitle": "Todos los que se unen a la lista de espera se vuelven miembros fundadores — cada alquiler gratis por un año, luego R$ 39/mes por alquiler, fijo de por vida.",
     "ctaButton": "Unirse a la lista",
     "ctaFinePrint": "Sin spam. Solo te enviaremos correo cuando Mabenn abra a nuevos usuarios.",
+    "ctaConsent": "Al unirte a la lista, aceptas nuestra <privacy>Política de Privacidad</privacy>.",
     "ctaTenantCta": "Unirse a la lista de espera de inquilinos →",
     "footerCopyright": "© 2026 mabenn",
-    "footerPrivacy": "Privacidad",
-    "footerTerms": "Términos"
+    "footerPrivacy": "Privacidad"
   },
   "home": {
     "goodMorning": "Buenos días",
@@ -895,10 +895,6 @@
     "privacy": {
       "title": "Política de Privacidad",
       "description": "Cómo Mabenn recopila, usa y protege tus datos personales conforme a la LGPD."
-    },
-    "terms": {
-      "title": "Términos de Uso",
-      "description": "Términos que rigen el uso de Mabenn — tus derechos, lo que ofrecemos y lo que Mabenn no es."
     }
   }
 }

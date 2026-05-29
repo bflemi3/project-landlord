@@ -13,7 +13,6 @@ export default async function LandingPage() {
   const origin = MARKETING_ORIGIN[locale]
   const orgId = `${origin}/#organization`
   const privacyHref = localizedPath(locale, 'privacy')
-  const termsHref = localizedPath(locale, 'terms')
   const t = await getTranslations({ locale, namespace: 'landing' })
 
   // FAQ Q/A sourced from the same message files the visible FAQ renders from —
@@ -81,7 +80,7 @@ export default async function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Landing privacyHref={privacyHref} termsHref={termsHref} />
+      <Landing privacyHref={privacyHref} />
     </>
   )
 }

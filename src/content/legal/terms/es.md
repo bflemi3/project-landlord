@@ -26,7 +26,7 @@ Para usar la Plataforma, usted debe:
 - Proporcionar información verdadera, exacta y actualizada al registrarse;
 - Mantener la confidencialidad de las credenciales de acceso de su cuenta.
 
-Usted es responsable de toda actividad realizada en su cuenta. Avísenos de inmediato a [CORREO DE CONTACTO] si sospecha de un uso no autorizado.
+Usted es responsable de toda actividad realizada en su cuenta. Avísenos de inmediato a contato@mabenn.com.br si sospecha de un uso no autorizado.
 
 ## 4. Qué es Mabenn — y qué no es
 
@@ -107,7 +107,7 @@ Estos Términos se rigen por la legislación brasileña. En respeto al art. 101,
 
 ## 14. Resolución de conflictos
 
-Buscaremos resolver cualquier cuestión de forma amistosa y directa. Usted puede contactarnos en cualquier momento en [CORREO DE CONTACTO]. Las disputas de consumo también pueden llevarse a las plataformas oficiales (como consumidor.gov.br), a los órganos de defensa del consumidor (Procon) y al Poder Judicial. Nada en estos Términos restringe su derecho de reclamar ante los órganos competentes.
+Buscaremos resolver cualquier cuestión de forma amistosa y directa. Usted puede contactarnos en cualquier momento en contato@mabenn.com.br. Las disputas de consumo también pueden llevarse a las plataformas oficiales (como consumidor.gov.br), a los órganos de defensa del consumidor (Procon) y al Poder Judicial. Nada en estos Términos restringe su derecho de reclamar ante los órganos competentes.
 
 ## 15. Derechos del consumidor
 
@@ -115,4 +115,4 @@ Estos Términos no apartan ningún derecho que el CDC le garantiza. En caso de c
 
 ## 16. Contacto
 
-¿Dudas sobre estos Términos? Escríbanos a [CORREO DE CONTACTO]. Para asuntos de privacidad y protección de datos, consulte la [Política de Privacidad](/privacy).
+¿Dudas sobre estos Términos? Escríbanos a contato@mabenn.com.br. Para asuntos de privacidad y protección de datos, consulte la [Política de Privacidad](/privacy).

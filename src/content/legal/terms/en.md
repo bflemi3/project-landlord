@@ -26,7 +26,7 @@ To use the Platform, you must:
 - Provide true, accurate, and current information when registering;
 - Keep your account access credentials confidential.
 
-You are responsible for all activity on your account. Notify us immediately at [CONTACT EMAIL] if you suspect unauthorized use.
+You are responsible for all activity on your account. Notify us immediately at contato@mabenn.com.br if you suspect unauthorized use.
 
 ## 4. What Mabenn is — and is not
 
@@ -107,7 +107,7 @@ These Terms are governed by Brazilian law. In keeping with Article 101, I, of th
 
 ## 14. Dispute resolution
 
-We will seek to resolve any issue amicably and directly. You may contact us at any time at [CONTACT EMAIL]. Consumer disputes may also be taken to official platforms (such as consumidor.gov.br), consumer protection bodies (Procon), and the courts. Nothing in these Terms restricts your right to complain to the competent authorities.
+We will seek to resolve any issue amicably and directly. You may contact us at any time at contato@mabenn.com.br. Consumer disputes may also be taken to official platforms (such as consumidor.gov.br), consumer protection bodies (Procon), and the courts. Nothing in these Terms restricts your right to complain to the competent authorities.
 
 ## 15. Consumer rights
 
@@ -115,4 +115,4 @@ These Terms do not waive any rights the CDC grants you. In case of conflict betw
 
 ## 16. Contact
 
-Questions about these Terms? Reach us at [CONTACT EMAIL]. For privacy and data protection matters, see the [Privacy Policy](/privacy).
+Questions about these Terms? Reach us at contato@mabenn.com.br. For privacy and data protection matters, see the [Privacy Policy](/privacy).

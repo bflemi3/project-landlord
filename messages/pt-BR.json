@@ -332,10 +332,10 @@
     "ctaSubtitle": "Todo mundo que entra na lista de espera vira membro fundador — cada aluguel grátis por um ano, depois R$ 39/mês por aluguel, travado para sempre.",
     "ctaButton": "Entrar na lista",
     "ctaFinePrint": "Sem spam. A gente só te manda e-mail quando o Mabenn abrir pra novos usuários.",
+    "ctaConsent": "Ao entrar na lista, você concorda com a nossa <privacy>Política de Privacidade</privacy>.",
     "ctaTenantCta": "Entrar na lista de espera de inquilinos →",
     "footerCopyright": "© 2026 mabenn",
-    "footerPrivacy": "Privacidade",
-    "footerTerms": "Termos"
+    "footerPrivacy": "Privacidade"
   },
   "home": {
     "goodMorning": "Bom dia",
@@ -895,10 +895,6 @@
     "privacy": {
       "title": "Política de Privacidade",
       "description": "Como a Mabenn coleta, usa e protege seus dados pessoais conforme a LGPD."
-    },
-    "terms": {
-      "title": "Termos de Uso",
-      "description": "Termos que regem o uso do Mabenn — seus direitos, o que oferecemos e o que o Mabenn não é."
     }
   }
 }
