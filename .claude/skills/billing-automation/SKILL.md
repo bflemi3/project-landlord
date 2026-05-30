@@ -18,6 +18,10 @@ paths:
 
 Pillar 1 of the product. Rent is first class; property expenses are second class. The goal is continuous, accurate visibility into what's owed and what's been paid, without manual statements.
 
+## Status
+
+Largely unbuilt. The live schema today is still the pre-pivot `statements` + `payment_events` model; the running ledger, payment matching, and bank/DDA tables this skill describes (`monthly_ledger`, `payment_matches`, `bank_accounts`, `bank_transactions`, `dda_registrations`) are **planned, not yet in schema** — see the `data-modeling` entity table. This skill describes the target design; build deterministically toward it when a feature is specced, and don't assume these tables or flows exist.
+
 ## The Live Billing View Replaces the Statement Workflow
 
 There is no landlord-generated monthly statement. No drafts. No publish. No revisions.

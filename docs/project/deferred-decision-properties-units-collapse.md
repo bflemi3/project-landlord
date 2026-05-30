@@ -39,7 +39,7 @@ Every former unit-scoped FK re-points to `properties.id`. `units` table dropped.
 - 21+ RLS policies to rewrite
 - ~10 TS data modules + 10 test files
 - The entire Phase 1 `create_property` RPC + `contracts` + `rent` table designs need rewriting
-- Spec rewrite of `docs/superpowers/specs/2026-05-08-property-creation-persistence-design.md` (~1700 lines, units-bound throughout)
+- Spec rewrite of the property-creation persistence design (~1700 lines, units-bound throughout)
 - Generated DB types regenerated
 - i18n strings (the wizard ships translated "unit" strings in EN/ES/PT-BR)
 

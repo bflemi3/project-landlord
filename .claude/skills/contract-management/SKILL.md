@@ -24,7 +24,7 @@ paths:
 
 ## Note on implementation status
 
-The contract-management feature is largely unbuilt. Tables, server actions, and helpers referenced by this skill (e.g., contract events, reputation events, IPCA fetcher) are forthcoming. When the feature lands, update this skill with concrete file paths and migration IDs.
+The contract-management feature is partially built. The `contracts` (`20260510120400`) and `rent` (`20260510120500`) tables now exist with audit triggers. Still unbuilt: `contract_events`, `reputation_events`, `reputation_scores`, IPCA fetcher, and the late-payment notice workflow. When those land, update this skill with concrete file paths and migration IDs.
 
 Pillar 2 of the product. Contracts are the central record of the rental relationship. Brazilian rentals run on 18–30 month contracts with annual IPCA-based adjustments, and small landlords forget adjustment dates, expiration dates, and the legal choreography for late payments. The product closes those gaps.
 

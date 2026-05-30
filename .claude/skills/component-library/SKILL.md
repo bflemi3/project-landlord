@@ -56,9 +56,6 @@ Compound primitives — same shell for operating and onboarding variants. Parts:
 ### Page Header (`src/components/page-header.tsx`)
 Composable: `PageHeader`, `PageHeaderBack` (Link + ChevronLeft), `PageHeaderTitle`, `PageHeaderSubtitle`. Vertical layout, scrolls with content.
 
-### Charge Row (`src/components/charge-row.tsx`)
-Compound: `ChargeRow`, `ChargeRowIcon`, `ChargeRowContent`, `ChargeRowTitle`, `ChargeRowDescription`, `ChargeRowAmount`, `ChargeRowActions`, `ChargeRowRemove`, `ChargeRowChevron`. States: default, configured (`border-primary/30 bg-primary/5`), disabled.
-
 ### Responsive Modal (`src/components/responsive-modal.tsx`)
 Dialog on desktop, bottom Sheet on mobile. Parts: `ResponsiveModal`, `.Content` (scrollable), `.Footer` (sticky with conditional fade mask). Optional title — visually hidden when omitted. Small modals skip Content/Footer parts.
 

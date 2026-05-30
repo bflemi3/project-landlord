@@ -31,44 +31,44 @@ All money is stored as minor units + currency. No exceptions.
 
 Never use floating-point types for money. Never store money without an accompanying currency.
 
-## Core Entities (post-pivot long-term rental model)
+## Core Entities (long-term rental model)
 
-| Entity | Purpose |
-|---|---|
-| users | Account holders (landlords, tenants) |
-| properties, units | Physical rental properties and their units |
-| memberships | User ↔ property relationships with roles |
-| **contracts** | Rental contract (LL, tenant, unit, rent, start, end, adjustment date, index, terms) |
-| **contract_events** | Adjustments, extensions, terminations — explicit trail on a contract |
-| **bank_accounts** | User-connected accounts via Open Finance (Pluggy/Belvo) |
-| **bank_transactions** | Raw transactions ingested from Open Finance feeds |
-| **dda_registrations** | CPF → Celcoin DDA adhesion records for condo fee discovery |
-| providers | Utility/condo providers (country + region scoped) |
-| provider_profiles | Ingestion/extraction/validation config for a provider |
-| example_documents | Sample bills attached to provider profiles |
-| charge_definitions | Recurring charge shape (rent, electric, water, condo, internet) |
-| **charge_instances** | A specific month's charge for a specific property |
-| recurring_rules | Cadence for charge definitions |
-| responsibility_allocations | Who owes what portion of a charge |
-| tenant_splits | Roommate-level splits of a tenant's portion |
-| **bill_holder** | Per-charge marker — `'landlord' \| 'tenant'` — drives which bank feed we watch |
-| source_documents | Raw bills (PDFs, photos, email forwards) |
-| extraction_results | Parser output + validation state + human corrections |
-| **payment_matches** | Linking table: bank_transactions ↔ charge_instances with confidence + state |
-| **monthly_ledger** | Frozen per-property snapshot of each past month's charges + outcomes |
-| **reputation_scores** | Per-user rating + component breakdown; updates via events |
-| **reputation_events** | Every score-affecting event (on-time payment, resolved dispute, response time) |
-| disputes | Tenant-raised issues with charges |
-| notifications | In-app + email delivery records |
-| audit_events | Mutation log |
-| invitations | Landlord → tenant invite flow |
+The product is moving away from landlord-published monthly statements toward a **general running ledger** where both parties see current state and activity continuously. The entities below reflect that target. The **Status** column distinguishes what's in the live schema today from what's still planned — check it before referencing a table in code; a `planned` table does not exist yet.
 
-Entities listed **in bold** are new or newly-central in the post-pivot model.
+| Entity | Status | Purpose |
+|---|---|---|
+| profiles | built | Account holders (landlords, tenants); `tax_id`, locale, opt-out |
+| properties, units | built | Physical rental properties and their units |
+| memberships | built | User ↔ property relationships with roles |
+| contracts | built | Rental contract (LL, tenant, unit, start, end, terms) — `20260510120400` |
+| rent | built | Rent amount/terms per contract — `20260510120500` |
+| charge_definitions | built | Recurring charge shape (rent, electric, water, condo, internet) |
+| charge_instances | built | A specific month's charge for a specific property |
+| recurring_rules | built | Cadence for charge definitions |
+| responsibility_allocations | built | Who holds / owes each portion of a charge (the bill-ownership mechanism) |
+| tenant_splits | built | Roommate-level splits of a tenant's portion |
+| statements | built | **Current** billing record (draft/published). Being phased out in favor of the running ledger — do not build new statement workflows on it |
+| payment_events | built | Payment mark/confirm/reject events against a statement |
+| source_documents | built | Raw bills (PDFs, photos, email forwards) |
+| providers | built | Utility/condo providers (country + region scoped) |
+| provider_invoice_profiles | built | Ingestion/extraction/validation config for a provider |
+| example_documents | built | Sample bills attached to provider profiles |
+| disputes | built | Tenant-raised issues with charges |
+| notifications | built | In-app + email delivery records |
+| audit_events | built | Mutation log |
+| invitations | built | Landlord → tenant invite flow |
+| monthly_ledger / running ledger | planned | The immutable per-month record + live current-month view that replaces statements |
+| payment_matches | planned | Linking table: bank_transactions ↔ charge_instances with confidence + reversible state |
+| bank_accounts / bank_transactions | planned | Open Finance (Pluggy/Belvo) connections + ingested transactions |
+| dda_registrations | planned | CPF → Celcoin DDA adhesion records for boleto discovery |
+| contract_events | planned | Adjustments, extensions, terminations — explicit trail on a contract |
+| reputation_scores / reputation_events | planned | Per-user rating + the event trail that produces it |
+| bill_holder | planned | Per-charge marker (`'landlord' \| 'tenant'`) driving which bank feed we watch (concept; today handled via responsibility_allocations) |
 
 ## Key Modeling Rules
 
-- **No statement entities.** The draft/review/publish statement model is gone. The `monthly_ledger` + live billing view replaces it.
-- **Charge ownership is per-charge, not per-property.** A property can have rent held by the landlord, utilities held by the tenant, and condo held by the landlord — all on the same tenancy. The `bill_holder` column on charge definitions/instances drives the detection logic.
+- **The running ledger is the target, not statements.** The `statements` table still exists today, but the product is moving off landlord-published draft/review/publish statements toward a general running ledger + live current-state view. Don't build new statement workflows; build toward the ledger when speccing billing.
+- **Charge ownership is per-charge, not per-property.** A property can have rent held by the landlord, utilities held by the tenant, and condo held by the landlord — all on the same tenancy. Today ownership is modeled via `responsibility_allocations`; the planned per-charge `bill_holder` marker (`'landlord' | 'tenant'`) will drive which bank feed payment detection watches.
 - **Payment matches are reversible.** Even a high-confidence auto-match must be undoable — no schema that assumes a match is final.
 - **Provider profiles are data, not code.** Parser strategy + extraction config + validation config are columns, not hardcoded logic.
 - **Extraction failures produce data.** Source document, profile used, failure category, corrections, final approved values — all recorded.

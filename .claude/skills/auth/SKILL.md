@@ -56,9 +56,8 @@ Full details and test coverage references are in `docs/project/architecture-auth
 
 ## Outstanding work
 
-Caller-side handling of RPC failure reasons is half-finished. The RPC returns structured `{ success, reason }`, but today every call site collapses every failure to a generic invalid-code outcome — no distinct logging, no distinct UI, no code preservation on retry. 18 RED tests pin the desired behavior.
+Caller-side handling of RPC failure reasons is half-finished. The RPC returns structured `{ success, reason }`, but today every call site collapses every failure to a generic invalid-code outcome — no distinct logging, no distinct UI, no code preservation on retry. RED tests pin the desired behavior (`src/app/actions/__tests__/redeem-invite-rpc-error.test.ts`).
 
-- Plan: `docs/superpowers/plans/2026-04-20-invite-redemption-rpc-error-ux.md`
 - Read this before making changes in `src/app/auth/redeem/route.ts`, `src/app/auth/callback/route.ts`, `src/app/auth/enter-code/page.tsx`, or the wrapper — the in-flight work may affect your change.
 
 ## When changing anything here
