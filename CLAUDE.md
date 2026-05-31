@@ -4,11 +4,23 @@
 
 Brazil-first long-term rental management platform for small landlords and their tenants. Positioned as the alternative to paying 8–12% for professional property management — gives landlords the structure, visibility, and compliance tooling of a property manager without the management fee and without automatic reporting of rental income to Receita Federal.
 
-Rent is first class. Property expenses (utilities, condo fees) are second class. Payment detection happens passively via Open Finance (Pluggy/Belvo) on both parties' bank accounts. Bill discovery happens via DDA (Celcoin) for condo boletos and via Mabenn-built ingestion flows for utility convênio guides.
+Rent is first class. Property expenses (utilities, condo fees) are second class. Payment detection happens passively via Open Finance (Pluggy) on both parties' bank accounts. Bill discovery happens via DDA (Celcoin) for condo boletos and via Mabenn-built ingestion flows for utility convênio guides.
 
 The product should feel calm, modern, mobile-first, trustworthy — closer to Wise / Venmo / Rocket Money / Linear than property-management or accounting software.
 
+**The product is two-sided.** Landlord and tenant are both first-class users on one shared rental — same contract, charges, and payment truth underneath — but each role gets its own view and actions. The landlord's center of gravity is revenue: how much the property makes, this month / year / lifetime, across properties. The tenant's is their own obligations: rent and expenses, what's paid, what's upcoming, and a history of their payments and activity. Tenants can join solo (connecting a bank is the gate) and invite their landlord; the tenant side is free forever and is a primary growth channel.
+
+**Three pillars:** (1) **Billing transparency & payment automation** — revenue visibility for landlords, passive payment detection for both sides; (2) **Contract management** — drafting, IPCA adjustments, renewals, Lei do Inquilinato notices, and an AI assistant for rental-law questions; (3) **Communication** — the rental conversation (maintenance, questions, negotiations, disputes) lives in-app, scoped to the rental.
+
+Both sides build a reputation from concrete events and actions — not other users' opinions or star ratings. Because it's event-derived, the track record is verifiable and portable: it follows the person across rentals, on Mabenn or off.
+
 See `docs/project/product-pivot-long-term-rentals.md` for the full product shape, pillars, and open questions.
+
+---
+
+## Build status
+
+The three-pillar vision above is the target. **What's built is foundational, not the product itself** — the billing, contract, and communication pillars are largely unbuilt. **Shipped:** auth + invites, profile setup, property-creation wizard, contracts + rent tables, landing page + waitlist. **Not yet built:** essentially all of the core product — the live billing ledger, payment matching, Open Finance, DDA, bill ingestion, provider tooling, revenue tracking, reputation, disputes, communication, the AI assistant, and notifications. Domain skills carry per-area status; trust the code over any doc.
 
 ---
 
@@ -50,7 +62,7 @@ When ambiguous, choose the option that keeps the product simple, preserves trust
 
 ### Build now
 
-Auth with profile setup (name, avatar, CPF), property creation from address (with utility provider derivation), multi-property support, charge definitions with bill-ownership flexibility (`landlord` or `tenant` holds each bill), contract creation and storage, IPCA-based adjustment reminders and suggestions, late-payment notice generation (Lei do Inquilinato cascade), bill ingestion for utilities (upload / email / photo) with Mabenn-built provider profiles, missing-provider flow with engineering alert, DDA condo boleto discovery via Celcoin, Open Finance bank connection for landlord and tenant (Pluggy or Belvo), payment matching (CNPJ + amount + date), live billing view, monthly ledger with immutable past months, dispute flow with source document preview, tenant reputation scoring driven by concrete events, landlord reputation scoring, revenue tracking (monthly / cumulative / per-contract / per-property), tenant invites, notifications (email + in-app), audit trail, analytics from day one, public landing page, self-serve sign-up.
+Auth with profile setup (name, avatar, CPF), property creation from address (with utility provider derivation), multi-property support, charge definitions with bill-ownership flexibility (`landlord` or `tenant` holds each bill), contract creation and storage, IPCA-based adjustment reminders and suggestions, late-payment notice generation (Lei do Inquilinato cascade), bill ingestion for utilities (upload / email / photo) with Mabenn-built provider profiles, missing-provider flow with engineering alert, DDA condo boleto discovery via Celcoin, Open Finance bank connection for landlord and tenant (Pluggy), payment matching (CNPJ + amount + date), live billing view, monthly ledger with immutable past months, dispute flow with source document preview, tenant reputation scoring driven by concrete events, landlord reputation scoring, revenue tracking (monthly / cumulative / per-contract / per-property), tenant invites, notifications (email + in-app), audit trail, analytics from day one, public landing page, self-serve sign-up.
 
 ### Do not overbuild
 
@@ -66,7 +78,7 @@ Prove out DDA, Open Finance, bill ingestion, and web-portal validation end-to-en
 
 - **Framework:** Next.js App Router — static public pages, client-rendered authenticated product
 - **Backend:** Supabase (Postgres, Auth, Storage, RLS, Realtime) hosted in `sa-east-1`
-- **Open Finance:** Pluggy or Belvo (decision pending Phase 0 spike) for landlord + tenant bank account connection
+- **Open Finance:** Pluggy — for landlord + tenant bank account connection
 - **DDA:** Celcoin API for CPF-based condo boleto discovery
 - **Analytics:** PostHog from day one — see `analytics` skill
 - **Email:** Resend (inbound + outbound) on `mabenn.com`
@@ -89,7 +101,7 @@ Do not optimize prematurely for: hypothetical scale, extreme customization, comp
 
 - Prefer editing existing patterns over inventing new ones
 - Avoid introducing libraries unless they clearly earn their keep
-- Domain logic lives in `src/data/<domain>/` per the four-file split (`shared.ts`, `server.ts`, `client.ts`, `actions/`). Organize around product domains (auth, properties, memberships, charges, contracts, ledger, ingestion, providers, bank-accounts, payments, reputation, disputes, notifications, analytics). See `frontend-patterns` Data Layer table for the canonical shape.
+- Domain logic lives in `src/data/<domain>/`, organized around product domains (auth, properties, memberships, charges, contracts, ledger, ingestion, providers, bank-accounts, payments, reputation, disputes, notifications, analytics). See the `frontend-patterns` Data Layer table for the file pattern (`shared`/`server`/`client`/`actions`, added as needed — not all are required).
 
 ### Performance is a product feature
 

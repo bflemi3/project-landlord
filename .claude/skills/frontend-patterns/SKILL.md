@@ -108,7 +108,7 @@ Only needed for client components using `useSuspenseQuery`. Pure server componen
 
 ## Data Layer (`src/data/<domain>/`)
 
-All data fetching code is domain-organized:
+All data fetching code is domain-organized. The four files below are a pattern, not a requirement — add only what a domain needs (many domains have just `actions/`, or only `shared`/`server`/`client`):
 
 | File | Purpose |
 |---|---|

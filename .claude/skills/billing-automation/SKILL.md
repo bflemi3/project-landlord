@@ -99,7 +99,7 @@ When extraction fails or produces suspect results, notify both engineering and u
 
 ## Payment Detection — Open Finance
 
-Both the landlord and the tenant connect their bank accounts via Open Finance (OAuth through Pluggy or Belvo). This gives transaction-level visibility into both sides.
+Both the landlord and the tenant connect their bank accounts via Open Finance (OAuth through Pluggy). This gives transaction-level visibility into both sides.
 
 | Account | What we detect | Transaction signal |
 |---|---|---|

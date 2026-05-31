@@ -59,7 +59,7 @@ The product is moving away from landlord-published monthly statements toward a *
 | invitations | built | Landlord → tenant invite flow |
 | monthly_ledger / running ledger | planned | The immutable per-month record + live current-month view that replaces statements |
 | payment_matches | planned | Linking table: bank_transactions ↔ charge_instances with confidence + reversible state |
-| bank_accounts / bank_transactions | planned | Open Finance (Pluggy/Belvo) connections + ingested transactions |
+| bank_accounts / bank_transactions | planned | Open Finance (Pluggy) connections + ingested transactions |
 | dda_registrations | planned | CPF → Celcoin DDA adhesion records for boleto discovery |
 | contract_events | planned | Adjustments, extensions, terminations — explicit trail on a contract |
 | reputation_scores / reputation_events | planned | Per-user rating + the event trail that produces it |
