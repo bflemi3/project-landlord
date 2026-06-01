@@ -8,9 +8,16 @@
 
 set -euo pipefail
 
-SUPABASE_URL="http://127.0.0.1:54321"
-SERVICE_ROLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU"
+SUPABASE_URL="${SUPABASE_URL:-http://127.0.0.1:54321}"
+SERVICE_ROLE_KEY="${SUPABASE_SERVICE_ROLE_KEY:-}"
 PASSWORD=$(openssl rand -base64 16)
+
+if [ -z "$SERVICE_ROLE_KEY" ]; then
+  echo "SUPABASE_SERVICE_ROLE_KEY is not set."
+  echo "  Get the local key:  supabase status -o env | grep SERVICE_ROLE_KEY"
+  echo "  Then export it:     export SUPABASE_SERVICE_ROLE_KEY=<key>"
+  exit 1
+fi
 
 if [ -z "${1:-}" ]; then
   echo "Usage: $0 <email>"
