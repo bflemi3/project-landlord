@@ -646,7 +646,7 @@
       "bank": {
         "title": "Cuenta bancaria",
         "subtitle": "Donde se depositarán los pagos de renta.",
-        "placeholder": "Configuración de cuenta bancaria próximamente."
+        "nudge": "Conéctate ahora para que los pagos de renta y cuentas se detecten automáticamente cuando este inmueble entre en vigor. También puedes hacerlo después en configuración."
       },
       "summary": {
         "title": "Configurar propiedad",
@@ -862,6 +862,7 @@
     "title": "Configuración",
     "profile": "Perfil",
     "payment": "Pago",
+    "bankAccounts": "Cuentas bancarias",
     "appearance": "Apariencia",
     "account": "Cuenta",
     "noName": "Nombre no definido",
@@ -896,6 +897,32 @@
     "privacy": {
       "title": "Política de Privacidad",
       "description": "Cómo Mabenn recopila, usa y protege tus datos personales conforme a la LGPD."
+    }
+  },
+  "bankAccounts": {
+    "sectionTitle": "Cuentas bancarias",
+    "sectionDescription": "Conecta tu banco para que los pagos se detecten automáticamente. Mabenn nunca mueve dinero — solo observa transferencias entrantes de tu inquilino o pagos de las cuentas del inmueble.",
+    "empty": {
+      "title": "Aún no hay banco conectado",
+      "body": "Conecta un banco para activar la detección automática de pagos. Usamos Open Finance (Pluggy) — tus credenciales nunca pasan por Mabenn."
+    },
+    "connectCta": "Conectar un banco",
+    "connecting": "Abriendo…",
+    "status": {
+      "connected": "Conectado",
+      "reconnectRequired": "Reconectar",
+      "disconnected": "Desconectado"
+    },
+    "actions": {
+      "menu": "Abrir acciones",
+      "reconnect": "Reconectar",
+      "disconnect": "Desconectar",
+      "disconnectConfirm": "¿Desconectar este banco? Los próximos pagos no se detectarán hasta que vuelvas a conectarlo."
+    },
+    "errors": {
+      "tokenFailed": "No pudimos abrir la conexión con el banco. Inténtalo nuevamente.",
+      "registerFailed": "No pudimos guardar la conexión. Inténtalo nuevamente.",
+      "disconnectFailed": "No pudimos desconectar este banco. Inténtalo nuevamente."
     }
   }
 }

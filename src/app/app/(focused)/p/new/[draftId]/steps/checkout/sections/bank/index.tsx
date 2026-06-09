@@ -1,7 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useTranslations } from 'next-intl'
 import { Landmark } from 'lucide-react'
+
+import { BankAccountsPanel } from '@/components/bank-accounts/bank-accounts-panel'
+import { BankAccountsPanelSkeleton } from '@/components/bank-accounts/bank-accounts-panel-skeleton'
 
 import type { SectionId } from '../../../../state/registry'
 import { useCheckoutContext } from '../../checkout-context'
@@ -12,7 +16,9 @@ import { SummaryRow } from '../summary-row'
 const SECTION_ID: SectionId = 'bank'
 const ICON = Landmark
 
-// Bank is a placeholder until its data model lands.
+// Connecting a bank in the wizard is optional — the per-user bank connection
+// surfaces in settings too, so we never block property creation on it. The
+// nudge copy below explains why connecting now is useful.
 export function isValid(): boolean {
   return true
 }
@@ -49,7 +55,10 @@ export function BankSection() {
         />
       </Section.Header>
       <Section.Body>
-        <p className="text-muted-foreground">{t('bank.placeholder')}</p>
+        <p className="text-sm text-muted-foreground">{t('bank.nudge')}</p>
+        <Suspense fallback={<BankAccountsPanelSkeleton />}>
+          <BankAccountsPanel surface="wizard" />
+        </Suspense>
         <Section.Actions
           backLabel={t('actions.back')}
           continueLabel={t('actions.continue')}

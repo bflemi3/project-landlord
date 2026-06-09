@@ -646,7 +646,7 @@
       "bank": {
         "title": "Bank account",
         "subtitle": "Where rent payments are deposited.",
-        "placeholder": "Bank account setup coming soon."
+        "nudge": "Connect now so rent and bill payments flag automatically once this property goes live. You can always do this later in settings."
       },
       "summary": {
         "title": "Property setup",
@@ -861,6 +861,7 @@
     "title": "Settings",
     "profile": "Profile",
     "payment": "Payment",
+    "bankAccounts": "Bank accounts",
     "appearance": "Appearance",
     "account": "Account",
     "noName": "No name set",
@@ -895,6 +896,32 @@
     "privacy": {
       "title": "Privacy Policy",
       "description": "How Mabenn collects, uses, and protects your personal data under Brazil's LGPD."
+    }
+  },
+  "bankAccounts": {
+    "sectionTitle": "Bank accounts",
+    "sectionDescription": "Connect your bank so payments are detected automatically. Mabenn never moves money — it only watches for incoming transfers from your tenant or outgoing payments for property bills.",
+    "empty": {
+      "title": "No bank connected yet",
+      "body": "Connect a bank to enable automatic payment detection. We use Open Finance (Pluggy) — your credentials never touch Mabenn."
+    },
+    "connectCta": "Connect a bank",
+    "connecting": "Opening…",
+    "status": {
+      "connected": "Connected",
+      "reconnectRequired": "Reconnect needed",
+      "disconnected": "Disconnected"
+    },
+    "actions": {
+      "menu": "Open actions",
+      "reconnect": "Reconnect",
+      "disconnect": "Disconnect",
+      "disconnectConfirm": "Disconnect this bank? Future payments won't be detected until you reconnect."
+    },
+    "errors": {
+      "tokenFailed": "We couldn't open the bank connection. Try again in a moment.",
+      "registerFailed": "We couldn't save the connection. Try again.",
+      "disconnectFailed": "We couldn't disconnect that bank. Try again."
     }
   }
 }

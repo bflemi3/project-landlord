@@ -78,6 +78,107 @@ export type Database = {
           },
         ]
       }
+      bank_accounts: {
+        Row: {
+          account_subtype: string | null
+          account_type: string
+          bank_item_id: string
+          created_at: string
+          currency_code: string
+          id: string
+          masked_number: string | null
+          name: string
+          pluggy_account_id: string
+          user_id: string
+        }
+        Insert: {
+          account_subtype?: string | null
+          account_type: string
+          bank_item_id: string
+          created_at?: string
+          currency_code?: string
+          id?: string
+          masked_number?: string | null
+          name: string
+          pluggy_account_id: string
+          user_id: string
+        }
+        Update: {
+          account_subtype?: string | null
+          account_type?: string
+          bank_item_id?: string
+          created_at?: string
+          currency_code?: string
+          id?: string
+          masked_number?: string | null
+          name?: string
+          pluggy_account_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_bank_item_id_fkey"
+            columns: ["bank_item_id"]
+            isOneToOne: false
+            referencedRelation: "bank_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_items: {
+        Row: {
+          connected_at: string
+          created_at: string
+          disconnected_at: string | null
+          id: string
+          institution_id: string
+          institution_name: string
+          pluggy_item_id: string
+          status: Database["public"]["Enums"]["bank_item_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          institution_id: string
+          institution_name: string
+          pluggy_item_id: string
+          status?: Database["public"]["Enums"]["bank_item_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_at?: string
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          institution_id?: string
+          institution_name?: string
+          pluggy_item_id?: string
+          status?: Database["public"]["Enums"]["bank_item_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       charge_definitions: {
         Row: {
           amount_behavior: Database["public"]["Enums"]["expense_amount_behavior"]
@@ -1914,6 +2015,7 @@ export type Database = {
         Args: { p_provider_id: string }
         Returns: string[]
       }
+      disconnect_bank_item: { Args: { p_bank_item_id: string }; Returns: Json }
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }
       is_unit_landlord: { Args: { p_unit_id: string }; Returns: boolean }
@@ -1924,6 +2026,15 @@ export type Database = {
       }
       normalize_provider_name: { Args: { p_input: string }; Returns: string }
       redeem_invite: { Args: { invite_code: string }; Returns: Json }
+      register_bank_item: {
+        Args: {
+          p_accounts: Json
+          p_institution_id: string
+          p_institution_name: string
+          p_pluggy_item_id: string
+        }
+        Returns: Json
+      }
       replace_allocations: {
         Args: { p_allocations: Json; p_charge_definition_id: string }
         Returns: undefined
@@ -1950,6 +2061,7 @@ export type Database = {
         | "revise"
         | "confirm"
         | "reject"
+      bank_item_status: "connected" | "reconnect_required" | "disconnected"
       charge_source: "manual" | "imported" | "corrected"
       dispute_status: "open" | "resolved"
       expense_amount_behavior: "fixed" | "variable" | "unknown"
@@ -2145,6 +2257,7 @@ export const Constants = {
         "confirm",
         "reject",
       ],
+      bank_item_status: ["connected", "reconnect_required", "disconnected"],
       charge_source: ["manual", "imported", "corrected"],
       dispute_status: ["open", "resolved"],
       expense_amount_behavior: ["fixed", "variable", "unknown"],
