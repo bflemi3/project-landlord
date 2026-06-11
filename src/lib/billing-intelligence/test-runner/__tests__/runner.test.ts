@@ -4,7 +4,9 @@ import type { LoadedTestCase, TestCaseResult } from '../types'
 import type { BillExtractionResult } from '../../types'
 import { buildBillExtractionConfidence } from '../../confidence'
 
-const makeExtraction = (overrides: Partial<BillExtractionResult['billing']> = {}): BillExtractionResult => ({
+const makeExtraction = (
+  overrides: Partial<BillExtractionResult['billing']> = {},
+): BillExtractionResult => ({
   provider: {
     profileId: 'test-profile',
     companyName: 'Test Co',

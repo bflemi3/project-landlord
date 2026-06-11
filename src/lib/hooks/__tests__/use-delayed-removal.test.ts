@@ -141,9 +141,7 @@ describe('useDelayedRemoval', () => {
   })
 
   it('does not run commit after the component unmounts', () => {
-    const { result, unmount } = renderHook(() =>
-      useDelayedRemoval({ duration: 200 }),
-    )
+    const { result, unmount } = renderHook(() => useDelayedRemoval({ duration: 200 }))
 
     const commit = vi.fn()
     act(() => {
@@ -169,22 +167,16 @@ describe('useDelayedRemoval', () => {
   it('skips state update when the timeout callback fires after unmount (mountedRef guard)', () => {
     vi.useRealTimers()
     let captured: (() => void) | undefined
-    const setTimeoutSpy = vi
-      .spyOn(globalThis, 'setTimeout')
-      .mockImplementationOnce((cb) => {
-        captured = cb as () => void
-        // Return any value the caller can pass to clearTimeout — a number
-        // matches the browser/Node return type without scheduling a real
-        // timer on either runtime.
-        return 0 as unknown as ReturnType<typeof setTimeout>
-      })
-    const clearTimeoutSpy = vi
-      .spyOn(globalThis, 'clearTimeout')
-      .mockImplementation(() => {})
+    const setTimeoutSpy = vi.spyOn(globalThis, 'setTimeout').mockImplementationOnce((cb) => {
+      captured = cb as () => void
+      // Return any value the caller can pass to clearTimeout — a number
+      // matches the browser/Node return type without scheduling a real
+      // timer on either runtime.
+      return 0 as unknown as ReturnType<typeof setTimeout>
+    })
+    const clearTimeoutSpy = vi.spyOn(globalThis, 'clearTimeout').mockImplementation(() => {})
 
-    const { result, unmount } = renderHook(() =>
-      useDelayedRemoval({ duration: 200 }),
-    )
+    const { result, unmount } = renderHook(() => useDelayedRemoval({ duration: 200 }))
 
     const commit = vi.fn()
     act(() => {

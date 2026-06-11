@@ -143,9 +143,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
           onValueChange={(name) => setField('name', name)}
           onBlur={() => touchField('name')}
         />
-        {hasNameError && (
-          <FieldError id={`${nameId}-error`}>{t(nameError!)}</FieldError>
-        )}
+        {hasNameError && <FieldError id={`${nameId}-error`}>{t(nameError!)}</FieldError>}
       </Field>
       <Field data-invalid={hasEmailError || undefined}>
         <FieldLabel htmlFor={emailId}>{t('emailLabel')}</FieldLabel>
@@ -157,9 +155,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
           onValueChange={(email) => setField('email', email)}
           onBlur={() => touchField('email')}
         />
-        {hasEmailError && (
-          <FieldError id={`${emailId}-error`}>{t(emailError!)}</FieldError>
-        )}
+        {hasEmailError && <FieldError id={`${emailId}-error`}>{t(emailError!)}</FieldError>}
       </Field>
       <Field orientation="horizontal">
         <FieldContent>
@@ -192,9 +188,7 @@ export function TenantForm({ id, autoFocus = false }: TenantFormProps) {
           onValueChange={(taxId) => setField('taxId', taxId)}
           onBlur={() => touchField('taxId')}
         />
-        {hasTaxIdError && (
-          <FieldError id={`${taxIdId}-error`}>{t(taxIdError!)}</FieldError>
-        )}
+        {hasTaxIdError && <FieldError id={`${taxIdId}-error`}>{t(taxIdError!)}</FieldError>}
       </Field>
     </FieldGroup>
   )

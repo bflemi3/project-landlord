@@ -6,14 +6,8 @@ import { defaultSectionData } from '../extraction-seeding'
 import { hasWizardWork } from '../derivations'
 import { defaultRentDatesInput } from '../../steps/checkout/sections/rent-dates/schemas'
 import { defaultTaxIdInput } from '../../steps/checkout/sections/tax-id/schemas'
-import {
-  defaultExpenseRow,
-  type ExpenseRow,
-} from '../../steps/checkout/sections/expenses/schemas'
-import {
-  defaultTenantRow,
-  type TenantRow,
-} from '../../steps/checkout/sections/tenants/schemas'
+import { defaultExpenseRow, type ExpenseRow } from '../../steps/checkout/sections/expenses/schemas'
+import { defaultTenantRow, type TenantRow } from '../../steps/checkout/sections/tenants/schemas'
 import type { SectionId } from '../registry'
 import type { SectionStatus } from '../persistence'
 
@@ -39,9 +33,7 @@ describe('hasWizardWork', () => {
   })
 
   it('returns true when a contract file is present', () => {
-    expect(
-      hasWizardWork({ ...freshState(), contractFile: new File([], 'a.pdf') }),
-    ).toBe(true)
+    expect(hasWizardWork({ ...freshState(), contractFile: new File([], 'a.pdf') })).toBe(true)
   })
 
   it('returns true when an extraction result is present', () => {

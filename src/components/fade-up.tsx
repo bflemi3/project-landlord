@@ -13,9 +13,10 @@ export function FadeUp({ children, delay, index, className }: FadeUpProps) {
     <div
       className={cn('animate-fade-up', className)}
       style={{
-        animationDelay: index !== undefined
-          ? `calc(var(--base-delay, 0s) + ${index} * var(--stagger, 0.08s))`
-          : `${resolvedDelay}s`,
+        animationDelay:
+          index !== undefined
+            ? `calc(var(--base-delay, 0s) + ${index} * var(--stagger, 0.08s))`
+            : `${resolvedDelay}s`,
       }}
     >
       {children}

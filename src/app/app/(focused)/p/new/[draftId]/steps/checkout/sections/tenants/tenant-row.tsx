@@ -42,8 +42,7 @@ export function TenantRow({
     (s.sectionData.tenants as TenantRowType[]).find((row) => row.id === id),
   )
   const isTouched = usePropertyCreationState(
-    (s) =>
-      ((s.sectionTouched.tenants as TenantsTouched)[id]?.size ?? 0) > 0,
+    (s) => ((s.sectionTouched.tenants as TenantsTouched)[id]?.size ?? 0) > 0,
   )
 
   // Validity selector reads the cache inside the selector and returns a
@@ -86,17 +85,10 @@ export function TenantRow({
             )}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-foreground truncate text-sm font-medium">
-              {primary}
-            </p>
-            {secondary && (
-              <p className="text-muted-foreground truncate text-xs">{secondary}</p>
-            )}
+            <p className="text-foreground truncate text-sm font-medium">{primary}</p>
+            {secondary && <p className="text-muted-foreground truncate text-xs">{secondary}</p>}
           </div>
-          <SummaryStatus
-            showInvalid={!isValid && isTouched}
-            inviteNow={tenant.inviteNow}
-          />
+          <SummaryStatus showInvalid={!isValid && isTouched} inviteNow={tenant.inviteNow} />
         </AccordionPrimitive.Trigger>
         <Button
           type="button"
@@ -118,13 +110,7 @@ export function TenantRow({
   )
 }
 
-function SummaryStatus({
-  showInvalid,
-  inviteNow,
-}: {
-  showInvalid: boolean
-  inviteNow: boolean
-}) {
+function SummaryStatus({ showInvalid, inviteNow }: { showInvalid: boolean; inviteNow: boolean }) {
   const t = useTranslations('propertyCreation.checkout.tenants')
 
   if (showInvalid) {
@@ -141,7 +127,5 @@ function SummaryStatus({
       </RowTrailingStatus>
     )
   }
-  return (
-    <RowTrailingStatus tone="muted">{t('summaryNoInvite')}</RowTrailingStatus>
-  )
+  return <RowTrailingStatus tone="muted">{t('summaryNoInvite')}</RowTrailingStatus>
 }

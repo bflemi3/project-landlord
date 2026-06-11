@@ -1,5 +1,11 @@
 import type { BillExtractionResult } from '../../types'
-import { normalizeDate, normalizeMonth, parseBRL, toMinorUnits, normalizeBarcode } from '../../normalize'
+import {
+  normalizeDate,
+  normalizeMonth,
+  parseBRL,
+  toMinorUnits,
+  normalizeBarcode,
+} from '../../normalize'
 import { buildBillExtractionConfidence } from '../../confidence'
 
 // Placeholder — will be replaced with the real provider_invoice_profiles.id
@@ -22,12 +28,11 @@ export function parseEnlivBillText(text: string): BillExtractionResult | null {
   const amountMatch = text.match(/Valor a pagar:\s*\nR\$\s*([\d.,]+)/)
   const amountBrl = amountMatch ? parseBRL(amountMatch[1]) : 0
 
-  const linhaDigitavel = extractField(
-    text, /(\d{5}\.\d{5}\s+\d{5}\.\d{6}\s+\d{5}\.\d{6}\s+\d\s+\d{14})/,
-  ) ?? ''
+  const linhaDigitavel =
+    extractField(text, /(\d{5}\.\d{5}\s+\d{5}\.\d{6}\s+\d{5}\.\d{6}\s+\d\s+\d{14})/) ?? ''
 
   const cleanDoc = customerTaxId.replace(/[.\-/]/g, '')
-  const taxIdType = cleanDoc.length === 14 ? 'cnpj' as const : 'cpf' as const
+  const taxIdType = cleanDoc.length === 14 ? ('cnpj' as const) : ('cpf' as const)
 
   const confidence = buildBillExtractionConfidence({
     sourceMethod: 'pdf',

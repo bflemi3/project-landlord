@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { parseSplit, buildAllocationRows, DEFAULT_SPLIT, type AllocationRow, type SplitInput } from '../split-allocations'
+import {
+  parseSplit,
+  buildAllocationRows,
+  DEFAULT_SPLIT,
+  type AllocationRow,
+  type SplitInput,
+} from '../split-allocations'
 
 // =============================================================================
 // parseSplit — DB rows → ChargeSplit
@@ -133,22 +139,47 @@ describe('buildAllocationRows', () => {
     const input: SplitInput = { payer: 'tenant', tenantPercent: 100, landlordPercent: 0 }
     const rows = buildAllocationRows(input)
     expect(rows).toHaveLength(1)
-    expect(rows[0]).toEqual({ role: 'tenant', allocation_type: 'percentage', percentage: 100, fixed_minor: null })
+    expect(rows[0]).toEqual({
+      role: 'tenant',
+      allocation_type: 'percentage',
+      percentage: 100,
+      fixed_minor: null,
+    })
   })
 
   it('builds single landlord allocation for payer=landlord', () => {
     const input: SplitInput = { payer: 'landlord', tenantPercent: 0, landlordPercent: 100 }
     const rows = buildAllocationRows(input)
     expect(rows).toHaveLength(1)
-    expect(rows[0]).toEqual({ role: 'landlord', allocation_type: 'percentage', percentage: 100, fixed_minor: null })
+    expect(rows[0]).toEqual({
+      role: 'landlord',
+      allocation_type: 'percentage',
+      percentage: 100,
+      fixed_minor: null,
+    })
   })
 
   it('builds percentage split rows', () => {
-    const input: SplitInput = { payer: 'split', splitMode: 'percent', tenantPercent: 67, landlordPercent: 33 }
+    const input: SplitInput = {
+      payer: 'split',
+      splitMode: 'percent',
+      tenantPercent: 67,
+      landlordPercent: 33,
+    }
     const rows = buildAllocationRows(input)
     expect(rows).toHaveLength(2)
-    expect(rows[0]).toEqual({ role: 'tenant', allocation_type: 'percentage', percentage: 67, fixed_minor: null })
-    expect(rows[1]).toEqual({ role: 'landlord', allocation_type: 'percentage', percentage: 33, fixed_minor: null })
+    expect(rows[0]).toEqual({
+      role: 'tenant',
+      allocation_type: 'percentage',
+      percentage: 67,
+      fixed_minor: null,
+    })
+    expect(rows[1]).toEqual({
+      role: 'landlord',
+      allocation_type: 'percentage',
+      percentage: 33,
+      fixed_minor: null,
+    })
   })
 
   it('builds fixed amount split rows', () => {
@@ -162,8 +193,18 @@ describe('buildAllocationRows', () => {
     }
     const rows = buildAllocationRows(input)
     expect(rows).toHaveLength(2)
-    expect(rows[0]).toEqual({ role: 'tenant', allocation_type: 'fixed_amount', percentage: null, fixed_minor: 40000 })
-    expect(rows[1]).toEqual({ role: 'landlord', allocation_type: 'fixed_amount', percentage: null, fixed_minor: 20000 })
+    expect(rows[0]).toEqual({
+      role: 'tenant',
+      allocation_type: 'fixed_amount',
+      percentage: null,
+      fixed_minor: 40000,
+    })
+    expect(rows[1]).toEqual({
+      role: 'landlord',
+      allocation_type: 'fixed_amount',
+      percentage: null,
+      fixed_minor: 20000,
+    })
   })
 
   it('handles missing fixed amounts as null', () => {
@@ -196,7 +237,12 @@ describe('buildAllocationRows', () => {
   })
 
   it('round-trips percentage split 70/30', () => {
-    const input: SplitInput = { payer: 'split', splitMode: 'percent', tenantPercent: 70, landlordPercent: 30 }
+    const input: SplitInput = {
+      payer: 'split',
+      splitMode: 'percent',
+      tenantPercent: 70,
+      landlordPercent: 30,
+    }
     const rows = buildAllocationRows(input)
     const split = parseSplit(rows)
     expect(split.payer).toBe('split')

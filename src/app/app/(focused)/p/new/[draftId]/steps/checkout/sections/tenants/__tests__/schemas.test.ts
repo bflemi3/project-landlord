@@ -33,15 +33,11 @@ describe('tenantRowSchema — happy paths', () => {
   })
 
   it('accepts inviteNow=false with empty email (relaxed vs canonical input)', () => {
-    expect(
-      tenantRowSchema.safeParse(valid({ inviteNow: false, email: '' })).success,
-    ).toBe(true)
+    expect(tenantRowSchema.safeParse(valid({ inviteNow: false, email: '' })).success).toBe(true)
   })
 
   it('accepts inviteNow=false with a valid email', () => {
-    expect(
-      tenantRowSchema.safeParse(valid({ inviteNow: false })).success,
-    ).toBe(true)
+    expect(tenantRowSchema.safeParse(valid({ inviteNow: false })).success).toBe(true)
   })
 })
 
@@ -51,9 +47,7 @@ describe('tenantRowSchema — bookkeeping fields', () => {
   })
 
   it('requires isExtracted to be a boolean', () => {
-    expect(
-      tenantRowSchema.safeParse({ ...valid(), isExtracted: undefined }).success,
-    ).toBe(false)
+    expect(tenantRowSchema.safeParse({ ...valid(), isExtracted: undefined }).success).toBe(false)
   })
 })
 
@@ -65,9 +59,7 @@ describe('tenantRowSchema — email when invite is ON', () => {
   })
 
   it('rejects malformed email with "invalidEmail"', () => {
-    const r = tenantRowSchema.safeParse(
-      valid({ inviteNow: true, email: 'not-an-email' }),
-    )
+    const r = tenantRowSchema.safeParse(valid({ inviteNow: true, email: 'not-an-email' }))
     expect(r.success).toBe(false)
     expect(firstIssue(r, 'email')).toBe('invalidEmail')
   })
@@ -75,22 +67,15 @@ describe('tenantRowSchema — email when invite is ON', () => {
 
 describe('tenantRowSchema — email when invite is OFF', () => {
   it('accepts empty email', () => {
-    expect(
-      tenantRowSchema.safeParse(valid({ inviteNow: false, email: '' })).success,
-    ).toBe(true)
+    expect(tenantRowSchema.safeParse(valid({ inviteNow: false, email: '' })).success).toBe(true)
   })
 
   it('accepts whitespace-only email (trimmed to empty before email check)', () => {
-    expect(
-      tenantRowSchema.safeParse(valid({ inviteNow: false, email: '   ' }))
-        .success,
-    ).toBe(true)
+    expect(tenantRowSchema.safeParse(valid({ inviteNow: false, email: '   ' })).success).toBe(true)
   })
 
   it('rejects malformed non-empty email with "invalidEmail"', () => {
-    const r = tenantRowSchema.safeParse(
-      valid({ inviteNow: false, email: 'not-an-email' }),
-    )
+    const r = tenantRowSchema.safeParse(valid({ inviteNow: false, email: 'not-an-email' }))
     expect(r.success).toBe(false)
     expect(firstIssue(r, 'email')).toBe('invalidEmail')
   })
@@ -98,9 +83,7 @@ describe('tenantRowSchema — email when invite is OFF', () => {
 
 describe('tenantRowSchema — email when invite is ON (whitespace handling)', () => {
   it('treats whitespace-only email as empty and rejects with "required"', () => {
-    const r = tenantRowSchema.safeParse(
-      valid({ inviteNow: true, email: '   ' }),
-    )
+    const r = tenantRowSchema.safeParse(valid({ inviteNow: true, email: '   ' }))
     expect(r.success).toBe(false)
     expect(firstIssue(r, 'email')).toBe('required')
   })
@@ -108,9 +91,7 @@ describe('tenantRowSchema — email when invite is ON (whitespace handling)', ()
 
 describe('tenantRowSchema — taxId (default Brazil)', () => {
   it('accepts a valid CPF', () => {
-    expect(
-      tenantRowSchema.safeParse(valid({ taxId: '040.032.329-09' })).success,
-    ).toBe(true)
+    expect(tenantRowSchema.safeParse(valid({ taxId: '040.032.329-09' })).success).toBe(true)
   })
 
   it('accepts an empty taxId', () => {
@@ -139,9 +120,7 @@ describe('getTenantRowSchema — polymorphic dispatcher', () => {
 
   it('preserves the relaxed-email rule across countries', () => {
     const schema = getTenantRowSchema('US')
-    expect(
-      schema.safeParse(valid({ inviteNow: false, email: '' })).success,
-    ).toBe(true)
+    expect(schema.safeParse(valid({ inviteNow: false, email: '' })).success).toBe(true)
   })
 
   it('preserves the invite-on email-required rule across countries', () => {
@@ -261,10 +240,7 @@ describe('tenantRowFromContractParty', () => {
   })
 
   it('passes taxId through unchanged for non-BR country codes', () => {
-    const t = tenantRowFromContractParty(
-      { name: 'Alex', email: null, taxId: '123-45-6789' },
-      'US',
-    )
+    const t = tenantRowFromContractParty({ name: 'Alex', email: null, taxId: '123-45-6789' }, 'US')
     expect(t.taxId).toBe('123-45-6789')
   })
 

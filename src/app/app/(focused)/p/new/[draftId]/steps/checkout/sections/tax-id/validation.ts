@@ -3,16 +3,11 @@
 
 import { getTaxIdInputSchema, type TaxIdInput } from './schemas'
 
-export type TaxIdParse = ReturnType<
-  ReturnType<typeof getTaxIdInputSchema>['safeParse']
->
+export type TaxIdParse = ReturnType<ReturnType<typeof getTaxIdInputSchema>['safeParse']>
 
 const cache = new WeakMap<TaxIdInput, Map<string, TaxIdParse>>()
 
-export function validateTaxId(
-  slice: TaxIdInput | undefined,
-  countryCode: string,
-): TaxIdParse {
+export function validateTaxId(slice: TaxIdInput | undefined, countryCode: string): TaxIdParse {
   if (!slice) return getTaxIdInputSchema(countryCode).safeParse(slice)
   let inner = cache.get(slice)
   if (!inner) {

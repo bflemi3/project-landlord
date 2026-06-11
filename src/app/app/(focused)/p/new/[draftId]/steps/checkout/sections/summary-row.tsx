@@ -59,11 +59,7 @@ export function SummaryRow({ detail, sectionId, title }: SummaryRowProps) {
   }
 
   return (
-    <li
-      data-slot="checkout-summary-row"
-      data-section-id={sectionId}
-      data-status={validity}
-    >
+    <li data-slot="checkout-summary-row" data-section-id={sectionId} data-status={validity}>
       <button
         type="button"
         onClick={handleClick}
@@ -71,7 +67,7 @@ export function SummaryRow({ detail, sectionId, title }: SummaryRowProps) {
         aria-current={isActive ? 'true' : undefined}
         className={cn(
           'flex w-full items-start gap-3 rounded-md py-1 text-left transition-colors',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50',
+          'focus-visible:ring-ring/50 focus-visible:ring-2 focus-visible:outline-none',
           isActive ? 'text-foreground font-medium' : 'text-muted-foreground',
           !isActive && !isLockedUpcoming && 'hover:text-foreground',
           isLockedUpcoming && 'cursor-default opacity-70',
@@ -87,9 +83,7 @@ export function SummaryRow({ detail, sectionId, title }: SummaryRowProps) {
             <p
               className={cn(
                 'text-sm font-normal',
-                validity === 'invalid'
-                  ? 'text-destructive'
-                  : 'text-muted-foreground/70',
+                validity === 'invalid' ? 'text-destructive' : 'text-muted-foreground/70',
               )}
             >
               {showDetail}

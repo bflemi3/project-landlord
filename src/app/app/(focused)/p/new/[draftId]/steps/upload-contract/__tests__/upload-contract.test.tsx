@@ -107,10 +107,7 @@ function renderUploadContract(
     store.setState(initialState)
   }
   render(
-    <NextIntlClientProvider
-      locale="en"
-      messages={enMessages as unknown as Record<string, unknown>}
-    >
+    <NextIntlClientProvider locale="en" messages={enMessages as unknown as Record<string, unknown>}>
       <PropertyCreationStoreProvider draftId="test" store={store}>
         <UploadContract />
       </PropertyCreationStoreProvider>
@@ -303,10 +300,7 @@ describe('UploadContract', () => {
       'api_key_missing',
     ]
 
-    const expectations: Record<
-      ContractExtractionErrorCode,
-      { message: string; cta?: string }
-    > = {
+    const expectations: Record<ContractExtractionErrorCode, { message: string; cta?: string }> = {
       file_too_large: {
         message: 'Your contract is larger than 10 MB.',
         cta: 'Upload a smaller file',
@@ -368,9 +362,7 @@ describe('UploadContract', () => {
         expect(action?.textContent).toBe(cta)
       } else {
         // api_key_missing has no CTA — verify the error box has no action button
-        expect(
-          document.querySelector('[data-slot="file-upload-error-action"]'),
-        ).toBeNull()
+        expect(document.querySelector('[data-slot="file-upload-error-action"]')).toBeNull()
       }
 
       expect(mockCapture).toHaveBeenCalledWith('contract_extraction_failed', { code })
@@ -418,9 +410,7 @@ describe('UploadContract', () => {
       await selectFile(makePdfFile())
 
       await waitFor(() => {
-        expect(
-          document.querySelector('[data-slot="file-upload-error-action"]'),
-        ).toBeTruthy()
+        expect(document.querySelector('[data-slot="file-upload-error-action"]')).toBeTruthy()
       })
       const cta = document.querySelector(
         '[data-slot="file-upload-error-action"]',
@@ -517,9 +507,7 @@ describe('UploadContract', () => {
 
       fireEvent.click(screen.getByText('Set up without a contract'))
 
-      expect(
-        screen.queryByText('Something went wrong on our side.'),
-      ).not.toBeInTheDocument()
+      expect(screen.queryByText('Something went wrong on our side.')).not.toBeInTheDocument()
       const s = store.getState()
       expect(s.step).toBe(2)
       expect(s.path).toBe('no_contract')

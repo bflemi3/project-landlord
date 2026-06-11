@@ -25,10 +25,14 @@ export async function createTestUser(
     email_confirm: true,
     user_metadata: { full_name: 'Test User' },
   })
-  if (createError || !userData.user) throw new Error(`Failed to create test user: ${createError?.message}`)
+  if (createError || !userData.user)
+    throw new Error(`Failed to create test user: ${createError?.message}`)
 
   const client = createClient<Database>(SUPABASE_URL, process.env.SUPABASE_ANON_KEY!)
-  const { error: signInError } = await client.auth.signInWithPassword({ email: testEmail, password })
+  const { error: signInError } = await client.auth.signInWithPassword({
+    email: testEmail,
+    password,
+  })
   if (signInError) throw new Error(`Failed to sign in test user: ${signInError.message}`)
 
   return { client, userId: userData.user.id, email: testEmail }

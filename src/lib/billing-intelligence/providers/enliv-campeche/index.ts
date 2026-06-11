@@ -45,9 +45,26 @@ export const enlivCampeche: Provider = {
     try {
       const data = await fetchEnlivDebitos(taxId)
       return data.debitos.map((d) => ({
-        provider: { profileId: PROFILE_ID, companyName: 'Enliv', taxId: '49449868000162', category: 'electricity' as const },
-        customer: { name: data.nome_cliente, taxId, taxIdType: taxId.replace(/[.\-/]/g, '').length === 14 ? 'cnpj' as const : 'cpf' as const, countryCode: 'BR', accountNumber: d.cadastroDistribuidora },
-        billing: { referenceMonth: '', dueDate: normalizeDate(d.vencimento), amountDue: toMinorUnits(d.valor), currency: 'BRL' },
+        provider: {
+          profileId: PROFILE_ID,
+          companyName: 'Enliv',
+          taxId: '49449868000162',
+          category: 'electricity' as const,
+        },
+        customer: {
+          name: data.nome_cliente,
+          taxId,
+          taxIdType:
+            taxId.replace(/[.\-/]/g, '').length === 14 ? ('cnpj' as const) : ('cpf' as const),
+          countryCode: 'BR',
+          accountNumber: d.cadastroDistribuidora,
+        },
+        billing: {
+          referenceMonth: '',
+          dueDate: normalizeDate(d.vencimento),
+          amountDue: toMinorUnits(d.valor),
+          currency: 'BRL',
+        },
         payment: { linhaDigitavel: normalizeBarcode(d.linha_digitavel), pixPayload: d.emv_pix },
         confidence: buildBillExtractionConfidence({
           sourceMethod: 'api',
@@ -61,7 +78,9 @@ export const enlivCampeche: Provider = {
         }),
         rawSource: 'api' as const,
       }))
-    } catch { return null }
+    } catch {
+      return null
+    }
   },
 
   async checkPaymentStatus(taxId: string): Promise<PaymentStatus[] | null> {
@@ -73,7 +92,9 @@ export const enlivCampeche: Provider = {
         paidAmount: toMinorUnits(d.valor),
         source: 'provider-api' as const,
       }))
-    } catch { return null }
+    } catch {
+      return null
+    }
   },
 
   async validateExtraction(extraction: BillExtractionResult): Promise<ValidationResult | null> {

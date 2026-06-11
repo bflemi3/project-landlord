@@ -14,10 +14,9 @@ export type ExpenseType = z.infer<typeof expenseTypeSchema>
 
 export const EXPENSE_TYPES = expenseTypeSchema.options
 
-export const expenseAmountBehaviorSchema = z.enum(
-  Constants.public.Enums.expense_amount_behavior,
-  { error: 'invalidAmountBehavior' },
-)
+export const expenseAmountBehaviorSchema = z.enum(Constants.public.Enums.expense_amount_behavior, {
+  error: 'invalidAmountBehavior',
+})
 
 export type ExpenseAmountBehavior = z.infer<typeof expenseAmountBehaviorSchema>
 

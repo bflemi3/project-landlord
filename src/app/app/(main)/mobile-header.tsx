@@ -1,8 +1,4 @@
-import {
-  QueryClient,
-  dehydrate,
-  HydrationBoundary,
-} from '@tanstack/react-query'
+import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query'
 import { Suspense } from 'react'
 
 import { FadeIn } from '@/components/fade-in'

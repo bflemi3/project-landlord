@@ -38,7 +38,10 @@ vi.mock('@supabase/ssr', () => ({
 
 const { GET } = await import('@/app/auth/callback/route')
 
-function makeRequest(params: Record<string, string>, cookies: Record<string, string> = {}): NextRequest {
+function makeRequest(
+  params: Record<string, string>,
+  cookies: Record<string, string> = {},
+): NextRequest {
   const url = new URL('http://localhost/auth/callback')
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v)
   const req = new NextRequest(url.toString())

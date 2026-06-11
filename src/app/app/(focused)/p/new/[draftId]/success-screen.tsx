@@ -38,10 +38,7 @@ import { formatCurrency } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { Locale } from '@/i18n/routing'
 
-import type {
-  ExpenseType,
-  SubmitSummary,
-} from '@/data/properties/actions/server-errors'
+import type { ExpenseType, SubmitSummary } from '@/data/properties/actions/server-errors'
 
 interface SuccessScreenProps {
   summary: SubmitSummary
@@ -65,8 +62,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
   const showExpenses = summary.expenses.count > 0
   const providerRequestNewCount = summary.provider_requests.new_count ?? 0
   const showProviderRequests = providerRequestNewCount > 0
-  const billUploadFailedCount =
-    summary.provider_requests.bill_upload_failed_count ?? 0
+  const billUploadFailedCount = summary.provider_requests.bill_upload_failed_count ?? 0
   const showBillUploadFailed = billUploadFailedCount > 0
 
   // Address line is the same helper the property page uses for consistency.
@@ -91,50 +87,38 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
   // posture for shared rows.
 
   return (
-    <FadeIn className="mx-auto flex w-full max-w-xl flex-col px-6 pb-12 pt-8">
+    <FadeIn className="mx-auto flex w-full max-w-xl flex-col px-6 pt-8 pb-12">
       <div className="flex flex-col items-center text-center">
         <IconTile tone="success" size="lg" shape="circle" aria-hidden="true">
           <CheckCircle2 />
         </IconTile>
-        <h1 className="mt-6 text-2xl font-display font-medium tracking-[-0.015em] text-foreground sm:text-3xl">
+        <h1 className="font-display text-foreground mt-6 text-2xl font-medium tracking-[-0.015em] sm:text-3xl">
           {t('title')}
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-          {t('subtitle')}
-        </p>
+        <p className="text-muted-foreground mt-3 text-sm sm:text-base">{t('subtitle')}</p>
       </div>
 
       <Card className="mt-8 flex flex-col gap-5">
-        <SummarySection
-          icon={<Home aria-hidden="true" />}
-          eyebrow={t('summary.property.title')}
-        >
-          <p className="text-sm font-bold text-foreground sm:text-base">
-            {summary.property_name}
-          </p>
-          {addressLine ? (
-            <p className="text-sm text-muted-foreground">{addressLine}</p>
-          ) : null}
+        <SummarySection icon={<Home aria-hidden="true" />} eyebrow={t('summary.property.title')}>
+          <p className="text-foreground text-sm font-bold sm:text-base">{summary.property_name}</p>
+          {addressLine ? <p className="text-muted-foreground text-sm">{addressLine}</p> : null}
           {propertyTypeLabel ? (
-            <p className="text-sm text-muted-foreground">{propertyTypeLabel}</p>
+            <p className="text-muted-foreground text-sm">{propertyTypeLabel}</p>
           ) : null}
         </SummarySection>
 
         {showRent && summary.rent ? (
-          <SummarySection
-            icon={<Wallet aria-hidden="true" />}
-            eyebrow={t('summary.rent.title')}
-          >
-            <p className="font-mono text-sm font-bold tabular-nums text-foreground sm:text-base">
+          <SummarySection icon={<Wallet aria-hidden="true" />} eyebrow={t('summary.rent.title')}>
+            <p className="text-foreground font-mono text-sm font-bold tabular-nums sm:text-base">
               {formatCurrency(summary.rent.amount_minor, summary.rent.currency, locale)}
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {t('summary.rent.dueEvery', {
                 ordinal: ordinal(summary.rent.due_day_of_month, locale),
               })}
             </p>
             {(summary.rent.includes ?? []).length > 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t('summary.rent.includes', {
                   list: (summary.rent.includes ?? [])
                     .map((expenseType) => tExpenses(expenseType as ExpenseType))
@@ -151,37 +135,32 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
             eyebrow={t('summary.contract.title')}
           >
             {contractFailed ? (
-              <p className="flex items-start gap-1.5 text-sm text-destructive">
+              <p className="text-destructive flex items-start gap-1.5 text-sm">
                 <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
                 <span>{t('summary.contract.uploadFailed')}</span>
               </p>
             ) : (
-              <p className="text-sm text-foreground sm:text-base">
+              <p className="text-foreground text-sm sm:text-base">
                 {t('summary.contract.uploaded')}
               </p>
             )}
             {summary.contract.original_filename ? (
-              <p className="text-sm text-muted-foreground">
-                {summary.contract.original_filename}
-              </p>
+              <p className="text-muted-foreground text-sm">{summary.contract.original_filename}</p>
             ) : null}
           </SummarySection>
         ) : null}
 
         {showTenants ? (
-          <SummarySection
-            icon={<Users aria-hidden="true" />}
-            eyebrow={t('summary.tenants.title')}
-          >
+          <SummarySection icon={<Users aria-hidden="true" />} eyebrow={t('summary.tenants.title')}>
             {summary.tenants.invited_count > 0 ? (
-              <p className="text-sm text-foreground sm:text-base">
+              <p className="text-foreground text-sm sm:text-base">
                 {t('summary.tenants.invited', {
                   count: summary.tenants.invited_count,
                 })}
               </p>
             ) : null}
             {summary.tenants.deferred_count > 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t('summary.tenants.deferred', {
                   count: summary.tenants.deferred_count,
                 })}
@@ -202,13 +181,13 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
             icon={<Receipt aria-hidden="true" />}
             eyebrow={t('summary.expenses.title')}
           >
-            <p className="text-sm text-foreground sm:text-base">
+            <p className="text-foreground text-sm sm:text-base">
               {t('summary.expenses.tracked', {
                 count: summary.expenses.count,
               })}
             </p>
             {Object.keys(summary.expenses.by_type).length > 0 ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 {t('summary.expenses.byTypeList', {
                   list: formatByTypeList(summary.expenses.by_type, tExpenses),
                 })}
@@ -222,9 +201,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
             icon={<Wrench aria-hidden="true" />}
             eyebrow={t('summary.providerRequests.title')}
           >
-            <p className="text-sm text-muted-foreground">
-              {t('summary.providerRequests.note')}
-            </p>
+            <p className="text-muted-foreground text-sm">{t('summary.providerRequests.note')}</p>
             {showBillUploadFailed ? (
               <InlineWarning>
                 {t('summary.providerRequests.billUploadFailed', {
@@ -237,13 +214,7 @@ export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
       </Card>
 
       <div className="mt-8 flex flex-col gap-3 sm:flex-row-reverse sm:justify-center">
-        <Link
-          href="/app"
-          className={cn(
-            buttonVariants({ size: 'default' }),
-            'w-full sm:w-auto',
-          )}
-        >
+        <Link href="/app" className={cn(buttonVariants({ size: 'default' }), 'w-full sm:w-auto')}>
           {t('cta.goToDashboard')}
         </Link>
       </div>
@@ -282,7 +253,7 @@ function SummarySection({
 
 function InlineWarning({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mt-1 flex items-start gap-1.5 text-sm text-destructive">
+    <p className="text-destructive mt-1 flex items-start gap-1.5 text-sm">
       <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
       <span>{children}</span>
     </p>

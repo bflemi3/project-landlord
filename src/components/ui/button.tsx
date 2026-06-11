@@ -65,7 +65,7 @@ function Button({
           className={cn(
             'absolute inset-0 inline-flex items-center justify-center',
             'motion-safe:transition-opacity motion-safe:duration-300',
-            loading ? 'opacity-100' : 'opacity-0 pointer-events-none',
+            loading ? 'opacity-100' : 'pointer-events-none opacity-0',
           )}
         >
           <Loader2 className="animate-spin" />

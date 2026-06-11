@@ -18,11 +18,7 @@ import { brazilCpfOrCnpjSchema } from './tax-id'
 // =============================================================================
 
 export const nameInputSchema = z.object({
-  full_name: z
-    .string()
-    .trim()
-    .min(1, { error: 'required' })
-    .max(120, { error: 'tooLong' }),
+  full_name: z.string().trim().min(1, { error: 'required' }).max(120, { error: 'tooLong' }),
 })
 
 export type NameInput = z.infer<typeof nameInputSchema>

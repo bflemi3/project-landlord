@@ -13,9 +13,7 @@ interface NavSection {
 const NAV_SECTIONS: NavSection[] = [
   {
     title: 'Views',
-    items: [
-      { label: 'Home screen', href: '/preview/home' },
-    ],
+    items: [{ label: 'Home screen', href: '/preview/home' }],
   },
   {
     title: 'Components',
@@ -30,22 +28,22 @@ export function PreviewShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   return (
-    <div className="flex min-h-svh bg-muted dark:bg-background">
+    <div className="bg-muted dark:bg-background flex min-h-svh">
       {/* Sidebar */}
-      <aside className="sticky top-0 flex h-svh w-64 shrink-0 flex-col border-r border-border bg-card">
+      <aside className="border-border bg-card sticky top-0 flex h-svh w-64 shrink-0 flex-col border-r">
         {/* Header */}
-        <div className="border-b border-border px-4 py-3">
-          <Link href="/preview/home" className="text-sm font-bold text-foreground">
+        <div className="border-border border-b px-4 py-3">
+          <Link href="/preview/home" className="text-foreground text-sm font-bold">
             Preview
           </Link>
-          <p className="mt-0.5 text-xs text-muted-foreground">Design system & views</p>
+          <p className="text-muted-foreground mt-0.5 text-xs">Design system & views</p>
         </div>
 
         {/* Nav sections */}
         <nav className="flex-1 overflow-y-auto p-3">
           {NAV_SECTIONS.map((section) => (
             <div key={section.title} className="mb-4">
-              <p className="mb-1.5 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+              <p className="text-muted-foreground/60 mb-1.5 px-2 text-[11px] font-semibold tracking-wider uppercase">
                 {section.title}
               </p>
               {section.items.map((item) => {
@@ -56,7 +54,7 @@ export function PreviewShell({ children }: { children: React.ReactNode }) {
                     href={item.href}
                     className={`mb-0.5 block rounded-lg px-3 py-2 text-sm transition-colors ${
                       isActive
-                        ? 'bg-primary/10 font-medium text-primary'
+                        ? 'bg-primary/10 text-primary font-medium'
                         : 'text-foreground hover:bg-secondary'
                     }`}
                   >
@@ -69,7 +67,7 @@ export function PreviewShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         {/* Controls */}
-        <div className="border-t border-border p-4">
+        <div className="border-border border-t p-4">
           <div className="flex items-center gap-4">
             <LanguageSwitcher />
             <ThemeToggle />
@@ -78,9 +76,7 @@ export function PreviewShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Content */}
-      <div className="flex-1">
-        {children}
-      </div>
+      <div className="flex-1">{children}</div>
     </div>
   )
 }

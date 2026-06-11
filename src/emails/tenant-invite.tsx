@@ -29,31 +29,25 @@ export function TenantInvite({
 
   return (
     <EmailLayout preview={t.subject(propertyName)} locale={locale}>
-      <Text className="text-base leading-6 text-secondary-foreground m-0 mb-5">
+      <Text className="text-secondary-foreground m-0 mb-5 text-base leading-6">
         {t.greeting(tenantName)} {t.intro(landlordName)}
       </Text>
 
       {displayAddress ? (
         <Section className="mb-5">
           <Text
-            className="text-[15px] font-semibold text-foreground m-0 leading-6 border-l-[3px] border-solid border-primary pl-4"
+            className="text-foreground border-primary m-0 border-l-[3px] border-solid pl-4 text-[15px] leading-6 font-semibold"
             dangerouslySetInnerHTML={{ __html: displayAddress }}
           />
         </Section>
       ) : null}
 
-      <Text className="text-[15px] leading-6 text-muted-foreground m-0 mb-6">
-        {t.valueProp}
-      </Text>
+      <Text className="text-muted-foreground m-0 mb-6 text-[15px] leading-6">{t.valueProp}</Text>
 
       <EmailButton href={signUpUrl}>{t.button}</EmailButton>
 
-      <Text className="text-sm text-muted m-0 mt-3 text-center">
-        {t.manualCode(code)}
-      </Text>
-      <Text className="text-sm text-muted m-0 mt-1 text-center">
-        {expiresOnText}
-      </Text>
+      <Text className="text-muted m-0 mt-3 text-center text-sm">{t.manualCode(code)}</Text>
+      <Text className="text-muted m-0 mt-1 text-center text-sm">{expiresOnText}</Text>
     </EmailLayout>
   )
 }

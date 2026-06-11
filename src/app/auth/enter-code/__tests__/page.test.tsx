@@ -104,9 +104,7 @@ describe('EnterCodePage — error surfacing', () => {
     // Wait for the auth gate to resolve and render the form.
     await screen.findByText(messages.auth.inviteCodeTitle)
 
-    expect(
-      await screen.findByText(messages.auth.serverErrorInviteCode),
-    ).toBeInTheDocument()
+    expect(await screen.findByText(messages.auth.serverErrorInviteCode)).toBeInTheDocument()
     expect(screen.queryByText(messages.auth.invalidInviteCode)).not.toBeInTheDocument()
   })
 

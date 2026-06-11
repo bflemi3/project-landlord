@@ -1,9 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import {
-  getTenantInputSchema,
-  tenantInputSchema,
-} from '../tenant'
+import { getTenantInputSchema, tenantInputSchema } from '../tenant'
 
 function valid(overrides: Record<string, unknown> = {}) {
   return {
@@ -29,9 +26,7 @@ describe('tenantInputSchema — happy paths', () => {
   })
 
   it('accepts inviteNow=false (email still required for input)', () => {
-    expect(tenantInputSchema.safeParse(valid({ inviteNow: false })).success).toBe(
-      true,
-    )
+    expect(tenantInputSchema.safeParse(valid({ inviteNow: false })).success).toBe(true)
   })
 })
 
@@ -55,9 +50,7 @@ describe('tenantInputSchema — name', () => {
   })
 
   it('accepts a name at exactly 200 chars', () => {
-    expect(
-      tenantInputSchema.safeParse(valid({ name: 'a'.repeat(200) })).success,
-    ).toBe(true)
+    expect(tenantInputSchema.safeParse(valid({ name: 'a'.repeat(200) })).success).toBe(true)
   })
 })
 
@@ -77,15 +70,11 @@ describe('tenantInputSchema — email', () => {
 
 describe('tenantInputSchema — taxId (default Brazil)', () => {
   it('accepts a valid formatted CPF', () => {
-    expect(
-      tenantInputSchema.safeParse(valid({ taxId: '040.032.329-09' })).success,
-    ).toBe(true)
+    expect(tenantInputSchema.safeParse(valid({ taxId: '040.032.329-09' })).success).toBe(true)
   })
 
   it('accepts a valid unformatted CPF', () => {
-    expect(
-      tenantInputSchema.safeParse(valid({ taxId: '04003232909' })).success,
-    ).toBe(true)
+    expect(tenantInputSchema.safeParse(valid({ taxId: '04003232909' })).success).toBe(true)
   })
 
   it('accepts an empty taxId (optional in base schema)', () => {
@@ -111,10 +100,7 @@ describe('tenantInputSchema — taxId (default Brazil)', () => {
   })
 
   it('trims surrounding whitespace before CPF validation', () => {
-    expect(
-      tenantInputSchema.safeParse(valid({ taxId: '  040.032.329-09  ' }))
-        .success,
-    ).toBe(true)
+    expect(tenantInputSchema.safeParse(valid({ taxId: '  040.032.329-09  ' })).success).toBe(true)
   })
 })
 

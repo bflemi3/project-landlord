@@ -3,12 +3,7 @@
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
 
-export type StepProgressSegmentState =
-  | 'done'
-  | 'active'
-  | 'upcoming'
-  | 'skipped'
-  | 'invalid'
+export type StepProgressSegmentState = 'done' | 'active' | 'upcoming' | 'skipped' | 'invalid'
 
 interface StepProgressCurrentProps {
   current: number
@@ -44,19 +39,12 @@ export function StepProgress(props: StepProgressProps) {
 
   const segments = useMemo<StepProgressSegmentState[]>(() => {
     if (segmentsProp) return segmentsProp
-    return Array.from({ length: total }, (_, i) =>
-      i < current ? 'done' : 'upcoming',
-    )
+    return Array.from({ length: total }, (_, i) => (i < current ? 'done' : 'upcoming'))
   }, [segmentsProp, current, total])
 
   const labels = segmentsProp ? props.labels : undefined
-  const hideLabelsOnMobile = segmentsProp
-    ? (props.hideLabelsOnMobile ?? true)
-    : true
-  const doneCount = useMemo(
-    () => segments.filter((s) => s === 'done').length,
-    [segments],
-  )
+  const hideLabelsOnMobile = segmentsProp ? (props.hideLabelsOnMobile ?? true) : true
+  const doneCount = useMemo(() => segments.filter((s) => s === 'done').length, [segments])
 
   return (
     <div
@@ -82,10 +70,7 @@ export function StepProgress(props: StepProgressProps) {
       {labels && labels.length > 0 && (
         <div
           data-slot="step-progress-labels"
-          className={cn(
-            'flex gap-1',
-            hideLabelsOnMobile && 'hidden md:flex',
-          )}
+          className={cn('flex gap-1', hideLabelsOnMobile && 'hidden md:flex')}
         >
           {segments.map((state, i) => (
             <span
@@ -93,9 +78,7 @@ export function StepProgress(props: StepProgressProps) {
               data-segment-state={state}
               className={cn(
                 'flex-1 text-center text-xs',
-                state === 'active'
-                  ? 'font-semibold text-foreground'
-                  : 'text-muted-foreground',
+                state === 'active' ? 'text-foreground font-semibold' : 'text-muted-foreground',
               )}
             >
               {labels[i] ?? ''}

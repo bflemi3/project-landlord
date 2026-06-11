@@ -68,8 +68,8 @@ describe('parseEnlivBillText', () => {
   it('uses buildBillExtractionConfidence for uniform scoring', () => {
     const result = parseEnlivBillText(sampleText)!
     expect(result.confidence.source.method).toBe('pdf')
-    expect(result.confidence.source.methodScore).toBe(0.80)
-    expect(result.confidence.fields.amountDue.extraction).toBe(0.80)
+    expect(result.confidence.source.methodScore).toBe(0.8)
+    expect(result.confidence.fields.amountDue.extraction).toBe(0.8)
     expect(result.confidence.fields.amountDue.status).toBe('needs-review')
     expect(result.confidence.summary.totalFields).toBe(8)
     expect(result.rawSource).toBe('pdf')

@@ -19,69 +19,75 @@ export default async function OpengraphImage() {
   const origin = MARKETING_ORIGIN[locale]
 
   return new ImageResponse(
-    (
+    <div
+      style={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#141413',
+        padding: '80px',
+        fontFamily: 'Fraunces',
+      }}
+    >
       <div
         style={{
-          width: '100%',
-          height: '100%',
           display: 'flex',
-          flexDirection: 'column',
-          backgroundColor: '#141413',
-          padding: '80px',
-          fontFamily: 'Fraunces',
+          fontSize: 32,
+          fontWeight: 400,
+          color: '#a8a29e',
+          letterSpacing: '0.01em',
+          marginBottom: 24,
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            fontSize: 32,
-            fontWeight: 400,
-            color: '#a8a29e',
-            letterSpacing: '0.01em',
-            marginBottom: 24,
-          }}
-        >
-          mabenn
-        </div>
-        <div style={{ width: 72, height: 6, backgroundColor: '#e9408f', borderRadius: 3, marginBottom: 36 }} />
-        <div
-          style={{
-            display: 'flex',
-            fontSize: 78,
-            fontWeight: 600,
-            lineHeight: 1.05,
-            color: '#f5f5f4',
-            maxWidth: 980,
-          }}
-        >
-          {meta.ogTitle}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 32,
-            fontFamily: 'Geist',
-            fontSize: 34,
-            fontWeight: 500,
-            color: '#a8a29e',
-          }}
-        >
-          {meta.ogKicker}
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            marginTop: 28,
-            fontFamily: 'Geist',
-            fontSize: 24,
-            fontWeight: 400,
-            color: '#78716c',
-          }}
-        >
-          {origin.replace('https://', '')}
-        </div>
+        mabenn
       </div>
-    ),
+      <div
+        style={{
+          width: 72,
+          height: 6,
+          backgroundColor: '#e9408f',
+          borderRadius: 3,
+          marginBottom: 36,
+        }}
+      />
+      <div
+        style={{
+          display: 'flex',
+          fontSize: 78,
+          fontWeight: 600,
+          lineHeight: 1.05,
+          color: '#f5f5f4',
+          maxWidth: 980,
+        }}
+      >
+        {meta.ogTitle}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          marginTop: 32,
+          fontFamily: 'Geist',
+          fontSize: 34,
+          fontWeight: 500,
+          color: '#a8a29e',
+        }}
+      >
+        {meta.ogKicker}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          marginTop: 28,
+          fontFamily: 'Geist',
+          fontSize: 24,
+          fontWeight: 400,
+          color: '#78716c',
+        }}
+      >
+        {origin.replace('https://', '')}
+      </div>
+    </div>,
     {
       ...size,
       fonts: [

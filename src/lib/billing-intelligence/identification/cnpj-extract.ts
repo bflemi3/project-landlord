@@ -6,9 +6,7 @@ import { isValidCnpj } from '@/lib/tax-id/cnpj/validate'
  * Validates each candidate using check digit algorithm.
  */
 export function extractCnpjsFromText(text: string): string[] {
-  const formatted = text.matchAll(
-    /(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})-(\d{2})/g,
-  )
+  const formatted = text.matchAll(/(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})-(\d{2})/g)
   const unformatted = text.matchAll(/(?<!\d)(\d{14})(?!\d)/g)
 
   const candidates = new Set<string>()

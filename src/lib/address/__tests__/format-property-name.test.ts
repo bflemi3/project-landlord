@@ -7,13 +7,15 @@ describe('formatPropertyName', () => {
   // =========================================================================
 
   it('returns explicit name when provided', () => {
-    expect(formatPropertyName({
-      name: 'Beach House',
-      street: 'Rua Augusta',
-      number: '123',
-      complement: 'Apto 4B',
-      country_code: 'BR',
-    })).toBe('Beach House')
+    expect(
+      formatPropertyName({
+        name: 'Beach House',
+        street: 'Rua Augusta',
+        number: '123',
+        complement: 'Apto 4B',
+        country_code: 'BR',
+      }),
+    ).toBe('Beach House')
   })
 
   it('trims whitespace from explicit name', () => {
@@ -21,12 +23,14 @@ describe('formatPropertyName', () => {
   })
 
   it('treats whitespace-only name as empty and falls back to address', () => {
-    expect(formatPropertyName({
-      name: '   ',
-      street: 'Rua X',
-      number: '1',
-      country_code: 'BR',
-    })).toBe('Rua X, 1')
+    expect(
+      formatPropertyName({
+        name: '   ',
+        street: 'Rua X',
+        number: '1',
+        country_code: 'BR',
+      }),
+    ).toBe('Rua X, 1')
   })
 
   // =========================================================================
@@ -35,64 +39,80 @@ describe('formatPropertyName', () => {
 
   describe('BR format', () => {
     it('formats street, number, and complement', () => {
-      expect(formatPropertyName({
-        street: 'Avenida Campeche',
-        number: '533',
-        complement: '7127',
-        country_code: 'BR',
-      })).toBe('Avenida Campeche, 533, 7127')
+      expect(
+        formatPropertyName({
+          street: 'Avenida Campeche',
+          number: '533',
+          complement: '7127',
+          country_code: 'BR',
+        }),
+      ).toBe('Avenida Campeche, 533, 7127')
     })
 
     it('formats street and number without complement', () => {
-      expect(formatPropertyName({
-        street: 'Rua Augusta',
-        number: '123',
-        country_code: 'BR',
-      })).toBe('Rua Augusta, 123')
+      expect(
+        formatPropertyName({
+          street: 'Rua Augusta',
+          number: '123',
+          country_code: 'BR',
+        }),
+      ).toBe('Rua Augusta, 123')
     })
 
     it('formats street only (no number, no complement)', () => {
-      expect(formatPropertyName({
-        street: 'Rua Augusta',
-        country_code: 'BR',
-      })).toBe('Rua Augusta')
+      expect(
+        formatPropertyName({
+          street: 'Rua Augusta',
+          country_code: 'BR',
+        }),
+      ).toBe('Rua Augusta')
     })
 
     it('formats number only', () => {
-      expect(formatPropertyName({
-        number: '42',
-        country_code: 'BR',
-      })).toBe('42')
+      expect(
+        formatPropertyName({
+          number: '42',
+          country_code: 'BR',
+        }),
+      ).toBe('42')
     })
 
     it('formats complement only', () => {
-      expect(formatPropertyName({
-        complement: 'Bloco B',
-        country_code: 'BR',
-      })).toBe('Bloco B')
+      expect(
+        formatPropertyName({
+          complement: 'Bloco B',
+          country_code: 'BR',
+        }),
+      ).toBe('Bloco B')
     })
 
     it('formats street and complement without number', () => {
-      expect(formatPropertyName({
-        street: 'Rua Augusta',
-        complement: 'Bloco B',
-        country_code: 'BR',
-      })).toBe('Rua Augusta, Bloco B')
+      expect(
+        formatPropertyName({
+          street: 'Rua Augusta',
+          complement: 'Bloco B',
+          country_code: 'BR',
+        }),
+      ).toBe('Rua Augusta, Bloco B')
     })
 
     it('defaults to BR when no country code', () => {
-      expect(formatPropertyName({
-        street: 'Rua Augusta',
-        number: '123',
-      })).toBe('Rua Augusta, 123')
+      expect(
+        formatPropertyName({
+          street: 'Rua Augusta',
+          number: '123',
+        }),
+      ).toBe('Rua Augusta, 123')
     })
 
     it('is case-insensitive on country code', () => {
-      expect(formatPropertyName({
-        street: 'Rua Augusta',
-        number: '123',
-        country_code: 'br',
-      })).toBe('Rua Augusta, 123')
+      expect(
+        formatPropertyName({
+          street: 'Rua Augusta',
+          number: '123',
+          country_code: 'br',
+        }),
+      ).toBe('Rua Augusta, 123')
     })
   })
 
@@ -102,34 +122,42 @@ describe('formatPropertyName', () => {
 
   describe('US/generic format', () => {
     it('formats number, street, and complement', () => {
-      expect(formatPropertyName({
-        street: 'Main St',
-        number: '123',
-        complement: 'Apt 4B',
-        country_code: 'US',
-      })).toBe('123 Main St, Apt 4B')
+      expect(
+        formatPropertyName({
+          street: 'Main St',
+          number: '123',
+          complement: 'Apt 4B',
+          country_code: 'US',
+        }),
+      ).toBe('123 Main St, Apt 4B')
     })
 
     it('formats number and street without complement', () => {
-      expect(formatPropertyName({
-        street: 'Main St',
-        number: '456',
-        country_code: 'US',
-      })).toBe('456 Main St')
+      expect(
+        formatPropertyName({
+          street: 'Main St',
+          number: '456',
+          country_code: 'US',
+        }),
+      ).toBe('456 Main St')
     })
 
     it('formats street only', () => {
-      expect(formatPropertyName({
-        street: 'Main St',
-        country_code: 'US',
-      })).toBe('Main St')
+      expect(
+        formatPropertyName({
+          street: 'Main St',
+          country_code: 'US',
+        }),
+      ).toBe('Main St')
     })
 
     it('formats number only', () => {
-      expect(formatPropertyName({
-        number: '789',
-        country_code: 'US',
-      })).toBe('789')
+      expect(
+        formatPropertyName({
+          number: '789',
+          country_code: 'US',
+        }),
+      ).toBe('789')
     })
   })
 
@@ -143,39 +171,47 @@ describe('formatPropertyName', () => {
     })
 
     it('returns empty string when all fields are whitespace', () => {
-      expect(formatPropertyName({
-        name: '',
-        street: '  ',
-        number: '',
-        complement: '  ',
-      })).toBe('')
+      expect(
+        formatPropertyName({
+          name: '',
+          street: '  ',
+          number: '',
+          complement: '  ',
+        }),
+      ).toBe('')
     })
 
     it('trims whitespace from address parts', () => {
-      expect(formatPropertyName({
-        street: '  Rua Augusta  ',
-        number: ' 123 ',
-        complement: ' Apto 4B ',
-        country_code: 'BR',
-      })).toBe('Rua Augusta, 123, Apto 4B')
+      expect(
+        formatPropertyName({
+          street: '  Rua Augusta  ',
+          number: ' 123 ',
+          complement: ' Apto 4B ',
+          country_code: 'BR',
+        }),
+      ).toBe('Rua Augusta, 123, Apto 4B')
     })
 
     it('handles undefined fields gracefully', () => {
-      expect(formatPropertyName({
-        street: undefined,
-        number: undefined,
-        complement: undefined,
-        country_code: 'BR',
-      })).toBe('')
+      expect(
+        formatPropertyName({
+          street: undefined,
+          number: undefined,
+          complement: undefined,
+          country_code: 'BR',
+        }),
+      ).toBe('')
     })
 
     it('skips empty string fields', () => {
-      expect(formatPropertyName({
-        street: '',
-        number: '42',
-        complement: '',
-        country_code: 'BR',
-      })).toBe('42')
+      expect(
+        formatPropertyName({
+          street: '',
+          number: '42',
+          complement: '',
+          country_code: 'BR',
+        }),
+      ).toBe('42')
     })
   })
 })

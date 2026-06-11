@@ -100,9 +100,7 @@ describe('mergeExtractionIntoSectionData', () => {
       }),
     )
 
-    expect((result.property as { postal_code: string }).postal_code).toBe(
-      '04567-000',
-    )
+    expect((result.property as { postal_code: string }).postal_code).toBe('04567-000')
   })
 
   it('coerces partial-null address fields to empty strings', () => {
@@ -165,9 +163,7 @@ describe('mergeExtractionIntoSectionData', () => {
       defaultSectionData(),
       makeExtraction({ propertyType: 'apartment' }),
     )
-    expect((result.property as { property_type: unknown }).property_type).toBe(
-      'apartment',
-    )
+    expect((result.property as { property_type: unknown }).property_type).toBe('apartment')
   })
 
   it('seeds rent-dates fields needed by the currency input from rent extraction', () => {
@@ -200,12 +196,8 @@ describe('mergeExtractionIntoSectionData', () => {
       }),
     )
 
-    expect((result['rent-dates'] as { start_date: string }).start_date).toBe(
-      '2026-01-15',
-    )
-    expect((result['rent-dates'] as { end_date: string }).end_date).toBe(
-      '2027-01-14',
-    )
+    expect((result['rent-dates'] as { start_date: string }).start_date).toBe('2026-01-15')
+    expect((result['rent-dates'] as { end_date: string }).end_date).toBe('2027-01-14')
   })
 
   it('coerces null contractDates fields to undefined on the slice', () => {
@@ -216,12 +208,8 @@ describe('mergeExtractionIntoSectionData', () => {
       }),
     )
 
-    expect(
-      (result['rent-dates'] as { start_date: unknown }).start_date,
-    ).toBeUndefined()
-    expect(
-      (result['rent-dates'] as { end_date: unknown }).end_date,
-    ).toBeUndefined()
+    expect((result['rent-dates'] as { start_date: unknown }).start_date).toBeUndefined()
+    expect((result['rent-dates'] as { end_date: unknown }).end_date).toBeUndefined()
   })
 
   it('keeps both date slots undefined when contractDates is null', () => {
@@ -230,12 +218,8 @@ describe('mergeExtractionIntoSectionData', () => {
       makeExtraction({ contractDates: null }),
     )
 
-    expect(
-      (result['rent-dates'] as { start_date: unknown }).start_date,
-    ).toBeUndefined()
-    expect(
-      (result['rent-dates'] as { end_date: unknown }).end_date,
-    ).toBeUndefined()
+    expect((result['rent-dates'] as { start_date: unknown }).start_date).toBeUndefined()
+    expect((result['rent-dates'] as { end_date: unknown }).end_date).toBeUndefined()
   })
 
   it('seeds only the present side when contractDates supplies one date', () => {
@@ -246,12 +230,8 @@ describe('mergeExtractionIntoSectionData', () => {
       }),
     )
 
-    expect((result['rent-dates'] as { start_date: string }).start_date).toBe(
-      '2026-03-01',
-    )
-    expect(
-      (result['rent-dates'] as { end_date: unknown }).end_date,
-    ).toBeUndefined()
+    expect((result['rent-dates'] as { start_date: string }).start_date).toBe('2026-03-01')
+    expect((result['rent-dates'] as { end_date: unknown }).end_date).toBeUndefined()
   })
 
   it('keeps the default due_day when extraction returns dueDay: null', () => {
@@ -312,10 +292,7 @@ describe('mergeExtractionIntoSectionData', () => {
         },
       }),
     )
-    const fromEmpty = mergeExtractionIntoSectionData(
-      defaultSectionData(),
-      makeExtraction(),
-    )
+    const fromEmpty = mergeExtractionIntoSectionData(defaultSectionData(), makeExtraction())
 
     expect((fromFull.property as { name: string }).name).toBe('')
     expect((fromEmpty.property as { name: string }).name).toBe('')
@@ -427,9 +404,7 @@ describe('mergeExtractionIntoSectionData', () => {
     const result = mergeExtractionIntoSectionData(
       prev,
       makeExtraction({
-        tenants: [
-          { name: 'Fresh', email: 'fresh@example.com', taxId: null },
-        ],
+        tenants: [{ name: 'Fresh', email: 'fresh@example.com', taxId: null }],
       }),
     )
     const tenants = result.tenants as Array<{ name: string }>

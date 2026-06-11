@@ -116,10 +116,7 @@ describe('extractText — corrupt content', () => {
   })
 
   it('rejects a zip header followed by garbage', async () => {
-    const corrupt = Buffer.concat([
-      Buffer.from([0x50, 0x4b, 0x03, 0x04]),
-      Buffer.alloc(200, 0xff),
-    ])
+    const corrupt = Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04]), Buffer.alloc(200, 0xff)])
     // Mammoth may throw (→ corrupt_file) or return empty text (→ no_text_extractable)
     // depending on how it handles a truncated zip central directory. Both are
     // acceptable user-facing outcomes — what matters is we reject, not how.

@@ -7,9 +7,9 @@ interface EmailButtonProps {
 
 export function EmailButton({ href, children }: EmailButtonProps) {
   return (
-    <Section className="py-2 px-0">
+    <Section className="px-0 py-2">
       <Button
-        className="bg-primary rounded-xl font-bold text-white text-base no-underline text-center block py-3 px-6"
+        className="bg-primary block rounded-xl px-6 py-3 text-center text-base font-bold text-white no-underline"
         href={href}
       >
         {children}

@@ -21,10 +21,7 @@ import {
 } from '@/schemas/property-creation-submission'
 import { rentInputSchema } from '@/schemas/rent'
 
-import {
-  isRpcTaggedException,
-  type SubmitGlobalErrorCode,
-} from './create-property-errors'
+import { isRpcTaggedException, type SubmitGlobalErrorCode } from './create-property-errors'
 import type {
   FlatFieldErrors,
   ServerErrorsResponse,
@@ -40,10 +37,7 @@ import type { SectionId } from '@/app/app/(focused)/p/new/[draftId]/state/regist
 /** Throws on missing-or-empty values that the schema layer should have
  *  populated. Catches programmer errors at the RPC payload boundary rather
  *  than letting a hardcoded fallback hide them. */
-function invariant<T>(
-  value: T | null | undefined,
-  context: string,
-): NonNullable<T> {
+function invariant<T>(value: T | null | undefined, context: string): NonNullable<T> {
   if (value == null || value === '') {
     throw new Error(`invariant: ${context} unexpectedly empty`)
   }
@@ -76,9 +70,7 @@ export type SubmitTenantInput = z.input<typeof tenantSubmissionRowSchema> & {
 export type SubmitExpenseInput = z.input<typeof expenseRowSchema> & {
   id: string
 }
-export type SubmitProviderRequestDraftInput = z.input<
-  typeof providerRequestDraftSchema
->
+export type SubmitProviderRequestDraftInput = z.input<typeof providerRequestDraftSchema>
 export type SubmitRentInput = z.input<typeof rentInputSchema>
 export type SubmitContractInput = z.input<typeof contractInputSchema>
 export type SubmitTaxIdInput = z.input<typeof taxIdSubmissionSchema>
@@ -98,9 +90,7 @@ export interface SubmitInput {
   providerRequestBillFiles?: Array<Blob | null>
 }
 
-export async function createProperty(
-  input: SubmitInput,
-): Promise<ServerErrorsResponse> {
+export async function createProperty(input: SubmitInput): Promise<ServerErrorsResponse> {
   const supabase = await createClient()
   return createPropertyCore(supabase, input)
 }
@@ -137,10 +127,7 @@ export async function createPropertyCore(
   }
 
   const rpcArgs = buildRpcPayload(input)
-  const { data: rpcData, error: rpcError } = await supabase.rpc(
-    'create_property',
-    rpcArgs as never,
-  )
+  const { data: rpcData, error: rpcError } = await supabase.rpc('create_property', rpcArgs as never)
 
   if (rpcError) return mapRpcErrorToResponse(rpcError.message)
   if (!rpcData) return { ok: false, globalErrors: [{ code: 'unknown' }] }
@@ -215,17 +202,13 @@ export async function createPropertyCore(
 // `contract_validation_failed` global instead of landing in a section slot.
 // ---------------------------------------------------------------------------
 
-function projectValidationFailureToEnvelope(
-  input: SubmitInput,
-): ServerErrorsResponse {
+function projectValidationFailureToEnvelope(input: SubmitInput): ServerErrorsResponse {
   const sectionErrors: Partial<Record<SectionId, SectionServerErrors>> = {}
-  const globalErrors: NonNullable<
-    Extract<ServerErrorsResponse, { ok: false }>['globalErrors']
-  > = []
+  const globalErrors: NonNullable<Extract<ServerErrorsResponse, { ok: false }>['globalErrors']> = []
 
-  const propertyParse = getPropertyInputSchema(
-    input.property?.country_code ?? 'BR',
-  ).safeParse(input.property)
+  const propertyParse = getPropertyInputSchema(input.property?.country_code ?? 'BR').safeParse(
+    input.property,
+  )
   if (!propertyParse.success) {
     sectionErrors.property = z.flattenError(propertyParse.error).fieldErrors
   }
@@ -341,15 +324,11 @@ function buildRpcPayload(input: SubmitInput): RpcPayload {
     name: derivedName,
     currency: input.rent
       ? invariant(input.rent.currency, 'rent.currency')
-      : defaultCurrencyForCountry(
-          invariant(property.country_code, 'property.country_code'),
-        ),
+      : defaultCurrencyForCountry(invariant(property.country_code, 'property.country_code')),
   }
 
   const contractJson: Record<string, unknown> | null =
-    input.path === 'contract' && input.contract
-      ? buildContractJson(input.contract)
-      : null
+    input.path === 'contract' && input.contract ? buildContractJson(input.contract) : null
 
   const rentJson: Record<string, unknown> | null = input.rent
     ? {
@@ -391,16 +370,15 @@ function buildRpcPayload(input: SubmitInput): RpcPayload {
       }))
     : null
 
-  const providerRequestDraftsJson:
-    | Array<Record<string, unknown>>
-    | null = input.provider_request_drafts
-    ? input.provider_request_drafts.map((d) => ({
-        requested_provider_name: d.requested_provider_name,
-        requested_provider_tax_id: d.requested_provider_tax_id,
-        expense_type: d.expense_type,
-        bill_file: d.bill_file,
-      }))
-    : null
+  const providerRequestDraftsJson: Array<Record<string, unknown>> | null =
+    input.provider_request_drafts
+      ? input.provider_request_drafts.map((d) => ({
+          requested_provider_name: d.requested_provider_name,
+          requested_provider_tax_id: d.requested_provider_tax_id,
+          expense_type: d.expense_type,
+          bill_file: d.bill_file,
+        }))
+      : null
 
   return {
     p_property_id: input.draftId,
@@ -417,16 +395,14 @@ function buildRpcPayload(input: SubmitInput): RpcPayload {
 
 // Maps the wizard's flat `extraction_*` keys to the RPC's nested expectation.
 function buildContractJson(contract: SubmitContractInput): Record<string, unknown> {
-  const extraction = contract.extraction as unknown as
-    | {
-        extraction_data?: unknown
-        extraction_language?: string
-        extraction_model?: string
-        extraction_schema_version?: number
-        raw_text?: string
-        extracted_at?: string
-      }
-    | null
+  const extraction = contract.extraction as unknown as {
+    extraction_data?: unknown
+    extraction_language?: string
+    extraction_model?: string
+    extraction_schema_version?: number
+    raw_text?: string
+    extracted_at?: string
+  } | null
   return {
     mime_type: contract.mime_type,
     bytes: contract.bytes,
@@ -575,16 +551,10 @@ async function sendPendingInviteEmails(
   if (invitationIds.length === 0) return 0
 
   const [{ data: profile }, { data: property }] = await Promise.all([
-    supabase
-      .from('profiles')
-      .select('preferred_locale, full_name')
-      .eq('id', userId)
-      .single(),
+    supabase.from('profiles').select('preferred_locale, full_name').eq('id', userId).single(),
     supabase
       .from('properties')
-      .select(
-        'name, street, number, complement, neighborhood, city, state, country_code',
-      )
+      .select('name, street, number, complement, neighborhood, city, state, country_code')
       .eq('id', propertyId)
       .single(),
   ])
@@ -601,18 +571,13 @@ async function sendPendingInviteEmails(
   for (const invitationId of invitationIds) {
     const { data: invitation } = await supabase
       .from('invitations')
-      .select(
-        'id, invited_email, invited_name, code, expires_at, status, last_emailed_at',
-      )
+      .select('id, invited_email, invited_name, code, expires_at, status, last_emailed_at')
       .eq('id', invitationId)
       .single()
 
     if (!invitation) continue
     if (invitation.status !== 'pending') continue
-    if (
-      invitation.last_emailed_at &&
-      invitation.last_emailed_at > fiveMinutesAgoIso
-    ) {
+    if (invitation.last_emailed_at && invitation.last_emailed_at > fiveMinutesAgoIso) {
       continue
     }
 
@@ -624,8 +589,7 @@ async function sendPendingInviteEmails(
       addressHtml,
       code: invitation.code ?? '',
       expiresAt:
-        invitation.expires_at ??
-        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        invitation.expires_at ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
       locale,
     })
 

@@ -63,13 +63,16 @@ describe('createProvider', () => {
 
     expect(result.success).toBe(true)
     expect(result.providerId).toBe('new-provider-id')
-    expect(mockRpc).toHaveBeenCalledWith('create_provider_with_bill', expect.objectContaining({
-      p_name: 'ENLIV',
-      p_tax_id: '49449868000162',
-      p_country_code: 'BR',
-      p_bill_storage_path: null,
-      p_bill_file_name: null,
-    }))
+    expect(mockRpc).toHaveBeenCalledWith(
+      'create_provider_with_bill',
+      expect.objectContaining({
+        p_name: 'ENLIV',
+        p_tax_id: '49449868000162',
+        p_country_code: 'BR',
+        p_bill_storage_path: null,
+        p_bill_file_name: null,
+      }),
+    )
   })
 
   it('uploads bill then creates provider with bill in single transaction', async () => {
@@ -82,10 +85,13 @@ describe('createProvider', () => {
 
     expect(result.success).toBe(true)
     expect(mockStorageUpload).toHaveBeenCalled()
-    expect(mockRpc).toHaveBeenCalledWith('create_provider_with_bill', expect.objectContaining({
-      p_name: 'ENLIV',
-      p_bill_file_name: 'march-2026.pdf',
-    }))
+    expect(mockRpc).toHaveBeenCalledWith(
+      'create_provider_with_bill',
+      expect.objectContaining({
+        p_name: 'ENLIV',
+        p_bill_file_name: 'march-2026.pdf',
+      }),
+    )
     // Storage path should be passed to RPC
     const rpcArgs = mockRpc.mock.calls[0][1]
     expect(rpcArgs.p_bill_storage_path).toContain('/march-2026.pdf')
@@ -101,9 +107,12 @@ describe('createProvider', () => {
     )
 
     expect(result.success).toBe(true)
-    expect(mockRpc).toHaveBeenCalledWith('create_provider_with_bill', expect.objectContaining({
-      p_bill_storage_path: null,
-    }))
+    expect(mockRpc).toHaveBeenCalledWith(
+      'create_provider_with_bill',
+      expect.objectContaining({
+        p_bill_storage_path: null,
+      }),
+    )
   })
 
   it('cleans up uploaded file when DB transaction fails', async () => {
@@ -122,9 +131,12 @@ describe('createProvider', () => {
   it('does not upload or insert bill when no file provided', async () => {
     await createProvider({ success: false }, formDataWith({ name: 'ENLIV' }))
     expect(mockStorageUpload).not.toHaveBeenCalled()
-    expect(mockRpc).toHaveBeenCalledWith('create_provider_with_bill', expect.objectContaining({
-      p_bill_storage_path: null,
-      p_bill_file_name: null,
-    }))
+    expect(mockRpc).toHaveBeenCalledWith(
+      'create_provider_with_bill',
+      expect.objectContaining({
+        p_bill_storage_path: null,
+        p_bill_file_name: null,
+      }),
+    )
   })
 })

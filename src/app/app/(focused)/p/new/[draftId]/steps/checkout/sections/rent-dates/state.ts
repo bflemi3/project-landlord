@@ -1,9 +1,5 @@
 import type { PropertyCreationStateShape } from '../../../../state/store'
-import {
-  defaultRentDatesInput,
-  RENT_DATES_FIELD_NAMES,
-  type RentDatesInput,
-} from './schemas'
+import { defaultRentDatesInput, RENT_DATES_FIELD_NAMES, type RentDatesInput } from './schemas'
 import { validateRentDates } from './validation'
 
 export type RentDatesTouched = ReadonlySet<string>
@@ -29,10 +25,7 @@ export function clearFieldServerError(field: string) {
 }
 
 export function isValid(state: PropertyCreationStateShape): boolean {
-  return validateRentDates(
-    state.sectionData['rent-dates'] as RentDatesInput,
-    state.path,
-  ).success
+  return validateRentDates(state.sectionData['rent-dates'] as RentDatesInput, state.path).success
 }
 
 export function isDefault(slice: RentDatesInput | undefined): boolean {

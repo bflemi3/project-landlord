@@ -10,17 +10,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  RadioCardGroup,
-  radioCardVariants,
-} from '@/components/radio-card-group'
+import { RadioCardGroup, radioCardVariants } from '@/components/radio-card-group'
 import { cn } from '@/lib/utils'
 
-import {
-  COMMON_EXPENSE_TYPES,
-  MORE_EXPENSE_TYPES,
-  type ExpenseType,
-} from './schemas'
+import { COMMON_EXPENSE_TYPES, MORE_EXPENSE_TYPES, type ExpenseType } from './schemas'
 import { EXPENSE_TYPE_ICONS } from './expense-type-icons'
 
 const MORE_TYPE_SET: ReadonlySet<ExpenseType> = new Set(MORE_EXPENSE_TYPES)
@@ -40,14 +33,9 @@ interface ExpenseTypeSelectorProps {
   onValueChange: (value: ExpenseType) => void
 }
 
-export function ExpenseTypeSelector({
-  value,
-  onValueChange,
-}: ExpenseTypeSelectorProps) {
+export function ExpenseTypeSelector({ value, onValueChange }: ExpenseTypeSelectorProps) {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const tOptions = useTranslations(
-    'propertyCreation.checkout.expenses.typeOptions',
-  )
+  const tOptions = useTranslations('propertyCreation.checkout.expenses.typeOptions')
 
   const commonOptions = useMemo(
     () =>
@@ -63,8 +51,7 @@ export function ExpenseTypeSelector({
   // that choice. Pass `null` to RadioCardGroup so none of the common chips
   // render as selected.
   const moreTypeSelected = value !== null && MORE_TYPE_SET.has(value)
-  const SelectedMoreIcon =
-    moreTypeSelected && value ? EXPENSE_TYPE_ICONS[value] : null
+  const SelectedMoreIcon = moreTypeSelected && value ? EXPENSE_TYPE_ICONS[value] : null
 
   return (
     <div data-slot="expense-type-selector" className="flex flex-col gap-2">
@@ -92,10 +79,7 @@ export function ExpenseTypeSelector({
           ) : (
             <span className="text-muted-foreground">{t('moreOptions')}</span>
           )}
-          <ChevronDown
-            aria-hidden
-            className="text-muted-foreground size-4 shrink-0"
-          />
+          <ChevronDown aria-hidden className="text-muted-foreground size-4 shrink-0" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center" sideOffset={6}>
           {MORE_EXPENSE_TYPES.map((type) => {

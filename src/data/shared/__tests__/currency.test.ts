@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  MAX_MINOR_UNITS,
-  SUPPORTED_CURRENCIES,
-  coerceCurrency,
-} from '../currency'
+import { MAX_MINOR_UNITS, SUPPORTED_CURRENCIES, coerceCurrency } from '../currency'
 
 describe('shared currency config', () => {
   it('defines the supported currency set used by money inputs and schemas', () => {

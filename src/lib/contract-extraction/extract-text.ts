@@ -8,16 +8,19 @@ import mammoth from 'mammoth'
 // synchronously and wraps both its return value and any thrown error as a settled
 // promise — so the reject path must be wired or thrown errors escape the Promise.
 if (typeof (Promise as unknown as { try?: unknown }).try !== 'function') {
-  ;(Promise as unknown as { try: (fn: (...args: unknown[]) => unknown, ...args: unknown[]) => Promise<unknown> }).try =
-    function (fn, ...args) {
-      return new Promise((resolve, reject) => {
-        try {
-          resolve(fn(...args))
-        } catch (e) {
-          reject(e)
-        }
-      })
+  ;(
+    Promise as unknown as {
+      try: (fn: (...args: unknown[]) => unknown, ...args: unknown[]) => Promise<unknown>
     }
+  ).try = function (fn, ...args) {
+    return new Promise((resolve, reject) => {
+      try {
+        resolve(fn(...args))
+      } catch (e) {
+        reject(e)
+      }
+    })
+  }
 }
 
 /**

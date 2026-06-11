@@ -58,27 +58,45 @@ describe('formatReport', () => {
   })
 
   it('skips identification section when none tested', () => {
-    const output = formatReport(makeReport({
-      identification: { tested: 0, passed: 0, failed: 0 },
-    }))
+    const output = formatReport(
+      makeReport({
+        identification: { tested: 0, passed: 0, failed: 0 },
+      }),
+    )
     expect(output).not.toContain('Identification')
   })
 
   it('skips validation section when none tested', () => {
-    const output = formatReport(makeReport({
-      validation: { tested: 0, passed: 0, failed: 0 },
-    }))
+    const output = formatReport(
+      makeReport({
+        validation: { tested: 0, passed: 0, failed: 0 },
+      }),
+    )
     expect(output).not.toContain('Validation')
   })
 })
 
 describe('meetsThreshold', () => {
   it('returns true when extraction accuracy >= threshold', () => {
-    expect(meetsThreshold(makeReport({ extraction: { casesScored: 2, totalFields: 8, passedFields: 8, accuracy: 0.95 } }), 0.95)).toBe(true)
+    expect(
+      meetsThreshold(
+        makeReport({
+          extraction: { casesScored: 2, totalFields: 8, passedFields: 8, accuracy: 0.95 },
+        }),
+        0.95,
+      ),
+    ).toBe(true)
   })
 
   it('returns true when extraction accuracy > threshold', () => {
-    expect(meetsThreshold(makeReport({ extraction: { casesScored: 2, totalFields: 8, passedFields: 8, accuracy: 1.0 } }), 0.95)).toBe(true)
+    expect(
+      meetsThreshold(
+        makeReport({
+          extraction: { casesScored: 2, totalFields: 8, passedFields: 8, accuracy: 1.0 },
+        }),
+        0.95,
+      ),
+    ).toBe(true)
   })
 
   it('returns false when extraction accuracy < threshold', () => {

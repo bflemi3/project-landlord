@@ -27,10 +27,7 @@ export async function validateRentDatesCore(
     return {
       ok: false,
       sectionErrors: {
-        'rent-dates': z.flattenError(result.error).fieldErrors as Record<
-          string,
-          string[]
-        >,
+        'rent-dates': z.flattenError(result.error).fieldErrors as Record<string, string[]>,
       },
     }
   }

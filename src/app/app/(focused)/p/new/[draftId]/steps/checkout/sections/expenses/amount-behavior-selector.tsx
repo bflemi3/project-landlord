@@ -2,28 +2,14 @@
 
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
-import {
-  Activity,
-  ChevronDown,
-  HelpCircle,
-  Repeat,
-  type LucideIcon,
-} from 'lucide-react'
+import { Activity, ChevronDown, HelpCircle, Repeat, type LucideIcon } from 'lucide-react'
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
 
 import type { ExpenseAmountBehavior } from './schemas'
 
-const BEHAVIOR_ORDER: readonly ExpenseAmountBehavior[] = [
-  'fixed',
-  'variable',
-  'unknown',
-]
+const BEHAVIOR_ORDER: readonly ExpenseAmountBehavior[] = ['fixed', 'variable', 'unknown']
 
 const BEHAVIOR_ICONS: Record<ExpenseAmountBehavior, LucideIcon> = {
   fixed: Repeat,
@@ -43,13 +29,8 @@ interface AmountBehaviorSelectorProps {
  * default is right ~95% of the time, so this control occupies "hint" weight,
  * not "form field" weight.
  */
-export function AmountBehaviorSelector({
-  value,
-  onValueChange,
-}: AmountBehaviorSelectorProps) {
-  const t = useTranslations(
-    'propertyCreation.checkout.expenses.amountBehavior',
-  )
+export function AmountBehaviorSelector({ value, onValueChange }: AmountBehaviorSelectorProps) {
+  const t = useTranslations('propertyCreation.checkout.expenses.amountBehavior')
   const Icon = BEHAVIOR_ICONS[value]
   // Controlled so we can close the popover after selection — base-ui's
   // Popover doesn't auto-close on inner button clicks (only on outside
@@ -88,26 +69,16 @@ export function AmountBehaviorSelector({
                     setOpen(false)
                   }}
                   className={cn(
-                    'flex w-full items-start gap-3 rounded-md p-3 text-left outline-none transition-colors',
+                    'flex w-full items-start gap-3 rounded-md p-3 text-left transition-colors outline-none',
                     'hover:bg-accent focus-visible:bg-accent',
                     selected &&
                       'bg-primary-subtle text-primary-subtle-foreground hover:bg-primary-subtle focus-visible:bg-primary-subtle',
                   )}
                 >
-                  <ItemIcon
-                    aria-hidden
-                    className="mt-0.5 size-4 shrink-0"
-                  />
+                  <ItemIcon aria-hidden className="mt-0.5 size-4 shrink-0" />
                   <div className="flex flex-col gap-1">
-                    <span className="text-sm font-medium">
-                      {t(`${behavior}Label`)}
-                    </span>
-                    <span
-                      className={cn(
-                        'text-sm',
-                        !selected && 'text-muted-foreground',
-                      )}
-                    >
+                    <span className="text-sm font-medium">{t(`${behavior}Label`)}</span>
+                    <span className={cn('text-sm', !selected && 'text-muted-foreground')}>
                       {t(`${behavior}Description`)}
                     </span>
                   </div>

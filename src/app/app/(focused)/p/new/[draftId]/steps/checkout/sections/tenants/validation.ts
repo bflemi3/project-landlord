@@ -4,9 +4,7 @@
 
 import { getTenantRowSchema, type TenantRow } from './schemas'
 
-export type TenantRowParse = ReturnType<
-  ReturnType<typeof getTenantRowSchema>['safeParse']
->
+export type TenantRowParse = ReturnType<ReturnType<typeof getTenantRowSchema>['safeParse']>
 
 export interface TenantsValidation {
   ok: boolean

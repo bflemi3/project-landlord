@@ -30,12 +30,8 @@ interface UseDelayedRemovalReturn {
 export function useDelayedRemoval({
   duration = 200,
 }: UseDelayedRemovalOptions = {}): UseDelayedRemovalReturn {
-  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(
-    () => new Set(),
-  )
-  const timeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
-    new Map(),
-  )
+  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(() => new Set())
+  const timeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
   // Tracks mount state for in-flight timeout callbacks. A timeout firing
   // just as the parent unmounts can race the cleanup effect: the callback
   // is already on the queue and runs even though `clearTimeout` was called
@@ -86,10 +82,7 @@ export function useDelayedRemoval({
     [duration],
   )
 
-  const isRemoving = useCallback(
-    (id: string) => pendingIds.has(id),
-    [pendingIds],
-  )
+  const isRemoving = useCallback((id: string) => pendingIds.has(id), [pendingIds])
 
   return { isRemoving, remove }
 }

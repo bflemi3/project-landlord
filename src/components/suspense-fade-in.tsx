@@ -14,9 +14,7 @@ export function SuspenseFadeIn({
 }) {
   return (
     <Suspense fallback={fallback ?? null}>
-      <FadeIn>
-        {children}
-      </FadeIn>
+      <FadeIn>{children}</FadeIn>
     </Suspense>
   )
 }

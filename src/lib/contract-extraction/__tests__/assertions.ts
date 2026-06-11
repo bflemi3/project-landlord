@@ -118,17 +118,23 @@ function checkLeaf(spec: LeafSpec, actual: unknown, path: string, errors: string
   }
   if ('contains' in spec) {
     if (typeof actual !== 'string') {
-      errors.push(`${path}: expected string containing ${stringify(spec.contains)}, got ${stringify(actual)}`)
+      errors.push(
+        `${path}: expected string containing ${stringify(spec.contains)}, got ${stringify(actual)}`,
+      )
       return
     }
     if (!actual.toLowerCase().includes(spec.contains.toLowerCase())) {
-      errors.push(`${path}: expected substring ${stringify(spec.contains)}, got ${stringify(actual)}`)
+      errors.push(
+        `${path}: expected substring ${stringify(spec.contains)}, got ${stringify(actual)}`,
+      )
     }
     return
   }
   if ('normalizedEquals' in spec) {
     if (typeof actual !== 'string') {
-      errors.push(`${path}: expected string normalizing to ${stringify(spec.normalizedEquals)}, got ${stringify(actual)}`)
+      errors.push(
+        `${path}: expected string normalizing to ${stringify(spec.normalizedEquals)}, got ${stringify(actual)}`,
+      )
       return
     }
     if (normalize(actual) !== normalize(spec.normalizedEquals)) {

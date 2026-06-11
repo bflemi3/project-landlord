@@ -49,19 +49,25 @@ describe('createPropertyDeprecated', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mocks.createClient.mockResolvedValue({ rpc: mocks.rpc })
-    mocks.rpc.mockResolvedValue({ data: { property_id: 'property-1', unit_id: 'unit-1' }, error: null })
+    mocks.rpc.mockResolvedValue({
+      data: { property_id: 'property-1', unit_id: 'unit-1' },
+      error: null,
+    })
     mocks.validateProperty.mockResolvedValue({ valid: true })
   })
 
   it('returns schema field errors without calling validation or Supabase for invalid FormData', async () => {
-    const result = await createPropertyDeprecated({ success: false }, propertyFormData({
-      postal_code: '',
-      street: '',
-      number: '',
-      city: '',
-      state: '',
-      property_type: 'condo',
-    }))
+    const result = await createPropertyDeprecated(
+      { success: false },
+      propertyFormData({
+        postal_code: '',
+        street: '',
+        number: '',
+        city: '',
+        state: '',
+        property_type: 'condo',
+      }),
+    )
 
     expect(result).toEqual({
       success: false,
@@ -79,12 +85,15 @@ describe('createPropertyDeprecated', () => {
   })
 
   it('validates normalized FormData and creates the property with parsed fields', async () => {
-    const result = await createPropertyDeprecated({ success: false }, propertyFormData({
-      name: ' <strong>Casa Centro</strong> ',
-      street: ' <b>Rua Augusta</b> ',
-      number: ' 123 ',
-      complement: ' Apto 4 ',
-    }))
+    const result = await createPropertyDeprecated(
+      { success: false },
+      propertyFormData({
+        name: ' <strong>Casa Centro</strong> ',
+        street: ' <b>Rua Augusta</b> ',
+        number: ' 123 ',
+        complement: ' Apto 4 ',
+      }),
+    )
 
     expect(mocks.validateProperty).toHaveBeenCalledWith({
       name: 'Casa Centro',

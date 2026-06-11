@@ -40,10 +40,18 @@ describe('join_waitlist RPC', () => {
 
   it('inserts a normalized landlord row (email lowercased + trimmed) and returns true', async () => {
     const raw = track(`  WAIT-${Date.now()}@Test.Local  `)
-    const { data, error } = await anon.rpc('join_waitlist', { p_email: raw, p_role: 'landlord', p_locale: 'pt-BR' })
+    const { data, error } = await anon.rpc('join_waitlist', {
+      p_email: raw,
+      p_role: 'landlord',
+      p_locale: 'pt-BR',
+    })
     expect(error).toBeNull()
     expect(data).toBe(true) // newly inserted
-    expect(await readByEmail(raw)).toEqual({ email: raw.toLowerCase().trim(), role: 'landlord', locale: 'pt-BR' })
+    expect(await readByEmail(raw)).toEqual({
+      email: raw.toLowerCase().trim(),
+      role: 'landlord',
+      locale: 'pt-BR',
+    })
   })
 
   it('records the tenant role', async () => {
@@ -54,11 +62,22 @@ describe('join_waitlist RPC', () => {
 
   it('is idempotent — returns true once, false on duplicate, keeps the first role and one row', async () => {
     const raw = track(`dup-${Date.now()}@test.local`)
-    const first = await anon.rpc('join_waitlist', { p_email: raw, p_role: 'landlord', p_locale: 'en' })
-    const second = await anon.rpc('join_waitlist', { p_email: raw, p_role: 'tenant', p_locale: 'en' })
+    const first = await anon.rpc('join_waitlist', {
+      p_email: raw,
+      p_role: 'landlord',
+      p_locale: 'en',
+    })
+    const second = await anon.rpc('join_waitlist', {
+      p_email: raw,
+      p_role: 'tenant',
+      p_locale: 'en',
+    })
     expect(first.data).toBe(true) // newly inserted
     expect(second.data).toBe(false) // already on the list — caller skips the welcome email
-    const { data } = await admin.from('waitlist').select('role').eq('email', raw.toLowerCase().trim())
+    const { data } = await admin
+      .from('waitlist')
+      .select('role')
+      .eq('email', raw.toLowerCase().trim())
     expect(data).toHaveLength(1)
     expect(data?.[0].role).toBe('landlord')
   })

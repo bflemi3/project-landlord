@@ -32,12 +32,8 @@ export function ExpensesSection() {
   const storeApi = usePropertyCreationStoreApi()
 
   const promoteAllTouched = useCallback(() => {
-    const sectionData = storeApi.getState().sectionData.expenses as
-      | ExpenseRow[]
-      | undefined
-    setTouched<ExpensesTouched>(SECTION_ID, (prev) =>
-      setAllTouched(prev, sectionData),
-    )
+    const sectionData = storeApi.getState().sectionData.expenses as ExpenseRow[] | undefined
+    setTouched<ExpensesTouched>(SECTION_ID, (prev) => setAllTouched(prev, sectionData))
   }, [setTouched, storeApi])
 
   const expenses = usePropertyCreationState((s) => s.sectionData.expenses as ExpenseRow[])
@@ -53,7 +49,7 @@ export function ExpensesSection() {
   // valid (expenses is optional), so a user with zero rows can still advance.
   // Cached: shares the parse with row badges + section-level isValid checks.
   const continueDisabled = !validateExpenses(expenses).ok
-  
+
   // Section-header recap: every expense type, comma-joined. Has more
   // horizontal room than the desktop summary row, so we don't truncate.
   const sectionSummary = useMemo(
@@ -68,11 +64,7 @@ export function ExpensesSection() {
   )
 
   return (
-    <Section
-      id={SECTION_ID}
-      onFirstVisit={onFirstVisit}
-      onLeave={promoteAllTouched}
-    >
+    <Section id={SECTION_ID} onFirstVisit={onFirstVisit} onLeave={promoteAllTouched}>
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
           <ICON />
@@ -108,12 +100,8 @@ export function ExpensesSectionSkeleton() {
 
 export function ExpensesSummaryRow() {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const tOptions = useTranslations(
-    'propertyCreation.checkout.expenses.typeOptions',
-  )
-  const expenses = usePropertyCreationState(
-    (s) => s.sectionData.expenses as ExpenseRow[],
-  )
+  const tOptions = useTranslations('propertyCreation.checkout.expenses.typeOptions')
+  const expenses = usePropertyCreationState((s) => s.sectionData.expenses as ExpenseRow[])
   // Summary card row: tighter horizontal space, so cap at 2 type names and
   // roll the rest into "+N more".
   const detail = useMemo(
@@ -126,13 +114,7 @@ export function ExpensesSummaryRow() {
       }),
     [expenses, t, tOptions],
   )
-  return (
-    <SummaryRow
-      sectionId={SECTION_ID}
-      title={t('title')}
-      detail={detail || null}
-    />
-  )
+  return <SummaryRow sectionId={SECTION_ID} title={t('title')} detail={detail || null} />
 }
 
 // Builds the recap line shown in `Section.Summary` (verbose: every type
@@ -152,9 +134,7 @@ function formatExpensesSummary(
 ): string {
   if (expenses.length === 0) return ''
   const labels = expenses.map((row) =>
-    row.expense_type !== null
-      ? options.typeLabel(row.expense_type)
-      : options.newExpenseLabel,
+    row.expense_type !== null ? options.typeLabel(row.expense_type) : options.newExpenseLabel,
   )
   if (options.verbose || labels.length <= SUMMARY_ROW_LIMIT) {
     return labels.join(', ')

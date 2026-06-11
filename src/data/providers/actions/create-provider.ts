@@ -91,7 +91,10 @@ export async function createProvider(
       error?.hint && `Hint: ${error.hint}`,
       error?.code && `Code: ${error.code}`,
     ].filter(Boolean)
-    return { success: false, errors: { general: parts.join('\n') || 'Failed to create provider (no error details)' } }
+    return {
+      success: false,
+      errors: { general: parts.join('\n') || 'Failed to create provider (no error details)' },
+    }
   }
 
   revalidatePath('/eng/providers')

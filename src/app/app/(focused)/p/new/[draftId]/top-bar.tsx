@@ -3,10 +3,7 @@
 import { useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { WizardShell } from '@/components/wizard-shell'
-import {
-  StepProgress,
-  type StepProgressSegmentState,
-} from '@/components/step-progress'
+import { StepProgress, type StepProgressSegmentState } from '@/components/step-progress'
 import { useShallow } from 'zustand/react/shallow'
 import { CHECKOUT_SECTIONS } from './state/registry'
 import { deriveAllSectionValidities, SectionValidity } from './state/section-validity'
@@ -42,15 +39,10 @@ const validitySegmentStatMap: Record<SectionValidity, StepProgressSegmentState> 
  * Step 2: nav row + a second row with the six-segment progress bar driven by
  *   per-section state (done / active / upcoming / skipped).
  */
-export function PropertyCreationTopBar({
-  backLabel,
-  exitLabel,
-}: PropertyCreationTopBarProps) {
+export function PropertyCreationTopBar({ backLabel, exitLabel }: PropertyCreationTopBarProps) {
   const t = useTranslations('propertyCreation')
   const step = usePropertyCreationState((s) => s.step)
-  const activeSectionId = usePropertyCreationState((s) =>
-    s.step === 2 ? s.activeSectionId : null,
-  )
+  const activeSectionId = usePropertyCreationState((s) => (s.step === 2 ? s.activeSectionId : null))
   // `useShallow` keeps the returned record stable when no per-section
   // validity actually changes, so the `useMemo` below stays cheap.
   const validities = usePropertyCreationState(

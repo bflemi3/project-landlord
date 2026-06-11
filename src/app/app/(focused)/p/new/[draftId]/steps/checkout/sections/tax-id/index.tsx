@@ -13,12 +13,7 @@ import {
   ExplainerCardListItem,
   ExplainerCardTitle,
 } from '@/components/explainer-card'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-} from '@/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldGroup } from '@/components/ui/field'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TaxIdInput, TaxIdLabel } from '@/components/ui/tax-id'
 import { detectTaxIdKindBR } from '@/lib/tax-id/br'
@@ -76,7 +71,10 @@ export function TaxIdSection() {
   const countryCode = usePropertyCreationState(
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
-  const summary = useMemo(() => formatTaxIdSummary(taxIdValue, countryCode), [taxIdValue, countryCode])
+  const summary = useMemo(
+    () => formatTaxIdSummary(taxIdValue, countryCode),
+    [taxIdValue, countryCode],
+  )
 
   const promoteAllTouched = useCallback(() => {
     setTouched<TaxIdSectionTouched>(SECTION_ID, (prev) => setAllTouched(prev))
@@ -90,11 +88,7 @@ export function TaxIdSection() {
   const onFirstVisit = path === 'contract' ? promoteAllTouched : undefined
 
   return (
-    <Section
-      id={SECTION_ID}
-      onFirstVisit={onFirstVisit}
-      onLeave={promoteAllTouched}
-    >
+    <Section id={SECTION_ID} onFirstVisit={onFirstVisit} onLeave={promoteAllTouched}>
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
           <ICON />
@@ -111,9 +105,7 @@ export function TaxIdSection() {
           upNextLabel={t('status.upNext')}
         />
       </Section.Header>
-      <Section.Body>
-        {hasHydrated ? <TaxIdForm /> : <TaxIdFormFallback />}
-      </Section.Body>
+      <Section.Body>{hasHydrated ? <TaxIdForm /> : <TaxIdFormFallback />}</Section.Body>
     </Section>
   )
 }
@@ -126,16 +118,12 @@ function TaxIdForm() {
   const t = useTranslations('propertyCreation.checkout')
   const tTaxId = useTranslations('propertyCreation.checkout.tax-id')
   const { setSectionData, setServerErrors } = usePropertyCreationActions()
-  const values = usePropertyCreationState(
-    (s) => s.sectionData['tax-id'] as TaxIdSectionInput,
-  )
+  const values = usePropertyCreationState((s) => s.sectionData['tax-id'] as TaxIdSectionInput)
   const countryCode = usePropertyCreationState(
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
 
-  const touched = usePropertyCreationState(
-    (s) => s.sectionTouched['tax-id'] as TaxIdSectionTouched,
-  )
+  const touched = usePropertyCreationState((s) => s.sectionTouched['tax-id'] as TaxIdSectionTouched)
   // Cached parse — shared with section status and summary panel.
   const parseResult = usePropertyCreationState((s) =>
     validateTaxIdParse(
@@ -206,9 +194,7 @@ function TaxIdForm() {
             value={values.tax_id}
             readOnly={!isEditing}
             aria-invalid={hasError}
-            aria-describedby={
-              hasError ? `${inputId}-error` : `${inputId}-description`
-            }
+            aria-describedby={hasError ? `${inputId}-error` : `${inputId}-description`}
             onValueChange={setTaxId}
             onBlur={touchTaxId}
           />
@@ -231,9 +217,7 @@ function TaxIdForm() {
             </FieldDescription>
           )}
           {hasError && taxIdError && (
-            <FieldError id={`${inputId}-error`}>
-              {tTaxId(`validation.${taxIdError}`)}
-            </FieldError>
+            <FieldError id={`${inputId}-error`}>{tTaxId(`validation.${taxIdError}`)}</FieldError>
           )}
         </Field>
       </FieldGroup>
@@ -293,8 +277,6 @@ export function TaxIdSummaryRow() {
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
   const detail = formatTaxIdSummary(taxIdValue, countryCode)
-  
-  return (
-    <SummaryRow sectionId={SECTION_ID} title={t('title')} detail={detail || null} />
-  )
+
+  return <SummaryRow sectionId={SECTION_ID} title={t('title')} detail={detail || null} />
 }

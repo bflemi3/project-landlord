@@ -1,14 +1,7 @@
 import { z } from 'zod'
 
-import {
-  SUPPORTED_CURRENCIES,
-  type SupportedCurrency,
-} from '@/data/shared/currency'
-import {
-  rentAmountMinorSchema,
-  rentDueDayOfMonthSchema,
-  rentIsoDateSchema,
-} from '@/schemas/rent'
+import { SUPPORTED_CURRENCIES, type SupportedCurrency } from '@/data/shared/currency'
+import { rentAmountMinorSchema, rentDueDayOfMonthSchema, rentIsoDateSchema } from '@/schemas/rent'
 
 import type { CheckoutPath } from '../../../../state/registry'
 
@@ -29,9 +22,7 @@ export interface RentDatesInput {
 // Brazilian rentals most commonly use the 5th — a soft pre-fill, user can override.
 export const DEFAULT_DUE_DAY = 5
 
-const currencyField = z
-  .enum(SUPPORTED_CURRENCIES, { error: 'invalidCurrency' })
-  .default('BRL')
+const currencyField = z.enum(SUPPORTED_CURRENCIES, { error: 'invalidCurrency' }).default('BRL')
 
 function refineEndAfterStart(
   data: { start_date?: string; end_date?: string },
@@ -77,12 +68,8 @@ export const RENT_DATES_FIELD_NAMES = Object.keys(
 
 /** Defaults to the stricter contract schema when path is null — a stray
  *  validation is safer with the tighter shape than the looser one. */
-export function rentDatesSchemaFor(
-  path: CheckoutPath | null,
-): z.ZodType<RentDatesInput> {
-  return path === 'no_contract'
-    ? rentDatesNoContractSchema
-    : rentDatesContractSchema
+export function rentDatesSchemaFor(path: CheckoutPath | null): z.ZodType<RentDatesInput> {
+  return path === 'no_contract' ? rentDatesNoContractSchema : rentDatesContractSchema
 }
 
 export function defaultRentDatesInput(): RentDatesInput {

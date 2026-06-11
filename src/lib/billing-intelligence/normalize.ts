@@ -17,14 +17,29 @@ export function normalizeDate(date: string): string {
  */
 const MONTH_ABBREVS: Record<string, string> = {
   // Portuguese
-  JAN: '01', FEV: '02', MAR: '03', ABR: '04',
-  MAI: '05', JUN: '06', JUL: '07', AGO: '08',
-  SET: '09', OUT: '10', NOV: '11', DEZ: '12',
+  JAN: '01',
+  FEV: '02',
+  MAR: '03',
+  ABR: '04',
+  MAI: '05',
+  JUN: '06',
+  JUL: '07',
+  AGO: '08',
+  SET: '09',
+  OUT: '10',
+  NOV: '11',
+  DEZ: '12',
   // English (unique ones not already covered by PT)
-  FEB: '02', APR: '04', MAY: '05', AUG: '08',
-  SEP: '09', OCT: '10', DEC: '12',
+  FEB: '02',
+  APR: '04',
+  MAY: '05',
+  AUG: '08',
+  SEP: '09',
+  OCT: '10',
+  DEC: '12',
   // Spanish (unique ones not already covered by PT or EN)
-  ENE: '01', DIC: '12',
+  ENE: '01',
+  DIC: '12',
 }
 
 export function normalizeMonth(month: string): string {

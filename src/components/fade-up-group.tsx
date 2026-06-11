@@ -25,10 +25,12 @@ export function FadeUpGroup({
   return (
     <div
       className={className}
-      style={{
-        '--base-delay': `${baseDelay}s`,
-        '--stagger': `${stagger}s`,
-      } as React.CSSProperties}
+      style={
+        {
+          '--base-delay': `${baseDelay}s`,
+          '--stagger': `${stagger}s`,
+        } as React.CSSProperties
+      }
     >
       {indexed}
     </div>

@@ -5,11 +5,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import {
-  TaxIdInput,
-  TaxIdLabel,
-  type TaxIdMode,
-} from '../tax-id'
+import { TaxIdInput, TaxIdLabel, type TaxIdMode } from '../tax-id'
 
 const enMessages = JSON.parse(
   readFileSync(resolve(process.cwd(), 'messages/en.json'), 'utf8'),
@@ -65,11 +61,7 @@ describe('TaxIdInput — BR mode dispatch', () => {
   it('cpf mode formats input through formatCpf', () => {
     const onValueChange = vi.fn()
     renderWithIntl(
-      <ControlledTaxIdInput
-        countryCode="BR"
-        mode="cpf"
-        onValueChange={onValueChange}
-      />,
+      <ControlledTaxIdInput countryCode="BR" mode="cpf" onValueChange={onValueChange} />,
     )
     fireEvent.change(getInput(), { target: { value: '04003232909' } })
     expect(onValueChange).toHaveBeenLastCalledWith('040.032.329-09')
@@ -79,11 +71,7 @@ describe('TaxIdInput — BR mode dispatch', () => {
   it('cnpj mode formats input through formatCnpj', () => {
     const onValueChange = vi.fn()
     renderWithIntl(
-      <ControlledTaxIdInput
-        countryCode="BR"
-        mode="cnpj"
-        onValueChange={onValueChange}
-      />,
+      <ControlledTaxIdInput countryCode="BR" mode="cnpj" onValueChange={onValueChange} />,
     )
     fireEvent.change(getInput(), { target: { value: '11222333000181' } })
     expect(onValueChange).toHaveBeenLastCalledWith('11.222.333/0001-81')
@@ -93,11 +81,7 @@ describe('TaxIdInput — BR mode dispatch', () => {
   it('cpf-or-cnpj mode dispatches to CPF mask for ≤11 digits', () => {
     const onValueChange = vi.fn()
     renderWithIntl(
-      <ControlledTaxIdInput
-        countryCode="BR"
-        mode="cpf-or-cnpj"
-        onValueChange={onValueChange}
-      />,
+      <ControlledTaxIdInput countryCode="BR" mode="cpf-or-cnpj" onValueChange={onValueChange} />,
     )
     fireEvent.change(getInput(), { target: { value: '04003232909' } })
     expect(onValueChange).toHaveBeenLastCalledWith('040.032.329-09')
@@ -107,11 +91,7 @@ describe('TaxIdInput — BR mode dispatch', () => {
   it('cpf-or-cnpj mode dispatches to CNPJ mask for 12+ digits', () => {
     const onValueChange = vi.fn()
     renderWithIntl(
-      <ControlledTaxIdInput
-        countryCode="BR"
-        mode="cpf-or-cnpj"
-        onValueChange={onValueChange}
-      />,
+      <ControlledTaxIdInput countryCode="BR" mode="cpf-or-cnpj" onValueChange={onValueChange} />,
     )
     fireEvent.change(getInput(), { target: { value: '11222333000181' } })
     expect(onValueChange).toHaveBeenLastCalledWith('11.222.333/0001-81')
@@ -126,12 +106,7 @@ describe('TaxIdInput — BR mode dispatch', () => {
 describe('TaxIdInput — fallback (non-BR)', () => {
   it('passes input through unchanged with no formatter', () => {
     const onValueChange = vi.fn()
-    renderWithIntl(
-      <ControlledTaxIdInput
-        countryCode="US"
-        onValueChange={onValueChange}
-      />,
-    )
+    renderWithIntl(<ControlledTaxIdInput countryCode="US" onValueChange={onValueChange} />)
     fireEvent.change(getInput(), { target: { value: '123-45-6789' } })
     expect(onValueChange).toHaveBeenLastCalledWith('123-45-6789')
     // Fallback variant doesn't carry a country/kind data-attr.
@@ -141,11 +116,7 @@ describe('TaxIdInput — fallback (non-BR)', () => {
   it('ignores mode prop on non-BR (no CNPJ mask for unsupported countries)', () => {
     const onValueChange = vi.fn()
     renderWithIntl(
-      <ControlledTaxIdInput
-        countryCode="US"
-        mode="cpf-or-cnpj"
-        onValueChange={onValueChange}
-      />,
+      <ControlledTaxIdInput countryCode="US" mode="cpf-or-cnpj" onValueChange={onValueChange} />,
     )
     fireEvent.change(getInput(), { target: { value: '11222333000181' } })
     // Pass-through, no masking applied
@@ -169,24 +140,18 @@ describe('TaxIdLabel — BR text resolution', () => {
   })
 
   it('renders the combined label for cpf-or-cnpj with empty value', () => {
-    renderWithIntl(
-      <TaxIdLabel countryCode="BR" mode="cpf-or-cnpj" value="" />,
-    )
+    renderWithIntl(<TaxIdLabel countryCode="BR" mode="cpf-or-cnpj" value="" />)
     expect(screen.getByText('CPF or CNPJ')).toBeInTheDocument()
   })
 
   it('renders "CPF" for cpf-or-cnpj with ≤11 digits typed', () => {
-    renderWithIntl(
-      <TaxIdLabel countryCode="BR" mode="cpf-or-cnpj" value="040.032.329-09" />,
-    )
+    renderWithIntl(<TaxIdLabel countryCode="BR" mode="cpf-or-cnpj" value="040.032.329-09" />)
     expect(screen.getByText('CPF')).toBeInTheDocument()
     expect(screen.queryByText('CNPJ')).not.toBeInTheDocument()
   })
 
   it('renders "CNPJ" for cpf-or-cnpj with 12+ digits typed', () => {
-    renderWithIntl(
-      <TaxIdLabel countryCode="BR" mode="cpf-or-cnpj" value="11.222.333/0001-81" />,
-    )
+    renderWithIntl(<TaxIdLabel countryCode="BR" mode="cpf-or-cnpj" value="11.222.333/0001-81" />)
     expect(screen.getByText('CNPJ')).toBeInTheDocument()
     expect(screen.queryByText('CPF or CNPJ')).not.toBeInTheDocument()
   })
@@ -212,9 +177,7 @@ describe('TaxIdLabel — fallback', () => {
   })
 
   it('ignores mode prop on non-BR (always falls back to taxIdLabel)', () => {
-    renderWithIntl(
-      <TaxIdLabel countryCode="US" mode="cpf-or-cnpj" value="04003232909" />,
-    )
+    renderWithIntl(<TaxIdLabel countryCode="US" mode="cpf-or-cnpj" value="04003232909" />)
     expect(screen.getByText('Tax ID')).toBeInTheDocument()
     expect(screen.queryByText('CPF')).not.toBeInTheDocument()
   })

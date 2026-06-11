@@ -92,11 +92,7 @@ function pathMessages(
 ): string[] {
   if (r.success) return []
   return r.error.issues
-    .filter(
-      (i) =>
-        i.path.length === path.length &&
-        i.path.every((p, idx) => p === path[idx]),
-    )
+    .filter((i) => i.path.length === path.length && i.path.every((p, idx) => p === path[idx]))
     .map((i) => i.message)
 }
 
@@ -114,9 +110,7 @@ describe('propertyCreationSubmissionSchema — required sections', () => {
     })
     expect(r.success).toBe(false)
     if (r.success) return
-    expect(
-      r.error.issues.some((i) => i.path[0] === 'property'),
-    ).toBe(true)
+    expect(r.error.issues.some((i) => i.path[0] === 'property')).toBe(true)
   })
 
   it('requires property on no_contract path', () => {
@@ -126,9 +120,7 @@ describe('propertyCreationSubmissionSchema — required sections', () => {
     })
     expect(r.success).toBe(false)
     if (r.success) return
-    expect(
-      r.error.issues.some((i) => i.path[0] === 'property'),
-    ).toBe(true)
+    expect(r.error.issues.some((i) => i.path[0] === 'property')).toBe(true)
   })
 
   it('requires tax_id on contract path', () => {
@@ -173,9 +165,7 @@ describe('propertyCreationSubmissionSchema — contract path invariants', () => 
   })
 
   it('requires rent on path="contract"', () => {
-    const r = propertyCreationSubmissionSchema.safeParse(
-      validContractPayload({ rent: undefined }),
-    )
+    const r = propertyCreationSubmissionSchema.safeParse(validContractPayload({ rent: undefined }))
     expect(r.success).toBe(false)
     expect(pathMessages(r, ['rent'])).toContain('rentRequiredOnContractPath')
   })
@@ -227,9 +217,7 @@ describe('propertyCreationSubmissionSchema — path', () => {
 
 describe('propertyCreationSubmissionSchema — expenses', () => {
   it('accepts an empty expenses array', () => {
-    const r = propertyCreationSubmissionSchema.safeParse(
-      validNoContractPayload({ expenses: [] }),
-    )
+    const r = propertyCreationSubmissionSchema.safeParse(validNoContractPayload({ expenses: [] }))
     expect(r.success).toBe(true)
   })
 
@@ -277,9 +265,9 @@ describe('propertyCreationSubmissionSchema — provider_request_draft_index rang
       }),
     )
     expect(r.success).toBe(false)
-    expect(
-      pathMessages(r, ['expenses', 0, 'provider_request_draft_index']),
-    ).toContain('provider_request_draft_index_out_of_range')
+    expect(pathMessages(r, ['expenses', 0, 'provider_request_draft_index'])).toContain(
+      'provider_request_draft_index_out_of_range',
+    )
   })
 
   it('rejects a draft index when no drafts are provided', () => {
@@ -289,9 +277,9 @@ describe('propertyCreationSubmissionSchema — provider_request_draft_index rang
       }),
     )
     expect(r.success).toBe(false)
-    expect(
-      pathMessages(r, ['expenses', 0, 'provider_request_draft_index']),
-    ).toContain('provider_request_draft_index_out_of_range')
+    expect(pathMessages(r, ['expenses', 0, 'provider_request_draft_index'])).toContain(
+      'provider_request_draft_index_out_of_range',
+    )
   })
 })
 
@@ -340,9 +328,9 @@ describe('providerRequestDraftSchema — expense_type narrowed to the enum', () 
       }),
     )
     expect(r.success).toBe(false)
-    expect(
-      pathMessages(r, ['provider_request_drafts', 0, 'expense_type']),
-    ).toContain('invalidExpenseType')
+    expect(pathMessages(r, ['provider_request_drafts', 0, 'expense_type'])).toContain(
+      'invalidExpenseType',
+    )
   })
 })
 
@@ -359,9 +347,7 @@ describe('propertyCreationSubmissionSchema — cross-section composition', () =>
     expect(r.success).toBe(false)
     if (r.success) return
     expect(
-      r.error.issues.some(
-        (i) => i.path[0] === 'property' && i.path[1] === 'postal_code',
-      ),
+      r.error.issues.some((i) => i.path[0] === 'property' && i.path[1] === 'postal_code'),
     ).toBe(true)
   })
 
@@ -371,11 +357,9 @@ describe('propertyCreationSubmissionSchema — cross-section composition', () =>
     )
     expect(r.success).toBe(false)
     if (r.success) return
-    expect(
-      r.error.issues.some(
-        (i) => i.path[0] === 'rent' && i.path[1] === 'amount_minor',
-      ),
-    ).toBe(true)
+    expect(r.error.issues.some((i) => i.path[0] === 'rent' && i.path[1] === 'amount_minor')).toBe(
+      true,
+    )
   })
 
   it('surfaces a row-level provider-attachment conflict on the expenses[i] path', () => {

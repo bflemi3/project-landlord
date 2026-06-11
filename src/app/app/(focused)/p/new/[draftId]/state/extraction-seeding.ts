@@ -1,17 +1,11 @@
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 import { coerceCurrency } from '@/data/shared/currency'
-import {
-  defaultPropertyInput,
-  type PropertyInput,
-} from '@/schemas/property'
+import { defaultPropertyInput, type PropertyInput } from '@/schemas/property'
 import {
   defaultRentDatesInput,
   type RentDatesInput,
 } from '../steps/checkout/sections/rent-dates/schemas'
-import {
-  defaultTaxIdInput,
-  type TaxIdInput,
-} from '../steps/checkout/sections/tax-id/schemas'
+import { defaultTaxIdInput, type TaxIdInput } from '../steps/checkout/sections/tax-id/schemas'
 import {
   tenantRowFromContractParty,
   type TenantRow,
@@ -23,18 +17,12 @@ import {
 } from '../steps/checkout/sections/expenses/schemas'
 import type { SectionId } from './registry'
 
-export {
-  defaultPropertyInput,
-  type PropertyInput,
-} from '@/schemas/property'
+export { defaultPropertyInput, type PropertyInput } from '@/schemas/property'
 export {
   defaultRentDatesInput,
   type RentDatesInput,
 } from '../steps/checkout/sections/rent-dates/schemas'
-export {
-  defaultTaxIdInput,
-  type TaxIdInput,
-} from '../steps/checkout/sections/tax-id/schemas'
+export { defaultTaxIdInput, type TaxIdInput } from '../steps/checkout/sections/tax-id/schemas'
 export { type TenantRow } from '../steps/checkout/sections/tenants/schemas'
 export { type ExpenseRow } from '../steps/checkout/sections/expenses/schemas'
 

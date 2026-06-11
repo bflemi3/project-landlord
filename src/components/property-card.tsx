@@ -14,7 +14,12 @@ export function getCompletionSteps(
   progress: PropertySetupProgress,
 ): { label: string; key: string; done: boolean; inProgress: boolean }[] {
   return [
-    { label: 'propertyCreated', key: 'property', done: progress.propertyCreated, inProgress: false },
+    {
+      label: 'propertyCreated',
+      key: 'property',
+      done: progress.propertyCreated,
+      inProgress: false,
+    },
     {
       label: 'tenantsStep',
       key: 'tenants',
@@ -114,11 +119,7 @@ function PropertyCardHead({ className, ...props }: React.ComponentProps<'div'>) 
 
 function PropertyCardBody({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div
-      data-slot="property-card-body"
-      className={cn('min-w-0 flex-1', className)}
-      {...props}
-    />
+    <div data-slot="property-card-body" className={cn('min-w-0 flex-1', className)} {...props} />
   )
 }
 
@@ -130,7 +131,7 @@ function PropertyCardEyebrow({
     <EyebrowLabel
       data-slot="property-card-eyebrow"
       tone="muted"
-      className={cn('block font-semibold text-muted-foreground/70', className)}
+      className={cn('text-muted-foreground/70 block font-semibold', className)}
       {...props}
     />
   )
@@ -141,7 +142,7 @@ function PropertyCardTitle({ className, ...props }: React.ComponentProps<'h3'>) 
     <h3
       data-slot="property-card-title"
       className={cn(
-        'mt-1.5 truncate text-xl font-semibold tracking-tight text-foreground first:mt-0',
+        'text-foreground mt-1.5 truncate text-xl font-semibold tracking-tight first:mt-0',
         className,
       )}
       {...props}
@@ -153,7 +154,7 @@ function PropertyCardSubtitle({ className, ...props }: React.ComponentProps<'p'>
   return (
     <p
       data-slot="property-card-subtitle"
-      className={cn('mt-1 text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground mt-1 text-sm', className)}
       {...props}
     />
   )
@@ -164,7 +165,7 @@ function PropertyCardChevron({ className, ...props }: React.ComponentProps<'svg'
     <ChevronRight
       data-slot="property-card-chevron"
       className={cn(
-        'mt-1 size-5 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5',
+        'text-muted-foreground/40 mt-1 size-5 shrink-0 transition-transform group-hover:translate-x-0.5',
         className,
       )}
       {...props}
@@ -177,7 +178,7 @@ function PropertyCardAmount({ className, ...props }: React.ComponentProps<'p'>) 
     <p
       data-slot="property-card-amount"
       className={cn(
-        'mt-8 font-mono text-3xl font-bold tracking-tight tabular-nums text-foreground',
+        'text-foreground mt-8 font-mono text-3xl font-bold tracking-tight tabular-nums',
         className,
       )}
       {...props}
@@ -223,20 +224,16 @@ function PropertyCardProgress({
 }) {
   const pct = total > 0 ? Math.round((completed / total) * 100) : 0
   return (
-    <div
-      data-slot="property-card-progress"
-      className={cn('mt-3', className)}
-      {...props}
-    >
+    <div data-slot="property-card-progress" className={cn('mt-3', className)} {...props}>
       {label !== undefined && (
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">{label}</span>
-          <span className="text-xs font-semibold text-primary">{pct}%</span>
+          <span className="text-muted-foreground text-xs font-medium">{label}</span>
+          <span className="text-primary text-xs font-semibold">{pct}%</span>
         </div>
       )}
-      <div className="h-1.5 overflow-hidden rounded-full bg-border">
+      <div className="bg-border h-1.5 overflow-hidden rounded-full">
         <div
-          className="h-full rounded-full bg-primary transition-all duration-500"
+          className="bg-primary h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -246,11 +243,7 @@ function PropertyCardProgress({
 
 function PropertyCardSteps({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div
-      data-slot="property-card-steps"
-      className={cn('mt-3 space-y-2', className)}
-      {...props}
-    />
+    <div data-slot="property-card-steps" className={cn('mt-3 space-y-2', className)} {...props} />
   )
 }
 
@@ -279,15 +272,15 @@ function PropertyCardStep({
       {...props}
     >
       {state === 'done' ? (
-        <div className="flex size-5 items-center justify-center rounded-full bg-primary-subtle">
-          <Check className="size-3 text-primary-subtle-foreground" />
+        <div className="bg-primary-subtle flex size-5 items-center justify-center rounded-full">
+          <Check className="text-primary-subtle-foreground size-3" />
         </div>
       ) : state === 'inProgress' ? (
-        <div className="flex size-5 items-center justify-center rounded-full bg-primary-subtle">
-          <Clock className="size-3 text-primary-subtle-foreground" />
+        <div className="bg-primary-subtle flex size-5 items-center justify-center rounded-full">
+          <Clock className="text-primary-subtle-foreground size-3" />
         </div>
       ) : (
-        <div className="size-5 rounded-full border border-border" />
+        <div className="border-border size-5 rounded-full border" />
       )}
       <span className={cn('text-sm', stepLabelClasses[state])}>{children}</span>
     </div>

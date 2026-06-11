@@ -150,16 +150,12 @@ describe('expenseRowSchema — required-field errors', () => {
 
 describe('expenseRowSchema — provider-attachment exclusivity', () => {
   it('exactly one provider attachment is valid (profile only)', () => {
-    const r = expenseRowSchema.safeParse(
-      validRow({ provider_profile_id: VALID_UUID }),
-    )
+    const r = expenseRowSchema.safeParse(validRow({ provider_profile_id: VALID_UUID }))
     expect(r.success).toBe(true)
   })
 
   it('exactly one provider attachment is valid (draft index only)', () => {
-    const r = expenseRowSchema.safeParse(
-      validRow({ provider_request_draft_index: 0 }),
-    )
+    const r = expenseRowSchema.safeParse(validRow({ provider_request_draft_index: 0 }))
     expect(r.success).toBe(true)
   })
 
@@ -177,9 +173,7 @@ describe('expenseRowSchema — provider-attachment exclusivity', () => {
     )
     expect(r.success).toBe(false)
     if (r.success) return
-    const conflict = r.error.issues.find(
-      (i) => i.message === 'provider_attachment_conflict',
-    )
+    const conflict = r.error.issues.find((i) => i.message === 'provider_attachment_conflict')
     expect(conflict).toBeDefined()
     expect(conflict?.path).toEqual([])
   })

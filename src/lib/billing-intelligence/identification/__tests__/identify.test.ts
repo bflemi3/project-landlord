@@ -46,13 +46,41 @@ describe('identifyProvider', () => {
         return [
           {
             profileId: 'low-conf',
-            meta: { companyName: 'Enliv', companyTaxId: '49449868000162', countryCode: 'BR', displayName: 'Enliv Low', category: 'electricity', region: 'other', status: 'active', capabilities: { extraction: true, apiLookup: false, validation: false, paymentStatus: false } },
+            meta: {
+              companyName: 'Enliv',
+              companyTaxId: '49449868000162',
+              countryCode: 'BR',
+              displayName: 'Enliv Low',
+              category: 'electricity',
+              region: 'other',
+              status: 'active',
+              capabilities: {
+                extraction: true,
+                apiLookup: false,
+                validation: false,
+                paymentStatus: false,
+              },
+            },
             identify: () => 0.3,
             extractBill: () => null,
           },
           {
             profileId: 'high-conf',
-            meta: { companyName: 'Enliv', companyTaxId: '49449868000162', countryCode: 'BR', displayName: 'Enliv High', category: 'electricity', region: 'campeche', status: 'active', capabilities: { extraction: true, apiLookup: false, validation: false, paymentStatus: false } },
+            meta: {
+              companyName: 'Enliv',
+              companyTaxId: '49449868000162',
+              countryCode: 'BR',
+              displayName: 'Enliv High',
+              category: 'electricity',
+              region: 'campeche',
+              status: 'active',
+              capabilities: {
+                extraction: true,
+                apiLookup: false,
+                validation: false,
+                paymentStatus: false,
+              },
+            },
             identify: () => 0.95,
             extractBill: () => null,
           },

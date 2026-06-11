@@ -12,10 +12,7 @@ import {
   usePropertyCreationActions,
   usePropertyCreationState,
 } from '../../state/use-property-creation'
-import {
-  CheckoutContextProvider,
-  type CheckoutContextValue,
-} from './checkout-context'
+import { CheckoutContextProvider, type CheckoutContextValue } from './checkout-context'
 import { CheckoutMobileBar } from './checkout-mobile-bar'
 import { CheckoutSummary } from './checkout-summary'
 import { SectionGroup } from './section'
@@ -65,27 +62,22 @@ export function PropertyCheckoutShell({
   const { openSection } = usePropertyCreationActions()
 
   const headerRefsRef = useRef(new Map<SectionId, HTMLButtonElement>())
-  const refCallbacksRef = useRef(
-    new Map<SectionId, (node: HTMLButtonElement | null) => void>(),
-  )
+  const refCallbacksRef = useRef(new Map<SectionId, (node: HTMLButtonElement | null) => void>())
   const shouldScrollRef = useRef(false)
 
   // Stable per-id ref callback. Caching avoids React tearing the ref down +
   // re-attaching on every render of the section component.
-  const registerHeaderRef = useCallback(
-    (id: SectionId) => {
-      let cb = refCallbacksRef.current.get(id)
-      if (!cb) {
-        cb = (node) => {
-          if (node) headerRefsRef.current.set(id, node)
-          else headerRefsRef.current.delete(id)
-        }
-        refCallbacksRef.current.set(id, cb)
+  const registerHeaderRef = useCallback((id: SectionId) => {
+    let cb = refCallbacksRef.current.get(id)
+    if (!cb) {
+      cb = (node) => {
+        if (node) headerRefsRef.current.set(id, node)
+        else headerRefsRef.current.delete(id)
       }
-      return cb
-    },
-    [],
-  )
+      refCallbacksRef.current.set(id, cb)
+    }
+    return cb
+  }, [])
 
   const requestTransitionScroll = useCallback(() => {
     shouldScrollRef.current = true
@@ -126,10 +118,7 @@ export function PropertyCheckoutShell({
             <DetailPageLayoutMain>
               <div className="flex flex-col gap-4">
                 <ExtractionLegend />
-                <SectionGroup
-                  activeId={activeSectionId}
-                  onActiveChange={handleActiveChange}
-                >
+                <SectionGroup activeId={activeSectionId} onActiveChange={handleActiveChange}>
                   <PropertySection />
                   <RentDatesSection />
                   <TenantsSection />

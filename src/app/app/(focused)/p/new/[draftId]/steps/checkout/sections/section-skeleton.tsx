@@ -26,11 +26,7 @@ interface SectionSkeletonProps {
  * shimmer) because the bodies are placeholders. When real forms land, each
  * section overrides its own skeleton.
  */
-export function SectionSkeleton({
-  active = false,
-  icon: Icon,
-  sectionId,
-}: SectionSkeletonProps) {
+export function SectionSkeleton({ active = false, icon: Icon, sectionId }: SectionSkeletonProps) {
   return (
     <Card
       size="md"

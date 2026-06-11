@@ -11,7 +11,7 @@ export function FrameContent() {
 
   if (type === 'operating') {
     const variant = OPERATING_VARIANTS[index]
-    if (!variant) return <p className="p-4 text-sm text-muted-foreground">Unknown variant</p>
+    if (!variant) return <p className="text-muted-foreground p-4 text-sm">Unknown variant</p>
     return (
       <div className="p-6">
         <PreviewOperatingCard membership={variant.membership} opData={variant.opData} />
@@ -21,7 +21,7 @@ export function FrameContent() {
 
   if (type === 'setup') {
     const variant = SETUP_VARIANTS[index]
-    if (!variant) return <p className="p-4 text-sm text-muted-foreground">Unknown variant</p>
+    if (!variant) return <p className="text-muted-foreground p-4 text-sm">Unknown variant</p>
     return (
       <div className="p-6">
         <PreviewSetupCard
@@ -33,5 +33,5 @@ export function FrameContent() {
     )
   }
 
-  return <p className="p-4 text-sm text-muted-foreground">Unknown type: {type}</p>
+  return <p className="text-muted-foreground p-4 text-sm">Unknown type: {type}</p>
 }

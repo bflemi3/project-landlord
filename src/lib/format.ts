@@ -67,10 +67,7 @@ export function formatDate(
  *   formatDateLong(date, 'en')    → "March 18, 2026"
  *   formatDateLong(date, 'es')    → "18 de marzo de 2026"
  */
-export function formatDateLong(
-  date: Date | string,
-  locale: Locale,
-): string {
+export function formatDateLong(date: Date | string, locale: Locale): string {
   const d = typeof date === 'string' ? new Date(date) : date
   const intlLocale = intlLocaleMap[locale]
 

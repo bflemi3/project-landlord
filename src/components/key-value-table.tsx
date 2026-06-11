@@ -6,7 +6,7 @@ function KeyValueTable({ className, ...props }: React.ComponentProps<'div'>) {
     <div
       data-slot="key-value-table"
       className={cn(
-        'divide-y divide-border rounded-2xl border border-border bg-secondary/50',
+        'divide-border border-border bg-secondary/50 divide-y rounded-2xl border',
         className,
       )}
       {...props}
@@ -28,7 +28,7 @@ function KeyValueLabel({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="key-value-label"
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground text-sm', className)}
       {...props}
     />
   )
@@ -38,7 +38,7 @@ function KeyValueValue({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       data-slot="key-value-value"
-      className={cn('text-sm font-medium text-foreground', className)}
+      className={cn('text-foreground text-sm font-medium', className)}
       {...props}
     />
   )

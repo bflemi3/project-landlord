@@ -18,9 +18,7 @@ export type FlatFieldErrors = Record<string, string[]>
  * Row sections (expenses, tenants) emit a per-row map keyed by stable row
  * `id` so row deletes don't shift sibling errors.
  */
-export type SectionServerErrors =
-  | FlatFieldErrors
-  | Record<string /* rowId */, FlatFieldErrors>
+export type SectionServerErrors = FlatFieldErrors | Record<string /* rowId */, FlatFieldErrors>
 
 /**
  * Wizard-wide codes surfaced as a destructive toast — bypass accordion focus.

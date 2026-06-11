@@ -1,14 +1,20 @@
 import { describe, it, expect, vi } from 'vitest'
-import { fetchHomeProperties, fetchHomeActions, homePropertiesQueryKey, homeActionsQueryKey } from '../shared'
+import {
+  fetchHomeProperties,
+  fetchHomeActions,
+  homePropertiesQueryKey,
+  homeActionsQueryKey,
+} from '../shared'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 function mockSupabase(overrides: { data?: unknown; error?: unknown }) {
   return {
     from: () => ({
-      select: () => Promise.resolve({
-        data: overrides.data ?? null,
-        error: overrides.error ?? null,
-      }),
+      select: () =>
+        Promise.resolve({
+          data: overrides.data ?? null,
+          error: overrides.error ?? null,
+        }),
     }),
   } as unknown as TypedSupabaseClient
 }

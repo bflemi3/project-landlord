@@ -19,9 +19,7 @@ export interface Validator<TInput, TOutput = TInput> {
 // Zod adapter
 // ---------------------------------------------------------------------------
 
-export function zodValidator<S extends z.ZodType>(
-  schema: S,
-): Validator<z.input<S>, z.output<S>> {
+export function zodValidator<S extends z.ZodType>(schema: S): Validator<z.input<S>, z.output<S>> {
   return {
     parse(input) {
       const r = schema.safeParse(input)
@@ -60,10 +58,7 @@ export function useFormValidation<TInput, TOutput>(
 
   const [touched, setTouched] = useState<Record<string, true>>(() => ({}))
 
-  const parseResult = useMemo(
-    () => validator.parse(values),
-    [values, validator],
-  )
+  const parseResult = useMemo(() => validator.parse(values), [values, validator])
 
   const allErrors = useMemo<FieldErrors>(
     () => (parseResult.success ? {} : parseResult.errors),
@@ -73,15 +68,13 @@ export function useFormValidation<TInput, TOutput>(
   const touchedRef = useRef(touched)
   const allErrorsRef = useRef(allErrors)
   const parseResultRef = useRef(parseResult)
-  
+
   // eslint-disable-next-line react-hooks/refs
   touchedRef.current = touched
   // eslint-disable-next-line react-hooks/refs
   allErrorsRef.current = allErrors
   // eslint-disable-next-line react-hooks/refs
   parseResultRef.current = parseResult
-
-  
 
   const errors = useMemo<FieldErrors>(() => {
     const filtered: FieldErrors = {}
@@ -92,8 +85,6 @@ export function useFormValidation<TInput, TOutput>(
     }
     return filtered
   }, [touched, allErrors])
-
-  
 
   const markTouched = useCallback((field: string) => {
     setTouched((prev) => {

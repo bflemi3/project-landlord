@@ -99,8 +99,6 @@ describe('useServerValidationErrors', () => {
     })
 
     expect(result.current.getFieldError(form, 'name')).toBe('clientRequired')
-    expect(result.current.getFieldError(form, 'postal_code')).toBe(
-      'invalidPostalCode',
-    )
+    expect(result.current.getFieldError(form, 'postal_code')).toBe('invalidPostalCode')
   })
 })

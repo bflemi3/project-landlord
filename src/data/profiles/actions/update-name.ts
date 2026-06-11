@@ -31,9 +31,7 @@ export async function updateNameCore(
   return { valid: true, fields: result.data }
 }
 
-export async function updateName(
-  fullName: string,
-): Promise<ValidateState<NameInput>> {
+export async function updateName(fullName: string): Promise<ValidateState<NameInput>> {
   const supabase = await createClient()
   return updateNameCore(supabase, fullName)
 }

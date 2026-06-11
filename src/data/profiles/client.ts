@@ -9,10 +9,7 @@ import { fetchProfile, profileQueryKey, type UserProfile } from './shared'
 import type { NameInput, TaxIdInput } from '@/schemas/profile'
 import type { ValidationFieldErrors } from '@/lib/validation'
 
-export const useProfile = createSuspenseHook<UserProfile | null, []>(
-  profileQueryKey,
-  fetchProfile,
-)
+export const useProfile = createSuspenseHook<UserProfile | null, []>(profileQueryKey, fetchProfile)
 
 // =============================================================================
 // Mutations

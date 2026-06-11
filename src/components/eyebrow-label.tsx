@@ -22,7 +22,7 @@ function EyebrowLabel({
       data-slot="eyebrow-label"
       data-tone={tone}
       className={cn(
-        'font-mono text-xs font-medium uppercase tracking-widest',
+        'font-mono text-xs font-medium tracking-widest uppercase',
         toneClasses[tone],
         className,
       )}

@@ -17,10 +17,7 @@ import { AutoFilledIcon } from '../auto-filled-indicator'
 import { RowTrailingStatus } from '../row-trailing-status'
 import { type ExpensesTouched } from './state'
 import { validateExpenses } from './validation'
-import {
-  EXPENSE_TYPE_FALLBACK_ICON,
-  EXPENSE_TYPE_ICONS,
-} from './expense-type-icons'
+import { EXPENSE_TYPE_FALLBACK_ICON, EXPENSE_TYPE_ICONS } from './expense-type-icons'
 
 interface ExpenseRowProps {
   id: string
@@ -30,16 +27,9 @@ interface ExpenseRowProps {
   onRemove: () => void
 }
 
-export function ExpenseRow({
-  id,
-  isRemoving,
-  animateEntrance,
-  onRemove,
-}: ExpenseRowProps) {
+export function ExpenseRow({ id, isRemoving, animateEntrance, onRemove }: ExpenseRowProps) {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const tOptions = useTranslations(
-    'propertyCreation.checkout.expenses.typeOptions',
-  )
+  const tOptions = useTranslations('propertyCreation.checkout.expenses.typeOptions')
 
   // Subscribe to the row reference only — `find()` keeps a stable ref while
   // this row's data is unchanged, so unrelated row edits don't re-render us.
@@ -56,9 +46,7 @@ export function ExpenseRow({
   // is O(1) so the selector cost is dominated by `Object.is` on the result.
   const isValid = usePropertyCreationState(
     (s) =>
-      validateExpenses(s.sectionData.expenses as ExpenseRowType[])
-        .perRow.get(id)
-        ?.success ?? true,
+      validateExpenses(s.sectionData.expenses as ExpenseRowType[]).perRow.get(id)?.success ?? true,
   )
 
   const isTouched = usePropertyCreationState(
@@ -72,9 +60,7 @@ export function ExpenseRow({
       ? EXPENSE_TYPE_ICONS[expense.expense_type]
       : EXPENSE_TYPE_FALLBACK_ICON
   const triggerLabel =
-    expense.expense_type !== null
-      ? tOptions(expense.expense_type)
-      : t('newExpense')
+    expense.expense_type !== null ? tOptions(expense.expense_type) : t('newExpense')
 
   return (
     <AccordionItem

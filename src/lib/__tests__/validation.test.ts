@@ -61,12 +61,10 @@ describe('isValidEmail', () => {
 
 describe('zodIssuesToFieldErrors', () => {
   it('maps zod issue paths to reusable validation field errors', () => {
-    const errors = zodIssuesToFieldErrors<{ amount_minor: number | undefined }>(
-      [
-        { path: ['amount_minor'], message: 'invalidAmount' },
-        { path: [], message: 'generalError' },
-      ],
-    )
+    const errors = zodIssuesToFieldErrors<{ amount_minor: number | undefined }>([
+      { path: ['amount_minor'], message: 'invalidAmount' },
+      { path: [], message: 'generalError' },
+    ])
 
     expect(errors).toEqual({
       amount_minor: ['invalidAmount'],

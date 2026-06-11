@@ -7,11 +7,7 @@ import { brazilTaxIdSchema, getTaxIdSchema, taxIdBaseSchema } from './tax-id'
 // overrides — not `tenantInputSchema`, which locks taxId to the BR-specialized
 // schema. The base is the common ground for any input-shaped composition.
 export const tenantInputBaseSchema = z.object({
-  name: z
-    .string()
-    .trim()
-    .min(1, { error: 'required' })
-    .max(200, { error: 'tooLong' }),
+  name: z.string().trim().min(1, { error: 'required' }).max(200, { error: 'tooLong' }),
   email: z.email({ error: 'invalidEmail' }),
   taxId: taxIdBaseSchema,
   inviteNow: z.boolean(),

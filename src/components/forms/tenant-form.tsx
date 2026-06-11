@@ -11,10 +11,7 @@ import { getInitials } from '@/lib/initials'
 // Avatar — initials derived from name, email as fallback when name is empty
 // =============================================================================
 
-type TenantFormAvatarProps = Omit<
-  React.ComponentProps<typeof Avatar>,
-  'children'
-> & {
+type TenantFormAvatarProps = Omit<React.ComponentProps<typeof Avatar>, 'children'> & {
   name: string
   email: string
 }
@@ -48,11 +45,7 @@ type TenantFormTextFieldProps = Omit<
   onValueChange: (value: string) => void
 }
 
-function TenantFormName({
-  value,
-  onValueChange,
-  ...props
-}: TenantFormTextFieldProps) {
+function TenantFormName({ value, onValueChange, ...props }: TenantFormTextFieldProps) {
   return (
     <Input
       data-slot="tenant-form-name"
@@ -66,11 +59,7 @@ function TenantFormName({
   )
 }
 
-function TenantFormEmail({
-  value,
-  onValueChange,
-  ...props
-}: TenantFormTextFieldProps) {
+function TenantFormEmail({ value, onValueChange, ...props }: TenantFormTextFieldProps) {
   return (
     <Input
       data-slot="tenant-form-email"
@@ -93,26 +82,12 @@ function TenantFormEmail({
 
 type TenantFormInviteToggleProps = React.ComponentProps<typeof Switch>
 
-function TenantFormInviteToggle({
-  className,
-  ...props
-}: TenantFormInviteToggleProps) {
-  return (
-    <Switch
-      data-slot="tenant-form-invite-toggle"
-      className={className}
-      {...props}
-    />
-  )
+function TenantFormInviteToggle({ className, ...props }: TenantFormInviteToggleProps) {
+  return <Switch data-slot="tenant-form-invite-toggle" className={className} {...props} />
 }
 
 // =============================================================================
 // Exports
 // =============================================================================
 
-export {
-  TenantFormAvatar,
-  TenantFormName,
-  TenantFormEmail,
-  TenantFormInviteToggle,
-}
+export { TenantFormAvatar, TenantFormName, TenantFormEmail, TenantFormInviteToggle }

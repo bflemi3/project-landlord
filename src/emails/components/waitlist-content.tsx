@@ -21,13 +21,13 @@ export function WaitlistContent({ locale = 'en', role }: WaitlistContentProps) {
   const headerContent = (
     <Section className="em-pad-section p-8" style={{ backgroundColor: '#1c1917' }}>
       <Text
-        className="text-highlight text-xs font-semibold uppercase m-0"
+        className="text-highlight m-0 text-xs font-semibold uppercase"
         style={{ letterSpacing: '0.1em' }}
       >
         {t.eyebrow}
       </Text>
-      <Text className="text-2xl font-bold text-white m-0 mt-2">{tw.heading}</Text>
-      <Text className="text-base m-0 mt-2" style={{ color: '#d6d3d1' }}>
+      <Text className="m-0 mt-2 text-2xl font-bold text-white">{tw.heading}</Text>
+      <Text className="m-0 mt-2 text-base" style={{ color: '#d6d3d1' }}>
         {t.body}
       </Text>
     </Section>
@@ -35,7 +35,7 @@ export function WaitlistContent({ locale = 'en', role }: WaitlistContentProps) {
 
   return (
     <EmailLayout preview={t.preview} locale={locale} header={headerContent}>
-      <Text className="text-sm font-semibold text-foreground m-0 mb-4">{tw.whatsComingTitle}</Text>
+      <Text className="text-foreground m-0 mb-4 text-sm font-semibold">{tw.whatsComingTitle}</Text>
       <table width="100%" cellPadding={0} cellSpacing={0} border={0}>
         {[t.benefit1, t.benefit2, t.benefit3].map((benefit, i) => (
           <tr key={i}>
@@ -43,10 +43,10 @@ export function WaitlistContent({ locale = 'en', role }: WaitlistContentProps) {
               <table cellPadding={0} cellSpacing={0} border={0}>
                 <tr>
                   <td style={{ verticalAlign: 'top', paddingRight: '12px' }}>
-                    <Text className="text-primary text-base font-bold m-0">✓</Text>
+                    <Text className="text-primary m-0 text-base font-bold">✓</Text>
                   </td>
                   <td>
-                    <Text className="text-sm text-secondary-foreground m-0">{benefit}</Text>
+                    <Text className="text-secondary-foreground m-0 text-sm">{benefit}</Text>
                   </td>
                 </tr>
               </table>
@@ -55,8 +55,8 @@ export function WaitlistContent({ locale = 'en', role }: WaitlistContentProps) {
         ))}
       </table>
       <Hr className="border-card-border my-6" />
-      <Text className="text-sm text-muted m-0">{tw.closingLine}</Text>
-      <Text className="text-base text-muted-foreground mt-4 mb-0">{tw.signoff}</Text>
+      <Text className="text-muted m-0 text-sm">{tw.closingLine}</Text>
+      <Text className="text-muted-foreground mt-4 mb-0 text-base">{tw.signoff}</Text>
     </EmailLayout>
   )
 }

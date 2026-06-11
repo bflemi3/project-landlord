@@ -9,12 +9,7 @@ interface SlideInProps {
   className?: string
 }
 
-export function SlideIn({
-  children,
-  activeKey,
-  duration = 0.3,
-  className,
-}: SlideInProps) {
+export function SlideIn({ children, activeKey, duration = 0.3, className }: SlideInProps) {
   const prefersReducedMotion = useReducedMotion()
 
   if (prefersReducedMotion) {

@@ -10,7 +10,7 @@ export interface ExternalCallResult<T> {
   duration: number
   service: string
   operation: string
-  timestamp: string           // ISO 8601
+  timestamp: string // ISO 8601
 }
 
 export interface ExternalCallError {

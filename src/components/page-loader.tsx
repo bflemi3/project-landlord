@@ -40,10 +40,7 @@ export function PageLoader({ className }: { className?: string }) {
         </svg>
 
         {/* m glyph */}
-        <span
-          className="select-none text-2xl font-extrabold text-primary"
-          aria-hidden="true"
-        >
+        <span className="text-primary text-2xl font-extrabold select-none" aria-hidden="true">
           m
         </span>
       </div>

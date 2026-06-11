@@ -80,21 +80,26 @@ describe('enlivCampeche Provider', () => {
   describe('lookupBills', () => {
     it('returns extraction results from API', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          nome_cliente: 'Test User',
-          debitos: [{
-            id: '1',
-            cadastroDistribuidora: '59069412',
-            cadastroAuxDistribuidora: null,
-            endereco: 'Av Campeche',
-            vencimento: '2026-04-24T00:00:00.000Z',
-            status: 'pendente',
-            valor: 218.47,
-            link: 'https://example.com',
-            linha_digitavel: '74891160090666030730432263871033514260000021847',
-            emv_pix: 'pix-payload',
-          }],
-        }), { status: 200 }),
+        new Response(
+          JSON.stringify({
+            nome_cliente: 'Test User',
+            debitos: [
+              {
+                id: '1',
+                cadastroDistribuidora: '59069412',
+                cadastroAuxDistribuidora: null,
+                endereco: 'Av Campeche',
+                vencimento: '2026-04-24T00:00:00.000Z',
+                status: 'pendente',
+                valor: 218.47,
+                link: 'https://example.com',
+                linha_digitavel: '74891160090666030730432263871033514260000021847',
+                emv_pix: 'pix-payload',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
       )
 
       const results = await enlivCampeche.lookupBills!('04003232909')
@@ -117,17 +122,22 @@ describe('enlivCampeche Provider', () => {
   describe('checkPaymentStatus', () => {
     it('returns payment statuses from API', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          nome_cliente: 'Test User',
-          debitos: [{
-            id: '1',
-            cadastroDistribuidora: '59069412',
-            vencimento: '2026-03-24T00:00:00.000Z',
-            valor: 200.00,
-            linha_digitavel: '123',
-            emv_pix: '',
-          }],
-        }), { status: 200 }),
+        new Response(
+          JSON.stringify({
+            nome_cliente: 'Test User',
+            debitos: [
+              {
+                id: '1',
+                cadastroDistribuidora: '59069412',
+                vencimento: '2026-03-24T00:00:00.000Z',
+                valor: 200.0,
+                linha_digitavel: '123',
+                emv_pix: '',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
       )
 
       const statuses = await enlivCampeche.checkPaymentStatus!('04003232909')
@@ -148,15 +158,20 @@ describe('enlivCampeche Provider', () => {
   describe('validateExtraction', () => {
     it('delegates to validateEnlivExtraction', async () => {
       vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-        new Response(JSON.stringify({
-          nome_cliente: 'Test',
-          debitos: [{
-            cadastroDistribuidora: '59069412',
-            vencimento: '2026-04-24T00:00:00.000Z',
-            valor: 218.47,
-            linha_digitavel: '74891160090666030730432263871033514260000021847',
-          }],
-        }), { status: 200 }),
+        new Response(
+          JSON.stringify({
+            nome_cliente: 'Test',
+            debitos: [
+              {
+                cadastroDistribuidora: '59069412',
+                vencimento: '2026-04-24T00:00:00.000Z',
+                valor: 218.47,
+                linha_digitavel: '74891160090666030730432263871033514260000021847',
+              },
+            ],
+          }),
+          { status: 200 },
+        ),
       )
 
       const extraction = enlivCampeche.extractBill(sampleBillText)!

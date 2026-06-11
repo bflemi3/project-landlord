@@ -44,17 +44,20 @@ describe('lookupCnpj', () => {
 
   it('returns data from BrasilAPI when cache is empty', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({
-        cnpj: '49449868000162',
-        razao_social: 'ENLIV ENERGIA LTDA',
-        nome_fantasia: 'ENLIV',
-        cnae_fiscal: 3514000,
-        cnae_fiscal_descricao: 'Distribuição de energia elétrica',
-        municipio: 'CURITIBA',
-        uf: 'PR',
-        ddd_telefone_1: '4133334444',
-        email: 'contato@enliv.com.br',
-      }), { status: 200 }),
+      new Response(
+        JSON.stringify({
+          cnpj: '49449868000162',
+          razao_social: 'ENLIV ENERGIA LTDA',
+          nome_fantasia: 'ENLIV',
+          cnae_fiscal: 3514000,
+          cnae_fiscal_descricao: 'Distribuição de energia elétrica',
+          municipio: 'CURITIBA',
+          uf: 'PR',
+          ddd_telefone_1: '4133334444',
+          email: 'contato@enliv.com.br',
+        }),
+        { status: 200 },
+      ),
     )
 
     const result = await lookupCnpj('49449868000162')
@@ -67,16 +70,21 @@ describe('lookupCnpj', () => {
   it('falls back to ReceitaWS when BrasilAPI fails', async () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(new Response('Error', { status: 500 }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
-        cnpj: '49449868000162',
-        nome: 'ENLIV ENERGIA LTDA',
-        fantasia: 'ENLIV',
-        atividade_principal: [{ code: '35.14-0-00', text: 'Distribuição de energia elétrica' }],
-        municipio: 'CURITIBA',
-        uf: 'PR',
-        telefone: '(41) 3333-4444',
-        email: 'contato@enliv.com.br',
-      }), { status: 200 }))
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            cnpj: '49449868000162',
+            nome: 'ENLIV ENERGIA LTDA',
+            fantasia: 'ENLIV',
+            atividade_principal: [{ code: '35.14-0-00', text: 'Distribuição de energia elétrica' }],
+            municipio: 'CURITIBA',
+            uf: 'PR',
+            telefone: '(41) 3333-4444',
+            email: 'contato@enliv.com.br',
+          }),
+          { status: 200 },
+        ),
+      )
 
     const result = await lookupCnpj('49449868000162')
     expect(result.companyName).toBe('ENLIV')
@@ -94,19 +102,23 @@ describe('lookupCnpj', () => {
   })
 
   it('returns cached data when cache is fresh', async () => {
-    singleResults = [{ data: {
-      tax_id: '49449868000162',
-      legal_name: 'ENLIV ENERGIA LTDA',
-      trade_name: 'ENLIV',
-      activity_code: 3514000,
-      activity_description: 'Distribuição de energia elétrica',
-      city: 'CURITIBA',
-      state: 'PR',
-      phone: '4133334444',
-      email: 'contato@enliv.com.br',
-      fetched_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    } }]
+    singleResults = [
+      {
+        data: {
+          tax_id: '49449868000162',
+          legal_name: 'ENLIV ENERGIA LTDA',
+          trade_name: 'ENLIV',
+          activity_code: 3514000,
+          activity_description: 'Distribuição de energia elétrica',
+          city: 'CURITIBA',
+          state: 'PR',
+          phone: '4133334444',
+          email: 'contato@enliv.com.br',
+          fetched_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      },
+    ]
 
     const fetchSpy = vi.spyOn(globalThis, 'fetch')
     const result = await lookupCnpj('49449868000162')
@@ -125,30 +137,35 @@ describe('lookupCnpj', () => {
     staleDate.setDate(staleDate.getDate() - 45) // 45 days old, exceeds 30-day max
 
     singleResults = [
-      { data: {
-        tax_id: '49449868000162',
-        legal_name: 'OLD NAME',
-        trade_name: 'OLD',
-        activity_code: 0,
-        activity_description: 'old',
-        city: 'OLD',
-        state: 'XX',
-        fetched_at: staleDate.toISOString(),
-        updated_at: staleDate.toISOString(),
-      } },
+      {
+        data: {
+          tax_id: '49449868000162',
+          legal_name: 'OLD NAME',
+          trade_name: 'OLD',
+          activity_code: 0,
+          activity_description: 'old',
+          city: 'OLD',
+          state: 'XX',
+          fetched_at: staleDate.toISOString(),
+          updated_at: staleDate.toISOString(),
+        },
+      },
       { data: null }, // saveToCache existing check — no existing record
     ]
 
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({
-        cnpj: '49449868000162',
-        razao_social: 'ENLIV ENERGIA LTDA',
-        nome_fantasia: 'ENLIV',
-        cnae_fiscal: 3514000,
-        cnae_fiscal_descricao: 'Distribuição de energia elétrica',
-        municipio: 'CURITIBA',
-        uf: 'PR',
-      }), { status: 200 }),
+      new Response(
+        JSON.stringify({
+          cnpj: '49449868000162',
+          razao_social: 'ENLIV ENERGIA LTDA',
+          nome_fantasia: 'ENLIV',
+          cnae_fiscal: 3514000,
+          cnae_fiscal_descricao: 'Distribuição de energia elétrica',
+          municipio: 'CURITIBA',
+          uf: 'PR',
+        }),
+        { status: 200 },
+      ),
     )
 
     const result = await lookupCnpj('49449868000162')
@@ -159,26 +176,32 @@ describe('lookupCnpj', () => {
   it('updates existing cache record and tracks field changes', async () => {
     singleResults = [
       { data: null }, // cache miss
-      { data: {       // saveToCache finds existing record with different values
-        id: 'existing-id-123',
-        legal_name: 'OLD LEGAL NAME',
-        trade_name: 'OLD TRADE',
-        activity_description: 'old activity',
-        city: 'OLD CITY',
-        state: 'XX',
-      } },
+      {
+        data: {
+          // saveToCache finds existing record with different values
+          id: 'existing-id-123',
+          legal_name: 'OLD LEGAL NAME',
+          trade_name: 'OLD TRADE',
+          activity_description: 'old activity',
+          city: 'OLD CITY',
+          state: 'XX',
+        },
+      },
     ]
 
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({
-        cnpj: '49449868000162',
-        razao_social: 'ENLIV ENERGIA LTDA',
-        nome_fantasia: 'ENLIV',
-        cnae_fiscal: 3514000,
-        cnae_fiscal_descricao: 'Distribuição de energia elétrica',
-        municipio: 'CURITIBA',
-        uf: 'PR',
-      }), { status: 200 }),
+      new Response(
+        JSON.stringify({
+          cnpj: '49449868000162',
+          razao_social: 'ENLIV ENERGIA LTDA',
+          nome_fantasia: 'ENLIV',
+          cnae_fiscal: 3514000,
+          cnae_fiscal_descricao: 'Distribuição de energia elétrica',
+          municipio: 'CURITIBA',
+          uf: 'PR',
+        }),
+        { status: 200 },
+      ),
     )
 
     await lookupCnpj('49449868000162')
@@ -186,7 +209,9 @@ describe('lookupCnpj', () => {
     // Should have inserted history records for changed fields
     expect(mockHistoryInsert).toHaveBeenCalled()
     const historyCalls = mockHistoryInsert.mock.calls
-    const changedFields = historyCalls.map((call: unknown[]) => (call[0] as Record<string, unknown>).field_changed)
+    const changedFields = historyCalls.map(
+      (call: unknown[]) => (call[0] as Record<string, unknown>).field_changed,
+    )
     expect(changedFields).toContain('legal_name')
     expect(changedFields).toContain('city')
     expect(changedFields).toContain('state')
@@ -202,7 +227,9 @@ describe('verifyCnpjExists', () => {
   it("returns 'exists' when BrasilAPI returns 200", async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(new Response(JSON.stringify({ cnpj: '49449868000162' }), { status: 200 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ cnpj: '49449868000162' }), { status: 200 }),
+      )
 
     const status = await verifyCnpjExists('49449868000162')
     expect(status).toBe('exists')
@@ -210,9 +237,7 @@ describe('verifyCnpjExists', () => {
   })
 
   it("returns 'not-found' when BrasilAPI returns 404", async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('Not Found', { status: 404 }),
-    )
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('Not Found', { status: 404 }))
 
     const status = await verifyCnpjExists('00000000000000')
     expect(status).toBe('not-found')
@@ -233,7 +258,9 @@ describe('verifyCnpjExists', () => {
     vi.spyOn(globalThis, 'fetch')
       .mockResolvedValueOnce(new Response('Error', { status: 500 }))
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ status: 'ERROR', message: 'CNPJ inválido' }), { status: 200 }),
+        new Response(JSON.stringify({ status: 'ERROR', message: 'CNPJ inválido' }), {
+          status: 200,
+        }),
       )
 
     const status = await verifyCnpjExists('49449868000162')
@@ -261,7 +288,9 @@ describe('verifyCnpjExists', () => {
   it('strips formatting characters before calling the API', async () => {
     const fetchSpy = vi
       .spyOn(globalThis, 'fetch')
-      .mockResolvedValueOnce(new Response(JSON.stringify({ cnpj: '49449868000162' }), { status: 200 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ cnpj: '49449868000162' }), { status: 200 }),
+      )
 
     await verifyCnpjExists('49.449.868/0001-62')
     const url = (fetchSpy.mock.calls[0][0] as string) ?? ''

@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  useRef,
-  useState,
-  useEffect,
-  type MutableRefObject,
-  type ReactNode,
-} from 'react'
+import { useRef, useState, useEffect, type MutableRefObject, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { Upload, FileText, X, Eye, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -96,7 +90,11 @@ function FileUpload({
   const isUploading = progress !== undefined && progress >= 0 && progress < 100
   const isImage = activeFile?.type.startsWith('image/') ?? false
 
-  function label(key: keyof FileUploadLabels, i18nKey: string, vars?: Record<string, string | number>) {
+  function label(
+    key: keyof FileUploadLabels,
+    i18nKey: string,
+    vars?: Record<string, string | number>,
+  ) {
     return labels?.[key] ?? t(i18nKey, vars)
   }
 
@@ -244,7 +242,8 @@ function FileUpload({
   }
 
   if (hasFile) {
-    const fileName = uploadedFileName ?? activeFile?.name ?? uploadedUrl?.split('/').pop() ?? 'Document'
+    const fileName =
+      uploadedFileName ?? activeFile?.name ?? uploadedUrl?.split('/').pop() ?? 'Document'
     const previewUrl = activeFile && isImage ? URL.createObjectURL(activeFile) : uploadedUrl
 
     return (
@@ -264,33 +263,40 @@ function FileUpload({
           )}
 
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-foreground">{fileName}</p>
+            <p className="text-foreground truncate text-sm font-medium">{fileName}</p>
             {isUploading ? (
               <div className="mt-1.5">
-                <div className="h-1.5 overflow-hidden rounded-full bg-border">
+                <div className="bg-border h-1.5 overflow-hidden rounded-full">
                   <div
-                    className="h-full rounded-full bg-primary transition-all duration-300"
+                    className="bg-primary h-full rounded-full transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
               </div>
             ) : (
-              <p className="mt-0.5 text-sm text-muted-foreground">
-                {activeFile ? `${(activeFile.size / 1024).toFixed(0)} KB` : label('uploaded', 'uploaded')}
+              <p className="text-muted-foreground mt-0.5 text-sm">
+                {activeFile
+                  ? `${(activeFile.size / 1024).toFixed(0)} KB`
+                  : label('uploaded', 'uploaded')}
               </p>
             )}
           </div>
 
           <div className="flex shrink-0 items-center gap-1">
-            {(onView || previewUrl) && !isUploading && (
-              onView ? (
+            {(onView || previewUrl) &&
+              !isUploading &&
+              (onView ? (
                 <Button
                   variant="ghost"
                   size="icon"
                   disabled={viewing}
                   onClick={async () => {
                     setViewing(true)
-                    try { await onView() } finally { setViewing(false) }
+                    try {
+                      await onView()
+                    } finally {
+                      setViewing(false)
+                    }
                   }}
                 >
                   {viewing ? <Loader2 className="animate-spin" /> : <Eye />}
@@ -304,14 +310,8 @@ function FileUpload({
                 >
                   <Eye />
                 </a>
-              )
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              data-testid="file-clear-btn"
-              onClick={handleClear}
-            >
+              ))}
+            <Button variant="ghost" size="icon" data-testid="file-clear-btn" onClick={handleClear}>
               <X />
             </Button>
           </div>
@@ -329,34 +329,38 @@ function FileUpload({
         variant="dashed"
         size="none"
         className={cn(
-          'cursor-pointer transition-colors hover:border-primary/30 hover:bg-muted/70',
+          'hover:border-primary/30 hover:bg-muted/70 cursor-pointer transition-colors',
           isLarge ? 'px-6 py-16' : 'px-4 py-5',
           isDragging && 'border-primary bg-primary-subtle',
         )}
         onClick={() => inputRef.current?.click()}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click() }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') inputRef.current?.click()
+        }}
         onDragEnter={handleDragEnter}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         data-dragging={isDragging ? 'true' : undefined}
       >
-        <div className={cn('flex flex-col items-center justify-center', isLarge ? 'gap-4' : 'gap-2')}>
+        <div
+          className={cn('flex flex-col items-center justify-center', isLarge ? 'gap-4' : 'gap-2')}
+        >
           <Upload className={cn('text-muted-foreground', isLarge ? 'size-8' : 'size-5')} />
           <div className="flex flex-col items-center gap-2">
-            <p className={cn('text-center text-muted-foreground', isLarge ? 'text-base' : 'text-sm')}>
+            <p
+              className={cn('text-muted-foreground text-center', isLarge ? 'text-base' : 'text-sm')}
+            >
               {label('dropzone', 'tapToAttach')}
             </p>
             {dragHint && (
-              <p className="hidden text-sm text-muted-foreground sm:block">
-                {dragHint}
-              </p>
+              <p className="text-muted-foreground hidden text-sm sm:block">{dragHint}</p>
             )}
           </div>
           {hint && (
-            <p className="rounded-2xl bg-warning-subtle px-3 py-1.5 text-center text-sm text-warning-subtle-foreground">
+            <p className="bg-warning-subtle text-warning-subtle-foreground rounded-2xl px-3 py-1.5 text-center text-sm">
               {hint}
             </p>
           )}
@@ -369,9 +373,7 @@ function FileUpload({
         onChange={handleSelect}
         className="hidden"
       />
-      {localError && (
-        <p className="mt-2 text-center text-sm text-destructive">{localError}</p>
-      )}
+      {localError && <p className="text-destructive mt-2 text-center text-sm">{localError}</p>}
     </div>
   )
 }

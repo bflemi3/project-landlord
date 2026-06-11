@@ -4,10 +4,7 @@ import posthog from 'posthog-js'
  *  instead of calling `posthog.capture(...)` directly — analytics shouldn't
  *  crash user flow when posthog is unavailable (e.g. tests, ad-blockers,
  *  consent-revoked sessions). */
-export function captureEvent(
-  event: string,
-  properties?: Record<string, unknown>,
-): void {
+export function captureEvent(event: string, properties?: Record<string, unknown>): void {
   try {
     // Only forward `properties` when defined — `posthog.capture(event,
     // undefined)` otherwise leaks an extra arg to the spy in tests that

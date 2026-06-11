@@ -4,7 +4,10 @@ import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
 export type UserRole = 'landlord' | 'tenant'
 
-export async function fetchUserRoles(supabase: TypedSupabaseClient, userId: string): Promise<UserRole[]> {
+export async function fetchUserRoles(
+  supabase: TypedSupabaseClient,
+  userId: string,
+): Promise<UserRole[]> {
   const { data, error } = await supabase
     .from('memberships')
     .select('role')
@@ -41,7 +44,9 @@ export interface HomeProperty {
 export async function fetchHomeProperties(supabase: TypedSupabaseClient): Promise<HomeProperty[]> {
   const { data, error } = await supabase
     .from('home_properties')
-    .select('property_id, name, city, state, role, unit_count, tenant_count, charge_count, pending_invite_count')
+    .select(
+      'property_id, name, city, state, role, unit_count, tenant_count, charge_count, pending_invite_count',
+    )
 
   if (error || !data) return []
 
@@ -75,7 +80,9 @@ export interface HomeAction {
 export async function fetchHomeActions(supabase: TypedSupabaseClient): Promise<HomeAction[]> {
   const { data, error } = await supabase
     .from('home_action_items')
-    .select('action_type, property_id, property_name, detail_id, detail_name, detail_email, detail_date')
+    .select(
+      'action_type, property_id, property_name, detail_id, detail_name, detail_email, detail_date',
+    )
 
   if (error || !data) return []
 

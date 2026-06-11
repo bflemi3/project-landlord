@@ -6,8 +6,7 @@ import { CONTRACT_EXTRACTION_SCHEMA_VERSION } from '@/lib/contract-extraction/ty
 import { CONTRACT_MIME_TYPES, contractInputSchema } from '../contract'
 
 const PDF = 'application/pdf' as const
-const DOCX =
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document' as const
+const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' as const
 
 function valid(overrides: Record<string, unknown> = {}) {
   return {
@@ -94,9 +93,7 @@ describe('contractInputSchema — happy paths', () => {
   })
 
   it('accepts a contract with a valid extraction payload', () => {
-    const r = contractInputSchema.safeParse(
-      valid({ extraction: validExtraction() }),
-    )
+    const r = contractInputSchema.safeParse(valid({ extraction: validExtraction() }))
     expect(r.success).toBe(true)
   })
 
@@ -266,9 +263,9 @@ describe('contractInputSchema — extraction schema version', () => {
       valid({ extraction: validExtraction({ extraction_schema_version: 0 }) }),
     )
     expect(r.success).toBe(false)
-    expect(
-      pathMessages(r, ['extraction', 'extraction_schema_version']),
-    ).toContain('invalidSchemaVersion')
+    expect(pathMessages(r, ['extraction', 'extraction_schema_version'])).toContain(
+      'invalidSchemaVersion',
+    )
   })
 
   it('rejects a non-integer schema_version with "invalidSchemaVersion"', () => {

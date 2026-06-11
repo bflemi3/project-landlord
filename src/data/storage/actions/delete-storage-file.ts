@@ -8,9 +8,7 @@ export async function deleteStorageFileCore(
   bucket: string,
   path: string,
 ): Promise<{ success: boolean }> {
-  const { error } = await supabase.storage
-    .from(bucket)
-    .remove([path])
+  const { error } = await supabase.storage.from(bucket).remove([path])
 
   return { success: !error }
 }

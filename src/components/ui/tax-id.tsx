@@ -19,11 +19,7 @@ type TaxIdInputBaseProps = Omit<
   onValueChange: (value: string) => void
 }
 
-function BrazilTaxIdInput({
-  value,
-  onValueChange,
-  ...props
-}: TaxIdInputBaseProps) {
+function BrazilTaxIdInput({ value, onValueChange, ...props }: TaxIdInputBaseProps) {
   return (
     <Input
       data-slot="tax-id-input"
@@ -41,11 +37,7 @@ function BrazilTaxIdInput({
   )
 }
 
-function BrazilCnpjInput({
-  value,
-  onValueChange,
-  ...props
-}: TaxIdInputBaseProps) {
+function BrazilCnpjInput({ value, onValueChange, ...props }: TaxIdInputBaseProps) {
   return (
     <Input
       data-slot="tax-id-input"
@@ -63,11 +55,7 @@ function BrazilCnpjInput({
   )
 }
 
-function BrazilCpfOrCnpjInput({
-  value,
-  onValueChange,
-  ...props
-}: TaxIdInputBaseProps) {
+function BrazilCpfOrCnpjInput({ value, onValueChange, ...props }: TaxIdInputBaseProps) {
   return (
     <Input
       data-slot="tax-id-input"
@@ -85,11 +73,7 @@ function BrazilCpfOrCnpjInput({
   )
 }
 
-function FallbackTaxIdInput({
-  value,
-  onValueChange,
-  ...props
-}: TaxIdInputBaseProps) {
+function FallbackTaxIdInput({ value, onValueChange, ...props }: TaxIdInputBaseProps) {
   return (
     <Input
       data-slot="tax-id-input"

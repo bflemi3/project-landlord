@@ -65,7 +65,9 @@ describe('leaseEndStateForDate', () => {
 
 describe('rentEarnedMinor', () => {
   it('null when start_date is null', () => {
-    expect(rentEarnedMinor({ amount_minor: 300000, start_date: null, end_date: null }, NOW)).toBeNull()
+    expect(
+      rentEarnedMinor({ amount_minor: 300000, start_date: null, end_date: null }, NOW),
+    ).toBeNull()
   })
   it('null when start_date is in the future', () => {
     expect(
@@ -100,13 +102,19 @@ describe('rentIsActiveNow', () => {
     expect(rentIsActiveNow({ amount_minor: 1, start_date: null, end_date: null }, NOW)).toBe(true)
   })
   it('not active when start_date is in the future', () => {
-    expect(rentIsActiveNow({ amount_minor: 1, start_date: '2026-06-01', end_date: null }, NOW)).toBe(false)
+    expect(
+      rentIsActiveNow({ amount_minor: 1, start_date: '2026-06-01', end_date: null }, NOW),
+    ).toBe(false)
   })
   it('not active when end_date is in the past', () => {
-    expect(rentIsActiveNow({ amount_minor: 1, start_date: '2026-01-01', end_date: '2026-05-01' }, NOW)).toBe(false)
+    expect(
+      rentIsActiveNow({ amount_minor: 1, start_date: '2026-01-01', end_date: '2026-05-01' }, NOW),
+    ).toBe(false)
   })
   it('active when end_date equals today', () => {
-    expect(rentIsActiveNow({ amount_minor: 1, start_date: '2026-01-01', end_date: '2026-05-11' }, NOW)).toBe(true)
+    expect(
+      rentIsActiveNow({ amount_minor: 1, start_date: '2026-01-01', end_date: '2026-05-11' }, NOW),
+    ).toBe(true)
   })
 })
 

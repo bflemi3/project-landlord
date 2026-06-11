@@ -13,15 +13,8 @@ import * as taxId from '../steps/checkout/sections/tax-id/state'
 import * as tenants from '../steps/checkout/sections/tenants/state'
 
 import { CHECKOUT_SECTIONS } from './registry'
-import type {
-  PropertyCreationActions,
-  PropertyCreationStateShape,
-} from './store'
-import type {
-  SectionId,
-  SectionServerErrors,
-  ServerErrorsResponse,
-} from './types'
+import type { PropertyCreationActions, PropertyCreationStateShape } from './store'
+import type { SectionId, SectionServerErrors, ServerErrorsResponse } from './types'
 
 /** Returns the first `SectionId` in canonical order whose slice has any
  *  errors, or `null` if every slice is empty. */

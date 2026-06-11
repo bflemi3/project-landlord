@@ -1,10 +1,6 @@
 import { z } from 'zod'
 
-import {
-  brazilCpfOrCnpjSchema,
-  fallbackTaxIdSchema,
-  taxIdBaseSchema,
-} from '@/schemas/tax-id'
+import { brazilCpfOrCnpjSchema, fallbackTaxIdSchema, taxIdBaseSchema } from '@/schemas/tax-id'
 
 export const taxIdInputBaseSchema = z.object({
   tax_id: taxIdBaseSchema,
@@ -43,9 +39,8 @@ const TAX_ID_INPUT_SCHEMAS_BY_COUNTRY = {
  */
 export function getTaxIdInputSchema(countryCode = 'BR') {
   return (
-    TAX_ID_INPUT_SCHEMAS_BY_COUNTRY[
-      countryCode as keyof typeof TAX_ID_INPUT_SCHEMAS_BY_COUNTRY
-    ] ?? fallbackTaxIdInputSchema
+    TAX_ID_INPUT_SCHEMAS_BY_COUNTRY[countryCode as keyof typeof TAX_ID_INPUT_SCHEMAS_BY_COUNTRY] ??
+    fallbackTaxIdInputSchema
   )
 }
 

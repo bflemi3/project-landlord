@@ -72,12 +72,8 @@ describe('fallbackTaxIdInputSchema (non-BR)', () => {
   })
 
   it('accepts any non-empty string ≤64 chars', () => {
-    expect(
-      fallbackTaxIdInputSchema.safeParse({ tax_id: '12345' }).success,
-    ).toBe(true)
-    expect(
-      fallbackTaxIdInputSchema.safeParse({ tax_id: 'arbitrary-id' }).success,
-    ).toBe(true)
+    expect(fallbackTaxIdInputSchema.safeParse({ tax_id: '12345' }).success).toBe(true)
+    expect(fallbackTaxIdInputSchema.safeParse({ tax_id: 'arbitrary-id' }).success).toBe(true)
   })
 })
 

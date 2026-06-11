@@ -32,10 +32,7 @@ export const contractInputSchema = z
       .trim()
       .min(1, { error: 'required' })
       .max(255, { error: 'tooLong' }),
-    extension: z
-      .string()
-      .toLowerCase()
-      .regex(EXTENSION_RE, { error: 'invalidExtension' }),
+    extension: z.string().toLowerCase().regex(EXTENSION_RE, { error: 'invalidExtension' }),
     // `extraction` is nullable because extraction may have failed (timeout,
     // unsupported format) — the wizard still proceeds and the contract row
     // lands with `extraction_schema_version = 0`. When present, the persisted
@@ -60,8 +57,7 @@ export const contractInputSchema = z
   .superRefine((contract, ctx) => {
     if (
       contract.extraction != null &&
-      contract.extraction.extraction_schema_version !==
-        CONTRACT_EXTRACTION_SCHEMA_VERSION
+      contract.extraction.extraction_schema_version !== CONTRACT_EXTRACTION_SCHEMA_VERSION
     ) {
       ctx.addIssue({
         code: 'custom',

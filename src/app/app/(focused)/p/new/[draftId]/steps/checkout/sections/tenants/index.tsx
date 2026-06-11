@@ -33,17 +33,11 @@ export function TenantsSection() {
   const storeApi = usePropertyCreationStoreApi()
 
   const promoteAllTouched = useCallback(() => {
-    const sectionData = storeApi.getState().sectionData.tenants as
-      | TenantRow[]
-      | undefined
-    setTouched<TenantsTouched>(SECTION_ID, (prev) =>
-      setAllTouched(prev, sectionData),
-    )
+    const sectionData = storeApi.getState().sectionData.tenants as TenantRow[] | undefined
+    setTouched<TenantsTouched>(SECTION_ID, (prev) => setAllTouched(prev, sectionData))
   }, [setTouched, storeApi])
 
-  const tenants = usePropertyCreationState(
-    (s) => s.sectionData.tenants as TenantRow[],
-  )
+  const tenants = usePropertyCreationState((s) => s.sectionData.tenants as TenantRow[])
   const countryCode = usePropertyCreationState(
     (s) => (s.sectionData.property as PropertyInput).country_code,
   )
@@ -67,11 +61,7 @@ export function TenantsSection() {
   )
 
   return (
-    <Section
-      id={SECTION_ID}
-      onFirstVisit={onFirstVisit}
-      onLeave={promoteAllTouched}
-    >
+    <Section id={SECTION_ID} onFirstVisit={onFirstVisit} onLeave={promoteAllTouched}>
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
           <ICON />
@@ -107,9 +97,7 @@ export function TenantsSectionSkeleton() {
 
 export function TenantsSummaryRow() {
   const t = useTranslations('propertyCreation.checkout.tenants')
-  const tenants = usePropertyCreationState(
-    (s) => s.sectionData.tenants as TenantRow[],
-  )
+  const tenants = usePropertyCreationState((s) => s.sectionData.tenants as TenantRow[])
   const detail = useMemo(
     () =>
       formatTenantsSummary(tenants, {
@@ -118,9 +106,7 @@ export function TenantsSummaryRow() {
       }),
     [tenants, t],
   )
-  return (
-    <SummaryRow sectionId={SECTION_ID} title={t('title')} detail={detail || null} />
-  )
+  return <SummaryRow sectionId={SECTION_ID} title={t('title')} detail={detail || null} />
 }
 
 // Builds the recap line shown both in the section's collapsed header and the
@@ -135,10 +121,8 @@ function formatTenantsSummary(
   },
 ): string {
   if (tenants.length === 0) return ''
-  const rendered = tenants.map(
-    (tenant) => tenant.name || tenant.email || labels.newTenantLabel,
-  )
+  const rendered = tenants.map((tenant) => tenant.name || tenant.email || labels.newTenantLabel)
   if (rendered.length <= SUMMARY_NAME_LIMIT) return rendered.join(', ')
   const head = rendered.slice(0, SUMMARY_NAME_LIMIT).join(', ')
   return `${head} ${labels.andMoreLabel(rendered.length - SUMMARY_NAME_LIMIT)}`
-} 
+}

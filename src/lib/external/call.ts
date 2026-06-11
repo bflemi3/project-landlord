@@ -1,4 +1,9 @@
-import type { ExternalCallResult, ExternalCallError, ExternalCallOptions, ExternalFetchOptions } from './types'
+import type {
+  ExternalCallResult,
+  ExternalCallError,
+  ExternalCallOptions,
+  ExternalFetchOptions,
+} from './types'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@/lib/types/database'
 
@@ -25,7 +30,9 @@ function getServiceClient() {
  *     fn: async () => fetchSomething(),
  *   })
  */
-export async function externalCall<T>(options: Omit<ExternalCallOptions, 'fn'> & { fn: () => Promise<T> }): Promise<ExternalCallResult<T>> {
+export async function externalCall<T>(
+  options: Omit<ExternalCallOptions, 'fn'> & { fn: () => Promise<T> },
+): Promise<ExternalCallResult<T>> {
   const start = Date.now()
   const timestamp = new Date().toISOString()
 
@@ -44,7 +51,13 @@ export async function externalCall<T>(options: Omit<ExternalCallOptions, 'fn'> &
   } catch (err) {
     const duration = Date.now() - start
     const error = normalizeError(err, options.service, options.operation)
-    logCall({ service: options.service, operation: options.operation, success: false, duration, error })
+    logCall({
+      service: options.service,
+      operation: options.operation,
+      success: false,
+      duration,
+      error,
+    })
     return {
       success: false,
       error,
@@ -60,7 +73,9 @@ export async function externalCall<T>(options: Omit<ExternalCallOptions, 'fn'> &
  * Convenience wrapper for external fetch calls.
  * Handles HTTP status categorization, JSON parsing, and optional shape validation.
  */
-export async function externalFetch<T = unknown>(options: ExternalFetchOptions): Promise<ExternalCallResult<T>> {
+export async function externalFetch<T = unknown>(
+  options: ExternalFetchOptions,
+): Promise<ExternalCallResult<T>> {
   return externalCall<T>({
     service: options.service,
     operation: options.operation,
@@ -145,17 +160,15 @@ function logCall(entry: {
   void (async () => {
     try {
       const supabase = getServiceClient()
-      const { error } = await supabase
-        .from('external_call_log')
-        .insert({
-          service: entry.service,
-          operation: entry.operation,
-          success: entry.success,
-          duration_ms: entry.duration,
-          error_category: entry.error?.category ?? null,
-          error_message: entry.error?.message ?? null,
-          status_code: entry.error?.statusCode ?? null,
-        })
+      const { error } = await supabase.from('external_call_log').insert({
+        service: entry.service,
+        operation: entry.operation,
+        success: entry.success,
+        duration_ms: entry.duration,
+        error_category: entry.error?.category ?? null,
+        error_message: entry.error?.message ?? null,
+        status_code: entry.error?.statusCode ?? null,
+      })
       if (error) console.error('[external_call_log] Failed to log:', error.message)
     } catch (err) {
       console.error('[external_call_log] Unexpected error:', err)

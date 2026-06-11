@@ -71,9 +71,7 @@ function AccordionItem({
         // down smoothly with no JS measurement. Pairs with the opacity
         // transition for a synchronized fade + size on both add and remove.
         'grid w-full min-w-0 transition-[grid-template-rows,opacity] duration-200',
-        show
-          ? 'grid-rows-[1fr] opacity-100'
-          : 'pointer-events-none grid-rows-[0fr] opacity-0',
+        show ? 'grid-rows-[1fr] opacity-100' : 'pointer-events-none grid-rows-[0fr] opacity-0',
         className,
       )}
       {...props}
@@ -81,9 +79,7 @@ function AccordionItem({
       {/* `min-h-0` lets the grid row actually shrink past content height;
           `overflow-clip` (with the standard 6px margin) clips during the
           collapse without cutting focus rings on inner controls. */}
-      <div className="min-h-0 min-w-0 overflow-clip [overflow-clip-margin:6px]">
-        {children}
-      </div>
+      <div className="min-h-0 min-w-0 overflow-clip [overflow-clip-margin:6px]">{children}</div>
     </AccordionPrimitive.Item>
   )
 }
@@ -117,7 +113,7 @@ function AccordionContent({ className, children, ...props }: AccordionPrimitive.
       // keeps the height-collapse animation working while letting focus rings
       // (~3px) on inner controls render past the panel's bounds without being
       // cut off. Same pattern as `section.tsx`'s SectionBody.
-      className="data-open:animate-accordion-down data-closed:animate-accordion-up overflow-clip [overflow-clip-margin:6px] text-sm"
+      className="data-open:animate-accordion-down data-closed:animate-accordion-up overflow-clip text-sm [overflow-clip-margin:6px]"
       {...props}
     >
       <div

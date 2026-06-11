@@ -36,9 +36,7 @@ export const CheckoutContextProvider = CheckoutContext.Provider
 export function useCheckoutContext(): CheckoutContextValue {
   const ctx = useContext(CheckoutContext)
   if (!ctx) {
-    throw new Error(
-      'useCheckoutContext must be used inside a <CheckoutContextProvider>',
-    )
+    throw new Error('useCheckoutContext must be used inside a <CheckoutContextProvider>')
   }
   return ctx
 }

@@ -9,7 +9,7 @@ export function FrameContent() {
   const index = Number(searchParams.get('index') ?? 0)
   const variant = URGENT_ACTION_VARIANTS[index]
 
-  if (!variant) return <p className="p-4 text-sm text-muted-foreground">Unknown variant</p>
+  if (!variant) return <p className="text-muted-foreground p-4 text-sm">Unknown variant</p>
 
   return (
     <div className="p-6">

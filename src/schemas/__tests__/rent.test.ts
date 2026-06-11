@@ -23,14 +23,9 @@ function fieldErrors(input: unknown) {
   return z.flattenError(r.error).fieldErrors
 }
 
-function pathMessages(
-  r: ReturnType<typeof rentInputSchema.safeParse>,
-  field: string,
-): string[] {
+function pathMessages(r: ReturnType<typeof rentInputSchema.safeParse>, field: string): string[] {
   if (r.success) return []
-  return r.error.issues
-    .filter((i) => i.path[0] === field)
-    .map((i) => i.message)
+  return r.error.issues.filter((i) => i.path[0] === field).map((i) => i.message)
 }
 
 // =============================================================================
@@ -148,31 +143,23 @@ describe('rentInputSchema — money model', () => {
 
 describe('rentInputSchema — end_date after start_date', () => {
   it('accepts equal start and end dates', () => {
-    const r = rentInputSchema.safeParse(
-      valid({ start_date: '2026-01-01', end_date: '2026-01-01' }),
-    )
+    const r = rentInputSchema.safeParse(valid({ start_date: '2026-01-01', end_date: '2026-01-01' }))
     expect(r.success).toBe(true)
   })
 
   it('accepts end_date after start_date', () => {
-    const r = rentInputSchema.safeParse(
-      valid({ start_date: '2026-01-01', end_date: '2027-01-01' }),
-    )
+    const r = rentInputSchema.safeParse(valid({ start_date: '2026-01-01', end_date: '2027-01-01' }))
     expect(r.success).toBe(true)
   })
 
   it('rejects end_date before start_date with "endDateBeforeStart"', () => {
-    const r = rentInputSchema.safeParse(
-      valid({ start_date: '2027-01-01', end_date: '2026-01-01' }),
-    )
+    const r = rentInputSchema.safeParse(valid({ start_date: '2027-01-01', end_date: '2026-01-01' }))
     expect(r.success).toBe(false)
     expect(pathMessages(r, 'end_date')).toContain('endDateBeforeStart')
   })
 
   it('does not fire when one date is null', () => {
-    expect(
-      rentInputSchema.safeParse(valid({ start_date: '2026-01-01' })).success,
-    ).toBe(true)
+    expect(rentInputSchema.safeParse(valid({ start_date: '2026-01-01' })).success).toBe(true)
   })
 })
 
@@ -214,9 +201,7 @@ describe('rentInputSchema — adjustment value consistency', () => {
   })
 
   it('fixed_percentage missing adjustment_basis_points → "required"', () => {
-    const r = rentInputSchema.safeParse(
-      valid({ adjustment_method: 'fixed_percentage' }),
-    )
+    const r = rentInputSchema.safeParse(valid({ adjustment_method: 'fixed_percentage' }))
     expect(r.success).toBe(false)
     expect(pathMessages(r, 'adjustment_basis_points')).toContain('required')
   })
@@ -286,9 +271,7 @@ describe('rentInputSchema — includes', () => {
   })
 
   it('accepts a valid expense_type array', () => {
-    const r = rentInputSchema.safeParse(
-      valid({ includes: ['condo', 'water'] }),
-    )
+    const r = rentInputSchema.safeParse(valid({ includes: ['condo', 'water'] }))
     expect(r.success).toBe(true)
   })
 
@@ -296,9 +279,7 @@ describe('rentInputSchema — includes', () => {
     const r = rentInputSchema.safeParse(valid({ includes: ['rent'] }))
     expect(r.success).toBe(false)
     if (!r.success) {
-      expect(
-        r.error.issues.some((i) => i.message === 'invalidExpenseType'),
-      ).toBe(true)
+      expect(r.error.issues.some((i) => i.message === 'invalidExpenseType')).toBe(true)
     }
   })
 })

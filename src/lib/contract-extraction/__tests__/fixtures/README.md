@@ -5,18 +5,18 @@ contract-extraction pipeline tests (unit and LLM integration).
 
 ## Files
 
-| File                         | Language | Shape                                                                           |
-| ---------------------------- | -------- | ------------------------------------------------------------------------------- |
-| `pt-br-real.docx` / `.pdf`   | pt-br    | Real Brazilian Sun Club contract (Brandon/Alex, R$6.300 bundled rent).          |
-| `pt-br-synthetic-1.*`        | pt-br    | Formal Quadro Resumo as a table, IPCA annual adjustment, two co-tenants.        |
-| `pt-br-synthetic-2.*`        | pt-br    | Prose-only sobrado (house) in Rio, DD/MM/YYYY dates, IGP-M adjustment.          |
-| `en-synthetic-1.*`           | en       | California apartment, MM/DD/YYYY dates, CPI escalation.                         |
-| `en-synthetic-2.*`           | en       | Texas house, "Month DD, YYYY" dates, two co-tenants, TERM-before-PARTIES order. |
-| `es-synthetic-1.*`           | es       | Mexican contrato de arrendamiento, RFC + CURP, MXN, INPC adjustment.            |
-| `es-synthetic-2.*`           | es       | Spanish (Spain) contrato de vivienda, DNI, euros, IPC/LAU references.           |
-| `empty-body.docx`            | —        | DOCX with valid structure but empty body (no_text_extractable).                 |
-| `locked.pdf`                 | —        | Password-protected PDF (password_protected).                                    |
-| `no-text-layer.pdf`          | —        | PDF with no text layer (no_text_extractable).                                   |
+| File                       | Language | Shape                                                                           |
+| -------------------------- | -------- | ------------------------------------------------------------------------------- |
+| `pt-br-real.docx` / `.pdf` | pt-br    | Real Brazilian Sun Club contract (Brandon/Alex, R$6.300 bundled rent).          |
+| `pt-br-synthetic-1.*`      | pt-br    | Formal Quadro Resumo as a table, IPCA annual adjustment, two co-tenants.        |
+| `pt-br-synthetic-2.*`      | pt-br    | Prose-only sobrado (house) in Rio, DD/MM/YYYY dates, IGP-M adjustment.          |
+| `en-synthetic-1.*`         | en       | California apartment, MM/DD/YYYY dates, CPI escalation.                         |
+| `en-synthetic-2.*`         | en       | Texas house, "Month DD, YYYY" dates, two co-tenants, TERM-before-PARTIES order. |
+| `es-synthetic-1.*`         | es       | Mexican contrato de arrendamiento, RFC + CURP, MXN, INPC adjustment.            |
+| `es-synthetic-2.*`         | es       | Spanish (Spain) contrato de vivienda, DNI, euros, IPC/LAU references.           |
+| `empty-body.docx`          | —        | DOCX with valid structure but empty body (no_text_extractable).                 |
+| `locked.pdf`               | —        | Password-protected PDF (password_protected).                                    |
+| `no-text-layer.pdf`        | —        | PDF with no text layer (no_text_extractable).                                   |
 
 Every synthetic fixture is authored to read plausibly as a draft written by a
 human lawyer familiar with that jurisdiction's rental law (Lei do Inquilinato,
@@ -98,13 +98,13 @@ format-independent.
 
 Each leaf in an expected file is an **assertion spec**, one of:
 
-| Spec                                 | Meaning                                                                            |
-| ------------------------------------ | ---------------------------------------------------------------------------------- |
-| `{ "equals": <value> }`              | Exact match (numbers, enum values, ISO dates, booleans, raw strings).              |
-| `{ "contains": "<substring>" }`      | Case-insensitive substring match. Tolerates LLM casing variation.                  |
-| `{ "normalizedEquals": "<string>" }` | Compare after stripping diacritics, lowercasing, and collapsing whitespace.        |
-| `{ "isNull": true }`                 | Field must be `null` / `undefined`. Use for fields intentionally absent.           |
-| `{ "notNull": true }`                | Field must be non-null. Use when presence matters but the exact value varies.      |
+| Spec                                 | Meaning                                                                       |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `{ "equals": <value> }`              | Exact match (numbers, enum values, ISO dates, booleans, raw strings).         |
+| `{ "contains": "<substring>" }`      | Case-insensitive substring match. Tolerates LLM casing variation.             |
+| `{ "normalizedEquals": "<string>" }` | Compare after stripping diacritics, lowercasing, and collapsing whitespace.   |
+| `{ "isNull": true }`                 | Field must be `null` / `undefined`. Use for fields intentionally absent.      |
+| `{ "notNull": true }`                | Field must be non-null. Use when presence matters but the exact value varies. |
 
 For nested objects (e.g. `address`, `rent`, `contractDates`, `rentAdjustment`)
 the value is directly an object mapping field names to assertion specs —
@@ -113,13 +113,13 @@ walk recursively.
 For arrays of objects (`landlords`, `tenants`, `expenses`) the value is a
 **list-assertion object** with any of:
 
-| Key            | Meaning                                                                          |
-| -------------- | -------------------------------------------------------------------------------- |
-| `length`       | Exact array length. Fails if `actual.length !== length`.                         |
-| `minLength`    | Minimum array length. Fails if `actual.length < minLength`.                      |
-| `items`        | Array of per-item assertion objects. Each expected item must find **some**       |
-|                | matching actual item (order-independent). A matching item satisfies every       |
-|                | field assertion in the expected item.                                            |
+| Key         | Meaning                                                                    |
+| ----------- | -------------------------------------------------------------------------- |
+| `length`    | Exact array length. Fails if `actual.length !== length`.                   |
+| `minLength` | Minimum array length. Fails if `actual.length < minLength`.                |
+| `items`     | Array of per-item assertion objects. Each expected item must find **some** |
+|             | matching actual item (order-independent). A matching item satisfies every  |
+|             | field assertion in the expected item.                                      |
 
 A missing `items` key means no per-item assertions — only the length check runs.
 
@@ -137,14 +137,14 @@ nested objects, and dispatches on the assertion-spec shape at each leaf. Task
 
 Full 14-fixture matrix (7 stems × PDF + DOCX) against `claude-sonnet-4-6`:
 
-| Metric                | Value                 |
-| --------------------- | --------------------- |
-| Total cost (USD)      | ~$0.58                |
-| Per-fixture avg       | ~$0.041               |
-| Per-fixture duration  | ~7.3s                 |
-| Input tokens (total)  | ~134k                 |
-| Output tokens (total) | ~6k                   |
-| Cache reads (total)   | ~89k (~66% of inputs) |
+| Metric                | Value                                 |
+| --------------------- | ------------------------------------- |
+| Total cost (USD)      | ~$0.58                                |
+| Per-fixture avg       | ~$0.041                               |
+| Per-fixture duration  | ~7.3s                                 |
+| Input tokens (total)  | ~134k                                 |
+| Output tokens (total) | ~6k                                   |
+| Cache reads (total)   | ~89k (~66% of inputs)                 |
 | Cache writes (total)  | ~15k (first call per language prompt) |
 
 Anthropic prompt caching is wired via `providerOptions.anthropic.cacheControl`

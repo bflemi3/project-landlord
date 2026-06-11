@@ -56,10 +56,7 @@ describe('FileUpload', () => {
 
     it('shows Eye icon link when uploadedUrl is provided', () => {
       renderWithIntl(
-        <FileUpload
-          uploadedUrl="https://example.com/bill.pdf"
-          uploadedFileName="bill.pdf"
-        />,
+        <FileUpload uploadedUrl="https://example.com/bill.pdf" uploadedFileName="bill.pdf" />,
       )
       const link = screen.getByRole('link')
       expect(link).toHaveAttribute('href', 'https://example.com/bill.pdf')
@@ -93,9 +90,7 @@ describe('FileUpload', () => {
 
   describe('labels override', () => {
     it('renders custom dropzone label when labels prop is provided', () => {
-      renderWithIntl(
-        <FileUpload labels={{ dropzone: 'Drop your contract here' }} />,
-      )
+      renderWithIntl(<FileUpload labels={{ dropzone: 'Drop your contract here' }} />)
       expect(screen.getByText('Drop your contract here')).toBeInTheDocument()
       expect(screen.queryByText('Tap to attach a bill')).not.toBeInTheDocument()
     })
@@ -135,16 +130,11 @@ describe('FileUpload', () => {
 
     it('starts upload on file select when upload props are provided', async () => {
       mockUploadFile.mockResolvedValue({ success: true })
-      const ref = createRef<Promise<UploadFileResult> | null>() as MutableRefObject<Promise<UploadFileResult> | null>
+      const ref =
+        createRef<Promise<UploadFileResult> | null>() as MutableRefObject<Promise<UploadFileResult> | null>
       ref.current = null
 
-      renderWithIntl(
-        <FileUpload
-          {...uploadProps}
-          uploadPromiseRef={ref}
-          onFileSelect={vi.fn()}
-        />,
-      )
+      renderWithIntl(<FileUpload {...uploadProps} uploadPromiseRef={ref} onFileSelect={vi.fn()} />)
 
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
       const file = new File(['content'], 'bill.pdf', { type: 'application/pdf' })
@@ -168,16 +158,11 @@ describe('FileUpload', () => {
       })
       mockUploadFile.mockReturnValue(uploadPromise)
 
-      const ref = createRef<Promise<UploadFileResult> | null>() as MutableRefObject<Promise<UploadFileResult> | null>
+      const ref =
+        createRef<Promise<UploadFileResult> | null>() as MutableRefObject<Promise<UploadFileResult> | null>
       ref.current = null
 
-      renderWithIntl(
-        <FileUpload
-          {...uploadProps}
-          uploadPromiseRef={ref}
-          onFileSelect={vi.fn()}
-        />,
-      )
+      renderWithIntl(<FileUpload {...uploadProps} uploadPromiseRef={ref} onFileSelect={vi.fn()} />)
 
       const input = document.querySelector('input[type="file"]') as HTMLInputElement
       const file = new File(['content'], 'bill.pdf', { type: 'application/pdf' })
@@ -192,10 +177,13 @@ describe('FileUpload', () => {
     it('aborts upload when onClear is called during upload', async () => {
       let resolveUpload: (value: UploadFileResult) => void
       mockUploadFile.mockReturnValue(
-        new Promise<UploadFileResult>((resolve) => { resolveUpload = resolve }),
+        new Promise<UploadFileResult>((resolve) => {
+          resolveUpload = resolve
+        }),
       )
 
-      const ref = createRef<Promise<UploadFileResult> | null>() as MutableRefObject<Promise<UploadFileResult> | null>
+      const ref =
+        createRef<Promise<UploadFileResult> | null>() as MutableRefObject<Promise<UploadFileResult> | null>
       ref.current = null
       const onClear = vi.fn()
 
@@ -229,9 +217,7 @@ describe('FileUpload', () => {
 
   describe('error slot', () => {
     it('replaces dropzone with the provided error node when error prop is set', () => {
-      renderWithIntl(
-        <FileUpload error={<div>Something broke</div>} />,
-      )
+      renderWithIntl(<FileUpload error={<div>Something broke</div>} />)
 
       expect(screen.getByText('Something broke')).toBeInTheDocument()
       expect(screen.queryByText('Tap to attach a bill')).not.toBeInTheDocument()
@@ -276,9 +262,7 @@ describe('FileUpload', () => {
 
   describe('desktop drag hint', () => {
     it('renders labels.dropzoneDrag when provided', () => {
-      renderWithIntl(
-        <FileUpload labels={{ dropzoneDrag: 'or drop one here' }} />,
-      )
+      renderWithIntl(<FileUpload labels={{ dropzoneDrag: 'or drop one here' }} />)
       expect(screen.getByText('or drop one here')).toBeInTheDocument()
     })
 
@@ -336,9 +320,7 @@ describe('FileUpload', () => {
 
     it('rejects an oversized dropped file with the fileTooLarge label', () => {
       const onFileSelect = vi.fn()
-      const { container } = renderWithIntl(
-        <FileUpload onFileSelect={onFileSelect} maxSizeMB={1} />,
-      )
+      const { container } = renderWithIntl(<FileUpload onFileSelect={onFileSelect} maxSizeMB={1} />)
       const dropzone = getDropzone(container)
       const big = new File([new Uint8Array(2 * 1024 * 1024)], 'huge.pdf', {
         type: 'application/pdf',

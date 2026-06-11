@@ -34,7 +34,7 @@ export default function EngLayout({ children }: { children: React.ReactNode }) {
     <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader className="p-4">
-          <Link href="/eng" className="flex items-center gap-2 font-semibold text-sm">
+          <Link href="/eng" className="flex items-center gap-2 text-sm font-semibold">
             <span className="text-primary font-extrabold">m</span>
             <span>eng</span>
           </Link>
@@ -64,11 +64,9 @@ export default function EngLayout({ children }: { children: React.ReactNode }) {
         <header className="flex h-12 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
-          <span className="text-sm text-muted-foreground">Billing Intelligence Playground</span>
+          <span className="text-muted-foreground text-sm">Billing Intelligence Playground</span>
         </header>
-        <div className="flex-1 overflow-auto p-6">
-          {children}
-        </div>
+        <div className="flex-1 overflow-auto p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )

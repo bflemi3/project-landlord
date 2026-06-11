@@ -8,15 +8,8 @@ import { formatCurrency } from '@/lib/format-currency'
 import { formatDate } from '@/lib/format'
 import type { Locale } from '@/i18n/routing'
 
-import {
-  type RentDatesInput,
-  type SupportedCurrency,
-} from './schemas'
-import {
-  clearFieldServerError,
-  setAllTouched,
-  type RentDatesTouched,
-} from './state'
+import { type RentDatesInput, type SupportedCurrency } from './schemas'
+import { clearFieldServerError, setAllTouched, type RentDatesTouched } from './state'
 import type { SectionId } from '../../../../state/registry'
 import {
   usePropertyCreationActions,
@@ -30,13 +23,7 @@ import { Section } from '../../section'
 import { SectionSkeleton } from '../section-skeleton'
 import { SummaryRow } from '../summary-row'
 import { AutoFilledIndicator } from '../auto-filled-indicator'
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldRow,
-} from '@/components/ui/field'
+import { Field, FieldError, FieldGroup, FieldLabel, FieldRow } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { IsoDatePicker } from '@/components/ui/iso-date-picker'
 import { CurrencyInput } from '@/components/ui/currency-input'
@@ -55,9 +42,7 @@ export function RentDatesSection() {
   const actions = usePropertyCreationActions()
   const { setSectionData, setServerErrors } = actions
   const storeApi = usePropertyCreationStoreApi()
-  const values = usePropertyCreationState(
-    (s) => s.sectionData['rent-dates'] as RentDatesInput,
-  )
+  const values = usePropertyCreationState((s) => s.sectionData['rent-dates'] as RentDatesInput)
 
   const locale = useLocale() as Locale
   const sectionSummary = useMemo(
@@ -121,10 +106,7 @@ export function RentDatesSection() {
     return result.ok
   }, [storeApi, actions, setServerErrors])
 
-  function setField<K extends keyof RentDatesInput>(
-    key: K,
-    next: RentDatesInput[K],
-  ) {
+  function setField<K extends keyof RentDatesInput>(key: K, next: RentDatesInput[K]) {
     setServerErrors('rent-dates', clearFieldServerError(key))
     setSectionData<RentDatesInput>('rent-dates', (prev: RentDatesInput) => ({
       ...prev,
@@ -148,11 +130,7 @@ export function RentDatesSection() {
   const onFirstVisit = path === 'contract' ? promoteAllTouched : undefined
 
   return (
-    <Section
-      id={SECTION_ID}
-      onFirstVisit={onFirstVisit}
-      onLeave={promoteAllTouched}
-    >
+    <Section id={SECTION_ID} onFirstVisit={onFirstVisit} onLeave={promoteAllTouched}>
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
           <ICON />
@@ -172,10 +150,7 @@ export function RentDatesSection() {
       <Section.Body>
         <FieldGroup>
           <FieldRow columns={3} breakpoint="md">
-            <Field
-              className="md:col-span-2"
-              data-invalid={hasAmountError || undefined}
-            >
+            <Field className="md:col-span-2" data-invalid={hasAmountError || undefined}>
               <FieldLabel htmlFor="rent-amount">
                 {tRentDates('rentAmount')}
                 <AutoFilledIndicator path="rent-dates.amount_minor" />
@@ -185,9 +160,7 @@ export function RentDatesSection() {
                 name="amount_minor"
                 aria-label={tRentDates('rentAmount')}
                 aria-invalid={hasAmountError}
-                aria-describedby={
-                  hasAmountError ? 'amount_minor-error' : undefined
-                }
+                aria-describedby={hasAmountError ? 'amount_minor-error' : undefined}
                 currency={values.currency}
                 value={values.amount_minor}
                 onBlur={() => markTouched('amount_minor')}
@@ -200,9 +173,7 @@ export function RentDatesSection() {
                 }}
               />
               {hasAmountError && (
-                <FieldError id="amount_minor-error">
-                  {tRentDates(amountError!)}
-                </FieldError>
+                <FieldError id="amount_minor-error">{tRentDates(amountError!)}</FieldError>
               )}
             </Field>
 
@@ -230,14 +201,10 @@ export function RentDatesSection() {
                 }}
                 onBlur={() => markTouched('due_day')}
                 aria-invalid={hasDueDayError}
-                aria-describedby={
-                  hasDueDayError ? 'due_day-error' : undefined
-                }
+                aria-describedby={hasDueDayError ? 'due_day-error' : undefined}
               />
               {hasDueDayError && (
-                <FieldError id="due_day-error">
-                  {tRentDates(dueDayError!)}
-                </FieldError>
+                <FieldError id="due_day-error">{tRentDates(dueDayError!)}</FieldError>
               )}
             </Field>
           </FieldRow>
@@ -254,9 +221,7 @@ export function RentDatesSection() {
                 name="start_date"
                 value={values.start_date}
                 invalid={hasStartDateError}
-                describedBy={
-                  hasStartDateError ? 'start_date-error' : undefined
-                }
+                describedBy={hasStartDateError ? 'start_date-error' : undefined}
                 onValueChange={(next) => {
                   setField('start_date', next)
                   markTouched('start_date')
@@ -264,9 +229,7 @@ export function RentDatesSection() {
                 onBlur={() => markTouched('start_date')}
               />
               {hasStartDateError && (
-                <FieldError id="start_date-error">
-                  {tRentDates(startDateError!)}
-                </FieldError>
+                <FieldError id="start_date-error">{tRentDates(startDateError!)}</FieldError>
               )}
             </Field>
 
@@ -281,9 +244,7 @@ export function RentDatesSection() {
                 value={values.end_date}
                 min={values.start_date}
                 invalid={hasEndDateError}
-                describedBy={
-                  hasEndDateError ? 'end_date-error' : undefined
-                }
+                describedBy={hasEndDateError ? 'end_date-error' : undefined}
                 onValueChange={(next) => {
                   setField('end_date', next)
                   markTouched('end_date')
@@ -291,9 +252,7 @@ export function RentDatesSection() {
                 onBlur={() => markTouched('end_date')}
               />
               {hasEndDateError && (
-                <FieldError id="end_date-error">
-                  {tRentDates(endDateError!)}
-                </FieldError>
+                <FieldError id="end_date-error">{tRentDates(endDateError!)}</FieldError>
               )}
             </Field>
           </FieldRow>
@@ -318,21 +277,13 @@ export function RentDatesSummaryRow() {
   const t = useTranslations('propertyCreation.checkout.rent-dates')
   const tRentDates = useTranslations('rentDates')
   const locale = useLocale() as Locale
-  const values = usePropertyCreationState(
-    (s) => s.sectionData['rent-dates'] as RentDatesInput,
-  )
+  const values = usePropertyCreationState((s) => s.sectionData['rent-dates'] as RentDatesInput)
   const detail = useMemo(
     () => formatRentDatesSummary(values, tRentDates, locale, { compact: true }),
     [values, tRentDates, locale],
   )
-  
-  return (
-    <SummaryRow
-      sectionId={SECTION_ID}
-      title={t('title')}
-      detail={detail || null}
-    />
-  )
+
+  return <SummaryRow sectionId={SECTION_ID} title={t('title')} detail={detail || null} />
 }
 
 // Builds the recap line shown in the section header (`Section.Summary`) and

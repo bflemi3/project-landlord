@@ -4,9 +4,7 @@
 
 import { getPropertyInputSchema, type PropertyInput } from '@/schemas/property'
 
-export type PropertyParse = ReturnType<
-  ReturnType<typeof getPropertyInputSchema>['safeParse']
->
+export type PropertyParse = ReturnType<ReturnType<typeof getPropertyInputSchema>['safeParse']>
 
 const cache = new WeakMap<PropertyInput, Map<string, PropertyParse>>()
 

@@ -11,15 +11,15 @@ describe('getSourceMethodScore', () => {
   })
 
   it('scores DDA high', () => {
-    expect(getSourceMethodScore('dda')).toBe(0.90)
+    expect(getSourceMethodScore('dda')).toBe(0.9)
   })
 
   it('scores PDF at 0.80', () => {
-    expect(getSourceMethodScore('pdf')).toBe(0.80)
+    expect(getSourceMethodScore('pdf')).toBe(0.8)
   })
 
   it('scores web-scrape at 0.70', () => {
-    expect(getSourceMethodScore('web-scrape')).toBe(0.70)
+    expect(getSourceMethodScore('web-scrape')).toBe(0.7)
   })
 
   it('scores email at 0.65', () => {
@@ -27,91 +27,76 @@ describe('getSourceMethodScore', () => {
   })
 
   it('scores OCR lowest', () => {
-    expect(getSourceMethodScore('ocr')).toBe(0.50)
+    expect(getSourceMethodScore('ocr')).toBe(0.5)
   })
 
   it('defaults unknown source to 0.50', () => {
-    expect(getSourceMethodScore('unknown' as any)).toBe(0.50)
+    expect(getSourceMethodScore('unknown' as any)).toBe(0.5)
   })
 })
 
 describe('computeFieldStatus', () => {
   it('confirmed: high extraction + validated', () => {
-    expect(computeFieldStatus({ extraction: 0.95, validation: 1.0 }))
-      .toBe('confirmed')
+    expect(computeFieldStatus({ extraction: 0.95, validation: 1.0 })).toBe('confirmed')
   })
 
   it('high: high extraction, no validation', () => {
-    expect(computeFieldStatus({ extraction: 0.95 }))
-      .toBe('high')
+    expect(computeFieldStatus({ extraction: 0.95 })).toBe('high')
   })
 
   it('needs-review: medium extraction', () => {
-    expect(computeFieldStatus({ extraction: 0.7 }))
-      .toBe('needs-review')
+    expect(computeFieldStatus({ extraction: 0.7 })).toBe('needs-review')
   })
 
   it('needs-review: high extraction but validation discrepancy', () => {
-    expect(computeFieldStatus({ extraction: 0.95, validation: 0.0 }))
-      .toBe('needs-review')
+    expect(computeFieldStatus({ extraction: 0.95, validation: 0.0 })).toBe('needs-review')
   })
 
   it('needs-review: validated but extraction is medium', () => {
-    expect(computeFieldStatus({ extraction: 0.7, validation: 1.0 }))
-      .toBe('needs-review')
+    expect(computeFieldStatus({ extraction: 0.7, validation: 1.0 })).toBe('needs-review')
   })
 
   it('failed: low extraction', () => {
-    expect(computeFieldStatus({ extraction: 0.3 }))
-      .toBe('failed')
+    expect(computeFieldStatus({ extraction: 0.3 })).toBe('failed')
   })
 
   it('failed: field not found (extraction = 0)', () => {
-    expect(computeFieldStatus({ extraction: 0 }))
-      .toBe('failed')
+    expect(computeFieldStatus({ extraction: 0 })).toBe('failed')
   })
 
   // Boundary tests
   it('boundary: extraction exactly 0.9 is high (no validation)', () => {
-    expect(computeFieldStatus({ extraction: 0.9 }))
-      .toBe('high')
+    expect(computeFieldStatus({ extraction: 0.9 })).toBe('high')
   })
 
   it('boundary: extraction exactly 0.5 is needs-review', () => {
-    expect(computeFieldStatus({ extraction: 0.5 }))
-      .toBe('needs-review')
+    expect(computeFieldStatus({ extraction: 0.5 })).toBe('needs-review')
   })
 
   it('boundary: extraction 0.49 is failed', () => {
-    expect(computeFieldStatus({ extraction: 0.49 }))
-      .toBe('failed')
+    expect(computeFieldStatus({ extraction: 0.49 })).toBe('failed')
   })
 
   it('boundary: validation exactly 0.9 + high extraction is confirmed', () => {
-    expect(computeFieldStatus({ extraction: 0.9, validation: 0.9 }))
-      .toBe('confirmed')
+    expect(computeFieldStatus({ extraction: 0.9, validation: 0.9 })).toBe('confirmed')
   })
 
   it('boundary: validation 0.5 + high extraction is high (not discrepancy)', () => {
     // validation >= 0.5 does not trigger discrepancy, but < 0.9 so not confirmed → high
-    expect(computeFieldStatus({ extraction: 0.95, validation: 0.5 }))
-      .toBe('high')
+    expect(computeFieldStatus({ extraction: 0.95, validation: 0.5 })).toBe('high')
   })
 
   it('boundary: validation 0.49 forces needs-review regardless of extraction', () => {
-    expect(computeFieldStatus({ extraction: 0.99, validation: 0.49 }))
-      .toBe('needs-review')
+    expect(computeFieldStatus({ extraction: 0.99, validation: 0.49 })).toBe('needs-review')
   })
 
   it('validation undefined treated same as omitted', () => {
-    expect(computeFieldStatus({ extraction: 0.95, validation: undefined }))
-      .toBe('high')
+    expect(computeFieldStatus({ extraction: 0.95, validation: undefined })).toBe('high')
   })
 
   it('medium extraction + medium validation is needs-review', () => {
     // extraction < 0.9 → needs-review regardless of validation
-    expect(computeFieldStatus({ extraction: 0.7, validation: 0.7 }))
-      .toBe('needs-review')
+    expect(computeFieldStatus({ extraction: 0.7, validation: 0.7 })).toBe('needs-review')
   })
 })
 
@@ -127,8 +112,8 @@ describe('buildBillExtractionConfidence', () => {
     })
 
     expect(result.source.method).toBe('pdf')
-    expect(result.source.methodScore).toBe(0.80)
-    expect(result.fields.amountDue.extraction).toBe(0.80)
+    expect(result.source.methodScore).toBe(0.8)
+    expect(result.fields.amountDue.extraction).toBe(0.8)
     // PDF extraction=0.80 < 0.9 threshold → needs-review
     expect(result.fields.amountDue.status).toBe('needs-review')
     expect(result.summary.totalFields).toBe(3)
@@ -189,7 +174,7 @@ describe('buildBillExtractionConfidence', () => {
       },
     })
 
-    expect(result.fields.amountDue.extraction).toBe(0.50)
+    expect(result.fields.amountDue.extraction).toBe(0.5)
     expect(result.fields.amountDue.status).toBe('needs-review')
   })
 
@@ -222,9 +207,9 @@ describe('buildBillExtractionConfidence', () => {
     const result = buildBillExtractionConfidence({
       sourceMethod: 'pdf',
       fields: {
-        amountDue: { found: true, validation: 1.0, validationSource: 'api' },  // extraction=0.80 < 0.9 → needs-review despite validation
-        accountNumber: { found: true },                                          // extraction=0.80 < 0.9 → needs-review
-        referenceMonth: { found: false },                                        // extraction=0 → failed
+        amountDue: { found: true, validation: 1.0, validationSource: 'api' }, // extraction=0.80 < 0.9 → needs-review despite validation
+        accountNumber: { found: true }, // extraction=0.80 < 0.9 → needs-review
+        referenceMonth: { found: false }, // extraction=0 → failed
       },
     })
 
@@ -295,8 +280,8 @@ describe('buildBillExtractionConfidence', () => {
     })
 
     expect(result.source.method).toBe('dda')
-    expect(result.source.methodScore).toBe(0.90)
-    expect(result.fields.amountDue.extraction).toBe(0.90)
+    expect(result.source.methodScore).toBe(0.9)
+    expect(result.fields.amountDue.extraction).toBe(0.9)
     expect(result.fields.amountDue.status).toBe('high')
   })
 
@@ -306,7 +291,7 @@ describe('buildBillExtractionConfidence', () => {
       fields: { amountDue: { found: true } },
     })
 
-    expect(result.source.methodScore).toBe(0.70)
+    expect(result.source.methodScore).toBe(0.7)
     expect(result.fields.amountDue.status).toBe('needs-review')
   })
 

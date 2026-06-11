@@ -40,10 +40,7 @@ function rentOrDefaultCurrency(state: PropertyCreationStateShape): string {
 // Wizard tracks the file type as a closed union; map to its mime once.
 // The extension is the same string as the union literal, so no parallel
 // table is needed — inline `state.contractFileType ?? ''` at the call site.
-const MIME_BY_CONTRACT_FILE_TYPE: Record<
-  'pdf' | 'docx',
-  (typeof CONTRACT_MIME_TYPES)[number]
-> = {
+const MIME_BY_CONTRACT_FILE_TYPE: Record<'pdf' | 'docx', (typeof CONTRACT_MIME_TYPES)[number]> = {
   pdf: 'application/pdf',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 }
@@ -60,9 +57,7 @@ function buildContractPayload(
   // The action's contract Zod schema needs flat `extraction_*` keys. The
   // wizard stores the engine's `ContractExtractionResult` shape (camelCase
   // fields). Translate here so the action sees the canonical wire shape.
-  const extraction = state.extractionResult
-    ? toFlatExtraction(state.extractionResult)
-    : null
+  const extraction = state.extractionResult ? toFlatExtraction(state.extractionResult) : null
   return {
     contract: {
       mime_type: mime_type as (typeof CONTRACT_MIME_TYPES)[number],
@@ -86,9 +81,7 @@ function toFlatExtraction(extraction: ContractExtractionResult) {
   }
 }
 
-function buildRentPayload(
-  state: PropertyCreationStateShape,
-): SubmitInput['rent'] | undefined {
+function buildRentPayload(state: PropertyCreationStateShape): SubmitInput['rent'] | undefined {
   if (state.sectionStates['rent-dates'] === 'skipped') return undefined
   const rent = state.sectionData['rent-dates'] as RentDatesInput | undefined
   if (!rent) return undefined

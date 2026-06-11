@@ -61,11 +61,7 @@ describe('redeem_invite RPC', () => {
             ? null
             : propertyId,
       unit_id:
-        'unitId' in overrides
-          ? overrides.unitId
-          : overrides.role === 'landlord'
-            ? null
-            : unitId,
+        'unitId' in overrides ? overrides.unitId : overrides.role === 'landlord' ? null : unitId,
       expires_at: overrides.expiresAt ?? null,
     })
     if (error) throw new Error(`Failed to seed invite: ${error.message}`)

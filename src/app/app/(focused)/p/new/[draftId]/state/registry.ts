@@ -82,8 +82,7 @@ export type CheckoutPath = 'contract' | 'no_contract'
  * "X remaining" counts).
  */
 export function getRequiredSectionIds(path: CheckoutPath): SectionId[] {
-  const key =
-    path === 'contract' ? 'requiredInContractPath' : 'requiredInNoContractPath'
+  const key = path === 'contract' ? 'requiredInContractPath' : 'requiredInNoContractPath'
   return CHECKOUT_SECTIONS.filter((s) => s[key]).map((s) => s.id)
 }
 
