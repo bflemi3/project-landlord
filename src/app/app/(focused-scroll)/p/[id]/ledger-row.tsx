@@ -4,6 +4,7 @@ import { useFormatter, useTranslations, useLocale } from 'next-intl'
 
 import { AmountDisplay } from '@/components/amount-display'
 import { Dot } from '@/components/ui/dot'
+import { ExpenseName } from '@/components/expense-name'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/status-badge'
 import { ListRow, ListRowBody, ListRowTrailing } from '@/components/list-row'
 import { cn } from '@/lib/utils'
@@ -47,7 +48,7 @@ export function LedgerBillRow({ bill, today }: { bill: Bill; today: string }) {
             the column rhythm when scanning. */}
         <span className="flex items-baseline gap-1.5 text-sm">
           {status === 'overdue' ? <Dot tone="destructive" className="self-center" /> : null}
-          <span className="text-foreground truncate">{bill.name}</span>
+          <ExpenseName type={bill.expense_type} provider={bill.provider_name} />
           <span className="text-muted-foreground shrink-0">
             · {format.dateTime(isoToDate(rowDate), { month: 'short', day: 'numeric' })}
           </span>
@@ -94,7 +95,14 @@ export function LedgerAwaitingRow({
   return (
     <ListRow variant="embedded" interactive={false} className="px-0 py-3">
       <ListRowBody>
-        <p className="text-muted-foreground truncate text-sm">{charge.name}</p>
+        {/* Awaiting is synthetic — the whole line stays muted, including the type word. */}
+        <p className="truncate text-sm text-muted-foreground">
+          <ExpenseName
+            type={charge.expenseType}
+            provider={charge.providerName}
+            className="[&>span]:text-muted-foreground"
+          />
+        </p>
       </ListRowBody>
       <ListRowTrailing className="flex items-center gap-2">
         {charge.estimateMinor !== null ? (

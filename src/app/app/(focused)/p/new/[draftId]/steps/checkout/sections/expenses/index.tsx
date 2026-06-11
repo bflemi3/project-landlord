@@ -26,7 +26,7 @@ const SUMMARY_ROW_LIMIT = 2
 export function ExpensesSection() {
   const t = useTranslations('propertyCreation.checkout')
   const tExpenses = useTranslations('propertyCreation.checkout.expenses')
-  const tOptions = useTranslations('propertyCreation.checkout.expenses.typeOptions')
+  const tOptions = useTranslations('expenseTypes')
   const { registerHeaderRef } = useCheckoutContext()
   const { setTouched } = usePropertyCreationActions()
   const storeApi = usePropertyCreationStoreApi()
@@ -100,7 +100,7 @@ export function ExpensesSectionSkeleton() {
 
 export function ExpensesSummaryRow() {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const tOptions = useTranslations('propertyCreation.checkout.expenses.typeOptions')
+  const tOptions = useTranslations('expenseTypes')
   const expenses = usePropertyCreationState((s) => s.sectionData.expenses as ExpenseRow[])
   // Summary card row: tighter horizontal space, so cap at 2 type names and
   // roll the rest into "+N more".

@@ -13,6 +13,7 @@ import { type Locale } from '@/i18n/routing'
 import { useExpenseDefinitions } from '@/data/charges/client'
 
 import { useBillsFilters, usePropertyPageActions } from './state/provider'
+import { ExpenseName } from '@/components/expense-name'
 import { StatusBadge, type StatusBadgeVariant } from '@/components/status-badge'
 import { EdgeScroller } from '@/components/edge-scroller'
 import { Calendar } from '@/components/ui/calendar'
@@ -132,20 +133,6 @@ function DateRangeFilter({ label, value, onValueChange }: DateRangeFilterProps) 
   )
 }
 
-// Company names are formatted "Type · Provider" (e.g. "Água · Sabesp"): show the
-// utility type prominently, mute the provider.
-function CompanyOptionLabel({ name }: { name: string }) {
-  const [type, ...rest] = name.split(' · ')
-  return (
-    <span className="flex-1 truncate">
-      <span className="text-foreground">{type}</span>
-      {rest.length > 0 ? (
-        <span className="text-muted-foreground"> · {rest.join(' · ')}</span>
-      ) : null}
-    </span>
-  )
-}
-
 interface BillsFilterBarProps {
   propertyId: string
 }
@@ -170,7 +157,11 @@ export function BillsFilterBar({ propertyId }: BillsFilterBarProps) {
       >
         {definitions.map((definition) => (
           <ComboboxItem key={definition.id} value={definition.id}>
-            <CompanyOptionLabel name={definition.name} />
+            <ExpenseName
+              type={definition.expense_type}
+              provider={definition.provider_name}
+              className="flex-1"
+            />
           </ComboboxItem>
         ))}
       </FilterCombobox>

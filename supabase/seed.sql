@@ -109,24 +109,54 @@ insert into contracts (id, unit_id, storage_path, mime_type, uploaded_by, upload
   ('55555555-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000002/55555555-0000-0000-0000-000000000002.pdf', 'application/pdf', 'aaaaaaaa-0000-0000-0000-000000000001', 'uploaded', false);
 
 -- -----------------------------------------------------------------------------
--- 4. Charge definitions. Fixed → amount_minor set; variable/unknown → null.
+-- 4. Providers + invoice profiles. Display names derive from
+--    expense_type + the linked provider (charge_instances has no name column);
+--    parser_strategy is legacy plumbing — extraction is moving to LLM.
 -- -----------------------------------------------------------------------------
-insert into charge_definitions (id, unit_id, name, expense_type, amount_behavior, amount_minor, is_active) values
+insert into providers (id, name, display_name, country_code) values
+  ('66666666-0000-0000-0000-000000000001', 'ENEL Distribuição São Paulo', 'ENEL',          'BR'),
+  ('66666666-0000-0000-0000-000000000002', 'Sabesp',                      'Sabesp',        'BR'),
+  ('66666666-0000-0000-0000-000000000003', 'Comgás',                      'Comgás',        'BR'),
+  ('66666666-0000-0000-0000-000000000004', 'Telefônica Brasil',           'Vivo',          'BR'),
+  ('66666666-0000-0000-0000-000000000005', 'CPFL Energia',                'CPFL',          'BR'),
+  ('66666666-0000-0000-0000-000000000006', 'Claro',                       'Claro',         'BR'),
+  ('66666666-0000-0000-0000-000000000007', 'Prefeitura de São Paulo',     'Prefeitura SP', 'BR'),
+  ('66666666-0000-0000-0000-000000000008', 'Condomínio Edifício Aurora',  'Ed. Aurora',    'BR'),
+  ('66666666-0000-0000-0000-000000000009', 'Condomínio Pinheiros 1200',   'Pinheiros 1200','BR');
+
+insert into provider_invoice_profiles (id, provider_id, name, parser_strategy) values
+  ('77777777-0000-0000-0000-000000000001', '66666666-0000-0000-0000-000000000001', 'ENEL · default',          'llm'),
+  ('77777777-0000-0000-0000-000000000002', '66666666-0000-0000-0000-000000000002', 'Sabesp · default',        'llm'),
+  ('77777777-0000-0000-0000-000000000003', '66666666-0000-0000-0000-000000000003', 'Comgás · default',        'llm'),
+  ('77777777-0000-0000-0000-000000000004', '66666666-0000-0000-0000-000000000004', 'Vivo · default',          'llm'),
+  ('77777777-0000-0000-0000-000000000005', '66666666-0000-0000-0000-000000000005', 'CPFL · default',          'llm'),
+  ('77777777-0000-0000-0000-000000000006', '66666666-0000-0000-0000-000000000006', 'Claro · default',         'llm'),
+  ('77777777-0000-0000-0000-000000000007', '66666666-0000-0000-0000-000000000007', 'Prefeitura SP · default', 'llm'),
+  ('77777777-0000-0000-0000-000000000008', '66666666-0000-0000-0000-000000000008', 'Ed. Aurora · default',    'llm'),
+  ('77777777-0000-0000-0000-000000000009', '66666666-0000-0000-0000-000000000009', 'Pinheiros · default',     'llm');
+
+-- -----------------------------------------------------------------------------
+-- 4b. Charge definitions. Fixed → amount_minor set; variable/unknown → null.
+--     `name` mirrors what the app writes today (the expense_type — a
+--     persistence detail; display derives from type + provider).
+-- -----------------------------------------------------------------------------
+insert into charge_definitions (id, unit_id, name, expense_type, amount_behavior, amount_minor, provider_profile_id, is_active) values
   -- P1 · Apt 23B
-  ('44444444-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'Energia · ENEL',         'electricity', 'variable', null,  true),
-  ('44444444-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', 'Água · Sabesp',          'water',       'variable', null,  true),
-  ('44444444-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', 'Condomínio',             'condo',       'fixed',    48000, true),
-  ('44444444-0000-0000-0000-000000000004', '22222222-0000-0000-0000-000000000001', 'Internet · Vivo',        'internet',    'fixed',    15900, true),
-  ('44444444-0000-0000-0000-000000000005', '22222222-0000-0000-0000-000000000001', 'Gás · Comgás',           'gas',         'variable', null,  true),
-  ('44444444-0000-0000-0000-000000000006', '22222222-0000-0000-0000-000000000001', 'IPTU · Prefeitura SP',   'other',       'fixed',    24000, true),
+  ('44444444-0000-0000-0000-000000000001', '22222222-0000-0000-0000-000000000001', 'electricity', 'electricity', 'variable', null,  '77777777-0000-0000-0000-000000000001', true),
+  ('44444444-0000-0000-0000-000000000002', '22222222-0000-0000-0000-000000000001', 'water',       'water',       'variable', null,  '77777777-0000-0000-0000-000000000002', true),
+  ('44444444-0000-0000-0000-000000000003', '22222222-0000-0000-0000-000000000001', 'condo',       'condo',       'fixed',    48000, '77777777-0000-0000-0000-000000000008', true),
+  ('44444444-0000-0000-0000-000000000004', '22222222-0000-0000-0000-000000000001', 'internet',    'internet',    'fixed',    15900, '77777777-0000-0000-0000-000000000004', true),
+  ('44444444-0000-0000-0000-000000000005', '22222222-0000-0000-0000-000000000001', 'gas',         'gas',         'variable', null,  '77777777-0000-0000-0000-000000000003', true),
+  ('44444444-0000-0000-0000-000000000006', '22222222-0000-0000-0000-000000000001', 'other',       'other',       'fixed',    24000, '77777777-0000-0000-0000-000000000007', true),
   -- P2 · Casa Pinheiros
-  ('44444444-0000-0000-0000-000000000007', '22222222-0000-0000-0000-000000000002', 'Energia · CPFL',         'electricity', 'variable', null,  true),
-  ('44444444-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000002', 'Condomínio',             'condo',       'fixed',    65000, true),
-  ('44444444-0000-0000-0000-000000000009', '22222222-0000-0000-0000-000000000002', 'Internet · Claro',       'internet',    'fixed',    12000, true),
-  -- P3 · Studio Augusta — configured, NO instances (one with unknown behavior)
-  ('44444444-0000-0000-0000-00000000000a', '22222222-0000-0000-0000-000000000003', 'Energia · ENEL',         'electricity', 'variable', null,  true),
-  ('44444444-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000003', 'Condomínio',             'condo',       'fixed',    39000, true),
-  ('44444444-0000-0000-0000-00000000000c', '22222222-0000-0000-0000-000000000003', 'Internet',               'internet',    'unknown',  null,  true);
+  ('44444444-0000-0000-0000-000000000007', '22222222-0000-0000-0000-000000000002', 'electricity', 'electricity', 'variable', null,  '77777777-0000-0000-0000-000000000005', true),
+  ('44444444-0000-0000-0000-000000000008', '22222222-0000-0000-0000-000000000002', 'condo',       'condo',       'fixed',    65000, '77777777-0000-0000-0000-000000000009', true),
+  ('44444444-0000-0000-0000-000000000009', '22222222-0000-0000-0000-000000000002', 'internet',    'internet',    'fixed',    12000, '77777777-0000-0000-0000-000000000006', true),
+  -- P3 · Studio Augusta — configured, NO instances. Condo + internet have no
+  -- provider yet (exercises the type-word-only display fallback).
+  ('44444444-0000-0000-0000-00000000000a', '22222222-0000-0000-0000-000000000003', 'electricity', 'electricity', 'variable', null,  '77777777-0000-0000-0000-000000000001', true),
+  ('44444444-0000-0000-0000-00000000000b', '22222222-0000-0000-0000-000000000003', 'condo',       'condo',       'fixed',    39000, null,                                   true),
+  ('44444444-0000-0000-0000-00000000000c', '22222222-0000-0000-0000-000000000003', 'internet',    'internet',    'unknown',  null,  null,                                   true);
 -- P4 · Loft Itaim has NO charge_definitions (the "no expenses configured" state).
 
 -- Responsibility: tenant-owned (electricity/water/internet/gas) vs landlord-owned (condo/IPTU). 100% to one role.
@@ -145,36 +175,36 @@ insert into responsibility_allocations (charge_definition_id, role, allocation_t
 -- 5. Charge instances (the discovered obligations / ledger rows).
 --    tenant-owned → tenant_percentage 10000; landlord-owned → landlord_percentage 10000.
 -- -----------------------------------------------------------------------------
-insert into charge_instances (id, charge_definition_id, name, amount_minor, issued_on, due_date, tenant_percentage, landlord_percentage) values
+insert into charge_instances (id, charge_definition_id, amount_minor, issued_on, due_date, tenant_percentage, landlord_percentage) values
   -- P1 Energia (variable, tenant, split 50/50): months -3/-2 paid, last month partial (→ overdue)
-  ('33333333-0000-0000-0000-000000000001', '44444444-0000-0000-0000-000000000001', 'Energia · ENEL',  32000, pg_temp.month_day(3, 2),  pg_temp.month_day(3, 20), 10000, 0),
-  ('33333333-0000-0000-0000-000000000002', '44444444-0000-0000-0000-000000000001', 'Energia · ENEL',  28800, pg_temp.month_day(2, 3),  pg_temp.month_day(2, 20), 10000, 0),
-  ('33333333-0000-0000-0000-000000000003', '44444444-0000-0000-0000-000000000001', 'Energia · ENEL',  41500, pg_temp.month_day(1, 4),  pg_temp.month_day(1, 20), 10000, 0),
+  ('33333333-0000-0000-0000-000000000001', '44444444-0000-0000-0000-000000000001', 32000, pg_temp.month_day(3, 2),  pg_temp.month_day(3, 20), 10000, 0),
+  ('33333333-0000-0000-0000-000000000002', '44444444-0000-0000-0000-000000000001', 28800, pg_temp.month_day(2, 3),  pg_temp.month_day(2, 20), 10000, 0),
+  ('33333333-0000-0000-0000-000000000003', '44444444-0000-0000-0000-000000000001', 41500, pg_temp.month_day(1, 4),  pg_temp.month_day(1, 20), 10000, 0),
   -- P1 Água (variable, tenant): months -3/-2 paid, last month OVERDUE
-  ('33333333-0000-0000-0000-000000000004', '44444444-0000-0000-0000-000000000002', 'Água · Sabesp',    9600, pg_temp.month_day(3, 10), pg_temp.month_day(3, 25), 10000, 0),
-  ('33333333-0000-0000-0000-000000000005', '44444444-0000-0000-0000-000000000002', 'Água · Sabesp',   11200, pg_temp.month_day(2, 11), pg_temp.month_day(2, 25), 10000, 0),
-  ('33333333-0000-0000-0000-000000000006', '44444444-0000-0000-0000-000000000002', 'Água · Sabesp',    8800, pg_temp.month_day(1, 12), pg_temp.month_day(1, 25), 10000, 0),
+  ('33333333-0000-0000-0000-000000000004', '44444444-0000-0000-0000-000000000002', 9600, pg_temp.month_day(3, 10), pg_temp.month_day(3, 25), 10000, 0),
+  ('33333333-0000-0000-0000-000000000005', '44444444-0000-0000-0000-000000000002', 11200, pg_temp.month_day(2, 11), pg_temp.month_day(2, 25), 10000, 0),
+  ('33333333-0000-0000-0000-000000000006', '44444444-0000-0000-0000-000000000002', 8800, pg_temp.month_day(1, 12), pg_temp.month_day(1, 25), 10000, 0),
   -- P1 Condomínio (fixed, landlord): -3 on-time, -2 LATE, -1 paid
-  ('33333333-0000-0000-0000-000000000007', '44444444-0000-0000-0000-000000000003', 'Condomínio',      48000, pg_temp.month_day(3, 5),  pg_temp.month_day(3, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000008', '44444444-0000-0000-0000-000000000003', 'Condomínio',      48000, pg_temp.month_day(2, 5),  pg_temp.month_day(2, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000009', '44444444-0000-0000-0000-000000000003', 'Condomínio',      48000, pg_temp.month_day(1, 5),  pg_temp.month_day(1, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000007', '44444444-0000-0000-0000-000000000003', 48000, pg_temp.month_day(3, 5),  pg_temp.month_day(3, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000008', '44444444-0000-0000-0000-000000000003', 48000, pg_temp.month_day(2, 5),  pg_temp.month_day(2, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000009', '44444444-0000-0000-0000-000000000003', 48000, pg_temp.month_day(1, 5),  pg_temp.month_day(1, 10), 0, 10000),
   -- P1 Internet (fixed, tenant): only 2 instances (partial avg), NULL due_date
-  ('33333333-0000-0000-0000-00000000000a', '44444444-0000-0000-0000-000000000004', 'Internet · Vivo', 15900, pg_temp.month_day(2, 6),  null,                     10000, 0),
-  ('33333333-0000-0000-0000-00000000000b', '44444444-0000-0000-0000-000000000004', 'Internet · Vivo', 15900, pg_temp.month_day(1, 6),  null,                     10000, 0),
+  ('33333333-0000-0000-0000-00000000000a', '44444444-0000-0000-0000-000000000004', 15900, pg_temp.month_day(2, 6),  null,                     10000, 0),
+  ('33333333-0000-0000-0000-00000000000b', '44444444-0000-0000-0000-000000000004', 15900, pg_temp.month_day(1, 6),  null,                     10000, 0),
   -- P1 Gás (variable, tenant): single instance, DUE (due date always ahead of today)
-  ('33333333-0000-0000-0000-00000000000c', '44444444-0000-0000-0000-000000000005', 'Gás · Comgás',     7400, pg_temp.month_day(1, 25), current_date + 10,        10000, 0),
+  ('33333333-0000-0000-0000-00000000000c', '44444444-0000-0000-0000-000000000005', 7400, pg_temp.month_day(1, 25), current_date + 10,        10000, 0),
   -- P2 Energia · CPFL (variable, tenant): all paid
-  ('33333333-0000-0000-0000-00000000000d', '44444444-0000-0000-0000-000000000007', 'Energia · CPFL',  21000, pg_temp.month_day(3, 8),  pg_temp.month_day(3, 22), 10000, 0),
-  ('33333333-0000-0000-0000-00000000000e', '44444444-0000-0000-0000-000000000007', 'Energia · CPFL',  19500, pg_temp.month_day(2, 9),  pg_temp.month_day(2, 22), 10000, 0),
-  ('33333333-0000-0000-0000-00000000000f', '44444444-0000-0000-0000-000000000007', 'Energia · CPFL',  24000, pg_temp.month_day(1, 10), pg_temp.month_day(1, 22), 10000, 0),
+  ('33333333-0000-0000-0000-00000000000d', '44444444-0000-0000-0000-000000000007', 21000, pg_temp.month_day(3, 8),  pg_temp.month_day(3, 22), 10000, 0),
+  ('33333333-0000-0000-0000-00000000000e', '44444444-0000-0000-0000-000000000007', 19500, pg_temp.month_day(2, 9),  pg_temp.month_day(2, 22), 10000, 0),
+  ('33333333-0000-0000-0000-00000000000f', '44444444-0000-0000-0000-000000000007', 24000, pg_temp.month_day(1, 10), pg_temp.month_day(1, 22), 10000, 0),
   -- P2 Condomínio (fixed, landlord): all paid
-  ('33333333-0000-0000-0000-000000000010', '44444444-0000-0000-0000-000000000008', 'Condomínio',      65000, pg_temp.month_day(3, 5),  pg_temp.month_day(3, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000011', '44444444-0000-0000-0000-000000000008', 'Condomínio',      65000, pg_temp.month_day(2, 5),  pg_temp.month_day(2, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000012', '44444444-0000-0000-0000-000000000008', 'Condomínio',      65000, pg_temp.month_day(1, 5),  pg_temp.month_day(1, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000010', '44444444-0000-0000-0000-000000000008', 65000, pg_temp.month_day(3, 5),  pg_temp.month_day(3, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000011', '44444444-0000-0000-0000-000000000008', 65000, pg_temp.month_day(2, 5),  pg_temp.month_day(2, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000012', '44444444-0000-0000-0000-000000000008', 65000, pg_temp.month_day(1, 5),  pg_temp.month_day(1, 10), 0, 10000),
   -- P2 Internet · Claro (fixed, tenant): -2/-1 paid, current month DUE
-  ('33333333-0000-0000-0000-000000000013', '44444444-0000-0000-0000-000000000009', 'Internet · Claro', 12000, pg_temp.month_day(2, 6),  pg_temp.month_day(2, 15), 10000, 0),
-  ('33333333-0000-0000-0000-000000000014', '44444444-0000-0000-0000-000000000009', 'Internet · Claro', 12000, pg_temp.month_day(1, 6),  pg_temp.month_day(1, 15), 10000, 0),
-  ('33333333-0000-0000-0000-000000000015', '44444444-0000-0000-0000-000000000009', 'Internet · Claro', 12000, pg_temp.month_day(0, 1),  current_date + 4,         10000, 0);
+  ('33333333-0000-0000-0000-000000000013', '44444444-0000-0000-0000-000000000009', 12000, pg_temp.month_day(2, 6),  pg_temp.month_day(2, 15), 10000, 0),
+  ('33333333-0000-0000-0000-000000000014', '44444444-0000-0000-0000-000000000009', 12000, pg_temp.month_day(1, 6),  pg_temp.month_day(1, 15), 10000, 0),
+  ('33333333-0000-0000-0000-000000000015', '44444444-0000-0000-0000-000000000009', 12000, pg_temp.month_day(0, 1),  current_date + 4,         10000, 0);
 
 -- Per-tenant split on P1 Energia (Rafael / Marina 50/50).
 insert into tenant_splits (charge_instance_id, user_id, percentage) values
@@ -227,11 +257,11 @@ insert into charge_payments (charge_instance_id, paid_by, amount_minor, paid_on,
 -- -----------------------------------------------------------------------------
 --    Condomínio is split 50/50 LL↔tenant (5000/5000) and the LL has only
 --    partially paid their half → exercises the "you · R$X" share line.
-insert into charge_instances (id, charge_definition_id, name, amount_minor, issued_on, due_date, tenant_percentage, landlord_percentage) values
-  ('33333333-0000-0000-0000-000000000016', '44444444-0000-0000-0000-000000000003', 'Condomínio',      48000, least(pg_temp.month_day(0, 5), current_date), current_date + 5,  5000,  5000),
-  ('33333333-0000-0000-0000-000000000017', '44444444-0000-0000-0000-000000000004', 'Internet · Vivo', 15900, least(pg_temp.month_day(0, 6), current_date), current_date + 9,  10000, 0),
-  ('33333333-0000-0000-0000-000000000018', '44444444-0000-0000-0000-000000000001', 'Energia · ENEL',  38000, least(pg_temp.month_day(0, 3), current_date), current_date + 9,  10000, 0),
-  ('33333333-0000-0000-0000-000000000019', '44444444-0000-0000-0000-000000000002', 'Água · Sabesp',   10000, least(pg_temp.month_day(0, 4), current_date), current_date + 14, 10000, 0);
+insert into charge_instances (id, charge_definition_id, amount_minor, issued_on, due_date, tenant_percentage, landlord_percentage) values
+  ('33333333-0000-0000-0000-000000000016', '44444444-0000-0000-0000-000000000003', 48000, least(pg_temp.month_day(0, 5), current_date), current_date + 5,  5000,  5000),
+  ('33333333-0000-0000-0000-000000000017', '44444444-0000-0000-0000-000000000004', 15900, least(pg_temp.month_day(0, 6), current_date), current_date + 9,  10000, 0),
+  ('33333333-0000-0000-0000-000000000018', '44444444-0000-0000-0000-000000000001', 38000, least(pg_temp.month_day(0, 3), current_date), current_date + 9,  10000, 0),
+  ('33333333-0000-0000-0000-000000000019', '44444444-0000-0000-0000-000000000002', 10000, least(pg_temp.month_day(0, 4), current_date), current_date + 14, 10000, 0);
 
 insert into charge_payments (charge_instance_id, paid_by, amount_minor, paid_on, payment_method) values
   ('33333333-0000-0000-0000-000000000016', 'aaaaaaaa-0000-0000-0000-000000000001', 10000, least(pg_temp.month_day(0, 9), current_date),  'bank_transfer'),

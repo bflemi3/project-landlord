@@ -35,7 +35,7 @@ interface ExpenseTypeSelectorProps {
 
 export function ExpenseTypeSelector({ value, onValueChange }: ExpenseTypeSelectorProps) {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const tOptions = useTranslations('propertyCreation.checkout.expenses.typeOptions')
+  const tOptions = useTranslations('expenseTypes')
 
   const commonOptions = useMemo(
     () =>

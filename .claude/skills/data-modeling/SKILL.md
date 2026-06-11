@@ -33,7 +33,7 @@ Never use floating-point types for money. Never store money without an accompany
 
 ## Core Entities (long-term rental model)
 
-The product is moving away from landlord-published monthly statements toward a **general running ledger** where both parties see current state and activity continuously. The entities below reflect that target. The **Status** column distinguishes what's in the live schema today from what's still planned — check it before referencing a table in code; a `planned` table does not exist yet.
+Billing is a **discovery-driven ledger**: bills and payments are discovered (ingestion, DDA, Open Finance) and recorded as instances + payments; the per-month ledger and live current-month view are *derived* from them in the read layer — there is no statements workflow and no stored ledger table. The **Status** column distinguishes what's in the live schema today from what's still planned — check it before referencing a table in code; a `planned` table does not exist yet.
 
 | Entity | Status | Purpose |
 |---|---|---|
@@ -42,22 +42,22 @@ The product is moving away from landlord-published monthly statements toward a *
 | memberships | built | User ↔ property relationships with roles |
 | contracts | built | Rental contract (LL, tenant, unit, start, end, terms) — `20260510120400` |
 | rent | built | Rent amount/terms per contract — `20260510120500` |
-| charge_definitions | built | Recurring charge shape (rent, electric, water, condo, internet) |
-| charge_instances | built | A specific month's charge for a specific property |
+| charge_definitions | built | Recurring charge shape: `expense_type` + provider linkage + amount behavior (display labels derive — see modeling rules) |
+| charge_instances | built | A discovered obligation (bill): definition-linked (NOT NULL), `issued_on`/`due_date`, amount, split percentages — no display name column |
+| charge_payments | built | Payments against an instance (`paid_by`, `paid_on`, method); deleting the row unwinds the match |
+| charge_instances_with_payment_state | built | View (security_invoker): instances + computed `paid_minor`/`outstanding_minor` for ledger row selection |
 | recurring_rules | built | Cadence for charge definitions |
 | responsibility_allocations | built | Who holds / owes each portion of a charge (the bill-ownership mechanism) |
 | tenant_splits | built | Roommate-level splits of a tenant's portion |
-| statements | built | **Current** billing record (draft/published). Being phased out in favor of the running ledger — do not build new statement workflows on it |
-| payment_events | built | Payment mark/confirm/reject events against a statement |
 | source_documents | built | Raw bills (PDFs, photos, email forwards) |
-| providers | built | Utility/condo providers (country + region scoped) |
-| provider_invoice_profiles | built | Ingestion/extraction/validation config for a provider |
-| example_documents | built | Sample bills attached to provider profiles |
+| providers | built | Utility/condo providers (country + region scoped); `display_name` is the UI-facing name |
+| provider_invoice_profiles | built | Links a charge definition to its provider; parser/extraction-config columns are unused (extraction is LLM-based) |
+| provider_requests | built | Missing-provider records from setup; resolve to a `providers` row |
+| example_documents | built | Sample bills attached to provider records |
 | disputes | built | Tenant-raised issues with charges |
 | notifications | built | In-app + email delivery records |
 | audit_events | built | Mutation log |
 | invitations | built | Landlord → tenant invite flow |
-| monthly_ledger / running ledger | planned | The immutable per-month record + live current-month view that replaces statements |
 | payment_matches | planned | Linking table: bank_transactions ↔ charge_instances with confidence + reversible state |
 | bank_accounts / bank_transactions | planned | Open Finance (Pluggy) connections + ingested transactions |
 | dda_registrations | planned | CPF → Celcoin DDA adhesion records for boleto discovery |
@@ -67,15 +67,16 @@ The product is moving away from landlord-published monthly statements toward a *
 
 ## Key Modeling Rules
 
-- **The running ledger is the target, not statements.** The `statements` table still exists today, but the product is moving off landlord-published draft/review/publish statements toward a general running ledger + live current-state view. Don't build new statement workflows; build toward the ledger when speccing billing.
+- **The ledger is derived, never stored.** `charge_instances` + `charge_payments` are the source of truth; month groups and the live current-month view are computed in the read layer (`src/data/charges/`). Don't add stored monthly rollups or statement workflows.
+- **No stored display strings.** Anything derivable from structured data is derived in the UI, never persisted as a display column — a bill's label is its definition's `expense_type` + linked provider (`ExpenseName` component), not a saved "Type · Provider" string. Anti-example: a `name text` column composed at insert time.
 - **Charge ownership is per-charge, not per-property.** A property can have rent held by the landlord, utilities held by the tenant, and condo held by the landlord — all on the same tenancy. Today ownership is modeled via `responsibility_allocations`; the planned per-charge `bill_holder` marker (`'landlord' | 'tenant'`) will drive which bank feed payment detection watches.
-- **Payment matches are reversible.** Even a high-confidence auto-match must be undoable — no schema that assumes a match is final.
-- **Provider profiles are data, not code.** Parser strategy + extraction config + validation config are columns, not hardcoded logic.
-- **Extraction failures produce data.** Source document, profile used, failure category, corrections, final approved values — all recorded.
+- **Payment matches are reversible.** Even a high-confidence auto-match must be undoable — no schema that assumes a match is final. Today a `charge_payments` row *is* the match; deleting it unwinds cleanly.
+- **Provider knowledge is data, not code.** Providers are catalog rows (`providers`); extraction is LLM-based and identifies the provider per bill — no per-provider parser logic.
+- **Extraction failures produce data.** Source document, identified provider, failure category, corrections, final approved values — all recorded.
 - **Reputation events drive scores.** Don't store derived scores without the event trail that produced them. The score is recomputable.
 - **Contracts are append-only logically.** Changes record `contract_events`; original contract is preserved.
-- **Monthly ledgers are immutable.** Past months freeze. Corrections to a past month create a correction record — never silently mutate the ledger row.
-- **Draft → review → publish is only for provider profiles and contracts, not monthly billing.**
+- **Past months are immutable.** Frozen history is never silently mutated; corrections to a past month create explicit correction records.
+- **Draft → review → publish is only for contracts, not monthly billing.**
 
 ## Audit Triggers
 
@@ -89,13 +90,12 @@ create trigger audit_<table_name>
   for each row execute function audit_log_trigger();
 ```
 
-Priority tables for audit logging (post-pivot):
+Priority tables for audit logging:
 - `contracts`, `contract_events`
-- `charge_definitions`, `charge_instances`, `responsibility_allocations`, `recurring_rules`
+- `charge_definitions`, `charge_instances`, `charge_payments`, `responsibility_allocations`, `recurring_rules`
 - `payment_matches` (especially reversals)
 - `reputation_events`
 - `disputes`
-- `monthly_ledger` (correction trail)
 
 ## RLS Posture
 

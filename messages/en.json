@@ -641,19 +641,6 @@
         "typeRequired": "Pick an expense type.",
         "invalidAmount": "Enter a valid amount.",
         "tooLarge": "Amount is too large.",
-        "typeOptions": {
-          "electricity": "Electricity",
-          "water": "Water",
-          "gas": "Gas",
-          "internet": "Internet",
-          "condo": "Condo",
-          "trash": "Trash",
-          "sewer": "Sewer",
-          "cable": "Cable",
-          "insurance": "Insurance",
-          "maintenance": "Maintenance",
-          "other": "Other"
-        },
         "amountBehavior": {
           "fixedLabel": "Fixed amount",
           "fixedTrigger": "Same amount each month",
@@ -1041,5 +1028,18 @@
       "confirm": "Delete",
       "cancel": "Cancel"
     }
+  },
+  "expenseTypes": {
+    "electricity": "Electricity",
+    "water": "Water",
+    "gas": "Gas",
+    "internet": "Internet",
+    "condo": "Condo",
+    "trash": "Trash",
+    "sewer": "Sewer",
+    "cable": "Cable",
+    "insurance": "Insurance",
+    "maintenance": "Maintenance",
+    "other": "Other"
   }
 }

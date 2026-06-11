@@ -20,7 +20,9 @@ Pillar 1 of the product. Rent is first class; property expenses are second class
 
 ## Status
 
-Largely unbuilt. The live schema today is still the pre-pivot `statements` + `payment_events` model; the running ledger, payment matching, and bank/DDA tables this skill describes (`monthly_ledger`, `payment_matches`, `bank_accounts`, `bank_transactions`, `dda_registrations`) are **planned, not yet in schema** — see the `data-modeling` entity table. This skill describes the target design; build deterministically toward it when a feature is specced, and don't assume these tables or flows exist.
+**Built:** the discovery-ledger schema (`charge_instances` = discovered obligations linked to a definition, `charge_payments`, the `charge_instances_with_payment_state` view) and the property page's Bills tab on top of it — Due · Paid · Awaiting summary strip, overdue banner, month-grouped ledger with frozen history (read layer: `src/data/charges/`; spec: `docs/superpowers/specs/2026-06-04-bills-ledger-design.md`).
+
+**Not built:** everything that *feeds* the ledger — bill ingestion/extraction, DDA, Open Finance, payment matching — plus disputes, revenue tracking, and notifications. The bank/DDA tables (`payment_matches`, `bank_accounts`, `bank_transactions`, `dda_registrations`) are planned, not in schema — see the `data-modeling` entity table. Don't assume those tables or flows exist.
 
 ## The Live Billing View Replaces the Statement Workflow
 
@@ -32,11 +34,12 @@ Instead, both parties share a **live billing view** — a real-time dashboard of
 
 ## The Monthly Ledger
 
-Each property has a ledger — the immutable record of each month's charges and their outcomes.
+Each property has a ledger — the immutable record of each month's charges and their outcomes. The ledger is **derived**, not stored: `charge_instances` + `charge_payments` are the source of truth, and the read layer computes the month groups.
 
 - **Current month** = the live billing view, mutable as bills arrive and payments match
 - **Past months** = frozen records, cannot be silently overwritten
 - Corrections to a past month must be explicit, preserve history, and surface as a correction event (not a silent mutation)
+- **Bills carry no display name.** A row's label derives from its definition — localized `expense_type` word + linked provider — rendered by the `ExpenseName` component. Never persist or parse a composed "Type · Provider" string.
 
 The ledger powers: historical views, landlord revenue aggregation (monthly / yearly / per-contract / per-property), tenant payment history (feeds reputation), dispute resolution, future exports.
 
@@ -64,7 +67,7 @@ Barcode scanning is only used for condo fee setup — to capture the administrad
 
 - No centralized registry exists for convênio guides — no CPF-based lookup is possible from any provider
 - Bill discovery requires manual user action: upload, email forwarding to the property's ingestion email, or photo
-- Extraction runs on the document; provider profile defines the parser
+- LLM extraction runs on the document (see Extraction below)
 - Where a provider offers a web portal with CPF/account lookup, use it as a **validation layer** to confirm extraction accuracy (more reliable than asking users to validate)
 
 ### Rent
@@ -72,23 +75,23 @@ Barcode scanning is only used for condo fee setup — to capture the administrad
 - Amount and due date come from the contract terms — not from an external bill
 - Payment detection still runs via Open Finance (below)
 
-## Provider Profiles
+## Extraction (LLM)
 
-Provider invoice profiles are **built and controlled by Mabenn engineering**. Not user-configurable. Not AI-driven. Not crowd-sourced. Quality is controlled.
+Bill extraction is **LLM-based**. The LLM reads the document and produces the provider identity plus the billing fields (amount, issue date, due date). There are no per-provider parser configurations — provider knowledge is data (`providers` rows), not code.
 
-Each profile includes: provider reference, parser strategy, extraction config, validation config (including web-portal cross-check where available), example document reference, versioning, notes.
-
-**Extraction failures must produce data.** Every failure creates: source document reference, provider/profile used, failure category, corrected values, final approved output. This feedback loop improves profiles over time.
+- **Provider identification is part of extraction.** If the bill's provider isn't linked to the charge definition yet, ingestion creates the provider and links it — provider data on definitions is learned over time.
+- **Extracted data is never treated as inherently correct.** Validate against the charge definition (expected type, amount behavior) and, where available, the provider's web portal.
+- **Extraction failures must produce data.** Every run records: source document reference, identified provider, failure category, corrected values, final approved output.
 
 ### Missing providers
 
 Utilities vary by region (Florianópolis electricity = Celesc/Enliv, São Paulo electricity = ENEL, etc.). During property setup, derive utility providers from the address and present them as defaults — user confirms or changes.
 
-If a user's provider isn't in the system:
+If a user's provider isn't in the catalog:
 
-- Present a clear, non-dead-end UX: "We don't support this provider yet. Upload an example bill so we can build it."
-- Alert engineering automatically — ideally a Linear ticket with the example bill attached
+- Record a provider request and alert engineering automatically — ideally a Linear ticket
 - Do not block property setup on missing providers — rent works everywhere, expenses degrade gracefully
+- A definition without a linked provider displays as its expense-type word alone until ingestion identifies the provider from a real bill
 
 ### Ingestion error handling
 

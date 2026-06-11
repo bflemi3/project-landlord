@@ -5,7 +5,8 @@ import { buildCurrentMonthLedger, ledgerBillStatus, type Bill } from '../shared'
 const bill = (over: Partial<Bill>): Bill => ({
   id: over.id ?? `bill-${Math.random().toString(36).slice(2)}`,
   charge_definition_id: 'd',
-  name: 'n',
+  expense_type: 'electricity',
+  provider_name: null,
   amount_minor: 10000,
   currency: 'BRL',
   issued_on: '2026-06-05',
@@ -57,7 +58,9 @@ describe('buildCurrentMonthLedger', () => {
       id: 'c',
       payments: [{ amount_minor: 10000, paid_on: '2026-06-03', paid_by: 'u' }],
     })
-    const awaiting = [{ definitionId: 'gas', name: 'Gás', estimateMinor: 11000 }]
+    const awaiting = [
+      { definitionId: 'gas', expenseType: 'gas' as const, providerName: null, estimateMinor: 11000 },
+    ]
 
     const ledger = buildCurrentMonthLedger({
       carryInBills: [overdueCarryIn],

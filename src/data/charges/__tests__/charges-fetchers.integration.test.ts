@@ -40,41 +40,42 @@ beforeAll(async () => {
   const { data: instances, error: instError } = await client
     .from('charge_instances')
     .insert([
+      // April: fully unpaid
       {
         charge_definition_id: defId,
-        name: 'Energia · Abril',
         amount_minor: 30000,
         issued_on: '2026-04-05',
         due_date: '2026-04-15',
       },
+      // May: settled
       {
         charge_definition_id: defId,
-        name: 'Energia · Maio (paga)',
         amount_minor: 31000,
         issued_on: '2026-05-05',
         due_date: '2026-05-15',
       },
+      // May: open carry-in
       {
         charge_definition_id: defId,
-        name: 'Energia · Maio (aberta)',
         amount_minor: 18000,
         issued_on: '2026-05-20',
         due_date: '2026-05-28',
       },
+      // June: partially paid
       {
         charge_definition_id: defId,
-        name: 'Energia · Junho',
         amount_minor: 32000,
         issued_on: '2026-06-05',
         due_date: '2026-06-15',
       },
     ])
-    .select('id, issued_on, name')
+    .select('id, issued_on')
   if (instError) throw instError
-  aprilBillId = instances.find((i) => i.name.includes('Abril'))!.id
-  mayPaidId = instances.find((i) => i.name.includes('Maio (paga)'))!.id
-  mayCarryInId = instances.find((i) => i.name.includes('Maio (aberta)'))!.id
-  juneBillId = instances.find((i) => i.name.includes('Junho'))!.id
+  const byIssuedOn = new Map(instances.map((i) => [i.issued_on, i.id]))
+  aprilBillId = byIssuedOn.get('2026-04-05')!
+  mayPaidId = byIssuedOn.get('2026-05-05')!
+  mayCarryInId = byIssuedOn.get('2026-05-20')!
+  juneBillId = byIssuedOn.get('2026-06-05')!
 
   const { error: payError } = await client.from('charge_payments').insert([
     // settles the paid May bill, in May

@@ -114,6 +114,20 @@ The dot-shaped indicator — single source for every status/attention dot (Statu
 
 Never hand-roll `size-1.5 rounded-full bg-*` spans — use this.
 
+### ExpenseName
+
+**File:** `src/components/expense-name.tsx`
+
+The one way an expense/bill is named in the UI: localized expense-type word prominent (`expenseTypes.*` i18n keys), provider muted — "Energia · ENEL". Derives from structured data (`expense_type` + the definition's linked provider); there is no stored display name. Provider `null` (not yet identified) renders the type word alone.
+
+**Props:** `type` (`ExpenseType` enum), `provider` (`string | null`), `className`.
+
+```tsx
+<ExpenseName type={bill.expense_type} provider={bill.provider_name} />
+```
+
+Never compose or split "Type · Provider" strings by hand — use this.
+
 ### IconTile
 
 **File:** `src/components/icon-tile.tsx`

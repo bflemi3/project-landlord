@@ -55,7 +55,7 @@ MUST use semantic tokens from `src/app/globals.css`. NEVER hardcode Tailwind col
 - **Dual rhythm.** Generous air *between* sections (24–48px on the page); instrument-level density *within* data surfaces — ledgers, tables, multi-row cards (rows ~`py-2.5`/`py-3`, cells ~`py-3.5`). Gallery-quiet outside, tight-precise inside — that contrast is the editorial signature.
 - **Hierarchy, then hairlines.** Group at the section level with spacing. *Within* dense data surfaces, hairline `border-border` dividers are the row separator — use them; don't force whitespace-only separation in tables/ledgers.
 - **Scale + finer grain.** Base 4/8 rhythm (`*-1 *-2 *-3 *-4 *-6 *-8 *-10 *-12 *-16 *-24`) PLUS half-steps where precision/density needs them (`*-0.5 *-1.5 *-2.5 *-3.5`). Half-steps are the *finest* grain — no arbitrary one-off px in app code.
-- **The scale is generated, not enumerated — and it covers sizing too** (`w-*`, `h-*`, `size-*`, `min/max-*`, not just gap/padding/margin). Tailwind v4 emits *every* quarter-rem step, far past the examples above: divide the px by 4 — whole or half result means the token exists (`88px` → `w-22`, `104px` → `w-26`, `18px` → `size-4.5`). `[Npx]` arbitrary syntax is never the only option for a multiple of 2px. Don't copy `w-[88px]`-style values from neighboring code — that's a violation to fix, not idiom to match.
+- **The scale is generated, not enumerated — and it covers sizing too** (`w-*`, `h-*`, `size-*`, `min/max-*`, not just gap/padding/margin). Tailwind v4 emits *every* quarter-rem step, far past the examples above: divide the px by 4 — whole or half result means the token exists (`88px` → `w-22`, `104px` → `w-26`, `18px` → `size-4.5`). `[Npx]` arbitrary syntax is never the only option for a multiple of 2px. Don't copy `w-[88px]`-style values from neighboring code — that's a violation to fix, not idiom to match. Enforced mechanically: eslint `better-tailwindcss/enforce-canonical-classes` errors on any arbitrary value with an exact token equivalent.
 - **Parent owns vertical rhythm.** Containers set spacing via `flex flex-col gap-*` or `space-y-*`. Children MUST NOT set outer `mt-*`/`mb-*`/`my-*`. Anti-pattern: a section component opening with `<div className="mt-6 ...">`. Children don't know their siblings; the parent does. Exceptions: a child may own margin when it's a genuinely optional inline adornment (e.g., a helper line that may or may not render). Internal padding (`p-*`) is always the child's responsibility.
 
 ## Radius, Borders, Shadows
@@ -87,7 +87,7 @@ MUST use semantic tokens from `src/app/globals.css`. NEVER hardcode Tailwind col
 
 The app and storytelling surfaces share this one warm-dark editorial language. Storytelling surfaces (landing, onboarding tutorials, changelog, teach-the-feature empty states, brand pages) layer an extra *presentation* kit on top — hero shells, ambient glows, hand-drawn tutorial marks, real-UI-as-illustration — documented in `docs/project/design-editorial-reference.md`.
 
-- Operating surfaces (statements, charges, ledger, forms) → this file + `/DESIGN.md`, at operating density.
+- Operating surfaces (summary strips, charges, ledger, forms) → this file + `/DESIGN.md`, at operating density.
 - Storytelling surfaces → also `docs/project/design-editorial-reference.md` for the presentation layer.
 - Same materials (tokens, type, radius, restraint); the difference is *density and narrative devices*, not a different palette.
 

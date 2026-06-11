@@ -46,7 +46,7 @@ interface SuccessScreenProps {
 
 export function PropertyCreationSuccessScreen({ summary }: SuccessScreenProps) {
   const t = useTranslations('propertyCreation.success')
-  const tExpenses = useTranslations('propertyCreation.checkout.expenses.typeOptions')
+  const tExpenses = useTranslations('expenseTypes')
   const tPropertyTypes = useTranslations('properties.propertyTypeOptions')
   const locale = useLocale() as Locale
 

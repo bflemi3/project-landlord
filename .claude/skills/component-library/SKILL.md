@@ -1,6 +1,6 @@
 ---
 name: component-library
-description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/Alert, when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel, when hand-rolling a status pill / dot+label chip (use StatusBadge or Badge) or a tabbed/segmented nav (use ui/tabs), or when reaching for the magenta highlight/spotlight accent.
+description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/Alert, when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel, when hand-rolling a status pill / dot+label chip (use StatusBadge or Badge), a bare indicator dot (use ui/dot), a "Type · Provider" expense label (use ExpenseName), or a tabbed/segmented nav (use ui/tabs), or when reaching for the magenta highlight/spotlight accent.
 paths:
   - "src/**/*.tsx"
 ---
@@ -39,6 +39,7 @@ Small building blocks for consistent editorial surfaces. Always compose these in
 - **IconTile** (`src/components/icon-tile.tsx`) — rounded surface for a single lucide icon. `size` sm/md/lg, `shape` square/circle, `tone` primary/muted/success/warning/info/destructive/highlight. Uses semantic subtle pairs — never hardcode color utilities for icon surfaces.
 - **ListRow** family (`src/components/list-row.tsx`) — `List`, `ListRow` / `ListRowButton`, `ListRowLeading`, `ListRowBody`, `ListRowTitle`, `ListRowDescription`, `ListRowTrailing`, `ListRowChevron`, plus `listRowClassName()` helper. Variants: `solid` and `dashed` render their own chrome; `embedded` is chromeless for rows inside a `Card size="none"` + `List`.
 - **StatusBadge** (`src/components/status-badge.tsx`) — dot-led status pill. Pass intent (`paid` / `pending` / `overdue` / `disputed` / `rejected` / `published` / `draft` / `default`), not chrome — it composes `ui/badge` and prepends a `bg-current` dot. Reach for this for any status indicator; never hand-roll a pill or dot+label. Forwards `spotlight`.
+- **ExpenseName** (`src/components/expense-name.tsx`) — the one way an expense/bill is named: localized type word prominent (`expenseTypes.*` keys), provider muted ("Energia · ENEL"); provider `null` renders the type word alone. Props: `type` (ExpenseType enum), `provider` (string | null). Labels derive from structured data — never compose or split a "Type · Provider" string by hand.
 
 ### Status pills, badges & tabs
 

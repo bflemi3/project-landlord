@@ -1,12 +1,44 @@
 import type { Database } from '@/lib/types/database'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
-type ExpenseType = Database['public']['Enums']['expense_type']
+export type ExpenseType = Database['public']['Enums']['expense_type']
 
 export type ExpenseDefinitionOption = {
   id: string
-  name: string
   expense_type: ExpenseType
+  /** Display name of the linked provider; null = no provider attached yet. */
+  provider_name: string | null
+}
+
+// Provider linkage joined off charge_definitions. Display derives from
+// expense_type + this — there is no stored display name (see the
+// remove_charge_instances_name migration). The provider arrives via an
+// invoice profile (catalog) or a pending provider request; requests are
+// RLS-visible to their requester only, so other members fall back to null.
+const DEFINITION_PROVIDER_SELECT = `expense_type,
+  provider_invoice_profiles(providers(display_name, name)),
+  provider_requests(normalized_provider_name, requested_provider_name)`
+
+type DefinitionProviderRow = {
+  expense_type: ExpenseType | null
+  provider_invoice_profiles: {
+    providers: { display_name: string | null; name: string | null } | null
+  } | null
+  provider_requests: {
+    normalized_provider_name: string | null
+    requested_provider_name: string | null
+  } | null
+}
+
+function providerNameFrom(def: DefinitionProviderRow | null): string | null {
+  const provider = def?.provider_invoice_profiles?.providers
+  return (
+    provider?.display_name ??
+    provider?.name ??
+    def?.provider_requests?.normalized_provider_name ??
+    def?.provider_requests?.requested_provider_name ??
+    null
+  )
 }
 
 export const expenseDefinitionsQueryKey = (propertyId: string) =>
@@ -14,8 +46,9 @@ export const expenseDefinitionsQueryKey = (propertyId: string) =>
 
 /**
  * Active expense definitions configured for a property (across its units).
- * Ordered by name. Also the "expected" universe for the Awaiting stat: every
- * active definition with no instance discovered this month is awaited.
+ * Ordered by expense type. Also the "expected" universe for the Awaiting
+ * stat: every active definition with no instance discovered this month is
+ * awaited.
  */
 export async function fetchPropertyExpenseDefinitions(
   supabase: TypedSupabaseClient,
@@ -23,19 +56,19 @@ export async function fetchPropertyExpenseDefinitions(
 ): Promise<ExpenseDefinitionOption[]> {
   const { data, error } = await supabase
     .from('charge_definitions')
-    .select('id, name, expense_type, units!inner(property_id, deleted_at)')
+    .select(`id, ${DEFINITION_PROVIDER_SELECT}, units!inner(property_id, deleted_at)`)
     .eq('units.property_id', propertyId)
     .is('deleted_at', null)
     .is('units.deleted_at', null)
     .eq('is_active', true)
-    .order('name')
+    .order('expense_type')
 
   if (error) throw error
 
   return (data ?? []).map((row) => ({
     id: row.id,
-    name: row.name,
     expense_type: row.expense_type,
+    provider_name: providerNameFrom(row),
   }))
 }
 
@@ -76,7 +109,9 @@ export type BillSplit = {
 export type Bill = {
   id: string
   charge_definition_id: string
-  name: string
+  expense_type: ExpenseType
+  /** From the definition's linked provider; null = not yet identified. */
+  provider_name: string | null
   amount_minor: number
   currency: string
   issued_on: string
@@ -97,22 +132,22 @@ export const billsSummaryQueryKey = (propertyId: string) => ['bills-summary', pr
 export const ledgerMonthQueryKey = (propertyId: string, ym: YearMonth) =>
   ['ledger-month', propertyId, ym.year, ym.month] as const
 
-const BILL_SELECT = `id, charge_definition_id, name, amount_minor, currency, issued_on, due_date,
+const BILL_SELECT = `id, charge_definition_id, amount_minor, currency, issued_on, due_date,
   landlord_percentage, tenant_percentage,
-  charge_definitions!inner(units!inner(property_id, deleted_at)),
+  charge_definitions!inner(${DEFINITION_PROVIDER_SELECT}, units!inner(property_id, deleted_at)),
   charge_payments(amount_minor, paid_on, paid_by),
   tenant_splits(user_id, percentage)`
 
 type BillRow = {
   id: string | null
   charge_definition_id: string | null
-  name: string | null
   amount_minor: number | null
   currency: string | null
   issued_on: string | null
   due_date: string | null
   landlord_percentage: number | null
   tenant_percentage: number | null
+  charge_definitions: DefinitionProviderRow | null
   charge_payments: { amount_minor: number; paid_on: string; paid_by: string }[] | null
   tenant_splits: { user_id: string; percentage: number }[] | null
 }
@@ -123,7 +158,8 @@ function mapBillRow(row: BillRow): Bill {
   return {
     id: row.id ?? '',
     charge_definition_id: row.charge_definition_id ?? '',
-    name: row.name ?? '',
+    expense_type: row.charge_definitions?.expense_type ?? 'other',
+    provider_name: providerNameFrom(row.charge_definitions),
     amount_minor: row.amount_minor ?? 0,
     currency: row.currency ?? 'BRL',
     issued_on: row.issued_on ?? '',
@@ -378,14 +414,14 @@ export type ViewerTotals = SideTotals & {
 
 export type AwaitingCharge = {
   definitionId: string
-  name: string
+  expenseType: ExpenseType
+  providerName: string | null
   /** Average of the prior 3 months' totals; null = no history ("unknown"). */
   estimateMinor: number | null
 }
 
 export type OverdueBill = {
   id: string
-  name: string
   issuedOn: string
   dueDate: string
   outstandingMinor: number
@@ -477,7 +513,6 @@ export function summarizePropertyBills({
     if (overdue && bill.due_date) {
       overdueBills.push({
         id: bill.id,
-        name: bill.name,
         issuedOn: bill.issued_on,
         dueDate: bill.due_date,
         outstandingMinor: outstanding,
@@ -507,7 +542,8 @@ export function summarizePropertyBills({
     .filter((def) => !seenDefinitions.has(def.id))
     .map((def) => ({
       definitionId: def.id,
-      name: def.name,
+      expenseType: def.expense_type,
+      providerName: def.provider_name,
       estimateMinor: estimateFromHistory(
         historyBills.filter((b) => b.charge_definition_id === def.id),
       ),

@@ -12,7 +12,8 @@ import {
 const bill = (over: Partial<Bill>): Bill => ({
   id: over.id ?? `bill-${Math.random().toString(36).slice(2)}`,
   charge_definition_id: 'd',
-  name: 'n',
+  expense_type: 'electricity',
+  provider_name: null,
   amount_minor: 0,
   currency: 'BRL',
   issued_on: '2026-06-05',
@@ -89,7 +90,6 @@ describe('overdue — the past-due subset of due', () => {
       carryInBills: [
         bill({
           id: 'old',
-          name: 'Vivo',
           issued_on: '2026-05-02',
           due_date: '2026-05-15',
           amount_minor: 18000,
@@ -98,7 +98,6 @@ describe('overdue — the past-due subset of due', () => {
       recentBills: [
         bill({
           id: 'new',
-          name: 'ENEL',
           issued_on: '2026-06-01',
           due_date: '2026-06-08',
           amount_minor: 32000,
@@ -243,8 +242,8 @@ describe('viewer totals', () => {
 
 describe('awaiting — active definitions not yet seen this month', () => {
   const defs = [
-    { id: 'gas', name: 'Gás', expense_type: 'gas' },
-    { id: 'enel', name: 'Energia', expense_type: 'electricity' },
+    { id: 'gas', expense_type: 'gas', provider_name: 'Comgás' },
+    { id: 'enel', expense_type: 'electricity', provider_name: null },
   ] as SummarizeInput['activeDefinitions']
 
   it('excludes definitions with an instance this month; carry-ins do not count as seen', () => {

@@ -641,19 +641,6 @@
         "typeRequired": "Elige un tipo de gasto.",
         "invalidAmount": "Ingresa un monto válido.",
         "tooLarge": "El monto es demasiado alto.",
-        "typeOptions": {
-          "electricity": "Electricidad",
-          "water": "Agua",
-          "gas": "Gas",
-          "internet": "Internet",
-          "condo": "Expensas",
-          "trash": "Basura",
-          "sewer": "Cloacas",
-          "cable": "Cable",
-          "insurance": "Seguro",
-          "maintenance": "Mantenimiento",
-          "other": "Otro"
-        },
         "amountBehavior": {
           "fixedLabel": "Monto fijo",
           "fixedTrigger": "Mismo monto cada mes",
@@ -1041,5 +1028,18 @@
       "confirm": "Eliminar",
       "cancel": "Cancelar"
     }
+  },
+  "expenseTypes": {
+    "electricity": "Electricidad",
+    "water": "Agua",
+    "gas": "Gas",
+    "internet": "Internet",
+    "condo": "Expensas",
+    "trash": "Basura",
+    "sewer": "Cloacas",
+    "cable": "Cable",
+    "insurance": "Seguro",
+    "maintenance": "Mantenimiento",
+    "other": "Otro"
   }
 }

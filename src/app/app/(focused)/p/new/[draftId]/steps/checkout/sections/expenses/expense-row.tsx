@@ -29,7 +29,7 @@ interface ExpenseRowProps {
 
 export function ExpenseRow({ id, isRemoving, animateEntrance, onRemove }: ExpenseRowProps) {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const tOptions = useTranslations('propertyCreation.checkout.expenses.typeOptions')
+  const tOptions = useTranslations('expenseTypes')
 
   // Subscribe to the row reference only — `find()` keeps a stable ref while
   // this row's data is unchanged, so unrelated row edits don't re-render us.
