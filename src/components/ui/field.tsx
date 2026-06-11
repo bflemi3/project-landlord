@@ -51,23 +51,20 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
   )
 }
 
-const fieldVariants = cva(
-  'group/field flex w-full gap-2 data-[invalid=true]:text-destructive',
-  {
-    variants: {
-      orientation: {
-        vertical: 'flex-col *:w-full [&>.sr-only]:w-auto',
-        horizontal:
-          'flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
-        responsive:
-          'flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
-      },
-    },
-    defaultVariants: {
-      orientation: 'vertical',
+const fieldVariants = cva('group/field flex w-full gap-2 data-[invalid=true]:text-destructive', {
+  variants: {
+    orientation: {
+      vertical: 'flex-col *:w-full [&>.sr-only]:w-auto',
+      horizontal:
+        'flex-row items-center has-[>[data-slot=field-content]]:items-start *:data-[slot=field-label]:flex-auto has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
+      responsive:
+        'flex-col *:w-full @md/field-group:flex-row @md/field-group:items-center @md/field-group:*:w-auto @md/field-group:has-[>[data-slot=field-content]]:items-start @md/field-group:*:data-[slot=field-label]:flex-auto [&>.sr-only]:w-auto @md/field-group:has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px',
     },
   },
-)
+  defaultVariants: {
+    orientation: 'vertical',
+  },
+})
 
 function Field({
   className,
@@ -94,12 +91,7 @@ type FieldRowProps = React.ComponentProps<'div'> & {
   breakpoint?: 'always' | 'sm' | 'md' | 'lg'
 }
 
-function FieldRow({
-  className,
-  columns = 2,
-  breakpoint = 'md',
-  ...props
-}: FieldRowProps) {
+function FieldRow({ className, columns = 2, breakpoint = 'md', ...props }: FieldRowProps) {
   // Stacked row gap matches FieldGroup (24px) so single-column siblings inside
   // a row don't sit visibly tighter than non-paired FieldGroup children. Once
   // the row activates, fields tighten to gap-4 because they're a paired group.
@@ -120,11 +112,7 @@ function FieldRow({
   }[columns][breakpoint]
 
   return (
-    <div
-      data-slot="field-row"
-      className={cn('grid w-full', gridClass, className)}
-      {...props}
-    />
+    <div data-slot="field-row" className={cn('grid w-full', gridClass, className)} {...props} />
   )
 }
 
@@ -132,24 +120,18 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="field-content"
-      className={cn(
-        'group/field-content flex flex-1 flex-col gap-1 leading-snug',
-        className,
-      )}
+      className={cn('group/field-content flex flex-1 flex-col gap-1 leading-snug', className)}
       {...props}
     />
   )
 }
 
-function FieldLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof Label>) {
+function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
   return (
     <Label
       data-slot="field-label"
       className={cn(
-        'group/field-label peer/field-label flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-data-checked:border-primary/30 has-data-checked:bg-primary/5 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-3 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10',
+        'group/field-label peer/field-label has-data-checked:border-primary/30 has-data-checked:bg-primary/5 dark:has-data-checked:border-primary/20 dark:has-data-checked:bg-primary/10 flex w-fit gap-2 leading-snug group-data-[disabled=true]/field:opacity-50 has-[>[data-slot=field]]:rounded-lg has-[>[data-slot=field]]:border *:data-[slot=field]:p-3',
         'has-[>[data-slot=field]]:w-full has-[>[data-slot=field]]:flex-col',
         className,
       )}
@@ -176,9 +158,9 @@ function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
     <p
       data-slot="field-description"
       className={cn(
-        'text-left text-sm leading-normal font-normal text-muted-foreground group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-2',
+        'text-muted-foreground text-left text-sm/normal font-normal group-has-data-horizontal/field:text-balance [[data-variant=legend]+&]:-mt-2',
         'last:mt-0 nth-last-2:-mt-1',
-        '[&>a]:underline [&>a]:underline-offset-4 [&>a:hover]:text-primary',
+        '[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4',
         className,
       )}
       {...props}
@@ -206,7 +188,7 @@ function FieldSeparator({
       <Separator className="absolute inset-0 top-1/2" />
       {children && (
         <span
-          className="relative mx-auto block w-fit bg-background px-2 text-muted-foreground"
+          className="bg-background text-muted-foreground relative mx-auto block w-fit px-2"
           data-slot="field-separator-content"
         >
           {children}
@@ -233,9 +215,7 @@ function FieldError({
       return null
     }
 
-    const uniqueErrors = [
-      ...new Map(errors.map((error) => [error?.message, error])).values(),
-    ]
+    const uniqueErrors = [...new Map(errors.map((error) => [error?.message, error])).values()]
 
     if (uniqueErrors?.length == 1) {
       return uniqueErrors[0]?.message
@@ -243,10 +223,7 @@ function FieldError({
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
-        {uniqueErrors.map(
-          (error, index) =>
-            error?.message && <li key={index}>{error.message}</li>,
-        )}
+        {uniqueErrors.map((error, index) => error?.message && <li key={index}>{error.message}</li>)}
       </ul>
     )
   }, [children, errors])
@@ -259,7 +236,7 @@ function FieldError({
     <div
       role="alert"
       data-slot="field-error"
-      className={cn('text-sm font-normal text-destructive', className)}
+      className={cn('text-destructive text-sm font-normal', className)}
       {...props}
     >
       {content}
@@ -290,12 +267,7 @@ interface FieldActionRowProps {
   className?: string
 }
 
-function FieldActionRow({
-  action,
-  actionVisible,
-  children,
-  className,
-}: FieldActionRowProps) {
+function FieldActionRow({ action, actionVisible, children, className }: FieldActionRowProps) {
   return (
     // `gap-0` overrides Field's default gap-2 — the animated wrapper applies
     // its own `ml-2` when visible, so the gap collapses with the slot.
@@ -310,9 +282,7 @@ function FieldActionRow({
         aria-hidden={!actionVisible}
         className={cn(
           'overflow-hidden motion-safe:transition-all motion-safe:duration-300 motion-safe:ease-out',
-          actionVisible
-            ? 'ml-2 max-w-32 opacity-100'
-            : 'ml-0 max-w-0 opacity-0',
+          actionVisible ? 'ml-2 max-w-32 opacity-100' : 'ml-0 max-w-0 opacity-0',
         )}
       >
         {action}

@@ -32,6 +32,7 @@ function AmountDisplay({
   size = 'default',
   tone = 'default',
   fractionDigits,
+  approximate = false,
   ...props
 }: React.ComponentProps<'span'> & {
   amountMinor: number
@@ -39,6 +40,8 @@ function AmountDisplay({
   size?: AmountDisplaySize
   tone?: AmountDisplayTone
   fractionDigits?: number
+  /** Prefixes ~ — for estimated values (e.g. the Awaiting rolling average). */
+  approximate?: boolean
 }) {
   const locale = useLocale() as Locale
 
@@ -50,6 +53,7 @@ function AmountDisplay({
       className={cn('font-mono tabular-nums', sizeClasses[size], toneClasses[tone], className)}
       {...props}
     >
+      {approximate ? '~' : null}
       {formatCurrency(
         amountMinor,
         currency,

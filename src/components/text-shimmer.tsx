@@ -18,15 +18,17 @@ function TextShimmer<T extends TextShimmerElement = 'span'>({
     <Comp
       data-slot="text-shimmer"
       className={cn(
-        'inline-block bg-[length:250%_100%] bg-clip-text text-transparent',
+        'inline-block bg-size-[250%_100%] bg-clip-text text-transparent',
         'animate-[text-shimmer_var(--shimmer-duration)_linear_infinite]',
         className,
       )}
-      style={{
-        '--shimmer-duration': duration,
-        backgroundImage:
-          'linear-gradient(110deg, oklch(from var(--muted-foreground) l c h / 0.4) 35%, var(--foreground) 50%, oklch(from var(--muted-foreground) l c h / 0.4) 65%)',
-      } as React.CSSProperties}
+      style={
+        {
+          '--shimmer-duration': duration,
+          backgroundImage:
+            'linear-gradient(110deg, oklch(from var(--muted-foreground) l c h / 0.4) 35%, var(--foreground) 50%, oklch(from var(--muted-foreground) l c h / 0.4) 65%)',
+        } as React.CSSProperties
+      }
       {...(props as Record<string, unknown>)}
     >
       {children}

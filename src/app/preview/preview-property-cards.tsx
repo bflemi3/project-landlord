@@ -3,7 +3,11 @@
 import { useTranslations } from 'next-intl'
 import { ChevronRight, Check, Clock } from 'lucide-react'
 import { getCompletionSteps, getStatusBadge } from '@/components/property-card'
-import type { PropertySetupProgress, PendingInvite, PropertyOperationalData } from '@/lib/types/property'
+import type {
+  PropertySetupProgress,
+  PendingInvite,
+  PropertyOperationalData,
+} from '@/lib/types/property'
 import type { PreviewMembership } from './mock-data'
 
 /**
@@ -24,32 +28,34 @@ export function PreviewOperatingCard({
   const badge = getStatusBadge(opData)
 
   return (
-    <div className="group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:shadow-none dark:hover:border-primary/30">
+    <div className="group border-border bg-card hover:border-primary/20 dark:hover:border-primary/30 block w-full rounded-2xl border p-5 text-left shadow-sm transition-all hover:shadow-md dark:shadow-none">
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-semibold text-foreground">{property.name}</h3>
-          {address && <p className="mt-0.5 text-sm text-muted-foreground">{address}</p>}
+          <h3 className="text-foreground truncate font-semibold">{property.name}</h3>
+          {address && <p className="text-muted-foreground mt-0.5 text-sm">{address}</p>}
         </div>
-        <ChevronRight className="mt-0.5 size-5 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+        <ChevronRight className="text-muted-foreground/40 mt-0.5 size-5 shrink-0 transition-transform group-hover:translate-x-0.5" />
       </div>
 
       <div className="mt-3 flex items-baseline justify-between">
         {opData ? (
-          <p className="text-xl font-bold tabular-nums text-foreground">
+          <p className="text-foreground text-xl font-bold tabular-nums">
             R$ {(opData.expectedRevenueMinor / 100).toLocaleString('pt-BR')}
           </p>
         ) : (
-          <p className="text-sm text-muted-foreground">{t('noBillingData')}</p>
+          <p className="text-muted-foreground text-sm">{t('noBillingData')}</p>
         )}
         {opData?.billingCycle && (
-          <span className="text-sm text-muted-foreground">{opData.billingCycle}</span>
+          <span className="text-muted-foreground text-sm">{opData.billingCycle}</span>
         )}
       </div>
 
       {badge && (
         <div className="mt-2 flex items-center gap-1.5">
           <div className={`size-1.5 rounded-full ${badge.dot}`} />
-          <span className={`text-sm font-medium ${badge.text}`}>{t(badge.labelKey, badge.labelParams)}</span>
+          <span className={`text-sm font-medium ${badge.text}`}>
+            {t(badge.labelKey, badge.labelParams)}
+          </span>
         </div>
       )}
     </div>
@@ -72,27 +78,27 @@ export function PreviewSetupCard({
   const total = steps.length
 
   return (
-    <div className="group block w-full rounded-2xl border border-border bg-card p-5 text-left shadow-sm transition-all hover:border-primary/20 hover:shadow-md dark:shadow-none dark:hover:border-primary/30">
+    <div className="group border-border bg-card hover:border-primary/20 dark:hover:border-primary/30 block w-full rounded-2xl border p-5 text-left shadow-sm transition-all hover:shadow-md dark:shadow-none">
       <div className="flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <h3 className="truncate font-semibold text-foreground">{property.name}</h3>
-          {address && <p className="mt-0.5 text-sm text-muted-foreground">{address}</p>}
+          <h3 className="text-foreground truncate font-semibold">{property.name}</h3>
+          {address && <p className="text-muted-foreground mt-0.5 text-sm">{address}</p>}
         </div>
-        <ChevronRight className="mt-0.5 size-5 shrink-0 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5" />
+        <ChevronRight className="text-muted-foreground/40 mt-0.5 size-5 shrink-0 transition-transform group-hover:translate-x-0.5" />
       </div>
 
-      <div className="mt-3 mb-3">
+      <div className="my-3">
         <div className="mb-1.5 flex items-center justify-between">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-muted-foreground text-xs font-medium">
             {tP('setupSteps', { completed, total })}
           </span>
-          <span className="text-xs font-semibold text-primary">
+          <span className="text-primary text-xs font-semibold">
             {Math.round((completed / total) * 100)}%
           </span>
         </div>
-        <div className="h-1.5 overflow-hidden rounded-full bg-border">
+        <div className="bg-border h-1.5 overflow-hidden rounded-full">
           <div
-            className="h-full rounded-full bg-primary transition-all duration-500"
+            className="bg-primary h-full rounded-full transition-all duration-500"
             style={{ width: `${(completed / total) * 100}%` }}
           />
         </div>
@@ -102,17 +108,19 @@ export function PreviewSetupCard({
         {steps.map((step) => (
           <div key={step.key} className="flex items-center gap-2.5">
             {step.done ? (
-              <div className="flex size-5 items-center justify-center rounded-full bg-primary/10">
-                <Check className="size-3 text-primary" />
+              <div className="bg-primary/10 flex size-5 items-center justify-center rounded-full">
+                <Check className="text-primary size-3" />
               </div>
             ) : step.inProgress ? (
               <div className="flex size-5 items-center justify-center rounded-full bg-amber-500/10">
                 <Clock className="size-3 text-amber-500" />
               </div>
             ) : (
-              <div className="size-5 rounded-full border border-border" />
+              <div className="border-border size-5 rounded-full border" />
             )}
-            <span className={`text-sm ${step.done ? 'text-muted-foreground' : step.inProgress ? 'font-medium text-foreground' : 'text-muted-foreground/60'}`}>
+            <span
+              className={`text-sm ${step.done ? 'text-muted-foreground' : step.inProgress ? 'text-foreground font-medium' : 'text-muted-foreground/60'}`}
+            >
               {tP(step.label)}
             </span>
           </div>

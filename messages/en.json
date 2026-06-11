@@ -6,7 +6,8 @@
     "retry": "Try again",
     "back": "Back",
     "taxIdLabel": "Tax ID",
-    "taxIdLabelCpfOrCnpj": "CPF or CNPJ"
+    "taxIdLabelCpfOrCnpj": "CPF or CNPJ",
+    "close": "Close"
   },
   "auth": {
     "tagline": "Property management without the property manager.",
@@ -974,6 +975,71 @@
       "tokenFailed": "We couldn't open the bank connection. Try again in a moment.",
       "registerFailed": "We couldn't save the connection. Try again.",
       "disconnectFailed": "We couldn't disconnect that bank. Try again."
+    }
+  },
+  "property": {
+    "tabs": {
+      "revenue": "Revenue",
+      "rent": "Rent",
+      "bills": "Bills",
+      "contract": "Contract",
+      "messages": "Messages"
+    },
+    "placeholders": {
+      "revenue": "Your rental income — this month, this year, and all-time — will live here.",
+      "rent": "Your rent — what's due, what's paid, and your payment history — will live here.",
+      "bills": "The bills ledger is coming here next.",
+      "contract": "Your contract, adjustments, and notices will live here.",
+      "messages": "The rental conversation will live here."
+    },
+    "contractStatus": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "none": "No contract"
+    },
+    "summary": {
+      "due": "Due",
+      "dueYours": "Your due",
+      "paid": "Paid",
+      "paidYours": "Your paid",
+      "awaiting": "Awaiting",
+      "awaitingBills": "{count, plural, =0 {all bills in} one {# bill} other {# bills}}",
+      "unknown": "unknown",
+      "total": "total",
+      "you": "you"
+    },
+    "bills": {
+      "statuses": {
+        "paid": "Paid",
+        "due": "Due",
+        "awaiting": "Awaiting",
+        "overdue": "Overdue"
+      },
+      "filters": {
+        "company": "Company",
+        "status": "Status",
+        "date": "Date"
+      },
+      "banner": "{amount} overdue",
+      "bannerYourShare": "your share {amount}",
+      "bannerNoneYours": "you owe none of it",
+      "partialPaid": "{paid} of {total} paid",
+      "showMonth": "Show {month}",
+      "emptyMonth": "No bills this month",
+      "emptyTitle": "No bills yet",
+      "emptyDescription": "Bills show up here as they're discovered for this property.",
+      "awaitingInfoLabel": "What does awaiting mean?",
+      "awaitingTooltip": "Bills we expect this month that haven't been issued yet. Amounts are estimates based on the last 3 months."
+    },
+    "menu": {
+      "open": "Property options",
+      "delete": "Delete property"
+    },
+    "deleteDialog": {
+      "title": "Delete {name}?",
+      "description": "This permanently removes the property, units, rent, contracts, expenses, memberships, and invitations. Tenants and landlords keep their accounts.",
+      "confirm": "Delete",
+      "cancel": "Cancel"
     }
   }
 }

@@ -4,10 +4,7 @@ import { getProfile } from '@/data/profiles/server'
 import { GreetingSkeleton } from './home-skeletons'
 
 async function MixedGreeting() {
-  const [profile, t] = await Promise.all([
-    getProfile(),
-    getTranslations('home'),
-  ])
+  const [profile, t] = await Promise.all([getProfile(), getTranslations('home')])
 
   const firstName = profile?.full_name?.split(' ')[0] ?? undefined
   const hour = new Date().getHours()
@@ -15,8 +12,9 @@ async function MixedGreeting() {
   const greeting = t(greetingKey)
 
   return (
-    <h1 className="text-3xl font-display font-medium tracking-[-0.015em]">
-      {greeting}{firstName ? `, ${firstName}` : ''}
+    <h1 className="font-display text-3xl font-medium tracking-[-0.015em]">
+      {greeting}
+      {firstName ? `, ${firstName}` : ''}
     </h1>
   )
 }
@@ -27,13 +25,11 @@ async function MixedGreeting() {
  */
 export function MixedHome() {
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-4 md:pt-14">
-        <div className="w-full max-w-2xl">
-          <SuspenseFadeIn fallback={<GreetingSkeleton />}>
-            <MixedGreeting />
-          </SuspenseFadeIn>
-        </div>
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <div className="w-full max-w-2xl">
+        <SuspenseFadeIn fallback={<GreetingSkeleton />}>
+          <MixedGreeting />
+        </SuspenseFadeIn>
       </div>
     </div>
   )

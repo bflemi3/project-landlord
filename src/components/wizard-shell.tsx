@@ -51,7 +51,7 @@ function WizardShell({
       <div
         data-slot="wizard-shell"
         data-wizard-id={wizardId}
-        className={cn('flex h-full flex-col overflow-hidden pt-8', className)}
+        className={cn('flex h-full flex-col overflow-hidden pt-4', className)}
       >
         {children}
       </div>
@@ -80,7 +80,12 @@ function WizardShellBack({ className, label, ...props }: WizardShellBackProps) {
   return (
     <div className={cn('w-20', className)} {...props}>
       {currentStep > 1 && onBack && (
-        <Button className="text-base" size="sm" variant="ghost"  onClick={onBack} data-slot="wizard-shell-back">
+        <Button
+          className="text-muted-foreground"
+          variant="link"
+          onClick={onBack}
+          data-slot="wizard-shell-back"
+        >
           <ChevronLeft />
           {label}
         </Button>
@@ -98,8 +103,8 @@ function WizardShellClose({ className, ariaLabel, ...props }: WizardShellClosePr
   return (
     <div className={cn('flex w-20 justify-end', className)} {...props}>
       <Button
-        variant="secondary"
         size="icon"
+        variant="ghost"
         onClick={onExit}
         aria-label={ariaLabel}
         data-slot="wizard-shell-close"
@@ -147,10 +152,7 @@ function WizardShellSteps({ className, children, ...props }: React.ComponentProp
   return (
     <div
       data-slot="wizard-shell-steps"
-      className={cn(
-        'min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]',
-        className,
-      )}
+      className={cn('min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]', className)}
       {...props}
     >
       {firstStepOnly ? (

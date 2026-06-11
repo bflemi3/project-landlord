@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Loader2, ChevronLeft, Mail } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Wordmark } from '@/components/wordmark'
-import { InfoBox, InfoBoxContent } from '@/components/info-box'
+import { Alert, AlertBody } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -41,29 +41,29 @@ export default function ForgotPasswordPage() {
       <div className="text-center">
         <div className="pb-10">
           <Wordmark />
-          <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
+          <p className="text-muted-foreground mt-3 text-base">{t('tagline')}</p>
         </div>
 
-        <div className="mx-auto mb-8 flex size-12 items-center justify-center rounded-full bg-primary/10">
-          <Mail className="size-6 text-primary" />
+        <div className="bg-primary/10 mx-auto mb-8 flex size-12 items-center justify-center rounded-full">
+          <Mail className="text-primary size-6" />
         </div>
 
         <h1 className="mb-6 text-2xl font-bold">{t('checkEmail')}</h1>
 
-        <InfoBox>
-          <InfoBoxContent>
+        <Alert>
+          <AlertBody>
             <p>{t('checkEmailReset', { email })}</p>
             <p className="mt-3">
               {t.rich('checkEmailGoogle', {
                 strong: (chunks) => <strong className="text-foreground">{chunks}</strong>,
               })}
             </p>
-          </InfoBoxContent>
-        </InfoBox>
+          </AlertBody>
+        </Alert>
 
         <Link
           href="/auth/sign-in"
-          className="mt-10 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          className="text-primary mt-10 inline-flex items-center gap-1 text-sm font-medium hover:underline"
         >
           <ChevronLeft className="size-4" /> {t('backToSignIn')}
         </Link>
@@ -76,19 +76,19 @@ export default function ForgotPasswordPage() {
       {/* Header */}
       <div className="pb-10 text-center">
         <Wordmark />
-        <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
+        <p className="text-muted-foreground mt-3 text-base">{t('tagline')}</p>
       </div>
 
       <h1 className="mb-2 text-center text-2xl font-bold">{t('resetPassword')}</h1>
-      <p className="mb-8 text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground mb-8 text-center text-sm">
         {t('resetPasswordDescription')}
       </p>
 
       {/* Error */}
       {error && (
-        <InfoBox variant="destructive" className="mb-6">
-          <InfoBoxContent>{error}</InfoBoxContent>
-        </InfoBox>
+        <Alert variant="destructive" className="mb-6">
+          <AlertBody>{error}</AlertBody>
+        </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -108,12 +108,7 @@ export default function ForgotPasswordPage() {
           />
         </div>
 
-        <Button
-          type="submit"
-          disabled={loading}
-          className="h-12 w-full rounded-2xl"
-          size="lg"
-        >
+        <Button type="submit" disabled={loading} className="h-12 w-full rounded-2xl" size="lg">
           {loading ? <Loader2 className="size-5 animate-spin" /> : null}
           {t('sendResetLink')}
         </Button>
@@ -121,7 +116,7 @@ export default function ForgotPasswordPage() {
         <div className="text-center">
           <Link
             href="/auth/sign-in"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-sm"
           >
             <ChevronLeft className="size-4" /> {t('backToSignIn')}
           </Link>

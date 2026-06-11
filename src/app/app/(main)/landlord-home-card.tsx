@@ -5,19 +5,14 @@ import { useTranslations } from 'next-intl'
 import { ChevronRight } from 'lucide-react'
 import { cardShellClassName } from '@/components/ui/card'
 import { AmountDisplay } from '@/components/amount-display'
+import { Dot } from '@/components/ui/dot'
 import { IconTile } from '@/components/icon-tile'
 import { PROPERTY_TYPE_ICONS } from '@/lib/property/constants'
-import type {
-  LandlordHomePropertyCard,
-  LeaseEndState,
-} from '@/data/landlord-home/client'
+import type { LandlordHomePropertyCard, LeaseEndState } from '@/data/landlord-home/client'
 
 type IconTileTone = 'success' | 'warning' | 'destructive'
 
-function iconTileTone(
-  hasActiveContract: boolean,
-  endState: LeaseEndState,
-): IconTileTone | null {
+function iconTileTone(hasActiveContract: boolean, endState: LeaseEndState): IconTileTone | null {
   if (!hasActiveContract) return null
   if (endState === 'ending-imminent') return 'destructive'
   if (endState === 'ending-soon') return 'warning'
@@ -74,11 +69,7 @@ export function LandlordHomeCard({ card }: { card: LandlordHomePropertyCard }) {
   const tTypes = useTranslations('properties.propertyTypeOptions')
 
   const locationLine = card.property_address.neighborhood
-    ? [
-        card.property_address.neighborhood,
-        card.property_address.city,
-        card.property_address.state,
-      ]
+    ? [card.property_address.neighborhood, card.property_address.city, card.property_address.state]
         .filter(Boolean)
         .join(', ')
     : ''
@@ -110,7 +101,7 @@ export function LandlordHomeCard({ card }: { card: LandlordHomePropertyCard }) {
           ) : (
             <PropertyTypeIcon
               aria-label={propertyTypeLabel ?? undefined}
-              className="hidden size-5 shrink-0 text-muted-foreground/40 sm:block"
+              className="text-muted-foreground/40 hidden size-5 shrink-0 sm:block"
             />
           )
         ) : null}
@@ -118,22 +109,22 @@ export function LandlordHomeCard({ card }: { card: LandlordHomePropertyCard }) {
         <div className="min-w-0 sm:flex-1">
           <div className="mb-1.5 flex items-center justify-between sm:hidden">
             <p
-              className={`inline-flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide ${status.textClass}`}
+              className={`inline-flex items-center gap-1.5 text-sm font-semibold tracking-wide uppercase ${status.textClass}`}
             >
-              <span className={`size-1.5 rounded-full ${status.dotClass}`} aria-hidden="true" />
+              <Dot className={status.dotClass} />
               {status.label}
             </p>
-            <ChevronRight className="size-4 text-muted-foreground/50" aria-hidden="true" />
+            <ChevronRight className="text-muted-foreground/50 size-4" aria-hidden="true" />
           </div>
           <h3
-            className={`text-base font-display font-medium sm:truncate ${
+            className={`font-display text-base font-medium sm:truncate ${
               hasActiveContract ? 'text-foreground' : 'text-muted-foreground'
             }`}
           >
             {card.property_name}
           </h3>
           {locationLine ? (
-            <p className="mt-0.5 text-sm text-muted-foreground sm:truncate">{locationLine}</p>
+            <p className="text-muted-foreground mt-0.5 text-sm sm:truncate">{locationLine}</p>
           ) : null}
 
           {hasActiveContract ? (
@@ -144,8 +135,10 @@ export function LandlordHomeCard({ card }: { card: LandlordHomePropertyCard }) {
                 size="sm"
                 fractionDigits={0}
               />
-              <span className="text-sm text-muted-foreground">/ {t('perMonth')}</span>
-              <span aria-hidden="true" className="text-muted-foreground/40">·</span>
+              <span className="text-muted-foreground text-sm">/ {t('perMonth')}</span>
+              <span aria-hidden="true" className="text-muted-foreground/40">
+                ·
+              </span>
               <AmountDisplay
                 amountMinor={card.earned_minor ?? 0}
                 currency={card.currency}
@@ -153,7 +146,7 @@ export function LandlordHomeCard({ card }: { card: LandlordHomePropertyCard }) {
                 tone="muted"
                 fractionDigits={0}
               />
-              <span className="text-sm text-muted-foreground">{t('earned').toLowerCase()}</span>
+              <span className="text-muted-foreground text-sm">{t('earned').toLowerCase()}</span>
             </p>
           ) : null}
         </div>
@@ -167,9 +160,9 @@ export function LandlordHomeCard({ card }: { card: LandlordHomePropertyCard }) {
                 size="sm"
                 fractionDigits={0}
               />
-              <span className="text-sm text-muted-foreground">/ {t('perMonth')}</span>
+              <span className="text-muted-foreground text-sm">/ {t('perMonth')}</span>
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               {t('earned')}{' '}
               <AmountDisplay
                 amountMinor={card.earned_minor ?? 0}

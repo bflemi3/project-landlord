@@ -9,7 +9,7 @@ import { Loader2, Camera, Mail, ChevronLeft } from 'lucide-react'
 const _motionPreload = import('./animated-step-transition')
 
 const LazyAnimatedStepTransition = lazy(() =>
-  _motionPreload.then((mod) => ({ default: mod.AnimatedStepTransition }))
+  _motionPreload.then((mod) => ({ default: mod.AnimatedStepTransition })),
 )
 import posthog from 'posthog-js'
 import { createClient } from '@/lib/supabase/client'
@@ -19,7 +19,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { GoogleIcon } from '@/components/icons/google'
 import { Wordmark } from '@/components/wordmark'
-import { InfoBox, InfoBoxContent } from '@/components/info-box'
+import { Alert, AlertBody } from '@/components/ui/alert'
 import { validateInviteCode } from '@/app/actions/validate-invite'
 
 export interface SignUpFormProps {
@@ -55,7 +55,9 @@ export default function SignUpForm({
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const signInHref = inviteCode ? `/auth/sign-in?code=${encodeURIComponent(inviteCode)}` : '/auth/sign-in'
+  const signInHref = inviteCode
+    ? `/auth/sign-in?code=${encodeURIComponent(inviteCode)}`
+    : '/auth/sign-in'
 
   const onVerified = useCallback(() => {
     window.location.href = '/app'
@@ -175,7 +177,7 @@ export default function SignUpForm({
   const header = (
     <div className="pb-10 text-center">
       <Wordmark />
-      <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
+      <p className="text-muted-foreground mt-3 text-base">{t('tagline')}</p>
     </div>
   )
 
@@ -185,27 +187,27 @@ export default function SignUpForm({
       <div className="text-center">
         <div className="pb-10">
           <Wordmark />
-          <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
+          <p className="text-muted-foreground mt-3 text-base">{t('tagline')}</p>
         </div>
 
-        <div className="mx-auto mb-8 flex size-12 items-center justify-center rounded-full bg-primary/10">
-          <Mail className="size-6 text-primary" />
+        <div className="bg-primary/10 mx-auto mb-8 flex size-12 items-center justify-center rounded-full">
+          <Mail className="text-primary size-6" />
         </div>
 
         <h1 className="mb-6 text-2xl font-bold">{t('checkEmail')}</h1>
 
-        <InfoBox>
-          <InfoBoxContent>
+        <Alert>
+          <AlertBody>
             <p>{t('checkEmailSignup', { email })}</p>
             <p className="mt-5">{t('checkEmailAutoVerify')}</p>
             <p className="mt-5">{t('checkEmailExpiry')}</p>
             <p className="mt-5 text-xs opacity-60">{t('checkEmailSpam')}</p>
-          </InfoBoxContent>
-        </InfoBox>
+          </AlertBody>
+        </Alert>
 
         <Link
           href={signInHref}
-          className="mt-10 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          className="text-primary mt-10 inline-flex items-center gap-1 text-sm font-medium hover:underline"
         >
           <ChevronLeft className="size-4" /> {t('backToSignIn')}
         </Link>
@@ -218,13 +220,11 @@ export default function SignUpForm({
     return (
       <>
         {header}
-        <InfoBox variant="destructive" className="mb-6">
-          <InfoBoxContent>
-            {codeError === 'expired' ? t('inviteExpired') : t('inviteInvalid')}
-          </InfoBoxContent>
-        </InfoBox>
+        <Alert variant="destructive" className="mb-6">
+          <AlertBody>{codeError === 'expired' ? t('inviteExpired') : t('inviteInvalid')}</AlertBody>
+        </Alert>
         <div className="text-center">
-          <Link href="/auth/sign-in" className="text-sm font-semibold text-primary hover:underline">
+          <Link href="/auth/sign-in" className="text-primary text-sm font-semibold hover:underline">
             {t('signIn')}
           </Link>
         </div>
@@ -235,14 +235,12 @@ export default function SignUpForm({
   const inviteCodeStep: ReactNode = (
     <>
       <h1 className="mb-2 text-center text-2xl font-bold">{t('inviteCodeTitle')}</h1>
-      <p className="mb-8 text-center text-sm text-muted-foreground">
-        {t('inviteCodeDescription')}
-      </p>
+      <p className="text-muted-foreground mb-8 text-center text-sm">{t('inviteCodeDescription')}</p>
 
       {error && (
-        <InfoBox variant="destructive" className="mb-6">
-          <InfoBoxContent>{error}</InfoBoxContent>
-        </InfoBox>
+        <Alert variant="destructive" className="mb-6">
+          <AlertBody>{error}</AlertBody>
+        </Alert>
       )}
 
       <form onSubmit={handleValidateCode} className="space-y-5">
@@ -275,9 +273,9 @@ export default function SignUpForm({
       </form>
 
       <div className="mt-10 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {t('alreadyHaveAccount')}{' '}
-          <Link href={signInHref} className="font-semibold text-foreground">
+          <Link href={signInHref} className="text-foreground font-semibold">
             {t('signIn')}
           </Link>
         </p>
@@ -290,16 +288,16 @@ export default function SignUpForm({
       <h1 className="mb-8 text-center text-2xl font-bold">{t('signUp')}</h1>
 
       {error && (
-        <InfoBox variant="destructive" className="mb-6">
-          <InfoBoxContent>{error}</InfoBoxContent>
-        </InfoBox>
+        <Alert variant="destructive" className="mb-6">
+          <AlertBody>{error}</AlertBody>
+        </Alert>
       )}
 
       {/* Google */}
       <button
         onClick={handleGoogleSignUp}
         disabled={isLoading}
-        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground text-sm font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
+        className="bg-foreground text-background hover:bg-foreground/90 flex h-12 w-full items-center justify-center gap-3 rounded-2xl text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50"
       >
         {loadingGoogle ? (
           <Loader2 className="size-5 animate-spin" />
@@ -311,9 +309,9 @@ export default function SignUpForm({
 
       {/* Divider */}
       <div className="my-8 flex items-center gap-4">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-sm text-muted-foreground">{t('orSignUpWithEmail')}</span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="bg-border h-px flex-1" />
+        <span className="text-muted-foreground text-sm">{t('orSignUpWithEmail')}</span>
+        <div className="bg-border h-px flex-1" />
       </div>
 
       {/* Email form */}
@@ -323,13 +321,17 @@ export default function SignUpForm({
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="relative flex size-20 items-center justify-center overflow-hidden rounded-full border-2 border-dashed border-border transition-colors hover:border-muted-foreground"
+            className="border-border hover:border-muted-foreground relative flex size-20 items-center justify-center overflow-hidden rounded-full border-2 border-dashed transition-colors"
           >
             {avatarPreview ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarPreview} alt={t('avatarPreview')} className="size-full object-cover" />
+              <img
+                src={avatarPreview}
+                alt={t('avatarPreview')}
+                className="size-full object-cover"
+              />
             ) : (
-              <Camera className="size-6 text-muted-foreground" />
+              <Camera className="text-muted-foreground size-6" />
             )}
             <input
               ref={fileInputRef}
@@ -388,12 +390,7 @@ export default function SignUpForm({
           />
         </div>
 
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="h-12 w-full rounded-2xl"
-          size="lg"
-        >
+        <Button type="submit" disabled={isLoading} className="h-12 w-full rounded-2xl" size="lg">
           {loadingEmail ? <Loader2 className="size-5 animate-spin" /> : null}
           {t('signUpButton')}
         </Button>
@@ -401,9 +398,9 @@ export default function SignUpForm({
 
       {/* Sign in link */}
       <div className="mt-10 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {t('alreadyHaveAccount')}{' '}
-          <Link href={signInHref} className="font-semibold text-foreground">
+          <Link href={signInHref} className="text-foreground font-semibold">
             {t('signIn')}
           </Link>
         </p>
@@ -412,18 +409,14 @@ export default function SignUpForm({
   )
 
   // Suspense fallback: render current step without animation
-  const staticFallback = !codeValidated ? (
-    <div>{inviteCodeStep}</div>
-  ) : (
-    <div>{signUpStep}</div>
-  )
+  const staticFallback = !codeValidated ? <div>{inviteCodeStep}</div> : <div>{signUpStep}</div>
 
   return (
     <>
       {header}
 
       {codeValidated && propertyName && (
-        <p className="mb-6 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground mb-6 text-center text-sm">
           {t('invitedTo', { propertyName })}
         </p>
       )}

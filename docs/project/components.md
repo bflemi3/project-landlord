@@ -64,6 +64,10 @@ The greeting header used on the home screen. Adapts based on context.
 - Single property: `max-w-xl` centered
 - Multiple properties: `max-w-4xl` with `md:grid-cols-2` card grid
 
+### EdgeScroller
+
+Full-bleed horizontal scroller (`src/components/edge-scroller.tsx`). Items overflow off the viewport and scroll sideways with the scrollbar hidden; the leading gutter scrolls off so content reaches both edges. Props: `gutter` (4/6/8 — must match the page's horizontal padding; default 6), `gap` (1–4; default 2), `resetAt` (none/sm/md/lg — breakpoint where the bleed/scroll is dropped; default md). Children must be `shrink-0`. Used by the bills filter bar on mobile.
+
 ---
 
 ## Editorial Primitives
@@ -93,6 +97,22 @@ Section heading above a grouped block (e.g., "What's next" above the action list
 <SectionLabel>What's next</SectionLabel>
 <Card size="none">...</Card>
 ```
+
+### Dot
+
+**File:** `src/components/ui/dot.tsx`
+
+The dot-shaped indicator — single source for every status/attention dot (StatusBadge's lead, AlertDot, tab attention markers, contract status, progress dots). Decorative by default (`aria-hidden`); pair with visible or sr-only text when the dot carries meaning alone.
+
+**Props:** `tone` — `current` (default, inherits parent text color for composition inside tinted surfaces) / `primary` / `success` / `warning` / `info` / `destructive` / `muted` / `highlight`. `size` — `xs` (4px) / `sm` (default, 6px) / `md` (8px). `pulse` — boolean, adds the live "ping" halo (active/online treatment).
+
+```tsx
+<Dot tone="destructive" />            {/* attention marker */}
+<Dot tone="success" pulse />          {/* live/active */}
+<Dot size="md" className={dotClass} /> {/* custom tint via className */}
+```
+
+Never hand-roll `size-1.5 rounded-full bg-*` spans — use this.
 
 ### IconTile
 
@@ -185,6 +205,19 @@ Dot-led status pill. Composes `ui/badge` — maps a status to a Badge variant an
 ```tsx
 <StatusBadge variant="paid" spotlight>Paid</StatusBadge>
 <StatusBadge variant="pending">Due</StatusBadge>
+```
+
+### AmountDisplay
+
+**File:** `src/components/amount-display.tsx`
+
+Monetary value in mono tabular figures, formatted from `amount_minor` + `currency` via `formatCurrency` (locale-aware). Reach for this for any money the user reads — never hand-format currency in markup.
+
+**Props:** `amountMinor`, `currency` (default `BRL`), `size` — `xs` / `sm` / `default` / `lg` / `xl`, `tone` — `default` / `muted` / `primary` / `destructive` / `highlight`, `fractionDigits?`, `approximate?: boolean` — prefixes `~` for estimated values (e.g. the Bills tab's Awaiting rolling average); estimates are always marked, never displayed as concrete.
+
+```tsx
+<AmountDisplay amountMinor={48000} size="sm" fractionDigits={0} />
+<AmountDisplay amountMinor={31400} size="sm" tone="muted" approximate fractionDigits={0} />
 ```
 
 ## Property Cards
@@ -313,23 +346,33 @@ Composable header for interior pages (not the home screen). Vertical layout: bac
 
 ---
 
-## Info Box
+## Alert
 
-**File:** `src/components/info-box.tsx`
+**File:** `src/components/ui/alert.tsx` · Design locked 2026-06-10
 
-Contextual message container for inline alerts, instructions, or status messages.
+Borderless editorial alert for inline notices, status messages, and attention banners. **Replaces the retired `InfoBox`** — use Alert everywhere a contextual message is needed. Surface = `*-subtle` token (token/15), text = `*-subtle-foreground`, dot/icon = full-strength token; bare lucide children are auto-sized and tinted.
 
-**Parts:** `InfoBox`, `InfoBoxIcon`, `InfoBoxContent`, `InfoBoxDivider`
+**Parts:** `Alert` (variant + size), `AlertDot` (dot lead for banners, variant-colored), `AlertBody` (`min-w-0 flex-1`), `AlertTitle`, `AlertDescription` (13px, 80% opacity), `AlertAction` (trailing slot — links/buttons render as 12px mono underline).
 
-**Variants:**
-| Variant | Background | Border | Text |
-|---|---|---|---|
-| `default` | `bg-secondary/50` | `border-border` | `text-muted-foreground` |
-| `warning` | `bg-warning/10` | `border-warning/20` | `text-amber-700` |
-| `success` | `bg-success/10` | `border-success/20` | `text-emerald-700` |
-| `destructive` | `bg-destructive/10` | `border-destructive/20` | `text-destructive` |
+**Variants:** `neutral` (default, `bg-muted/50`) · `info` (teal) · `success` · `warning` · `destructive`.
 
-**Styles:** `rounded-2xl border px-5 py-5 text-sm`. Use `InfoBoxDivider` between multiple messages inside one box.
+**Sizes:** `default` — icon + title + description (`rounded-[14px] px-4 py-3.5`); `banner` — single truncating line, dot-led, trailing action (`rounded-xl px-4 py-2.5`; e.g. the Bills overdue banner).
+
+```tsx
+<Alert variant="destructive" size="banner">
+  <AlertDot />
+  <AlertBody className="truncate">R$536 overdue · your share R$120</AlertBody>
+  <AlertAction><a href="#overdue">View</a></AlertAction>
+</Alert>
+
+<Alert variant="warning">
+  <AlertCircle />
+  <AlertBody>
+    <AlertTitle>We couldn't read this bill</AlertTitle>
+    <AlertDescription>Re-upload a clearer photo, or enter the amount manually.</AlertDescription>
+  </AlertBody>
+</Alert>
+```
 
 ---
 
@@ -763,7 +806,7 @@ The mabenn wordmark — **live Fraunces text** (`font-display font-semibold`), n
 ## Component Creation Rules
 
 1. **Check shadcn first:** Before creating a component manually, run `npx shadcn@latest add <component>`
-2. **Composable pattern:** Expose parts, not props. Follow the `PageHeader` / `ChargeRow` / `InfoBox` pattern with named sub-components
+2. **Composable pattern:** Expose parts, not props. Follow the `PageHeader` / `ChargeRow` / `Alert` pattern with named sub-components
 3. **data-slot attributes:** Every compound component part gets `data-slot="component-part-name"` for debugging and testing
 4. **Never duplicate:** If markup appears in 3+ files, extract it into a shared component
 5. **File location:** Product components in `src/components/`, shadcn primitives in `src/components/ui/`

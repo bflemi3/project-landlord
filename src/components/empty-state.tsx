@@ -8,10 +8,7 @@ function EmptyState({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="empty-state"
-      className={cn(
-        'flex flex-col items-center justify-center gap-4 py-16 text-center',
-        className,
-      )}
+      className={cn('flex flex-col items-center justify-center gap-4 py-16 text-center', className)}
       {...props}
     />
   )
@@ -44,10 +41,7 @@ function EmptyStateTitle({ className, ...props }: React.ComponentProps<'h2'>) {
   return (
     <h2
       data-slot="empty-state-title"
-      className={cn(
-        'text-lg font-semibold tracking-tight text-foreground',
-        className,
-      )}
+      className={cn('text-foreground text-lg font-semibold tracking-tight', className)}
       {...props}
     />
   )
@@ -57,10 +51,7 @@ function EmptyStateDescription({ className, ...props }: React.ComponentProps<'p'
   return (
     <p
       data-slot="empty-state-description"
-      className={cn(
-        'max-w-sm text-sm leading-relaxed text-muted-foreground',
-        className,
-      )}
+      className={cn('text-muted-foreground max-w-sm text-sm/relaxed', className)}
       {...props}
     />
   )
@@ -76,11 +67,5 @@ function EmptyStateActions({ className, ...props }: React.ComponentProps<'div'>)
   )
 }
 
-export {
-  EmptyState,
-  EmptyStateIcon,
-  EmptyStateTitle,
-  EmptyStateDescription,
-  EmptyStateActions,
-}
+export { EmptyState, EmptyStateIcon, EmptyStateTitle, EmptyStateDescription, EmptyStateActions }
 export type { EmptyStateTone }

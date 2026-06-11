@@ -6,7 +6,8 @@
     "retry": "Tentar novamente",
     "back": "Voltar",
     "taxIdLabel": "ID fiscal",
-    "taxIdLabelCpfOrCnpj": "CPF ou CNPJ"
+    "taxIdLabelCpfOrCnpj": "CPF ou CNPJ",
+    "close": "Fechar"
   },
   "auth": {
     "tagline": "Administração de imóveis sem a imobiliária.",
@@ -885,8 +886,7 @@
         "contract": {
           "title": "Contrato",
           "uploaded": "Contrato enviado",
-          "uploadFailed": "Seu contrato não terminou de ser enviado.",
-          "reupload": "Reenviar contrato"
+          "uploadFailed": "Seu contrato não terminou de ser enviado."
         },
         "tenants": {
           "title": "Inquilinos",
@@ -975,6 +975,71 @@
       "tokenFailed": "Não conseguimos abrir a conexão com o banco. Tente novamente em instantes.",
       "registerFailed": "Não conseguimos salvar a conexão. Tente novamente.",
       "disconnectFailed": "Não conseguimos desconectar este banco. Tente novamente."
+    }
+  },
+  "property": {
+    "tabs": {
+      "revenue": "Receita",
+      "rent": "Aluguel",
+      "bills": "Contas",
+      "contract": "Contrato",
+      "messages": "Mensagens"
+    },
+    "placeholders": {
+      "revenue": "Sua receita de aluguel — do mês, do ano e total — vai aparecer aqui.",
+      "rent": "Seu aluguel — o que vence, o que foi pago e seu histórico — vai aparecer aqui.",
+      "bills": "O extrato de contas chega aqui em breve.",
+      "contract": "Seu contrato, reajustes e notificações vão aparecer aqui.",
+      "messages": "A conversa da locação vai aparecer aqui."
+    },
+    "contractStatus": {
+      "active": "Ativo",
+      "inactive": "Inativo",
+      "none": "Sem contrato"
+    },
+    "summary": {
+      "due": "A pagar",
+      "dueYours": "Você deve",
+      "paid": "Pago",
+      "paidYours": "Você pagou",
+      "awaiting": "Aguardando",
+      "awaitingBills": "{count, plural, =0 {todas as contas recebidas} one {# conta} other {# contas}}",
+      "unknown": "desconhecido",
+      "total": "total",
+      "you": "você"
+    },
+    "bills": {
+      "statuses": {
+        "paid": "Paga",
+        "due": "Em aberto",
+        "awaiting": "Aguardando",
+        "overdue": "Vencida"
+      },
+      "filters": {
+        "company": "Empresa",
+        "status": "Status",
+        "date": "Data"
+      },
+      "banner": "{amount} em atraso",
+      "bannerYourShare": "sua parte {amount}",
+      "bannerNoneYours": "você não deve nada",
+      "partialPaid": "{paid} de {total} pagos",
+      "showMonth": "Mostrar {month}",
+      "emptyMonth": "Nenhuma conta neste mês",
+      "emptyTitle": "Nenhuma conta ainda",
+      "emptyDescription": "As contas aparecem aqui conforme são descobertas para este imóvel.",
+      "awaitingInfoLabel": "O que significa aguardando?",
+      "awaitingTooltip": "Contas que esperamos neste mês mas que ainda não foram emitidas. Os valores são estimativas com base nos últimos 3 meses."
+    },
+    "menu": {
+      "open": "Opções do imóvel",
+      "delete": "Excluir imóvel"
+    },
+    "deleteDialog": {
+      "title": "Excluir {name}?",
+      "description": "Isso remove permanentemente o imóvel, as unidades, o aluguel, os contratos, as despesas, os vínculos e os convites. Inquilinos e proprietários mantêm suas contas.",
+      "confirm": "Excluir",
+      "cancel": "Cancelar"
     }
   }
 }

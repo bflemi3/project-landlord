@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { CheckCircle } from 'lucide-react'
 import { Wordmark } from '@/components/wordmark'
-import { InfoBox, InfoBoxContent } from '@/components/info-box'
+import { Alert, AlertBody } from '@/components/ui/alert'
 
 const BROADCAST_CHANNEL = 'mabenn-email-verification'
 
@@ -26,22 +26,22 @@ export default function EmailVerifiedPage() {
     <div className="text-center">
       <div className="pb-10">
         <Wordmark />
-        <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
+        <p className="text-muted-foreground mt-3 text-base">{t('tagline')}</p>
       </div>
 
-      <div className="mx-auto mb-8 flex size-12 items-center justify-center rounded-full bg-primary/10">
-        <CheckCircle className="size-6 text-primary" />
+      <div className="bg-primary/10 mx-auto mb-8 flex size-12 items-center justify-center rounded-full">
+        <CheckCircle className="text-primary size-6" />
       </div>
 
       <h1 className="mb-6 text-2xl font-bold">{t('emailVerified')}</h1>
 
-      <InfoBox>
-        <InfoBoxContent>{t('emailVerifiedMessage')}</InfoBoxContent>
-      </InfoBox>
+      <Alert>
+        <AlertBody>{t('emailVerifiedMessage')}</AlertBody>
+      </Alert>
 
       <Link
         href="/app"
-        className="mt-10 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+        className="text-primary mt-10 inline-flex items-center gap-1 text-sm font-medium hover:underline"
       >
         {t('orContinueHere')}
       </Link>

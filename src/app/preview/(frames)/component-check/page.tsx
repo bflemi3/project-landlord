@@ -66,7 +66,13 @@ function RawPill({
     <span style={style}>
       {dot && (
         <span
-          style={{ width: 6, height: 6, borderRadius: 9999, background: 'currentColor', flexShrink: 0 }}
+          style={{
+            width: 6,
+            height: 6,
+            borderRadius: 9999,
+            background: 'currentColor',
+            flexShrink: 0,
+          }}
         />
       )}
       {children}
@@ -76,7 +82,7 @@ function RawPill({
 
 function Row({ label, raw, live }: { label: string; raw: React.ReactNode; live: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[120px_1fr_1fr] items-center gap-6 border-t border-white/[0.06] py-4">
+    <div className="grid grid-cols-[120px_1fr_1fr] items-center gap-6 border-t border-white/6 py-4">
       <span className="font-mono text-[11px] text-[#57534e]">{label}</span>
       <div className="flex">{raw}</div>
       <div className="flex">{live}</div>
@@ -86,8 +92,8 @@ function Row({ label, raw, live }: { label: string; raw: React.ReactNode; live: 
 
 export default function ComponentCheck() {
   return (
-    <div className="min-h-svh bg-background px-12 py-12 font-sans text-sm text-muted-foreground">
-      <h1 className="mb-2 font-mono text-[13px] tracking-[0.16em] text-foreground uppercase">
+    <div className="bg-background text-muted-foreground min-h-svh p-12 font-sans text-sm">
+      <h1 className="text-foreground mb-2 font-mono text-[13px] tracking-[0.16em] uppercase">
         Component check · raw mockup vs live components
       </h1>
       <div className="mb-6 grid grid-cols-[120px_1fr_1fr] gap-6 font-mono text-[11px] text-[#57534e]">
@@ -96,20 +102,60 @@ export default function ComponentCheck() {
         <span>LIVE COMPONENT</span>
       </div>
 
-      <Row label="paid" raw={<RawPill tint="success">Paid</RawPill>} live={<StatusBadge variant="paid">Paid</StatusBadge>} />
+      <Row
+        label="paid"
+        raw={<RawPill tint="success">Paid</RawPill>}
+        live={<StatusBadge variant="paid">Paid</StatusBadge>}
+      />
       <Row
         label="paid · spotlight"
-        raw={<RawPill tint="success" ring>Paid</RawPill>}
-        live={<StatusBadge variant="paid" spotlight>Paid</StatusBadge>}
+        raw={
+          <RawPill tint="success" ring>
+            Paid
+          </RawPill>
+        }
+        live={
+          <StatusBadge variant="paid" spotlight>
+            Paid
+          </StatusBadge>
+        }
       />
-      <Row label="due" raw={<RawPill tint="warning">Due</RawPill>} live={<StatusBadge variant="pending">Due</StatusBadge>} />
-      <Row label="overdue" raw={<RawPill tint="destructive">Overdue</RawPill>} live={<StatusBadge variant="overdue">Overdue</StatusBadge>} />
-      <Row label="published" raw={<RawPill tint="primary">Published</RawPill>} live={<StatusBadge variant="published">Published</StatusBadge>} />
-      <Row label="awaiting" raw={<RawPill>Awaiting</RawPill>} live={<StatusBadge variant="default">Awaiting</StatusBadge>} />
-      <Row label="draft" raw={<RawPill dashed dot={false}>Draft</RawPill>} live={<StatusBadge variant="draft">Draft</StatusBadge>} />
+      <Row
+        label="due"
+        raw={<RawPill tint="warning">Due</RawPill>}
+        live={<StatusBadge variant="pending">Due</StatusBadge>}
+      />
+      <Row
+        label="overdue"
+        raw={<RawPill tint="destructive">Overdue</RawPill>}
+        live={<StatusBadge variant="overdue">Overdue</StatusBadge>}
+      />
+      <Row
+        label="published"
+        raw={<RawPill tint="primary">Published</RawPill>}
+        live={<StatusBadge variant="published">Published</StatusBadge>}
+      />
+      <Row
+        label="awaiting"
+        raw={<RawPill>Awaiting</RawPill>}
+        live={<StatusBadge variant="default">Awaiting</StatusBadge>}
+      />
+      <Row
+        label="draft"
+        raw={
+          <RawPill dashed dot={false}>
+            Draft
+          </RawPill>
+        }
+        live={<StatusBadge variant="draft">Draft</StatusBadge>}
+      />
       <Row
         label="in review"
-        raw={<RawPill tint="info" dot={false}>In review</RawPill>}
+        raw={
+          <RawPill tint="info" dot={false}>
+            In review
+          </RawPill>
+        }
         live={<Badge variant="info-subtle">In review</Badge>}
       />
       <Row
@@ -117,32 +163,43 @@ export default function ComponentCheck() {
         raw={<RawPill tint="highlight">New</RawPill>}
         live={
           <Badge variant="highlight-subtle" className="gap-1.5">
-            <span className="size-1.5 shrink-0 rounded-full bg-current" aria-hidden />New
+            <span className="size-1.5 shrink-0 rounded-full bg-current" aria-hidden />
+            New
           </Badge>
         }
       />
       <Row
         label="solid primary"
-        raw={<span style={{ ...PILL, background: 'oklch(0.704 0.14 182.503)', color: '#fff' }}>Primary</span>}
+        raw={
+          <span style={{ ...PILL, background: 'oklch(0.704 0.14 182.503)', color: '#fff' }}>
+            Primary
+          </span>
+        }
         live={<Badge>Primary</Badge>}
       />
       <Row
         label="solid highlight"
         raw={
-          <span style={{ ...PILL, background: 'oklch(0.63 0.23 357)', color: '#fff' }}>Highlight</span>
+          <span style={{ ...PILL, background: 'oklch(0.63 0.23 357)', color: '#fff' }}>
+            Highlight
+          </span>
         }
         live={<Badge variant="highlight">Highlight</Badge>}
       />
 
-      <h2 className="mt-12 mb-4 font-mono text-[11px] tracking-[0.16em] text-foreground uppercase">Tabs</h2>
+      <h2 className="text-foreground mt-12 mb-4 font-mono text-[11px] tracking-[0.16em] uppercase">
+        Tabs
+      </h2>
       <div className="grid grid-cols-2 gap-10">
         <div>
           <p className="mb-3 font-mono text-[11px] text-[#57534e]">RAW HTML MOCKUP</p>
-          <div className="flex items-center gap-1 border-b border-border">
-            <span className="relative px-3 py-2 text-sm font-medium text-foreground after:absolute after:inset-x-3 after:-bottom-px after:h-px after:bg-foreground">All charges</span>
-            <span className="px-3 py-2 text-sm font-medium text-muted-foreground">Rent</span>
-            <span className="px-3 py-2 text-sm font-medium text-muted-foreground">Bills</span>
-            <span className="px-3 py-2 text-sm font-medium text-muted-foreground">Contract</span>
+          <div className="border-border flex items-center gap-1 border-b">
+            <span className="text-foreground after:bg-foreground relative px-3 py-2 text-sm font-medium after:absolute after:inset-x-3 after:-bottom-px after:h-px">
+              All charges
+            </span>
+            <span className="text-muted-foreground px-3 py-2 text-sm font-medium">Rent</span>
+            <span className="text-muted-foreground px-3 py-2 text-sm font-medium">Bills</span>
+            <span className="text-muted-foreground px-3 py-2 text-sm font-medium">Contract</span>
           </div>
         </div>
         <div>

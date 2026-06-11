@@ -16,7 +16,7 @@ export const buttonVariants = cva(
           'bg-destructive/10 text-destructive hover:not-disabled:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:not-disabled:bg-destructive/30 dark:focus-visible:ring-destructive/40',
         warning:
           'border-warning/30 bg-warning/10 text-warning hover:not-disabled:bg-warning/20 focus-visible:border-warning/40 focus-visible:ring-warning/20',
-        link: 'text-primary underline-offset-4 hover:not-disabled:underline',
+        link: 'px-1! text-secondary-foreground/80 hover:not-disabled:text-secondary-foreground',
       },
       size: {
         default:

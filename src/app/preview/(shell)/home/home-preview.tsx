@@ -3,9 +3,17 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import {
-  Building2, Plus, DoorOpen,
-  ChevronRight, LogOut, ArrowLeftRight,
-  Check, Clock, UserPlus, Receipt, FileText,
+  Building2,
+  Plus,
+  DoorOpen,
+  ChevronRight,
+  LogOut,
+  ArrowLeftRight,
+  Check,
+  Clock,
+  UserPlus,
+  Receipt,
+  FileText,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Wordmark } from '@/components/wordmark'
@@ -14,7 +22,13 @@ import { FadeUpGroup } from '@/components/fade-up-group'
 import { isPropertyComplete } from '@/components/property-card'
 import { PreviewOperatingCard, PreviewSetupCard } from '@/app/preview/preview-property-cards'
 import { UrgentActionList } from '@/components/urgent-action-list'
-import type { HomeScreenData, PropertySetupProgress, PendingInvite, UrgentAction, PropertyOperationalData } from '@/app/preview/mock-data'
+import type {
+  HomeScreenData,
+  PropertySetupProgress,
+  PendingInvite,
+  UrgentAction,
+  PropertyOperationalData,
+} from '@/app/preview/mock-data'
 import type { PreviewMembership } from '@/app/preview/mock-data'
 
 function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
@@ -40,15 +54,11 @@ function PageShell({
   return (
     <div className="flex h-svh flex-col">
       <div className="flex-1 overflow-y-auto px-6 pt-8 pb-4">
-        <div className={`mx-auto ${maxWidth}`}>
-          {children}
-        </div>
+        <div className={`mx-auto ${maxWidth}`}>{children}</div>
       </div>
       {bottomBar && (
-        <div className="shrink-0 border-t border-border bg-background/80 px-6 py-4 backdrop-blur-lg">
-          <div className={`mx-auto ${maxWidth}`}>
-            {bottomBar}
-          </div>
+        <div className="border-border bg-background/80 shrink-0 border-t px-6 py-4 backdrop-blur-lg">
+          <div className={`mx-auto ${maxWidth}`}>{bottomBar}</div>
         </div>
       )}
     </div>
@@ -105,7 +115,7 @@ function EmptyState({ firstName }: { firstName: string }) {
   return (
     <div className="flex min-h-[844px] flex-col">
       <div className="flex justify-end px-6 pt-5">
-        <LogOut className="size-4 text-muted-foreground/60" />
+        <LogOut className="text-muted-foreground/60 size-4" />
       </div>
       <div className="flex flex-1 flex-col items-center justify-center px-6 pb-16">
         <div className="w-full max-w-2xl">
@@ -113,47 +123,53 @@ function EmptyState({ firstName }: { firstName: string }) {
             <Wordmark className="text-[22px]" />
           </div>
           <div className="mb-10 text-center">
-            <h1 className="text-2xl font-bold text-foreground md:text-3xl">
+            <h1 className="text-foreground text-2xl font-bold md:text-3xl">
               {greeting}, {firstName}.
             </h1>
-            <p className="mt-2 text-base text-muted-foreground md:text-lg">
+            <p className="text-muted-foreground mt-2 text-base md:text-lg">
               {t('roleChoiceSubtitle')}
             </p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="group flex h-full flex-col items-center rounded-2xl border border-border bg-card px-6 py-7 text-center shadow-sm transition-all hover:border-primary/30 hover:shadow-md dark:border-border dark:shadow-none dark:hover:border-primary/40 md:p-8">
-              <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary md:mb-5 md:size-16">
+            <div className="group border-border bg-card hover:border-primary/30 dark:border-border dark:hover:border-primary/40 flex h-full flex-col items-center rounded-2xl border px-6 py-7 text-center shadow-sm transition-all hover:shadow-md md:p-8 dark:shadow-none">
+              <div className="bg-primary/10 text-primary mb-4 flex size-14 items-center justify-center rounded-2xl md:mb-5 md:size-16">
                 <Building2 className="size-6 md:size-7" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground">{t('iOwnProperty')}</h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{t('iOwnPropertyDescription')}</p>
-              <div className="mt-4 flex items-center gap-1 text-sm font-medium text-primary md:mt-5">
+              <h3 className="text-foreground text-lg font-semibold">{t('iOwnProperty')}</h3>
+              <p className="text-muted-foreground mt-1.5 text-sm/relaxed">
+                {t('iOwnPropertyDescription')}
+              </p>
+              <div className="text-primary mt-4 flex items-center gap-1 text-sm font-medium md:mt-5">
                 {t('addProperty')} <ChevronRight className="size-4" />
               </div>
             </div>
             <button
               onClick={() => setShowComingSoon(true)}
-              className="group flex h-full w-full flex-col items-center rounded-2xl border border-border bg-card px-6 py-7 text-center opacity-60 shadow-sm dark:border-border dark:shadow-none md:p-8"
+              className="group border-border bg-card dark:border-border flex size-full flex-col items-center rounded-2xl border px-6 py-7 text-center opacity-60 shadow-sm md:p-8 dark:shadow-none"
             >
-              <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-secondary text-muted-foreground md:mb-5 md:size-16">
+              <div className="bg-secondary text-muted-foreground mb-4 flex size-14 items-center justify-center rounded-2xl md:mb-5 md:size-16">
                 <DoorOpen className="size-6 md:size-7" />
               </div>
-              <h3 className="text-lg font-semibold text-foreground">{t('iRentProperty')}</h3>
-              <div className="mt-1.5 min-h-[3.5rem] text-sm leading-relaxed text-muted-foreground">
+              <h3 className="text-foreground text-lg font-semibold">{t('iRentProperty')}</h3>
+              <div className="text-muted-foreground mt-1.5 min-h-14 text-sm/relaxed">
                 {showComingSoon ? (
                   <p>{t('comingSoonDescription')}</p>
                 ) : (
                   <p>{t('iRentPropertyDescription')}</p>
                 )}
               </div>
-              <span className="mt-4 rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground md:mt-5">
+              <span className="bg-secondary text-muted-foreground mt-4 rounded-full px-3 py-1 text-xs font-medium md:mt-5">
                 {t('comingSoon')}
               </span>
             </button>
           </div>
-          <div className="mt-5 flex items-start justify-center gap-2.5 rounded-xl bg-secondary/40 px-5 py-3 text-center dark:bg-transparent dark:px-0">
-            <span className="flex h-5 shrink-0 items-center"><ArrowLeftRight className="size-3.5 text-muted-foreground/50" /></span>
-            <p className="text-sm leading-relaxed text-muted-foreground/70 dark:text-muted-foreground">{t('roleNote')}</p>
+          <div className="bg-secondary/40 mt-5 flex items-start justify-center gap-2.5 rounded-xl px-5 py-3 text-center dark:bg-transparent dark:px-0">
+            <span className="flex h-5 shrink-0 items-center">
+              <ArrowLeftRight className="text-muted-foreground/50 size-3.5" />
+            </span>
+            <p className="text-muted-foreground/70 dark:text-muted-foreground text-sm/relaxed">
+              {t('roleNote')}
+            </p>
           </div>
         </div>
       </div>
@@ -186,15 +202,17 @@ function SinglePropertyState({
   const isFullySetup = isPropertyComplete(progress)
 
   // Build action items for incomplete properties
-  const actions: { icon: React.ElementType; title: string; description: string; color: string }[] = []
+  const actions: { icon: React.ElementType; title: string; description: string; color: string }[] =
+    []
 
   if (pendingInvites.length > 0) {
     const names = pendingInvites.map((i) => i.name ?? i.email).join(', ')
     actions.push({
       icon: Clock,
-      title: pendingInvites.length === 1
-        ? `${names} is waiting to join`
-        : `${pendingInvites.length} tenants are waiting to join`,
+      title:
+        pendingInvites.length === 1
+          ? `${names} is waiting to join`
+          : `${pendingInvites.length} tenants are waiting to join`,
       description: 'Your invite is pending. You can resend it.',
       color: 'text-amber-500',
     })
@@ -204,7 +222,7 @@ function SinglePropertyState({
     actions.push({
       icon: UserPlus,
       title: 'Invite your tenants',
-      description: 'They\'ll see exactly what they owe and why.',
+      description: "They'll see exactly what they owe and why.",
       color: 'text-primary',
     })
   }
@@ -222,7 +240,7 @@ function SinglePropertyState({
     actions.push({
       icon: FileText,
       title: 'Publish your first statement',
-      description: 'Review and share this month\'s charges.',
+      description: "Review and share this month's charges.",
       color: 'text-primary',
     })
   }
@@ -231,7 +249,7 @@ function SinglePropertyState({
     <PageShell
       bottomBar={
         <div className="flex justify-center">
-          <Button variant="ghost" className="h-10 rounded-2xl px-6 text-muted-foreground">
+          <Button variant="ghost" className="text-muted-foreground h-10 rounded-2xl px-6">
             <Plus className="size-4" />
             {t('addProperty')}
           </Button>
@@ -243,25 +261,27 @@ function SinglePropertyState({
         <FadeUp className="mb-8">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-foreground text-2xl font-bold">
                 {greeting}, {firstName}
               </h1>
               {/* Show revenue for operating single property */}
               {isFullySetup && operationalData && (
-                <p className="mt-1.5 text-lg tabular-nums text-muted-foreground">
-                  <span className="font-bold text-foreground">
+                <p className="text-muted-foreground mt-1.5 text-lg tabular-nums">
+                  <span className="text-foreground font-bold">
                     R$ {(operationalData.expectedRevenueMinor / 100).toLocaleString('pt-BR')}
-                  </span>
-                  {' '}expected
+                  </span>{' '}
+                  expected
                   {operationalData.pendingBillCount > 0 && (
                     <span className="text-amber-600 dark:text-amber-400">
-                      {' · '}{operationalData.pendingBillCount} {operationalData.pendingBillCount === 1 ? 'bill' : 'bills'} pending
+                      {' · '}
+                      {operationalData.pendingBillCount}{' '}
+                      {operationalData.pendingBillCount === 1 ? 'bill' : 'bills'} pending
                     </span>
                   )}
                 </p>
               )}
             </div>
-            <LogOut className="mt-1 size-4 text-muted-foreground/60" />
+            <LogOut className="text-muted-foreground/60 mt-1 size-4" />
           </div>
         </FadeUp>
 
@@ -286,21 +306,23 @@ function SinglePropertyState({
         {/* Action cards for setup state */}
         {actions.length > 0 && (
           <FadeUp>
-            <h3 className="mb-3 text-base font-semibold text-foreground">What&apos;s next</h3>
+            <h3 className="text-foreground mb-3 text-base font-semibold">What&apos;s next</h3>
             <div className="space-y-2">
               {actions.map((action, i) => (
                 <button
                   key={i}
-                  className="flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 text-left transition-colors hover:border-primary/20 dark:bg-muted/50"
+                  className="border-border bg-card hover:border-primary/20 dark:bg-muted/50 flex w-full items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-colors"
                 >
-                  <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg bg-secondary ${action.color}`}>
+                  <div
+                    className={`bg-secondary flex size-9 shrink-0 items-center justify-center rounded-lg ${action.color}`}
+                  >
                     <action.icon className="size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-foreground">{action.title}</p>
-                    <p className="mt-0.5 text-xs text-muted-foreground">{action.description}</p>
+                    <p className="text-foreground text-sm font-medium">{action.title}</p>
+                    <p className="text-muted-foreground mt-0.5 text-xs">{action.description}</p>
                   </div>
-                  <ChevronRight className="size-4 shrink-0 text-muted-foreground/40" />
+                  <ChevronRight className="text-muted-foreground/40 size-4 shrink-0" />
                 </button>
               ))}
             </div>
@@ -310,10 +332,12 @@ function SinglePropertyState({
         {/* Calm state — operating, nothing to do */}
         {isFullySetup && actions.length === 0 && (
           <FadeUp>
-            <div className="rounded-2xl bg-primary/5 px-5 py-6 text-center dark:bg-primary/10">
-              <Check className="mx-auto mb-2 size-6 text-primary" />
-              <p className="text-sm font-medium text-foreground">Everything is set up</p>
-              <p className="mt-1 text-xs text-muted-foreground">Your property is running smoothly.</p>
+            <div className="bg-primary/5 dark:bg-primary/10 rounded-2xl px-5 py-6 text-center">
+              <Check className="text-primary mx-auto mb-2 size-6" />
+              <p className="text-foreground text-sm font-medium">Everything is set up</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Your property is running smoothly.
+              </p>
             </div>
           </FadeUp>
         )}
@@ -359,15 +383,21 @@ function MultiPropertyState({
   }
 
   // Revenue and pending bills from operating properties
-  const totalRevenue = Object.values(operationalData).reduce((sum, d) => sum + d.expectedRevenueMinor, 0)
-  const totalPendingBills = Object.values(operationalData).reduce((sum, d) => sum + d.pendingBillCount, 0)
+  const totalRevenue = Object.values(operationalData).reduce(
+    (sum, d) => sum + d.expectedRevenueMinor,
+    0,
+  )
+  const totalPendingBills = Object.values(operationalData).reduce(
+    (sum, d) => sum + d.pendingBillCount,
+    0,
+  )
 
   return (
     <PageShell
       maxWidth="max-w-4xl"
       bottomBar={
         <div className="flex justify-center">
-          <Button variant="ghost" className="h-10 rounded-2xl px-6 text-muted-foreground">
+          <Button variant="ghost" className="text-muted-foreground h-10 rounded-2xl px-6">
             <Plus className="size-4" />
             {t('addProperty')}
           </Button>
@@ -379,31 +409,33 @@ function MultiPropertyState({
         <FadeUp className="mb-8">
           <div className="flex items-start justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">
+              <h1 className="text-foreground text-2xl font-bold">
                 {greeting}, {firstName}
               </h1>
               {totalRevenue > 0 && (
-                <p className="mt-1.5 text-lg tabular-nums text-muted-foreground">
-                  <span className="font-bold text-foreground">
+                <p className="text-muted-foreground mt-1.5 text-lg tabular-nums">
+                  <span className="text-foreground font-bold">
                     R$ {(totalRevenue / 100).toLocaleString('pt-BR')}
-                  </span>
-                  {' '}expected · {memberships.length} {memberships.length === 1 ? 'property' : 'properties'}
+                  </span>{' '}
+                  expected · {memberships.length}{' '}
+                  {memberships.length === 1 ? 'property' : 'properties'}
                   {totalPendingBills > 0 && (
                     <span className="text-amber-600 dark:text-amber-400">
-                      {' · '}{totalPendingBills} {totalPendingBills === 1 ? 'bill' : 'bills'} pending
+                      {' · '}
+                      {totalPendingBills} {totalPendingBills === 1 ? 'bill' : 'bills'} pending
                     </span>
                   )}
                 </p>
               )}
             </div>
-            <LogOut className="mt-1 size-4 text-muted-foreground/60" />
+            <LogOut className="text-muted-foreground/60 mt-1 size-4" />
           </div>
         </FadeUp>
 
         {/* Urgent actions */}
         {urgentActions.length > 0 && (
           <FadeUp className="mb-8">
-            <h2 className="mb-3 text-base font-semibold text-foreground">Needs attention</h2>
+            <h2 className="text-foreground mb-3 text-base font-semibold">Needs attention</h2>
             <UrgentActionList urgentActions={urgentActions} />
           </FadeUp>
         )}

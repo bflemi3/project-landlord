@@ -38,15 +38,17 @@ export default function PreviewHomePage() {
   return (
     <div className="flex h-svh">
       {/* State selector panel */}
-      <div className="flex w-56 shrink-0 flex-col border-r border-border bg-card/50">
-        <div className="border-b border-border px-3 py-2.5">
+      <div className="border-border bg-card/50 flex w-56 shrink-0 flex-col border-r">
+        <div className="border-border border-b px-3 py-2.5">
           <div className="flex items-center gap-2">
-            <h2 className="text-xs font-semibold text-foreground">States</h2>
-            <div className="flex rounded-md border border-border bg-secondary/50 p-0.5">
+            <h2 className="text-foreground text-xs font-semibold">States</h2>
+            <div className="border-border bg-secondary/50 flex rounded-md border p-0.5">
               <button
                 onClick={() => setViewport('mobile')}
                 className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
-                  viewport === 'mobile' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+                  viewport === 'mobile'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground'
                 }`}
               >
                 Mobile
@@ -54,7 +56,9 @@ export default function PreviewHomePage() {
               <button
                 onClick={() => setViewport('desktop')}
                 className={`rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors ${
-                  viewport === 'desktop' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
+                  viewport === 'desktop'
+                    ? 'bg-card text-foreground shadow-sm'
+                    : 'text-muted-foreground'
                 }`}
               >
                 Desktop
@@ -72,13 +76,13 @@ export default function PreviewHomePage() {
                 key={key}
                 onClick={() => setActiveState(key)}
                 className={`mb-0.5 block w-full rounded-lg px-2.5 py-2 text-left transition-colors ${
-                  isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-foreground hover:bg-secondary'
+                  isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-secondary'
                 }`}
               >
                 <p className="text-xs font-medium">{state.label}</p>
-                <p className="mt-0.5 text-[10px] leading-tight text-muted-foreground">{state.description}</p>
+                <p className="text-muted-foreground mt-0.5 text-[10px] leading-tight">
+                  {state.description}
+                </p>
               </button>
             )
           })}
@@ -88,7 +92,7 @@ export default function PreviewHomePage() {
       {/* Preview area */}
       <main className="flex flex-1 items-start justify-center overflow-auto p-8">
         <div
-          className="overflow-hidden rounded-2xl border border-border shadow-xl transition-all duration-300"
+          className="border-border overflow-hidden rounded-2xl border shadow-xl transition-all duration-300"
           style={{ width, height }}
         >
           <iframe
@@ -96,7 +100,7 @@ export default function PreviewHomePage() {
             key={activeState}
             src={frameUrl}
             onLoad={handleIframeLoad}
-            className="h-full w-full border-0"
+            className="size-full border-0"
             title="Home screen preview"
           />
         </div>
