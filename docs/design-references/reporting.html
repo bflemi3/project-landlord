@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mabenn design reference — Reporting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: {
+      display: ['Fraunces', 'serif'], editorial: ['Geist', 'sans-serif'], mono: ['"Geist Mono"', 'monospace'],
+    } } } }
+  </script>
+  <style> body { background: #141413; } .font-mono { font-feature-settings: 'tnum' 1; } </style>
+</head>
+
+<body class="font-editorial text-[#f5f5f4] antialiased">
+  <main class="mx-auto flex min-h-screen max-w-[720px] flex-col justify-center px-6 py-16">
+    <p class="mb-6 font-mono text-[11px] uppercase tracking-[0.16em] text-[#57534e]">
+      Design reference · Reporting · captured from landing.tsx
+    </p>
+
+    <div class="overflow-hidden rounded-[18px] border border-white/[0.10] bg-[#1a1a19] shadow-[0_30px_60px_-20px_rgba(0,0,0,0.5)]">
+      <!-- header -->
+      <div class="flex items-baseline justify-between border-b border-white/[0.05] px-6 py-4">
+        <p class="font-display text-[16px] font-medium tracking-tight text-[#f5f5f4]">Apt 23B · Vila Mariana</p>
+        <p class="text-[12px] text-[#78716c]">Last 12 months</p>
+      </div>
+
+      <!-- metrics -->
+      <div class="grid grid-cols-3 divide-x divide-white/[0.05] border-b border-white/[0.05]">
+        <div class="px-5 py-4">
+          <p class="font-mono text-[17px] font-medium tabular-nums text-[#f5f5f4]">R$ 33.600</p>
+          <p class="mt-1 text-[10.5px] uppercase tracking-[0.10em] text-[#78716c]">This year</p>
+        </div>
+        <div class="px-5 py-4">
+          <p class="font-mono text-[17px] font-medium tabular-nums text-[#f5f5f4]">R$ 9.600</p>
+          <p class="mt-1 text-[10.5px] uppercase tracking-[0.10em] text-[#78716c]">After costs</p>
+        </div>
+        <div class="px-5 py-4">
+          <p class="font-mono text-[17px] font-medium tabular-nums text-[#f5f5f4]">R$ 180.000</p>
+          <p class="mt-1 text-[10.5px] uppercase tracking-[0.10em] text-[#78716c]">Equity</p>
+        </div>
+      </div>
+
+      <!-- monthly costs -->
+      <div class="border-b border-white/[0.05] px-6 py-4">
+        <p class="text-[10.5px] uppercase tracking-[0.12em] text-[#78716c]">Monthly costs</p>
+        <div class="mt-3 space-y-2 text-[13px]">
+          <div class="flex items-center justify-between"><span class="text-[#a8a29e]">Condomínio</span><span class="font-mono tabular-nums text-[#d6d3d1]">R$ 480</span></div>
+          <div class="flex items-center justify-between"><span class="text-[#a8a29e]">IPTU</span><span class="font-mono tabular-nums text-[#d6d3d1]">R$ 240</span></div>
+          <div class="flex items-center justify-between"><span class="text-[#a8a29e]">Maintenance</span><span class="font-mono tabular-nums text-[#d6d3d1]">R$ 180</span></div>
+          <div class="flex items-center justify-between"><span class="text-[#a8a29e]">Mortgage</span><span class="font-mono tabular-nums text-[#d6d3d1]">R$ 1.100</span></div>
+        </div>
+      </div>
+
+      <!-- market comparison -->
+      <div class="px-6 py-4">
+        <div class="flex items-baseline justify-between">
+          <p class="text-[10.5px] uppercase tracking-[0.12em] text-[#78716c]">Your rent vs. nearby</p>
+          <span class="flex items-baseline gap-2">
+            <span class="font-mono text-[12px] tabular-nums text-[#f5f5f4]">R$ 2.800</span>
+            <span class="rounded-full bg-[#e9408f]/15 px-1.5 py-0.5 text-[9.5px] font-medium uppercase tracking-[0.06em] text-[#f0a4c5]">under market</span>
+          </span>
+        </div>
+        <div class="relative mt-3 h-1.5 rounded-full bg-white/[0.06]">
+          <div class="absolute inset-y-0 rounded-full bg-[#e9408f]/25" style="left:20%;right:20%"></div>
+          <div class="absolute top-1/2 size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#e9408f] ring-2 ring-[#1a1a19]" style="left:25%"></div>
+        </div>
+        <div class="mt-2 flex justify-between font-mono text-[10.5px] tabular-nums text-[#78716c]">
+          <span>R$ 2.600</span>
+          <span>R$ 3.400</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8 grid gap-2 font-mono text-[11px] leading-relaxed text-[#78716c]">
+      <p><span class="text-[#f5f5f4]">metrics</span> revenue · real return after costs · estimated value — Geist Mono, tabular-nums</p>
+      <p><span class="text-[#f5f5f4]">costs</span> condomínio / IPTU / maintenance / mortgage netted against income</p>
+      <p><span class="text-[#e9408f]">comparison</span> your rent marked inside the local range band (magenta)</p>
+    </div>
+  </main>
+</body>
+</html>

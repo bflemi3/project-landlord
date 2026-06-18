@@ -28,7 +28,8 @@ The Data Protection Officer is the channel of communication between you, Mabenn,
 In the current pre-launch phase, Mabenn collects only the minimum needed to run the waitlist:
 
 - **Email address** — to confirm your signup and let you know when the product launches.
-- **Role indication** — whether you signed up as a landlord or a tenant.
+- **Profile indications you provide** — whether you're a landlord, tenant, both, an imobiliária/property manager, or other; roughly how many rentals you have; how you manage them today (you can select more than one); and an optional free-text answer about what's hardest about managing rentals. You give these to help us tailor the product; the free-text answer is optional.
+- **Marketing attribution** — if you reach the site through a campaign or referral link, we record the campaign parameters in the URL (UTM source, medium, campaign, content, and term), the referring website, and the page you first landed on, so we can understand which channels bring people to the waitlist.
 - **Anonymous usage data** — described under "Cookies and tracking technologies", below.
 
 In this phase, we do **not** collect CPF, property addresses, bank data, payment receipts, or documents.
@@ -55,7 +56,7 @@ We collect only the personal data necessary for its intended purpose (data minim
 
 We process personal data only when there is a legal basis under the LGPD. The list below describes the purpose and legal basis for each category.
 
-- **Waitlist (email and role)** — to run the waitlist and notify you about launch. Legal basis: **consent** (Art. 7, I).
+- **Waitlist (email, profile indications, and marketing attribution)** — to run the waitlist, notify you about launch, tailor the product to how you rent, and understand which channels bring people to the list. Legal basis: **consent** (Art. 7, I), which you give by joining and may revoke at any time.
 - **Account, profile, and property data** — to create and maintain your account and properties. Legal basis: **contract performance** (Art. 7, V).
 - **Contracts, charges, payments, boletos, ledger, and documents** — to provide the rental management service: tracking rent and bills, matching payments, generating adjustments and notices, and keeping the record of the rental. Legal basis: **contract performance** (Art. 7, V).
 - **Bank data via Open Finance** — to detect and match rent and bill payments from the accounts you authorized. Legal basis: **contract performance** (Art. 7, V), upon your explicit authorization with the Open Finance provider.
@@ -80,7 +81,7 @@ Mabenn's primary database is hosted in Brazil, in the `sa-east-1` region (São P
 
 ## Retention periods
 
-We keep personal data only for as long as necessary for the purposes for which it was collected, or for the period required by law. During the waitlist phase, we keep your email until launch or until you ask us to remove it. Once the product is available, we will apply the following periods:
+We keep personal data only for as long as necessary for the purposes for which it was collected, or for the period required by law. During the waitlist phase, we keep your waitlist information (email, the profile indications you provided, and attribution data) until launch or until you ask us to remove it. Once the product is available, we will apply the following periods:
 
 - **Active account data** — account duration + 30 days.
 - **Published statements** — 5 years.
@@ -106,7 +107,7 @@ To exercise any of these rights, write to privacidade@mabenn.com.br.
 
 ## Cookies and tracking technologies
 
-While you are only browsing the public pages, Mabenn uses **anonymous** usage analytics under legitimate interest — we do not identify visitors who are only browsing. When you join the waitlist and give us your email, we begin associating your analytics activity with your email, on the basis of the consent you give by joining the list, to measure conversion and prepare for launch. Inside the authenticated product, analytics are identified under legitimate interest, and you can turn them off at any time through an opt-out toggle in your account.
+While you are only browsing the public pages, Mabenn uses **anonymous** usage analytics under legitimate interest — we do not identify visitors who are only browsing. If you arrive through a campaign or referral link, the campaign parameters in the URL (UTM parameters), the referring site, and your landing page are captured for measurement; while you are only browsing this is part of anonymous analytics. When you join the waitlist and give us your email, we begin associating your analytics activity with your email — and record that attribution with your signup — on the basis of the consent you give by joining the list, to measure conversion and prepare for launch. Inside the authenticated product, analytics are identified under legitimate interest, and you can turn them off at any time through an opt-out toggle in your account.
 
 ## Security and incidents
 

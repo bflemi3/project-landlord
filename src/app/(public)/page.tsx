@@ -27,6 +27,9 @@ export default async function LandingPage() {
     { q: t('faqQ7'), a: t('faqA7') },
     { q: t('faqQ8'), a: t('faqA8') },
     { q: t('faqQ9'), a: t('faqA9') },
+    { q: t('faqQ10'), a: t('faqA10') },
+    { q: t('faqQ11'), a: t('faqA11') },
+    { q: t('faqQ12'), a: t('faqA12') },
   ]
 
   const jsonLd = {
@@ -62,6 +65,24 @@ export default async function LandingPage() {
         operatingSystem: 'Web',
         url: origin,
         publisher: { '@id': orgId },
+        // List price: R$ 49/month per rental (first rental free). Founding-member
+        // discount is intentionally not encoded — this is the standard offer.
+        offers: {
+          '@type': 'Offer',
+          price: '49',
+          priceCurrency: 'BRL',
+          priceSpecification: {
+            '@type': 'UnitPriceSpecification',
+            price: '49',
+            priceCurrency: 'BRL',
+            unitCode: 'MON',
+            referenceQuantity: {
+              '@type': 'QuantitativeValue',
+              value: '1',
+              unitText: 'rental',
+            },
+          },
+        },
       },
       {
         '@type': 'FAQPage',

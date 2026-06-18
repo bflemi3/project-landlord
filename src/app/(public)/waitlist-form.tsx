@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { Loader2 } from 'lucide-react'
 import posthog from 'posthog-js'
-import { joinWaitlist } from '@/app/actions/waitlist'
+import { captureWaitlist } from '@/app/actions/waitlist'
+import { captureEvent } from '@/lib/analytics/capture'
+import { readFirstTouchAttribution } from '@/lib/analytics/utm'
 import { localizedPath } from '@/lib/i18n/localized-paths'
 import { type EmailLocale } from '@/emails/i18n'
 import { useWaitlist } from './waitlist-context'
@@ -17,11 +19,15 @@ type WaitlistFormProps = {
 export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
   const t = useTranslations('landing')
   const locale = useLocale() as EmailLocale
-  const { submitted, restored, role, setRole, markJoined } = useWaitlist()
+  const { submitted, restored, role, setRole, openModal, markJoined } = useWaitlist()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  // The email already written at the gate this session. Re-opening the modal
+  // (close without completing → click Join again) must not re-write the row or
+  // re-fire the gate event — we capture once per email, then just reopen.
+  const capturedEmailRef = useRef('')
 
   // Any "Join the waitlist" link points at #waitlist; once it's pressed, focus the
   // email field after the smooth scroll begins (preventScroll keeps the scroll intact).
@@ -36,20 +42,54 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
     return () => document.removeEventListener('click', focusEmail)
   }, [])
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     if (!email) return
+
+    // Already captured this exact email this session — just reopen the modal.
+    // No second gate write, no duplicate `landing_waitlist_started`.
+    if (email === capturedEmailRef.current) {
+      openModal(email)
+      return
+    }
+
     setError(false)
     setLoading(true)
     try {
-      const result = await joinWaitlist(email, locale, role)
+      const attribution = readFirstTouchAttribution()
+      // The join: capture the email + first-touch attribution. On a new signup
+      // the server sends the welcome + adds the Resend contact. Best-effort — if
+      // the write fails, the enrich step upserts by email later.
+      const result = await captureWaitlist({ email, locale, role, attribution })
       if (!result.success) {
         setError(true)
         return
       }
-      posthog.identify(email, { email })
-      posthog.capture('waitlist_joined', { email, locale, role })
+      // Remember the captured email so a re-click reopens the modal without a
+      // second write or duplicate event.
+      capturedEmailRef.current = email
+      // They're on the list — flip the inline form to the confirmation.
       markJoined(role)
+      // Fire identify + the join event once, only for a genuinely new signup.
+      if (result.isNew) {
+        try {
+          posthog.identify(email, { email })
+        } catch {
+          // posthog unavailable (dev / ad-block) — identify is best-effort.
+        }
+        captureEvent('waitlist_joined', {
+          email,
+          locale,
+          role,
+          location: 'final_cta',
+          domain: typeof window !== 'undefined' ? window.location.hostname : undefined,
+          // Full first-touch attribution (utm_* + referrer + landing_path), same
+          // shape as `waitlist_profile_completed`, so by-source reports line up.
+          ...attribution,
+        })
+      }
+      // Open the optional enrich survey.
+      openModal(email)
     } catch {
       setError(true)
     } finally {

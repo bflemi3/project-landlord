@@ -2,7 +2,7 @@
 
 Standalone, browser-openable captures of the product UI — the visual north star for the app reskin (warm-dark · Fraunces · magenta accent). Each screen is self-contained and shown complete and unobscured. Open any one on a phone or laptop.
 
-- [**Revenue dashboard**](revenue-dashboard.html) — income figures, delta chips, cumulative income chart
+- [**Reporting**](reporting.html) — revenue / real-return / property-value metrics, monthly costs, rent-vs-nearby comparison
 - [**Charges ledger**](charges-ledger.html) — monthly ledger rows, aggregate strip, status pills
 - [**Contract timeline**](contract-timeline.html) — contract lifecycle nodes, IPCA rent-step, pending-action chip
 - [**Reputation**](reputation.html) — tenant + landlord reputation cards, metrics, activity feed

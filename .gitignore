@@ -56,3 +56,6 @@ workbox-*.js
 
 # superpowers skill scratch (brainstorm sessions, preview servers)
 .superpowers/
+
+# local QA scratch (screenshots from browser smoke tests, etc.)
+.playground/
