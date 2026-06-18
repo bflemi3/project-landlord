@@ -2,6 +2,10 @@
 
 See what we've been working on to make Mabenn better for you.
 
+## v1.1.0 — Connect your bank
+
+- Connect your bank account in seconds — landlords and tenants alike. Mabenn watches for rent payments in the background so you don't have to mark anything paid by hand.
+
 ## v1.0.0 — Long-term rentals
 
 Mabenn is now a platform for long-term rental landlords and their tenants in Brazil — your alternative to paying 8–12% a month for property management. Track rent, expenses, and lease milestones in one place. You stay in control of your income and your tax obligations.

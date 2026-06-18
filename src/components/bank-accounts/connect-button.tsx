@@ -19,6 +19,13 @@ import { registerPluggyItem } from '@/data/bank-accounts/actions/register-item'
 
 import { usePluggyConnect } from './use-pluggy-connect'
 
+// Minimum scope for passive rent-payment detection (data minimization per LGPD).
+// Identity / investments / loans / credit cards are out of scope for billing.
+const PLUGGY_PRODUCTS: React.ComponentProps<typeof PluggyConnect>['products'] = [
+  'ACCOUNTS',
+  'TRANSACTIONS',
+]
+
 type Props = {
   /** Pluggy item id — when set, the widget opens in update / reconnect mode. */
   itemId?: string
@@ -87,6 +94,7 @@ export function ConnectButton({ itemId, label, variant, size, className }: Props
           connectToken={state.connectToken}
           includeSandbox
           updateItem={itemId}
+          products={PLUGGY_PRODUCTS}
           onSuccess={handleSuccess}
           onError={handleError}
           onClose={handleClose}
