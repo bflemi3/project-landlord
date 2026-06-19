@@ -41,9 +41,10 @@ export function ConnectButton({ itemId, label, variant, size, className }: Props
   const queryClient = useQueryClient()
   const { state, open, reset } = usePluggyConnect()
 
-  const handleClick = useCallback(() => {
-    void open({ itemId })
-  }, [open, itemId])
+  const handleClick = useCallback(async () => {
+    const { ok } = await open({ itemId })
+    if (!ok) toast.error(t('errors.tokenFailed'))
+  }, [open, itemId, t])
 
   const handleSuccess = useCallback(
     async ({ item }: { item: { id: string } }) => {
@@ -66,13 +67,6 @@ export function ConnectButton({ itemId, label, variant, size, className }: Props
   const handleClose = useCallback(() => {
     reset()
   }, [reset])
-
-  // Surface the connect-token error to the user; the widget itself never
-  // mounted, so there's nothing to clean up.
-  if (state.phase === 'error') {
-    toast.error(t('errors.tokenFailed'))
-    reset()
-  }
 
   return (
     <>

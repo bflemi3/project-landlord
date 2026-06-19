@@ -82,9 +82,10 @@ export function BankAccountRow({ item }: Props) {
     })
   }, [disconnect, item.id, t])
 
-  const handleReconnect = useCallback(() => {
-    void connect.open({ itemId: item.pluggy_item_id })
-  }, [connect, item.pluggy_item_id])
+  const handleReconnect = useCallback(async () => {
+    const { ok } = await connect.open({ itemId: item.pluggy_item_id })
+    if (!ok) toast.error(t('errors.tokenFailed'))
+  }, [connect, item.pluggy_item_id, t])
 
   const handleSuccess = useCallback(
     async ({ item: pluggyItem }: { item: { id: string } }) => {

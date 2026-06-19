@@ -8,7 +8,6 @@ type ConnectState =
   | { phase: 'idle' }
   | { phase: 'minting' }
   | { phase: 'open'; connectToken: string }
-  | { phase: 'error'; reason: 'unauthenticated' | 'pluggy_error' }
 
 /**
  * Two-step Pluggy Connect launcher.
@@ -25,15 +24,19 @@ type ConnectState =
 export function usePluggyConnect() {
   const [state, setState] = useState<ConnectState>({ phase: 'idle' })
 
-  const open = useCallback(async (options: { itemId?: string } = {}) => {
-    setState({ phase: 'minting' })
-    const result = await createPluggyConnectToken(options)
-    if (!result.success) {
-      setState({ phase: 'error', reason: result.reason })
-      return
-    }
-    setState({ phase: 'open', connectToken: result.accessToken })
-  }, [])
+  const open = useCallback(
+    async (options: { itemId?: string } = {}): Promise<{ ok: boolean }> => {
+      setState({ phase: 'minting' })
+      const result = await createPluggyConnectToken(options)
+      if (!result.success) {
+        setState({ phase: 'idle' })
+        return { ok: false }
+      }
+      setState({ phase: 'open', connectToken: result.accessToken })
+      return { ok: true }
+    },
+    [],
+  )
 
   const reset = useCallback(() => {
     setState({ phase: 'idle' })
