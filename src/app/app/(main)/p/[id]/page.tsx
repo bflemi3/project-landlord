@@ -37,7 +37,7 @@ export default async function PropertyDetailPage({
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8 sm:px-6">
-      <Button variant="ghost" size="sm" render={<Link href="/app" />} className="mb-6 -ml-3">
+      <Button variant="ghost" size="sm" render={<Link href="/app" />} nativeButton={false} className="mb-6 -ml-3">
         <ArrowLeft />
         Back
       </Button>
