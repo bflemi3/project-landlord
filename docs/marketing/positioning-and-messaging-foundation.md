@@ -408,7 +408,7 @@ Concrete situations that anchor marketing copy, page sections, blog posts, ads, 
 - Specific
 - Warm (not corporate, not cold)
 - Trustworthy
-- Disruptive but honest (per the landing-page spec: punchy headlines, plain body copy, no jargon)
+- Disruptive but honest (per the landing-page spec: a punchy *hero* headline, plain body copy, no jargon) — but section headers and list-item titles stay plain noun labels, never editorial sentences (load-bearing guardrail; see §11 and §13). "Punchy" applies to the hero, not to section/item titles.
 
 ### How the product should sound
 - Like a financial product you actually trust (Mercury at its best)
