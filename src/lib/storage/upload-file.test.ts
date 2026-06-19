@@ -22,7 +22,10 @@ let mockXHR: ReturnType<typeof createMockXHR>
 
 beforeEach(() => {
   mockXHR = createMockXHR()
-  vi.stubGlobal('XMLHttpRequest', vi.fn(() => mockXHR))
+  vi.stubGlobal(
+    'XMLHttpRequest',
+    vi.fn(() => mockXHR),
+  )
 })
 
 afterEach(() => {
@@ -117,7 +120,6 @@ describe('uploadFile', () => {
     const promise = uploadFile({ ...baseOptions, signal: controller.signal })
 
     controller.abort()
-
     ;(mockXHR.onabort as () => void)()
 
     const result = await promise

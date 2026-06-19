@@ -37,21 +37,43 @@ import type {
 // ---------------------------------------------------------------------------
 
 const llmAddressSchema = z.object({
-  street: z.string().describe('Street name (rua/avenida in Brazil, street/avenue in US, calle in Spanish). Empty string "" if not stated.'),
+  street: z
+    .string()
+    .describe(
+      'Street name (rua/avenida in Brazil, street/avenue in US, calle in Spanish). Empty string "" if not stated.',
+    ),
   number: z.string().describe('Street number. Empty string "" if not stated.'),
-  complement: z.string().describe('Unit, apartment, suite, block, etc. Empty string "" if not stated.'),
-  neighborhood: z.string().describe('Neighborhood or district (bairro in Brazil). Empty string "" if not stated or not applicable.'),
+  complement: z
+    .string()
+    .describe('Unit, apartment, suite, block, etc. Empty string "" if not stated.'),
+  neighborhood: z
+    .string()
+    .describe(
+      'Neighborhood or district (bairro in Brazil). Empty string "" if not stated or not applicable.',
+    ),
   city: z.string().describe('City name. Empty string "" if not stated.'),
-  state: z.string().describe('State, province, or region (e.g., SP in Brazil, CA in US, CDMX in Mexico). Empty string "" if not stated.'),
-  postalCode: z.string().describe('Postal or ZIP code (e.g., CEP in Brazil: 88063-300, ZIP in US: 90210, código postal in Mexico/Spain). Empty string "" if not stated.'),
-  country: z.string().describe('ISO 3166-1 alpha-2 country code (e.g., BR, US, MX, ES, CO). Infer from address format, currency, or language if not explicitly stated. Empty string "" only if truly undeterminable.'),
+  state: z
+    .string()
+    .describe(
+      'State, province, or region (e.g., SP in Brazil, CA in US, CDMX in Mexico). Empty string "" if not stated.',
+    ),
+  postalCode: z
+    .string()
+    .describe(
+      'Postal or ZIP code (e.g., CEP in Brazil: 88063-300, ZIP in US: 90210, código postal in Mexico/Spain). Empty string "" if not stated.',
+    ),
+  country: z
+    .string()
+    .describe(
+      'ISO 3166-1 alpha-2 country code (e.g., BR, US, MX, ES, CO). Infer from address format, currency, or language if not explicitly stated. Empty string "" only if truly undeterminable.',
+    ),
 })
 
 // Re-use the canonical `expenseTypeSchema` (database-derived) with extraction-
 // specific guidance attached. The LLM call passes this schema to
 // `Output.object({ schema })`, so the `.describe()` is what reaches the model.
 const expenseTypeSchema = canonicalExpenseTypeSchema.describe(
-  'Canonical expense category. Normalize the contract\'s native term to this set — do not translate literally, classify semantically. ' +
+  "Canonical expense category. Normalize the contract's native term to this set — do not translate literally, classify semantically. " +
     'Mapping guidance: ' +
     'PT-BR "luz"/"energia elétrica" → electricity; "água" → water; "gás" → gas; "internet" → internet; ' +
     '"condomínio"/"taxa condominial" → condo; "IPTU" → other; "lixo" → trash; "esgoto" → sewer; "manutenção" → maintenance. ' +
@@ -73,7 +95,11 @@ const llmRentSchema = z.object({
     .describe(
       'Rent amount in integer minor units (centavos, cents). Must be a whole non-negative integer — do not emit a decimal. Example: R$2,500.00 = 250000. Use 0 only if the contract does not state a rent.',
     ),
-  currency: z.string().describe('ISO 4217 currency code (e.g., BRL, USD, EUR). Empty string "" only if truly undeterminable.'),
+  currency: z
+    .string()
+    .describe(
+      'ISO 4217 currency code (e.g., BRL, USD, EUR). Empty string "" only if truly undeterminable.',
+    ),
   dueDay: z
     .number()
     .refine((n) => Number.isInteger(n) && n >= 1 && n <= 31, {
@@ -91,24 +117,57 @@ const llmRentSchema = z.object({
 })
 
 const llmContractDatesSchema = z.object({
-  start: z.string().describe('Contract start date in YYYY-MM-DD format. Empty string "" if not stated.'),
-  end: z.string().describe('Contract end date in YYYY-MM-DD format. Empty string "" if not stated.'),
+  start: z
+    .string()
+    .describe('Contract start date in YYYY-MM-DD format. Empty string "" if not stated.'),
+  end: z
+    .string()
+    .describe('Contract end date in YYYY-MM-DD format. Empty string "" if not stated.'),
 })
 
-const rentAdjustmentFrequencySchema = z.enum(['monthly', 'quarterly', 'biannual', 'annual', 'other'])
+const rentAdjustmentFrequencySchema = z.enum([
+  'monthly',
+  'quarterly',
+  'biannual',
+  'annual',
+  'other',
+])
 const rentAdjustmentMethodSchema = z.enum(['index', 'fixed_amount', 'fixed_percentage', 'other'])
 
 const llmRentAdjustmentSchema = z.object({
-  date: z.string().describe('Date or description of when the rent adjustment applies (e.g., "2027-01-01", "every January"). Empty string "" if not stated.'),
-  frequency: rentAdjustmentFrequencySchema.nullable().describe('How often the rent is adjusted. Null if the contract does not specify.'),
-  method: rentAdjustmentMethodSchema.nullable().describe('How the adjustment is calculated: "index" (tied to an inflation index like IPCA, CPI, IPC), "fixed_amount" (specific currency amount increase), "fixed_percentage" (e.g., 5% annual increase), or "other" if unclear. Null if the contract does not specify.'),
-  indexName: z.string().describe('Name of the inflation index if method is "index" (e.g., IPCA in Brazil, CPI in US, IPC in Spain/Mexico). Empty string "" if not index-based.'),
-  value: z.number().nullable().describe('Fixed adjustment amount (integer minor units) or percentage value. E.g., 5 for a 5% increase, or 50000 for a R$500 increase. Null if index-based or not applicable.'),
+  date: z
+    .string()
+    .describe(
+      'Date or description of when the rent adjustment applies (e.g., "2027-01-01", "every January"). Empty string "" if not stated.',
+    ),
+  frequency: rentAdjustmentFrequencySchema
+    .nullable()
+    .describe('How often the rent is adjusted. Null if the contract does not specify.'),
+  method: rentAdjustmentMethodSchema
+    .nullable()
+    .describe(
+      'How the adjustment is calculated: "index" (tied to an inflation index like IPCA, CPI, IPC), "fixed_amount" (specific currency amount increase), "fixed_percentage" (e.g., 5% annual increase), or "other" if unclear. Null if the contract does not specify.',
+    ),
+  indexName: z
+    .string()
+    .describe(
+      'Name of the inflation index if method is "index" (e.g., IPCA in Brazil, CPI in US, IPC in Spain/Mexico). Empty string "" if not index-based.',
+    ),
+  value: z
+    .number()
+    .nullable()
+    .describe(
+      'Fixed adjustment amount (integer minor units) or percentage value. E.g., 5 for a 5% increase, or 50000 for a R$500 increase. Null if index-based or not applicable.',
+    ),
 })
 
 const llmPartySchema = z.object({
   name: z.string().describe('Full legal name of the party. Empty string "" if not stated.'),
-  taxId: z.string().describe('Personal tax ID (CPF in Brazil, SSN in US, DNI in Spain, RFC/CURP in Mexico). Empty string "" if not stated.'),
+  taxId: z
+    .string()
+    .describe(
+      'Personal tax ID (CPF in Brazil, SSN in US, DNI in Spain, RFC/CURP in Mexico). Empty string "" if not stated.',
+    ),
   email: z.string().describe('Email address. Empty string "" if not stated.'),
 })
 
@@ -125,8 +184,16 @@ const llmExpenseBundledIntoSchema = z
 const llmExpenseSchema = z.object({
   type: expenseTypeSchema.nullable(),
   bundledInto: llmExpenseBundledIntoSchema,
-  providerName: z.string().describe('Name of the utility or service provider. Empty string "" if not stated (the common case).'),
-  providerTaxId: z.string().describe('Business tax ID of the provider (CNPJ in Brazil, EIN in US, CIF in Spain, RFC in Mexico). Empty string "" if not stated (the common case).'),
+  providerName: z
+    .string()
+    .describe(
+      'Name of the utility or service provider. Empty string "" if not stated (the common case).',
+    ),
+  providerTaxId: z
+    .string()
+    .describe(
+      'Business tax ID of the provider (CNPJ in Brazil, EIN in US, CIF in Spain, RFC in Mexico). Empty string "" if not stated (the common case).',
+    ),
 })
 
 const supportedLanguageSchema = z.enum(['pt-br', 'en', 'es'])
@@ -152,21 +219,33 @@ const propertyTypeSchema = z
 export const contractExtractionLlmSchema = z.object({
   isRentalContract: z.boolean().describe('Whether this document is a rental/lease contract'),
   propertyType: propertyTypeSchema.nullable(),
-  address: llmAddressSchema.describe('Property address from the contract. If no address is stated, emit empty strings for every field.'),
-  rent: llmRentSchema.describe('Rent payment details. If no rent is stated (which would be unusual for a rental contract), emit amount 0 and empty strings.'),
-  contractDates: llmContractDatesSchema.describe('Contract start and end dates. Empty strings if not stated.'),
+  address: llmAddressSchema.describe(
+    'Property address from the contract. If no address is stated, emit empty strings for every field.',
+  ),
+  rent: llmRentSchema.describe(
+    'Rent payment details. If no rent is stated (which would be unusual for a rental contract), emit amount 0 and empty strings.',
+  ),
+  contractDates: llmContractDatesSchema.describe(
+    'Contract start and end dates. Empty strings if not stated.',
+  ),
   rentAdjustment: llmRentAdjustmentSchema
     .nullable()
-    .describe('How rent changes over time, if the contract specifies. Null if the contract is silent on adjustment — do not assume a default. See the inner fields for the adjustment method, frequency, and value.'),
+    .describe(
+      'How rent changes over time, if the contract specifies. Null if the contract is silent on adjustment — do not assume a default. See the inner fields for the adjustment method, frequency, and value.',
+    ),
   landlords: z
     .array(llmPartySchema)
-    .describe('Landlord(s) / locador(es) listed in the contract. Empty array [] if none are named.'),
+    .describe(
+      'Landlord(s) / locador(es) listed in the contract. Empty array [] if none are named.',
+    ),
   tenants: z
     .array(llmPartySchema)
     .describe('Tenant(s) / locatario(s) listed in the contract. Empty array [] if none are named.'),
   expenses: z
     .array(llmExpenseSchema)
-    .describe('Utility and recurring expenses mentioned in the contract. Empty array [] if the contract mentions none.'),
+    .describe(
+      'Utility and recurring expenses mentioned in the contract. Empty array [] if the contract mentions none.',
+    ),
 })
 
 // ---------------------------------------------------------------------------
@@ -248,11 +327,11 @@ const contractExtractionLlmResultSchema = z.object({
 })
 
 export const contractExtractionResultSchema = contractExtractionLlmResultSchema.extend({
-  languageDetected: supportedLanguageSchema.describe('Language detected in the document by the engine'),
+  languageDetected: supportedLanguageSchema.describe(
+    'Language detected in the document by the engine',
+  ),
   rawExtractedText: z.string().describe('Full text extracted from the document'),
-  modelId: z
-    .string()
-    .describe('Model id that produced the extraction (e.g. claude-sonnet-4-6)'),
+  modelId: z.string().describe('Model id that produced the extraction (e.g. claude-sonnet-4-6)'),
   schemaVersion: z
     .number()
     .int()
@@ -278,14 +357,14 @@ export type ContractExtractionResultSchemaType = z.infer<typeof contractExtracti
 // ---------------------------------------------------------------------------
 
 // Post-normalization schema must match ContractExtractionLlmResult exactly.
-type _ResultSchemaMatchesType = z.infer<typeof contractExtractionLlmResultSchema> extends ContractExtractionLlmResult
-  ? true
-  : never
+type _ResultSchemaMatchesType =
+  z.infer<typeof contractExtractionLlmResultSchema> extends ContractExtractionLlmResult
+    ? true
+    : never
 const _resultLlmTypeCheck: _ResultSchemaMatchesType = true
 
-type _FullResultMatchesType = z.infer<typeof contractExtractionResultSchema> extends ContractExtractionResult
-  ? true
-  : never
+type _FullResultMatchesType =
+  z.infer<typeof contractExtractionResultSchema> extends ContractExtractionResult ? true : never
 const _fullResultTypeCheck: _FullResultMatchesType = true
 
 // Guard against drift between the Postgres property_type enum (source of

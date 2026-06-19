@@ -10,10 +10,7 @@ import { Suspense } from 'react'
 import { BankAccountsPanel } from '@/components/bank-accounts/bank-accounts-panel'
 import { BankAccountsPanelSkeleton } from '@/components/bank-accounts/bank-accounts-panel-skeleton'
 
-import {
-  type UseMutationResult,
-  useQueryClient,
-} from '@tanstack/react-query'
+import { type UseMutationResult, useQueryClient } from '@tanstack/react-query'
 
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
@@ -30,19 +27,11 @@ import { Button } from '@/components/ui/button'
 import { ResponsiveModal } from '@/components/responsive-modal'
 import { TaxIdInput, TaxIdLabel } from '@/components/ui/tax-id'
 import { createClient } from '@/lib/supabase/client'
-import {
-  useProfile,
-  useUpdateNameMutation,
-  useUpdateTaxIdMutation,
-} from '@/data/profiles/client'
+import { useProfile, useUpdateNameMutation, useUpdateTaxIdMutation } from '@/data/profiles/client'
 import { profileQueryKey } from '@/data/profiles/shared'
 import { nameInputSchema, taxIdInputSchema } from '@/schemas/profile'
 import { useHasHydrated } from '@/lib/hooks/use-has-hydrated'
-import {
-  useFormValidation,
-  zodValidator,
-  type Validator,
-} from '@/lib/forms/use-form-validation'
+import { useFormValidation, zodValidator, type Validator } from '@/lib/forms/use-form-validation'
 import { useServerValidationErrors } from '@/lib/forms/use-server-validation-errors'
 import type { ValidationFieldErrors } from '@/lib/validation'
 import { cn } from '@/lib/utils'
@@ -116,20 +105,16 @@ function UserSettingsModal({
   }
 
   return (
-    <ResponsiveModal
-      open={open}
-      onOpenChange={onOpenChange}
-      className="sm:max-w-2xl"
-    >
+    <ResponsiveModal open={open} onOpenChange={onOpenChange} className="sm:max-w-2xl">
       <ResponsiveModal.Header>
         <ResponsiveModal.Title>{t('title')}</ResponsiveModal.Title>
       </ResponsiveModal.Header>
       <ResponsiveModal.Content>
         {/* Nav — segmented on mobile, sidebar on desktop */}
         <div className="md:flex md:gap-6">
-          <div className="flex flex-col md:w-44 md:shrink-0 md:rounded-xl md:bg-muted md:p-2">
+          <div className="md:bg-muted flex flex-col md:w-44 md:shrink-0 md:rounded-xl md:p-2">
             {/* Mobile: pill segmented control */}
-            <div className="mb-6 flex gap-1 rounded-xl bg-secondary/60 p-1 md:mb-0 md:flex-col md:rounded-none md:bg-transparent md:p-0">
+            <div className="bg-secondary/60 mb-6 flex gap-1 rounded-xl p-1 md:mb-0 md:flex-col md:rounded-none md:bg-transparent md:p-0">
               {sections.map((section) => {
                 const isActive = activeSection === section.key
                 return (
@@ -139,7 +124,7 @@ function UserSettingsModal({
                     className={cn(
                       'flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-colors md:flex-none md:justify-start md:px-3',
                       isActive
-                        ? 'bg-background text-foreground shadow-sm md:bg-primary/10 md:text-primary md:shadow-none'
+                        ? 'bg-background text-foreground md:bg-primary/10 md:text-primary shadow-sm md:shadow-none'
                         : 'text-muted-foreground hover:text-foreground md:hover:bg-secondary',
                     )}
                   >
@@ -154,7 +139,7 @@ function UserSettingsModal({
             <div className="mt-auto hidden pt-4 md:block">
               <button
                 onClick={handleSignOut}
-                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
               >
                 <LogOut className="size-4" />
                 {t('signOut')}
@@ -163,7 +148,7 @@ function UserSettingsModal({
           </div>
 
           {/* Content */}
-          <div className="min-h-[200px] flex-1 md:min-h-[280px]">
+          <div className="min-h-50 flex-1 md:min-h-70">
             {activeSection === 'profile' && <ProfileSection />}
             {activeSection === 'payment' && <PaymentSection />}
             {activeSection === 'bank' && <BankAccountsSection />}
@@ -177,7 +162,7 @@ function UserSettingsModal({
         <div>
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-destructive"
+            className="text-muted-foreground hover:text-destructive flex items-center gap-1.5 text-sm transition-colors"
           >
             <LogOut className="size-3.5" />
             {t('signOut')}
@@ -213,11 +198,7 @@ function ProfileSection() {
 // share this shape and stay self-contained.
 // =============================================================================
 
-type EditableMutation<T> = UseMutationResult<
-  T,
-  { errors: ValidationFieldErrors<T> },
-  string
->
+type EditableMutation<T> = UseMutationResult<T, { errors: ValidationFieldErrors<T> }, string>
 
 interface UseEditableProfileFieldOptions<TInput> {
   fieldKey: keyof TInput & string
@@ -235,10 +216,7 @@ function useEditableProfileField<TInput>({
   const [value, setValue] = useState(initialValue)
   const [savedValue, setSavedValue] = useState(initialValue)
 
-  const values = useMemo(
-    () => ({ [fieldKey]: value }) as unknown as TInput,
-    [fieldKey, value],
-  )
+  const values = useMemo(() => ({ [fieldKey]: value }) as unknown as TInput, [fieldKey, value])
   const form = useFormValidation({ values, validator })
   const serverErrors = useServerValidationErrors<TInput>()
 
@@ -297,7 +275,9 @@ function AvatarField() {
 
     setUploading(true)
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     if (!user) {
       setUploading(false)
       return
@@ -311,17 +291,14 @@ function AvatarField() {
       .upload(filePath, file, { upsert: true })
 
     if (!uploadError) {
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath)
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from('avatars').getPublicUrl(filePath)
 
       // Cache buster so the browser shows the new image immediately.
       const freshUrl = `${publicUrl}?t=${Date.now()}`
 
-      await supabase
-        .from('profiles')
-        .update({ avatar_url: freshUrl })
-        .eq('id', user.id)
+      await supabase.from('profiles').update({ avatar_url: freshUrl }).eq('id', user.id)
 
       // All consumers read via useProfile() — invalidate refreshes them in lockstep.
       await queryClient.invalidateQueries({ queryKey: profileQueryKey() })
@@ -341,7 +318,7 @@ function AvatarField() {
         <button
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
-          className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:opacity-50"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full shadow-sm transition-colors disabled:opacity-50"
         >
           <Camera className="size-3" />
         </button>
@@ -354,8 +331,8 @@ function AvatarField() {
         />
       </div>
       <div className="min-w-0 flex-1">
-        <p className="font-semibold text-foreground">{userName || t('noName')}</p>
-        <p className="text-sm text-muted-foreground">{t('profileDescription')}</p>
+        <p className="text-foreground font-semibold">{userName || t('noName')}</p>
+        <p className="text-muted-foreground text-sm">{t('profileDescription')}</p>
       </div>
     </div>
   )
@@ -373,13 +350,7 @@ function EmailField() {
   return (
     <Field>
       <FieldLabel htmlFor="settings-email">{t('email')}</FieldLabel>
-      <Input
-        id="settings-email"
-        type="email"
-        value={email}
-        readOnly
-        autoComplete="email"
-      />
+      <Input id="settings-email" type="email" value={email} readOnly autoComplete="email" />
       <FieldDescription>{t('emailDescription')}</FieldDescription>
     </Field>
   )
@@ -432,9 +403,7 @@ function NameField() {
         />
       </FieldActionRow>
       {field.showError && field.error && (
-        <FieldError id="settings-name-error">
-          {t(`validation.${field.error}`)}
-        </FieldError>
+        <FieldError id="settings-name-error">{t(`validation.${field.error}`)}</FieldError>
       )}
     </Field>
   )
@@ -493,13 +462,9 @@ function TaxIdField() {
           }
         />
       </FieldActionRow>
-      <FieldDescription id="settings-tax-id-description">
-        {t('taxIdDescription')}
-      </FieldDescription>
+      <FieldDescription id="settings-tax-id-description">{t('taxIdDescription')}</FieldDescription>
       {field.showError && field.error && (
-        <FieldError id="settings-tax-id-error">
-          {t(`validation.${field.error}`)}
-        </FieldError>
+        <FieldError id="settings-tax-id-error">{t(`validation.${field.error}`)}</FieldError>
       )}
     </Field>
   )
@@ -538,7 +503,9 @@ function LanguageField() {
                   : 'border-border hover:border-primary/30',
               )}
             >
-              <span className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-foreground')}>
+              <span
+                className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-foreground')}
+              >
                 <span className="md:hidden">{label.short}</span>
                 <span className="hidden md:inline">{label.native}</span>
               </span>
@@ -576,10 +543,10 @@ function PaymentSection() {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">{t('paymentDescription')}</p>
-      <div className="rounded-2xl border border-dashed border-border p-6 text-center">
-        <CreditCard className="mx-auto mb-2 size-6 text-muted-foreground/40" />
-        <p className="text-sm text-muted-foreground">{t('pixComingSoon')}</p>
+      <p className="text-muted-foreground text-sm">{t('paymentDescription')}</p>
+      <div className="border-border rounded-2xl border border-dashed p-6 text-center">
+        <CreditCard className="text-muted-foreground/40 mx-auto mb-2 size-6" />
+        <p className="text-muted-foreground text-sm">{t('pixComingSoon')}</p>
       </div>
     </div>
   )
@@ -621,14 +588,16 @@ function AppearanceSection() {
               key={value}
               onClick={() => handleThemeChange(value)}
               className={cn(
-                'flex items-center justify-center gap-1.5 rounded-xl border px-3 py-3 transition-colors',
+                'flex items-center justify-center gap-1.5 rounded-xl border p-3 transition-colors',
                 isActive
                   ? 'border-primary bg-primary/5 dark:bg-primary/10'
                   : 'border-border hover:border-primary/30',
               )}
             >
               <Icon className={cn('size-4', isActive ? 'text-primary' : 'text-muted-foreground')} />
-              <span className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-foreground')}>
+              <span
+                className={cn('text-sm font-medium', isActive ? 'text-primary' : 'text-foreground')}
+              >
                 {tTheme(value)}
               </span>
             </button>

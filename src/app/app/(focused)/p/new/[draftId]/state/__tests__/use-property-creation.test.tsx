@@ -38,9 +38,7 @@ import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 function makeWrapper(draftId: string) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <PropertyCreationStoreProvider draftId={draftId}>
-        {children}
-      </PropertyCreationStoreProvider>
+      <PropertyCreationStoreProvider draftId={draftId}>{children}</PropertyCreationStoreProvider>
     )
   }
 }
@@ -50,10 +48,7 @@ function makeWrapper(draftId: string) {
  * under v3. Mirrors the envelope the persist middleware writes —
  * `{ state: <PersistedPropertyCreationState>, version: 3 }`.
  */
-function seedPersistedState(
-  draftId: string,
-  state: Partial<PersistedPropertyCreationState>,
-) {
+function seedPersistedState(draftId: string, state: Partial<PersistedPropertyCreationState>) {
   const key = propertyCreationWizardKey(draftId)
   idbStore.set(key, {
     state,
@@ -285,9 +280,7 @@ describe('usePropertyCreationActions + state machine invariants', () => {
         actions: usePropertyCreationActions(),
         activeId: usePropertyCreationState((s) => s.activeSectionId),
         property: usePropertyCreationState((s) => s.sectionStates.property),
-        rentDates: usePropertyCreationState(
-          (s) => s.sectionStates['rent-dates'],
-        ),
+        rentDates: usePropertyCreationState((s) => s.sectionStates['rent-dates']),
       }),
       { wrapper },
     )
@@ -504,10 +497,7 @@ describe('store actions — slice + touched + UI dispatchers', () => {
 
     // Updater returns the prev ref unchanged → store should bail.
     act(() => {
-      result.current.actions.setTouched<ReadonlySet<string>>(
-        'property',
-        (prev) => prev,
-      )
+      result.current.actions.setTouched<ReadonlySet<string>>('property', (prev) => prev)
     })
 
     expect(result.current.sectionTouched).toBe(before)
@@ -524,10 +514,7 @@ describe('store actions — slice + touched + UI dispatchers', () => {
     )
 
     act(() => {
-      result.current.actions.setTouched<ReadonlySet<string>>(
-        'property',
-        () => new Set(['street']),
-      )
+      result.current.actions.setTouched<ReadonlySet<string>>('property', () => new Set(['street']))
     })
 
     const next = result.current.sectionTouched.property as ReadonlySet<string>
@@ -547,10 +534,7 @@ describe('store actions — slice + touched + UI dispatchers', () => {
     const tenantsBefore = result.current.sectionTouched.tenants
 
     act(() => {
-      result.current.actions.setTouched<ReadonlySet<string>>(
-        'property',
-        () => new Set(['street']),
-      )
+      result.current.actions.setTouched<ReadonlySet<string>>('property', () => new Set(['street']))
     })
 
     // Sister section's reference is preserved through the update.
@@ -683,7 +667,10 @@ describe('persist middleware — writes', () => {
     })
 
     const lastCall = setSpy.mock.calls.at(-1)!
-    const [, value] = lastCall as [string, { state: PersistedPropertyCreationState; version: number }]
+    const [, value] = lastCall as [
+      string,
+      { state: PersistedPropertyCreationState; version: number },
+    ]
     expect(value.version).toBe(3)
     expect(value.state.step).toBe(2)
     // `actions` is excluded by partialize.
@@ -694,10 +681,7 @@ describe('persist middleware — writes', () => {
 describe('usePropertyCreationActions stability', () => {
   it('returns the same action-bag reference across re-renders', async () => {
     const wrapper = makeWrapper('draft-stable')
-    const { result, rerender } = renderHook(
-      () => usePropertyCreationActions(),
-      { wrapper },
-    )
+    const { result, rerender } = renderHook(() => usePropertyCreationActions(), { wrapper })
 
     const first = result.current
     rerender()
@@ -708,9 +692,9 @@ describe('usePropertyCreationActions stability', () => {
 
   it('throws a clear error when used outside the Provider', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
-    expect(() =>
-      renderHook(() => usePropertyCreationActions()),
-    ).toThrow(/PropertyCreationStoreProvider/)
+    expect(() => renderHook(() => usePropertyCreationActions())).toThrow(
+      /PropertyCreationStoreProvider/,
+    )
     spy.mockRestore()
   })
 })
@@ -766,14 +750,7 @@ describe('useIsExtracted', () => {
     })
   }
 
-  it.each([
-    'street',
-    'number',
-    'complement',
-    'neighborhood',
-    'city',
-    'state',
-  ] as const)(
+  it.each(['street', 'number', 'complement', 'neighborhood', 'city', 'state'] as const)(
     'maps property.%s correctly to its extraction.address counterpart',
     async (field) => {
       const draftId = `extracted-${field}`

@@ -2,11 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
 import { z } from 'zod'
 
-import {
-  useFormValidation,
-  zodValidator,
-  type Validator,
-} from '../use-form-validation'
+import { useFormValidation, zodValidator, type Validator } from '../use-form-validation'
 
 // ---------------------------------------------------------------------------
 // Test schema — minimal, exercises required + optional + max-length

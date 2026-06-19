@@ -39,7 +39,9 @@ export async function inviteTenantCore(
   supabase: TypedSupabaseClient,
   input: InviteTenantInput,
 ): Promise<InviteTenantCoreResult> {
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     return { success: false, errors: { general: 'notAuthenticated' } }
@@ -74,19 +76,17 @@ export async function inviteTenantCore(
 
   const code = generateInviteCode()
 
-  const { error: insertError } = await supabase
-    .from('invitations')
-    .insert({
-      property_id: input.propertyId,
-      unit_id: input.unitId,
-      invited_by: user.id,
-      invited_email: email,
-      invited_name: input.tenantName,
-      role: 'tenant' as const,
-      status: 'pending' as const,
-      code,
-      expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-    })
+  const { error: insertError } = await supabase.from('invitations').insert({
+    property_id: input.propertyId,
+    unit_id: input.unitId,
+    invited_by: user.id,
+    invited_email: email,
+    invited_name: input.tenantName,
+    role: 'tenant' as const,
+    status: 'pending' as const,
+    code,
+    expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+  })
 
   if (insertError) {
     return { success: false, errors: { general: 'inviteFailed' } }

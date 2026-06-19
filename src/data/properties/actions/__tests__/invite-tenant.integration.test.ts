@@ -84,10 +84,7 @@ describe('inviteTenantCore', () => {
   it('rejects when not authenticated', async () => {
     // Create an unauthenticated client
     const { createClient } = await import('@supabase/supabase-js')
-    const anonClient = createClient(
-      'http://127.0.0.1:54321',
-      process.env.SUPABASE_ANON_KEY!,
-    )
+    const anonClient = createClient('http://127.0.0.1:54321', process.env.SUPABASE_ANON_KEY!)
 
     const result = await inviteTenantCore(anonClient as any, {
       propertyId,

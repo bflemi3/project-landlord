@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { GoogleIcon } from '@/components/icons/google'
 import { Wordmark } from '@/components/wordmark'
-import { InfoBox, InfoBoxContent } from '@/components/info-box'
+import { Alert, AlertBody } from '@/components/ui/alert'
 
 function SignInForm() {
   const t = useTranslations('auth')
@@ -52,9 +52,7 @@ function SignInForm() {
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) {
       setError(
-        error.message === 'Invalid login credentials'
-          ? t('invalidCredentials')
-          : t('signInError'),
+        error.message === 'Invalid login credentials' ? t('invalidCredentials') : t('signInError'),
       )
       setLoadingEmail(false)
     } else {
@@ -71,7 +69,7 @@ function SignInForm() {
       {/* Header */}
       <div className="pb-10 text-center">
         <Wordmark />
-        <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
+        <p className="text-muted-foreground mt-3 text-base">{t('tagline')}</p>
       </div>
 
       <h1 className="mb-8 text-center text-2xl font-bold">{t('signIn')}</h1>
@@ -80,7 +78,7 @@ function SignInForm() {
       <button
         onClick={handleGoogleSignIn}
         disabled={isLoading}
-        className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl bg-foreground text-base font-medium text-background transition-colors hover:bg-foreground/90 disabled:pointer-events-none disabled:opacity-50"
+        className="bg-foreground text-background hover:bg-foreground/90 flex h-12 w-full items-center justify-center gap-3 rounded-2xl text-base font-medium transition-colors disabled:pointer-events-none disabled:opacity-50"
       >
         {loadingGoogle ? (
           <Loader2 className="size-5 animate-spin" />
@@ -92,9 +90,9 @@ function SignInForm() {
 
       {/* Divider */}
       <div className="my-8 flex items-center gap-4">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-sm text-muted-foreground">{t('orSignInWithEmail')}</span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="bg-border h-px flex-1" />
+        <span className="text-muted-foreground text-sm">{t('orSignInWithEmail')}</span>
+        <div className="bg-border h-px flex-1" />
       </div>
 
       {/* Email form */}
@@ -131,16 +129,12 @@ function SignInForm() {
         </div>
 
         {error && (
-          <InfoBox variant="destructive">
-            <InfoBoxContent>{error}</InfoBoxContent>
-          </InfoBox>
+          <Alert variant="destructive">
+            <AlertBody>{error}</AlertBody>
+          </Alert>
         )}
 
-        <Button
-          className="h-12 w-full rounded-2xl"
-          disabled={isLoading}
-          type="submit"
-        >
+        <Button className="h-12 w-full rounded-2xl" disabled={isLoading} type="submit">
           {loadingEmail ? <Loader2 className="size-5 animate-spin" /> : null}
           {t('signInWithEmail')}
         </Button>
@@ -150,7 +144,7 @@ function SignInForm() {
       <div className="mt-5 text-center">
         <Link
           href="/auth/forgot-password"
-          className="text-sm text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground text-sm"
         >
           {t('forgotPassword')}
         </Link>
@@ -158,9 +152,12 @@ function SignInForm() {
 
       {/* Sign up link */}
       <div className="mt-10 text-center">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           {t('dontHaveAccount')}{' '}
-          <Link href={code ? `/auth/sign-up?code=${encodeURIComponent(code)}` : '/auth/sign-up'} className="font-semibold text-foreground">
+          <Link
+            href={code ? `/auth/sign-up?code=${encodeURIComponent(code)}` : '/auth/sign-up'}
+            className="text-foreground font-semibold"
+          >
             {t('signUp')}
           </Link>
         </p>

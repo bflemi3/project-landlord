@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  defaultSectionTouched,
-  hasAnyUserSectionData,
-} from '../section-defaults'
+import { defaultSectionTouched, hasAnyUserSectionData } from '../section-defaults'
 import { defaultSectionData } from '../extraction-seeding'
 import { CHECKOUT_SECTIONS } from '../registry'
 

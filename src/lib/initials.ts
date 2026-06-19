@@ -6,17 +6,12 @@
  * → "MS", not "MD"). Whitespace is collapsed before splitting so stray double
  * spaces don't produce empty parts.
  */
-export function getInitials(
-  name?: string | null,
-  email?: string | null,
-): string {
+export function getInitials(name?: string | null, email?: string | null): string {
   const trimmedName = name?.trim() ?? ''
   if (trimmedName.length > 0) {
     const parts = trimmedName.split(/\s+/)
     if (parts.length === 1) return parts[0]!.charAt(0).toUpperCase()
-    return (
-      parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)
-    ).toUpperCase()
+    return (parts[0]!.charAt(0) + parts[parts.length - 1]!.charAt(0)).toUpperCase()
   }
 
   const trimmedEmail = email?.trim() ?? ''

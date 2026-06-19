@@ -4,13 +4,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 
 import { CurrencyInput } from '@/components/ui/currency-input'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from '@/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldGroup, FieldLabel } from '@/components/ui/field'
 
 import {
   expenseRowWithType,
@@ -67,8 +61,8 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
 
   // Cached parse — shared with the row badge and the section's Continue
   // gate. One parse per slice change, regardless of how many consumers.
-  const parseResult = usePropertyCreationState(
-    (s) => validateExpenses(s.sectionData.expenses as ExpenseRow[]).perRow.get(id)
+  const parseResult = usePropertyCreationState((s) =>
+    validateExpenses(s.sectionData.expenses as ExpenseRow[]).perRow.get(id),
   )
 
   const { errors, setTouched } = useWizardForm({
@@ -95,9 +89,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
       setServerErrors('expenses', clearFieldServerError(id, 'expense_type'))
       setSectionData<ExpenseRow[]>('expenses', (prev) =>
         prev.map((row) =>
-          row.id === id
-            ? { ...expenseRowWithType(row, next), isExtracted: false }
-            : row,
+          row.id === id ? { ...expenseRowWithType(row, next), isExtracted: false } : row,
         ),
       )
       touchField('expense_type')
@@ -171,30 +163,20 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
     <FieldGroup>
       <Field data-invalid={Boolean(typeError) || undefined}>
         <FieldLabel>{t('typeLabel')}</FieldLabel>
-        <ExpenseTypeSelector
-          value={expense.expense_type}
-          onValueChange={setExpenseType}
-        />
-        {typeError && (
-          <FieldError id={`expense-${id}-type-error`}>{t('typeRequired')}</FieldError>
-        )}
+        <ExpenseTypeSelector value={expense.expense_type} onValueChange={setExpenseType} />
+        {typeError && <FieldError id={`expense-${id}-type-error`}>{t('typeRequired')}</FieldError>}
       </Field>
 
       {hasType && expense.amount_behavior && (
         <Field>
-          <AmountBehaviorSelector
-            value={expense.amount_behavior}
-            onValueChange={setBehavior}
-          />
+          <AmountBehaviorSelector value={expense.amount_behavior} onValueChange={setBehavior} />
         </Field>
       )}
 
       {hasType && (
         <Field data-invalid={Boolean(amountError) || undefined}>
           <FieldLabel htmlFor={amountId}>
-            {expense.amount_behavior === 'fixed'
-              ? t('amountLabelFixed')
-              : t('amountLabel')}
+            {expense.amount_behavior === 'fixed' ? t('amountLabelFixed') : t('amountLabel')}
           </FieldLabel>
           <FieldDescription>
             {expense.amount_behavior === 'fixed'
@@ -213,9 +195,7 @@ export function ExpenseForm({ id }: ExpenseFormProps) {
             onValueChange={setAmount}
             onBlur={() => touchField('amount_minor')}
           />
-          {amountError && (
-            <FieldError id={amountErrorId}>{t(amountError)}</FieldError>
-          )}
+          {amountError && <FieldError id={amountErrorId}>{t(amountError)}</FieldError>}
         </Field>
       )}
     </FieldGroup>

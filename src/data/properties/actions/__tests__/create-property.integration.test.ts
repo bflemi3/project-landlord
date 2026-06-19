@@ -1,11 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-import {
-  createTestUser,
-  cleanupTestUser,
-  getAdminClient,
-} from '@/test/supabase'
+import { createTestUser, cleanupTestUser, getAdminClient } from '@/test/supabase'
 
 vi.mock('next/cache', () => ({ revalidatePath: () => {} }))
 
@@ -228,10 +224,7 @@ describe('createPropertyCore', () => {
     const contestedTaxId = `99999999${Math.floor(Math.random() * 1000)
       .toString()
       .padStart(3, '0')}`
-    await admin
-      .from('profiles')
-      .update({ tax_id: contestedTaxId })
-      .eq('id', otherUser.userId)
+    await admin.from('profiles').update({ tax_id: contestedTaxId }).eq('id', otherUser.userId)
 
     try {
       const draftId = crypto.randomUUID()
@@ -245,9 +238,7 @@ describe('createPropertyCore', () => {
       expect(result.ok).toBe(false)
       if (result.ok) return
       expect(result.sectionErrors?.['tax-id']).toBeDefined()
-      const taxIdSlice = result.sectionErrors?.['tax-id'] as
-        | Record<string, string[]>
-        | undefined
+      const taxIdSlice = result.sectionErrors?.['tax-id'] as Record<string, string[]> | undefined
       expect(taxIdSlice?.tax_id).toEqual(['tax_id_conflict'])
     } finally {
       await cleanupTestUser(otherUser.userId)
@@ -263,24 +254,20 @@ describe('createPropertyCore', () => {
     // `this`-bound methods on the real bucket intact (a plain spread breaks
     // them).
     const originalFrom = client.storage.from.bind(client.storage)
-    const uploadSpy = vi
-      .fn()
-      .mockResolvedValue({ data: null, error: new Error('boom') })
-    const storageFromSpy = vi
-      .spyOn(client.storage, 'from')
-      .mockImplementation((bucket: string) => {
-        const real = originalFrom(bucket)
-        if (bucket === 'contracts') {
-          return new Proxy(real, {
-            get(target, prop) {
-              if (prop === 'upload') return uploadSpy
-              const value = Reflect.get(target, prop)
-              return typeof value === 'function' ? value.bind(target) : value
-            },
-          }) as any
-        }
-        return real
-      })
+    const uploadSpy = vi.fn().mockResolvedValue({ data: null, error: new Error('boom') })
+    const storageFromSpy = vi.spyOn(client.storage, 'from').mockImplementation((bucket: string) => {
+      const real = originalFrom(bucket)
+      if (bucket === 'contracts') {
+        return new Proxy(real, {
+          get(target, prop) {
+            if (prop === 'upload') return uploadSpy
+            const value = Reflect.get(target, prop)
+            return typeof value === 'function' ? value.bind(target) : value
+          },
+        }) as any
+      }
+      return real
+    })
 
     try {
       const result = await createPropertyCore(client, {

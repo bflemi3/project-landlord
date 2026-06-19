@@ -24,12 +24,12 @@ export function ComponentPreview({
   return (
     <div className="h-svh overflow-y-auto">
       {/* Header bar */}
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-card/80 px-6 py-3 backdrop-blur-lg">
+      <div className="border-border bg-card/80 sticky top-0 z-10 flex items-center justify-between border-b px-6 py-3 backdrop-blur-lg">
         <div>
-          <h1 className="text-sm font-bold text-foreground">{title}</h1>
-          <p className="text-xs text-muted-foreground">{description}</p>
+          <h1 className="text-foreground text-sm font-bold">{title}</h1>
+          <p className="text-muted-foreground text-xs">{description}</p>
         </div>
-        <div className="flex rounded-md border border-border bg-secondary/50 p-0.5">
+        <div className="border-border bg-secondary/50 flex rounded-md border p-0.5">
           <button
             onClick={() => setViewport('mobile')}
             className={`rounded px-2 py-1 text-xs font-medium transition-colors ${
@@ -93,10 +93,8 @@ function VariantBlock({ variant, width }: { variant: Variant; width: number }) {
   return (
     <div className="flex justify-center">
       <div style={{ width }}>
-        <p className="mb-2 text-xs font-medium text-muted-foreground">{variant.label}</p>
-        <div
-          className="overflow-hidden rounded-xl border border-border shadow-sm transition-all duration-300"
-        >
+        <p className="text-muted-foreground mb-2 text-xs font-medium">{variant.label}</p>
+        <div className="border-border overflow-hidden rounded-xl border shadow-sm transition-all duration-300">
           <iframe
             ref={iframeRef}
             src={variant.frameUrl}

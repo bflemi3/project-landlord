@@ -127,9 +127,7 @@ function normalizeContractDates(
   return { start, end }
 }
 
-function normalizeRentAdjustment(
-  raw: LlmRaw['rentAdjustment'],
-): ContractRentAdjustment | null {
+function normalizeRentAdjustment(raw: LlmRaw['rentAdjustment']): ContractRentAdjustment | null {
   if (raw == null) return null
   return {
     date: strOrNull(raw.date),

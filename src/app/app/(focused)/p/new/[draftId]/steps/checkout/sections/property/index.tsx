@@ -41,11 +41,7 @@ import {
   usePropertyCreationStoreApi,
   useIsExtracted,
 } from '../../../../state/use-property-creation'
-import {
-  clearFieldServerError,
-  setAllTouched,
-  type PropertyTouched,
-} from './state'
+import { clearFieldServerError, setAllTouched, type PropertyTouched } from './state'
 import { validateProperty as validatePropertyParse } from './validation'
 import { useCheckoutContext } from '../../checkout-context'
 import { Section } from '../../section'
@@ -70,12 +66,8 @@ export function PropertySection() {
   const actions = usePropertyCreationActions()
   const { setSectionData, setServerErrors } = actions
   const storeApi = usePropertyCreationStoreApi()
-  const values = usePropertyCreationState(
-    (s) => s.sectionData.property as PropertyInput,
-  )
-  const touched = usePropertyCreationState(
-    (s) => s.sectionTouched.property as PropertyTouched,
-  )
+  const values = usePropertyCreationState((s) => s.sectionData.property as PropertyInput)
+  const touched = usePropertyCreationState((s) => s.sectionTouched.property as PropertyTouched)
   // Cached parse — shared with the section's status badge and summary panel.
   const parseResult = usePropertyCreationState((s) => {
     const slice = s.sectionData.property as PropertyInput | undefined
@@ -178,7 +170,14 @@ export function PropertySection() {
       : null
 
     return [type, address].filter(Boolean).join(' · ')
-  }, [values.street, values.number, values.complement, values.country_code, values.property_type, tProperties])
+  }, [
+    values.street,
+    values.number,
+    values.complement,
+    values.country_code,
+    values.property_type,
+    tProperties,
+  ])
 
   const handlePostalCodeChange = useCallback(
     (formatted: string) => {
@@ -211,10 +210,7 @@ export function PropertySection() {
     [setSectionData, setServerErrors],
   )
 
-  function setField<K extends keyof PropertyInput>(
-    key: K,
-    next: PropertyInput[K],
-  ) {
+  function setField<K extends keyof PropertyInput>(key: K, next: PropertyInput[K]) {
     setServerErrors('property', clearFieldServerError(key))
     setSectionData<PropertyInput>('property', (prev) => ({
       ...(prev as PropertyInput),
@@ -243,11 +239,7 @@ export function PropertySection() {
 
   // 10. Return
   return (
-    <Section
-      id={SECTION_ID}
-      onFirstVisit={onFirstVisit}
-      onLeave={promoteAllTouched}
-    >
+    <Section id={SECTION_ID} onFirstVisit={onFirstVisit} onLeave={promoteAllTouched}>
       <Section.Header ref={registerHeaderRef(SECTION_ID)}>
         <Section.Icon>
           <ICON />
@@ -284,20 +276,14 @@ export function PropertySection() {
               }}
             />
             {hasPropertyTypeError && (
-              <FieldError id="property-type-error">
-                {tProperties(propertyTypeError!)}
-              </FieldError>
+              <FieldError id="property-type-error">{tProperties(propertyTypeError!)}</FieldError>
             )}
           </Field>
 
           {/* 2. Property name */}
           <Field data-invalid={hasNameError || undefined}>
-            <FieldLabel htmlFor="name">
-              {tProperties('propertyName')}
-            </FieldLabel>
-            <FieldDescription id="name-hint">
-                {tProperties('propertyNameHint')}
-            </FieldDescription>
+            <FieldLabel htmlFor="name">{tProperties('propertyName')}</FieldLabel>
+            <FieldDescription id="name-hint">{tProperties('propertyNameHint')}</FieldDescription>
             <Input
               id="name"
               name="name"
@@ -309,11 +295,7 @@ export function PropertySection() {
               aria-invalid={hasNameError}
               aria-describedby={hasNameError ? 'name-error' : 'name-hint'}
             />
-            {hasNameError && (
-              <FieldError id="name-error">
-                {tProperties(nameError!)}
-              </FieldError>
-            )}
+            {hasNameError && <FieldError id="name-error">{tProperties(nameError!)}</FieldError>}
           </Field>
 
           {/* 3. CEP */}
@@ -327,22 +309,15 @@ export function PropertySection() {
               errorId="postal_code-error"
             />
             {hasPostalCodeError && (
-              <FieldError id="postal_code-error">
-                {tProperties(postalCodeError!)}
-              </FieldError>
+              <FieldError id="postal_code-error">{tProperties(postalCodeError!)}</FieldError>
             )}
           </Field>
 
           {/* 4. Street + Number */}
           <FieldSet>
-            <FieldLegend className="sr-only">
-              {tProperties('streetAddressGroupLegend')}
-            </FieldLegend>
+            <FieldLegend className="sr-only">{tProperties('streetAddressGroupLegend')}</FieldLegend>
             <FieldRow columns={3} breakpoint="md">
-              <Field
-                className="md:col-span-2"
-                data-invalid={hasStreetError || undefined}
-              >
+              <Field className="md:col-span-2" data-invalid={hasStreetError || undefined}>
                 <FieldLabel htmlFor="street">
                   {tProperties('street')}
                   <AutoFilledIndicator path="property.street" />
@@ -359,9 +334,7 @@ export function PropertySection() {
                   aria-describedby={hasStreetError ? 'street-error' : undefined}
                 />
                 {hasStreetError && (
-                  <FieldError id="street-error">
-                    {tProperties(streetError!)}
-                  </FieldError>
+                  <FieldError id="street-error">{tProperties(streetError!)}</FieldError>
                 )}
               </Field>
 
@@ -382,9 +355,7 @@ export function PropertySection() {
                   aria-describedby={hasNumberError ? 'number-error' : undefined}
                 />
                 {hasNumberError && (
-                  <FieldError id="number-error">
-                    {tProperties(numberError!)}
-                  </FieldError>
+                  <FieldError id="number-error">{tProperties(numberError!)}</FieldError>
                 )}
               </Field>
             </FieldRow>
@@ -408,9 +379,7 @@ export function PropertySection() {
               aria-describedby={hasComplementError ? 'complement-error' : undefined}
             />
             {hasComplementError && (
-              <FieldError id="complement-error">
-                {tProperties(complementError!)}
-              </FieldError>
+              <FieldError id="complement-error">{tProperties(complementError!)}</FieldError>
             )}
           </Field>
 
@@ -432,22 +401,15 @@ export function PropertySection() {
               aria-describedby={hasNeighborhoodError ? 'neighborhood-error' : undefined}
             />
             {hasNeighborhoodError && (
-              <FieldError id="neighborhood-error">
-                {tProperties(neighborhoodError!)}
-              </FieldError>
+              <FieldError id="neighborhood-error">{tProperties(neighborhoodError!)}</FieldError>
             )}
           </Field>
 
           {/* 7. City + State */}
           <FieldSet>
-            <FieldLegend className="sr-only">
-              {tProperties('cityStateGroupLegend')}
-            </FieldLegend>
+            <FieldLegend className="sr-only">{tProperties('cityStateGroupLegend')}</FieldLegend>
             <FieldRow columns={3} breakpoint="md">
-              <Field
-                className="md:col-span-2"
-                data-invalid={hasCityError || undefined}
-              >
+              <Field className="md:col-span-2" data-invalid={hasCityError || undefined}>
                 <FieldLabel htmlFor="city">
                   {tProperties('city')}
                   <AutoFilledIndicator path="property.city" />
@@ -463,11 +425,7 @@ export function PropertySection() {
                   aria-invalid={hasCityError}
                   aria-describedby={hasCityError ? 'city-error' : undefined}
                 />
-                {hasCityError && (
-                  <FieldError id="city-error">
-                    {tProperties(cityError!)}
-                  </FieldError>
-                )}
+                {hasCityError && <FieldError id="city-error">{tProperties(cityError!)}</FieldError>}
               </Field>
 
               <Field data-invalid={hasStateError || undefined}>
@@ -499,9 +457,7 @@ export function PropertySection() {
                   </SelectContent>
                 </Select>
                 {hasStateError && (
-                  <FieldError id="state-error">
-                    {tProperties(stateError!)}
-                  </FieldError>
+                  <FieldError id="state-error">{tProperties(stateError!)}</FieldError>
                 )}
               </Field>
             </FieldRow>
@@ -525,21 +481,13 @@ export function PropertySectionSkeleton({ active = false }: { active?: boolean }
 
 export function PropertySummaryRow() {
   const t = useTranslations('propertyCreation.checkout.property')
-  const values = usePropertyCreationState(
-    (s) => s.sectionData.property as PropertyInput,
-  )
-  
+  const values = usePropertyCreationState((s) => s.sectionData.property as PropertyInput)
+
   const detail = formatPropertyName({
     street: values.street,
     number: values.number,
     country_code: values.country_code,
   })
 
-  return (
-    <SummaryRow
-      sectionId={SECTION_ID}
-      title={t('title')}
-      detail={detail || null}
-    />
-  )
+  return <SummaryRow sectionId={SECTION_ID} title={t('title')} detail={detail || null} />
 }

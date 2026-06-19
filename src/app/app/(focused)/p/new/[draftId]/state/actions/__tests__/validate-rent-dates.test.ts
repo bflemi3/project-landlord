@@ -17,11 +17,7 @@ const VALID_DATES = {
 
 describe('validateRentDatesCore', () => {
   it('requires rent amount, start_date, and end_date on the contract path', async () => {
-    const result = await validateRentDatesCore(
-      supabase,
-      defaultRentDatesInput(),
-      'contract',
-    )
+    const result = await validateRentDatesCore(supabase, defaultRentDatesInput(), 'contract')
 
     expect(result).toEqual({
       ok: false,
@@ -36,11 +32,7 @@ describe('validateRentDatesCore', () => {
   })
 
   it('allows a blank rent-dates slice on the no-contract path', async () => {
-    const result = await validateRentDatesCore(
-      supabase,
-      defaultRentDatesInput(),
-      'no_contract',
-    )
+    const result = await validateRentDatesCore(supabase, defaultRentDatesInput(), 'no_contract')
 
     expect(result).toEqual({ ok: true })
   })

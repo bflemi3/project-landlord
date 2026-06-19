@@ -84,15 +84,11 @@ export default function ProviderDetailPage({
         <div>
           <h1 className="text-xl font-semibold">{providerName}</h1>
           {provider?.display_name && provider.name !== provider.display_name && (
-            <p className="mt-0.5 text-sm text-muted-foreground">{provider.name}</p>
+            <p className="text-muted-foreground mt-0.5 text-sm">{provider.name}</p>
           )}
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger
-            render={
-              <Button variant="destructive" type="button" />
-            }
-          >
+          <DialogTrigger render={<Button variant="destructive" type="button" />}>
             <Trash2 />
             Delete provider
           </DialogTrigger>
@@ -100,19 +96,13 @@ export default function ProviderDetailPage({
             <DialogHeader>
               <DialogTitle>Delete {providerName}?</DialogTitle>
               <DialogDescription>
-                This will permanently delete the provider and all related data including
-                profiles, test bills, and charge definitions. This action cannot be undone.
+                This will permanently delete the provider and all related data including profiles,
+                test bills, and charge definitions. This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <DialogClose render={<Button variant="outline" />}>
-                Cancel
-              </DialogClose>
-              <Button
-                variant="destructive"
-                onClick={handleDelete}
-                loading={deleting}
-              >
+              <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+              <Button variant="destructive" onClick={handleDelete} loading={deleting}>
                 Delete provider
               </Button>
             </DialogFooter>
@@ -120,7 +110,11 @@ export default function ProviderDetailPage({
         </Dialog>
       </div>
 
-      {error && <div className="mb-6"><ErrorBox message={error} /></div>}
+      {error && (
+        <div className="mb-6">
+          <ErrorBox message={error} />
+        </div>
+      )}
 
       <EmptyState>
         <EmptyStateIcon>

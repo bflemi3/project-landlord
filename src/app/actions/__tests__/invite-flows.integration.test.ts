@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
-import { createTestUser, cleanupTestUser, getAdminClient, createTestProperty } from '@/test/supabase'
+import {
+  createTestUser,
+  cleanupTestUser,
+  getAdminClient,
+  createTestProperty,
+} from '@/test/supabase'
 import { createClient } from '@supabase/supabase-js'
 import { inviteTenantCore } from '@/data/properties/actions/invite-tenant'
 import { generateInviteCode } from '@/data/invitations/generate-invite-code'
@@ -10,10 +15,7 @@ import { generateInviteCode } from '@/data/invitations/generate-invite-code'
 vi.mock('@/lib/supabase/server', () => ({
   createClient: async () => {
     const { createClient: createSupabaseClient } = await import('@supabase/supabase-js')
-    return createSupabaseClient(
-      'http://127.0.0.1:54321',
-      process.env.SUPABASE_ANON_KEY!,
-    )
+    return createSupabaseClient('http://127.0.0.1:54321', process.env.SUPABASE_ANON_KEY!)
   },
 }))
 
@@ -503,7 +505,9 @@ describe('resend tenant invite', () => {
 
     // Old code should no longer validate
     const anon = createClient(SUPABASE_URL, process.env.SUPABASE_ANON_KEY!)
-    const { data: oldValid } = await anon.rpc('validate_invite_code', { invite_code: original!.code! })
+    const { data: oldValid } = await anon.rpc('validate_invite_code', {
+      invite_code: original!.code!,
+    })
     expect(oldValid).toBe(false)
 
     // New code should validate

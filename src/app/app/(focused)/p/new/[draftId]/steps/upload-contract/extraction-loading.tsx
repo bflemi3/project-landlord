@@ -26,16 +26,9 @@ function SkeletonSection({
       <div className="space-y-3">
         {Array.from({ length: rows }).map((_, i) => (
           <div key={i} className="flex items-center gap-3">
-            <Skeleton
-              className={cn(
-                'size-10 shrink-0 rounded-2xl',
-                !animate && 'animate-none',
-              )}
-            />
+            <Skeleton className={cn('size-10 shrink-0 rounded-2xl', !animate && 'animate-none')} />
             <div className="min-w-0 flex-1 space-y-2">
-              <Skeleton
-                className={cn('h-3 w-24 rounded-full', !animate && 'animate-none')}
-              />
+              <Skeleton className={cn('h-3 w-24 rounded-full', !animate && 'animate-none')} />
               <Skeleton
                 className={cn(
                   'h-4 rounded-full',

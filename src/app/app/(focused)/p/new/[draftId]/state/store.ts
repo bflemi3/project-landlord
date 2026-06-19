@@ -5,10 +5,7 @@ import {
   propertyCreationWizardKey,
   type SectionStatus,
 } from './persistence'
-import {
-  defaultSectionServerErrors,
-  defaultSectionTouched,
-} from './section-defaults'
+import { defaultSectionServerErrors, defaultSectionTouched } from './section-defaults'
 import { createIdbStorage } from './idb-storage'
 import type { ContractExtractionResult } from '@/lib/contract-extraction/types'
 import {
@@ -18,10 +15,7 @@ import {
   type CheckoutPath,
   type SectionId,
 } from './registry'
-import {
-  defaultSectionData,
-  mergeExtractionIntoSectionData,
-} from './extraction-seeding'
+import { defaultSectionData, mergeExtractionIntoSectionData } from './extraction-seeding'
 import { fetchProfile } from '@/data/profiles/shared'
 import { createClient } from '@/lib/supabase/client'
 import type { TaxIdInput } from '../steps/checkout/sections/tax-id/schemas'
@@ -83,11 +77,7 @@ export interface PropertyCreationStateShape {
 
 export interface PropertyCreationActions {
   goToStep: (step: 1 | 2) => void
-  setContractFile: (
-    file: File,
-    name: string,
-    type: 'pdf' | 'docx',
-  ) => void
+  setContractFile: (file: File, name: string, type: 'pdf' | 'docx') => void
   clearContractFile: () => void
   commitContractOutput: (
     next: UpdaterOrValue<{
@@ -102,14 +92,10 @@ export interface PropertyCreationActions {
   setSectionData: <T>(id: SectionId, next: UpdaterOrValue<T>) => void
   updateSectionData: <T>(id: SectionId, partial: Partial<T>) => void
   setTenantsListUI: (
-    next:
-      | Partial<TenantsListUI>
-      | ((prev: TenantsListUI) => Partial<TenantsListUI>),
+    next: Partial<TenantsListUI> | ((prev: TenantsListUI) => Partial<TenantsListUI>),
   ) => void
   setExpensesListUI: (
-    next:
-      | Partial<ExpensesListUI>
-      | ((prev: ExpensesListUI) => Partial<ExpensesListUI>),
+    next: Partial<ExpensesListUI> | ((prev: ExpensesListUI) => Partial<ExpensesListUI>),
   ) => void
   /** Updates a section's touched state via an opaque updater. The updater
    * receives only that section's touched value — the store never inspects
@@ -223,9 +209,7 @@ function isRequired(id: SectionId, path: CheckoutPath | null): boolean {
 // persisted slice is empty. Runs from `onRehydrateStorage` after every
 // hydration; idempotent thanks to the early return when the slice already
 // holds a value.
-async function seedTaxIdFromProfileIfMissing(
-  state: PropertyCreationStoreValue,
-): Promise<void> {
+async function seedTaxIdFromProfileIfMissing(state: PropertyCreationStoreValue): Promise<void> {
   const slice = state.sectionData['tax-id'] as TaxIdInput | undefined
   if (slice?.tax_id) return
 
@@ -348,10 +332,7 @@ function buildPersistOptions(
       // Backfill: persisted state from before extraction seeding shipped may
       // be missing slices populated from contract extraction. Seed only absent
       // slices so existing user-edited slices are preserved.
-      const sectionData = backfillMissingExtractionSections(
-        baseSectionData,
-        persisted,
-      )
+      const sectionData = backfillMissingExtractionSections(baseSectionData, persisted)
 
       // Resume-mid-extraction sanity check: if persisted state shows the
       // user reached step 2 with a contract file but no extractionResult
@@ -499,14 +480,10 @@ export function createPropertyCreationStore(draftId: string) {
             // "this is the new extraction" and overwrites the affected
             // slices. The no-contract path or a null extraction leaves
             // `sectionData` untouched.
-            const switchingAwayFromContract =
-              state.path === 'contract' && next.path !== 'contract'
+            const switchingAwayFromContract = state.path === 'contract' && next.path !== 'contract'
             const sectionData =
               next.extractionResult !== null && next.path === 'contract'
-                ? mergeExtractionIntoSectionData(
-                    state.sectionData,
-                    next.extractionResult,
-                  )
+                ? mergeExtractionIntoSectionData(state.sectionData, next.extractionResult)
                 : switchingAwayFromContract
                   ? defaultSectionData()
                   : state.sectionData
@@ -518,8 +495,7 @@ export function createPropertyCreationStore(draftId: string) {
               ? defaultTenantsListUI()
               : next.extractionResult !== null && next.path === 'contract'
                 ? {
-                    activeTenantId:
-                      (sectionData.tenants as TenantRow[])[0]?.id ?? null,
+                    activeTenantId: (sectionData.tenants as TenantRow[])[0]?.id ?? null,
                   }
                 : state.tenantsListUI
             const expensesListUI = switchingAwayFromContract

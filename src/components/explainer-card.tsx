@@ -13,7 +13,7 @@ function ExplainerCard({ className, ...props }: React.ComponentProps<'section'>)
         // full-alpha `muted` barely separates against the parent. Tinting with
         // `foreground` at low alpha lifts past that ceiling — `/10` gives a
         // clearly visible warm-white wash without reading as an elevated card.
-        'bg-muted/40 dark:bg-foreground/10 flex flex-col items-center gap-6 rounded-card px-6 py-8 text-center md:px-10 md:py-10',
+        'bg-muted/40 dark:bg-foreground/10 rounded-card flex flex-col items-center gap-6 px-6 py-8 text-center md:p-10',
         className,
       )}
       {...props}
@@ -35,7 +35,7 @@ function ExplainerCardDescription({ className, ...props }: React.ComponentProps<
   return (
     <p
       data-slot="explainer-card-description"
-      className={cn('text-muted-foreground text-sm leading-relaxed', className)}
+      className={cn('text-muted-foreground text-sm/relaxed', className)}
       {...props}
     />
   )
@@ -68,11 +68,7 @@ function ExplainerCardList({ className, ...props }: React.ComponentProps<'ul'>) 
   )
 }
 
-function ExplainerCardListItem({
-  children,
-  className,
-  ...props
-}: React.ComponentProps<'li'>) {
+function ExplainerCardListItem({ children, className, ...props }: React.ComponentProps<'li'>) {
   return (
     <li
       data-slot="explainer-card-list-item"

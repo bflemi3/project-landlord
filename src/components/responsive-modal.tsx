@@ -3,18 +3,8 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog'
-import {
-  Sheet,
-  SheetContent,
-  SheetTitle,
-  SheetDescription,
-} from '@/components/ui/sheet'
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Sheet, SheetContent, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 
 // =============================================================================
 // Context — shares state between composable parts
@@ -48,12 +38,7 @@ interface ResponsiveModalProps {
   className?: string
 }
 
-export function ResponsiveModal({
-  open,
-  onOpenChange,
-  children,
-  className,
-}: ResponsiveModalProps) {
+export function ResponsiveModal({ open, onOpenChange, children, className }: ResponsiveModalProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const [contentScrollable, setContentScrollable] = React.useState(false)
   const [titleCount, setTitleCount] = React.useState(0)
@@ -88,13 +73,12 @@ export function ResponsiveModal({
 
   const inner = (
     <ResponsiveModalContext.Provider value={contextValue}>
-      {needsFallbackTitle && (
-        isDesktop ? (
+      {needsFallbackTitle &&
+        (isDesktop ? (
           <DialogTitle className="sr-only">Dialog</DialogTitle>
         ) : (
           <SheetTitle className="sr-only">Dialog</SheetTitle>
-        )
-      )}
+        ))}
       {children}
     </ResponsiveModalContext.Provider>
   )
@@ -104,7 +88,7 @@ export function ResponsiveModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent
           className={cn(
-            'flex max-h-[85svh] flex-col gap-0 overflow-hidden rounded-card bg-card p-6 text-base text-foreground shadow-card',
+            'rounded-card bg-card text-foreground shadow-card flex max-h-[85svh] flex-col gap-0 overflow-hidden p-6 text-base',
             className ?? 'sm:max-w-lg',
           )}
         >
@@ -119,7 +103,7 @@ export function ResponsiveModal({
       <SheetContent
         side="bottom"
         className={cn(
-          'flex max-h-[85svh] flex-col gap-0 overflow-hidden rounded-t-3xl bg-background px-6 pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-foreground',
+          'bg-background text-foreground flex max-h-[85svh] flex-col gap-0 overflow-hidden rounded-t-3xl pt-6 pb-[max(1.5rem,env(safe-area-inset-bottom))]',
           className,
         )}
       >
@@ -149,11 +133,7 @@ function ResponsiveModalHeader({ className, children, ...props }: React.Componen
 // Title — wraps Dialog/Sheet Title primitive with title-scale typography
 // =============================================================================
 
-function ResponsiveModalTitle({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<'h2'>) {
+function ResponsiveModalTitle({ className, children, ...props }: React.ComponentProps<'h2'>) {
   const { isDesktop, registerTitle, unregisterTitle } = React.useContext(ResponsiveModalContext)
 
   React.useEffect(() => {
@@ -181,11 +161,7 @@ function ResponsiveModalTitle({
 // Description — wraps Dialog/Sheet Description primitive with body typography
 // =============================================================================
 
-function ResponsiveModalDescription({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<'p'>) {
+function ResponsiveModalDescription({ className, children, ...props }: React.ComponentProps<'p'>) {
   const { isDesktop } = React.useContext(ResponsiveModalContext)
   const classes = cn('text-base text-muted-foreground', className)
 

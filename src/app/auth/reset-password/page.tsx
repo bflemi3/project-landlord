@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Wordmark } from '@/components/wordmark'
-import { InfoBox, InfoBoxContent } from '@/components/info-box'
+import { Alert, AlertBody } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -45,19 +45,19 @@ export default function ResetPasswordPage() {
       {/* Header */}
       <div className="pb-10 text-center">
         <Wordmark />
-        <p className="mt-3 text-base text-muted-foreground">{t('tagline')}</p>
+        <p className="text-muted-foreground mt-3 text-base">{t('tagline')}</p>
       </div>
 
       <h1 className="mb-2 text-center text-2xl font-bold">{t('setNewPassword')}</h1>
-      <p className="mb-8 text-center text-sm text-muted-foreground">
+      <p className="text-muted-foreground mb-8 text-center text-sm">
         {t('setNewPasswordDescription')}
       </p>
 
       {/* Error */}
       {error && (
-        <InfoBox variant="destructive" className="mb-6">
-          <InfoBoxContent>{error}</InfoBoxContent>
-        </InfoBox>
+        <Alert variant="destructive" className="mb-6">
+          <AlertBody>{error}</AlertBody>
+        </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -95,12 +95,7 @@ export default function ResetPasswordPage() {
           />
         </div>
 
-        <Button
-          type="submit"
-          disabled={loading}
-          className="h-12 w-full rounded-2xl"
-          size="lg"
-        >
+        <Button type="submit" disabled={loading} className="h-12 w-full rounded-2xl" size="lg">
           {loading ? <Loader2 className="size-5 animate-spin" /> : null}
           {t('updatePassword')}
         </Button>

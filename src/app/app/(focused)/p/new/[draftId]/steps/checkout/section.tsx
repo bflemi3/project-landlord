@@ -96,13 +96,7 @@ interface SectionProps {
   onLeave?: () => void
 }
 
-function Section({
-  children,
-  className,
-  id,
-  onFirstVisit,
-  onLeave,
-}: SectionProps) {
+function Section({ children, className, id, onFirstVisit, onLeave }: SectionProps) {
   const isActive = useIsSectionActive(id)
   const isUpNext = useIsSectionUpNext(id)
   const status = useSectionStatus(id)
@@ -173,7 +167,7 @@ function SectionHeader({ children, className, ref }: SectionHeaderProps) {
         className={cn(
           // `p-6` on the trigger (not the parent card) so the entire
           // collapsed-card area is the click target.
-          'flex w-full scroll-mt-32 items-start gap-4 rounded-card p-6 text-left',
+          'rounded-card flex w-full scroll-mt-32 items-start gap-4 p-6 text-left',
           'focus-visible:ring-ring/50 outline-none focus-visible:ring-3',
           'disabled:cursor-default aria-disabled:cursor-default',
           className,
@@ -332,13 +326,7 @@ function SectionStatus({
 // Section.Summary — the filled-in data shown when a section is completed and
 // collapsed. Replaces the Subtitle's role in the header below the icon column.
 
-function SectionSummary({
-  children,
-  className,
-}: {
-  children: ReactNode
-  className?: string
-}) {
+function SectionSummary({ children, className }: { children: ReactNode; className?: string }) {
   const id = useSectionId('Summary')
   const isActive = useIsSectionActive(id)
   const status = useSectionStatus(id)
@@ -366,7 +354,7 @@ function SectionBody({ children, className }: { children: ReactNode; className?:
       // animation-type detection fails when both transition and animation
       // are declared on the Panel — leaving `--accordion-panel-height`
       // unmeasured and the keyframes inert.
-      className="data-open:animate-accordion-down data-closed:animate-accordion-up [--tw-duration:300ms] overflow-clip [overflow-clip-margin:6px]"
+      className="data-open:animate-accordion-down data-closed:animate-accordion-up overflow-clip [--tw-duration:300ms] [overflow-clip-margin:6px]"
     >
       <div className={cn('flex flex-col gap-4 px-6 pb-4', className)}>{children}</div>
     </AccordionPrimitive.Panel>

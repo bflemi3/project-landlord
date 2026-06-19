@@ -45,10 +45,7 @@ export function WizardHydrationFallback() {
 
       <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
         <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
-          <div
-            data-slot="wizard-hydration-fallback"
-            className="flex flex-col gap-8 pt-8"
-          >
+          <div data-slot="wizard-hydration-fallback" className="flex flex-col gap-8 pt-8">
             <div className="flex flex-col gap-2">
               <Skeleton className="h-9 w-3/4 max-w-md rounded-full" />
               <Skeleton className="h-5 w-full max-w-lg rounded-full" />

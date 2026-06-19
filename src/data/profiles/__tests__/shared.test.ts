@@ -2,7 +2,11 @@ import { describe, it, expect } from 'vitest'
 import { fetchProfile, profileQueryKey } from '../shared'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
 
-function mockSupabase(overrides: { user?: unknown; profileData?: unknown; profileError?: unknown }) {
+function mockSupabase(overrides: {
+  user?: unknown
+  profileData?: unknown
+  profileError?: unknown
+}) {
   return {
     auth: {
       getUser: () => Promise.resolve({ data: { user: overrides.user ?? null } }),
@@ -10,10 +14,11 @@ function mockSupabase(overrides: { user?: unknown; profileData?: unknown; profil
     from: () => ({
       select: () => ({
         eq: () => ({
-          single: () => Promise.resolve({
-            data: overrides.profileData ?? null,
-            error: overrides.profileError ?? null,
-          }),
+          single: () =>
+            Promise.resolve({
+              data: overrides.profileData ?? null,
+              error: overrides.profileError ?? null,
+            }),
         }),
       }),
     }),
@@ -27,10 +32,12 @@ describe('fetchProfile', () => {
   })
 
   it('returns null on profile query error', async () => {
-    const result = await fetchProfile(mockSupabase({
-      user: { id: 'u1' },
-      profileError: { message: 'fail' },
-    }))
+    const result = await fetchProfile(
+      mockSupabase({
+        user: { id: 'u1' },
+        profileError: { message: 'fail' },
+      }),
+    )
     expect(result).toBeNull()
   })
 
@@ -50,10 +57,12 @@ describe('fetchProfile', () => {
       tax_id: '040.032.329-09',
       updated_at: '2026-01-01T00:00:00Z',
     }
-    const result = await fetchProfile(mockSupabase({
-      user: { id: 'u1' },
-      profileData: row,
-    }))
+    const result = await fetchProfile(
+      mockSupabase({
+        user: { id: 'u1' },
+        profileData: row,
+      }),
+    )
     expect(result).toEqual(row)
   })
 })

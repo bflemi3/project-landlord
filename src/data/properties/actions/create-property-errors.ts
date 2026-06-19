@@ -13,9 +13,7 @@ export type { GlobalError } from './server-errors'
  *  it here is a type error. */
 export type SubmitGlobalErrorCode = GlobalError['code']
 
-export type SubmitSectionErrorCode =
-  | 'tax_id_conflict'
-  | 'expense_bundle_invalid_reference'
+export type SubmitSectionErrorCode = 'tax_id_conflict' | 'expense_bundle_invalid_reference'
 
 /** Tagged exception messages the `create_property` RPC raises (SQLSTATE
  *  `P0001`). The action's catch block dispatches off this set. */
@@ -28,8 +26,6 @@ export const RPC_TAGGED_EXCEPTIONS = [
 
 export type RpcTaggedException = (typeof RPC_TAGGED_EXCEPTIONS)[number]
 
-export function isRpcTaggedException(
-  message: string,
-): message is RpcTaggedException {
+export function isRpcTaggedException(message: string): message is RpcTaggedException {
   return (RPC_TAGGED_EXCEPTIONS as readonly string[]).includes(message)
 }

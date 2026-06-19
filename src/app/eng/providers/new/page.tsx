@@ -15,12 +15,15 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { InfoBox, InfoBoxIcon, InfoBoxContent } from '@/components/info-box'
+import { Alert, AlertBody } from '@/components/ui/alert'
 import { ErrorBox } from '@/components/error-box'
 import { lookupCnpjAction, type LookupCnpjResult } from '@/data/providers/actions/lookup-cnpj'
 import { extractCnpjsFromBill } from '@/data/providers/actions/extract-cnpjs-from-bill'
 import { createProvider, type CreateProviderState } from '@/data/providers/actions/create-provider'
-import { findProviderByTaxId, type ExistingProvider } from '@/data/providers/actions/find-provider-by-tax-id'
+import {
+  findProviderByTaxId,
+  type ExistingProvider,
+} from '@/data/providers/actions/find-provider-by-tax-id'
 import Link from 'next/link'
 
 type LookupPhase = 'idle' | 'looking_up' | 'found' | 'not_found' | 'error' | 'duplicate'
@@ -151,9 +154,7 @@ export default function NewProviderPage() {
 
     // Multiple CNPJs — look up all in parallel, then let the engineer choose
     setBillPhase('selecting_cnpj')
-    const results = await Promise.all(
-      extractResult.cnpjs.map((cnpj) => lookupCnpjAction(cnpj)),
-    )
+    const results = await Promise.all(extractResult.cnpjs.map((cnpj) => lookupCnpjAction(cnpj)))
     setCnpjOptions(results)
   }
 
@@ -188,7 +189,7 @@ export default function NewProviderPage() {
     <div className="mx-auto max-w-2xl">
       <div className="mb-8">
         <h1 className="text-xl font-semibold">Add Provider</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-1 text-sm">
           Enter a tax ID or upload a bill to look up company information.
         </p>
       </div>
@@ -233,34 +234,29 @@ export default function NewProviderPage() {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-muted/50 px-4 py-5 text-sm text-muted-foreground transition-colors hover:border-primary/30 hover:bg-muted/70"
+                className="border-border bg-muted/50 text-muted-foreground hover:border-primary/30 hover:bg-muted/70 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed px-4 py-5 text-sm transition-colors"
               >
                 <Upload className="size-4" />
                 Upload PDF to extract tax ID
               </button>
             ) : (
-              <div className="rounded-2xl border border-border p-3">
+              <div className="border-border rounded-2xl border p-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                    <FileText className="size-4 text-muted-foreground" />
+                  <div className="bg-secondary flex size-10 shrink-0 items-center justify-center rounded-lg">
+                    <FileText className="text-muted-foreground size-4" />
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{billFile.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {billPhase === 'extracting' && 'Extracting tax IDs...'}
                       {billPhase === 'selecting_cnpj' && 'Select a CNPJ below'}
                       {billPhase === 'done' && `${(billFile.size / 1024).toFixed(0)} KB`}
                     </p>
                   </div>
                   {billPhase === 'extracting' && (
-                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                    <Loader2 className="text-muted-foreground size-4 animate-spin" />
                   )}
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    type="button"
-                    onClick={handleClearBill}
-                  >
+                  <Button variant="secondary" size="icon" type="button" onClick={handleClearBill}>
                     <X />
                   </Button>
                 </div>
@@ -279,7 +275,7 @@ export default function NewProviderPage() {
               </div>
             )}
             {billMessage && !billError && (
-              <p className="mt-2 flex items-center gap-1.5 text-sm text-muted-foreground">
+              <p className="text-muted-foreground mt-2 flex items-center gap-1.5 text-sm">
                 <Info className="size-3.5 shrink-0" />
                 {billMessage}
               </p>
@@ -288,7 +284,7 @@ export default function NewProviderPage() {
 
           {/* CNPJ selection (when multiple found in bill) */}
           {billPhase === 'selecting_cnpj' && (
-            <section className="rounded-2xl border border-border p-4">
+            <section className="border-border rounded-2xl border p-4">
               <p className="mb-3 text-sm font-medium">
                 {cnpjOptions.length === 0
                   ? 'Looking up tax IDs found in the document...'
@@ -296,7 +292,7 @@ export default function NewProviderPage() {
               </p>
               {cnpjOptions.length === 0 ? (
                 <div className="flex items-center justify-center py-4">
-                  <Loader2 className="size-5 animate-spin text-muted-foreground" />
+                  <Loader2 className="text-muted-foreground size-5 animate-spin" />
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -308,21 +304,24 @@ export default function NewProviderPage() {
                         key={cnpj}
                         type="button"
                         onClick={() => handleCnpjSelect(result)}
-                        className="flex w-full items-start gap-3 rounded-xl border border-border px-4 py-3 text-left text-sm transition-colors hover:bg-muted/50"
+                        className="border-border hover:bg-muted/50 flex w-full items-start gap-3 rounded-xl border px-4 py-3 text-left text-sm transition-colors"
                       >
-                        <Building2 className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <Building2 className="text-muted-foreground mt-0.5 size-4 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <div className="flex items-baseline gap-2">
                             <span className="font-medium">
                               {info?.companyName ?? 'Unknown company'}
                             </span>
-                            <span className="font-mono text-xs text-muted-foreground">
+                            <span className="text-muted-foreground font-mono text-xs">
                               {formatCnpj(cnpj)}
                             </span>
                           </div>
                           {info && (
-                            <p className="mt-0.5 truncate text-muted-foreground">
-                              {[info.activityDescription, info.city && info.state ? `${info.city}, ${info.state}` : null]
+                            <p className="text-muted-foreground mt-0.5 truncate">
+                              {[
+                                info.activityDescription,
+                                info.city && info.state ? `${info.city}, ${info.state}` : null,
+                              ]
                                 .filter(Boolean)
                                 .join(' · ')}
                             </p>
@@ -343,18 +342,18 @@ export default function NewProviderPage() {
 
           {/* Lookup status messages */}
           {lookupPhase === 'not_found' && (
-            <InfoBox variant="warning">
-              <InfoBoxIcon><AlertCircle /></InfoBoxIcon>
-              <InfoBoxContent>
+            <Alert variant="warning">
+              <AlertCircle />
+              <AlertBody>
                 Company not found in public registries. You can fill in the details manually.
-              </InfoBoxContent>
-            </InfoBox>
+              </AlertBody>
+            </Alert>
           )}
 
           {lookupPhase === 'error' && (
-            <InfoBox variant="destructive">
-              <InfoBoxIcon><AlertCircle /></InfoBoxIcon>
-              <InfoBoxContent>
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertBody>
                 {lookupError}
                 <button
                   type="button"
@@ -363,25 +362,31 @@ export default function NewProviderPage() {
                 >
                   Retry
                 </button>
-              </InfoBoxContent>
-            </InfoBox>
+              </AlertBody>
+            </Alert>
           )}
 
           {/* Duplicate provider */}
           {lookupPhase === 'duplicate' && existingProvider && (
-            <section className="rounded-2xl border border-border p-4">
+            <section className="border-border rounded-2xl border p-4">
               <div className="mb-3 flex items-center gap-2">
                 <AlertCircle className="size-4 text-amber-600 dark:text-amber-400" />
-                <span className="text-sm font-medium">A provider with this tax ID already exists</span>
+                <span className="text-sm font-medium">
+                  A provider with this tax ID already exists
+                </span>
               </div>
-              <div className="mb-4 rounded-xl bg-muted/50 px-4 py-3">
-                <p className="font-medium">{existingProvider.display_name || existingProvider.name}</p>
-                <p className="mt-1 text-sm text-muted-foreground">
+              <div className="bg-muted/50 mb-4 rounded-xl px-4 py-3">
+                <p className="font-medium">
+                  {existingProvider.display_name || existingProvider.name}
+                </p>
+                <p className="text-muted-foreground mt-1 text-sm">
                   {[
                     existingProvider.tax_id && formatCnpj(existingProvider.tax_id),
                     existingProvider.email,
                     existingProvider.phone,
-                  ].filter(Boolean).join(' · ')}
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
                 </p>
               </div>
               <div className="flex gap-3">
@@ -424,14 +429,17 @@ export default function NewProviderPage() {
 
           {/* Company info from lookup (read-only) */}
           {lookupPhase === 'found' && lookupResult?.companyInfo && (
-            <InfoBox variant="success">
-              <InfoBoxIcon><CheckCircle2 /></InfoBoxIcon>
-              <InfoBoxContent>
+            <Alert variant="success">
+              <CheckCircle2 />
+              <AlertBody>
                 <p className="mb-2 font-medium">Company found</p>
                 <dl className="grid grid-cols-2 gap-x-6 gap-y-2">
                   <DetailItem label="Legal name" value={lookupResult.companyInfo.legalName} />
                   <DetailItem label="Trade name" value={lookupResult.companyInfo.companyName} />
-                  <DetailItem label="Activity" value={lookupResult.companyInfo.activityDescription} />
+                  <DetailItem
+                    label="Activity"
+                    value={lookupResult.companyInfo.activityDescription}
+                  />
                   <DetailItem
                     label="Location"
                     value={
@@ -447,13 +455,13 @@ export default function NewProviderPage() {
                     <DetailItem label="Phone (registry)" value={lookupResult.companyInfo.phone} />
                   )}
                 </dl>
-              </InfoBoxContent>
-            </InfoBox>
+              </AlertBody>
+            </Alert>
           )}
 
           {/* Editable provider fields */}
           {fieldsEnabled && (
-            <section className="space-y-4 border-t border-border pt-6">
+            <section className="border-border space-y-4 border-t pt-6">
               <h2 className="text-sm font-medium">Provider details</h2>
 
               <FieldGroup label="Name" required>
@@ -519,11 +527,9 @@ export default function NewProviderPage() {
               </div>
 
               {createState.errors?.name && (
-                <p className="text-sm text-destructive">{createState.errors.name}</p>
+                <p className="text-destructive text-sm">{createState.errors.name}</p>
               )}
-              {createState.errors?.general && (
-                <ErrorBox message={createState.errors.general} />
-              )}
+              {createState.errors?.general && <ErrorBox message={createState.errors.general} />}
 
               <div className="flex justify-end gap-3 pt-2">
                 <Button
@@ -556,7 +562,7 @@ function FieldGroup({
 }) {
   return (
     <div>
-      <label className="mb-1.5 block text-sm text-muted-foreground">
+      <label className="text-muted-foreground mb-1.5 block text-sm">
         {label}
         {required && <span className="text-destructive"> *</span>}
       </label>
@@ -570,7 +576,7 @@ function DetailItem({ label, value }: { label: string; value: string | null | un
   return (
     <div>
       <dt className="text-muted-foreground">{label}</dt>
-      <dd className="break-all font-medium">{value}</dd>
+      <dd className="font-medium break-all">{value}</dd>
     </div>
   )
 }

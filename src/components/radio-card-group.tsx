@@ -51,7 +51,7 @@ export const radioCardVariants = cva(
         // of label length. Used for compact, higher-count selections that
         // should feel like form controls rather than poster cards
         // (e.g. expense type).
-        chip: 'items-center justify-center gap-2 rounded-2xl px-3 py-3',
+        chip: 'items-center justify-center gap-2 rounded-2xl p-3 ',
       },
     },
     defaultVariants: { variant: 'card' },
@@ -74,8 +74,7 @@ export interface RadioCardOption<T extends string> {
   value: T
 }
 
-interface RadioCardGroupProps<T extends string>
-  extends VariantProps<typeof radioCardVariants> {
+interface RadioCardGroupProps<T extends string> extends VariantProps<typeof radioCardVariants> {
   options: readonly RadioCardOption<T>[]
   value: T | null
   className?: string

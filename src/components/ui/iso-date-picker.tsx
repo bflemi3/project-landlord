@@ -6,20 +6,10 @@ import { CalendarIcon } from 'lucide-react'
 import type { Locale as DayPickerLocale } from 'react-day-picker'
 import { enUS, es, ptBR } from 'react-day-picker/locale'
 
-import {
-  formatIsoDate,
-  formatLocaleDate,
-  parseIsoDate,
-  parseLocaleDate,
-} from '@/lib/iso-date'
+import { formatIsoDate, formatLocaleDate, parseIsoDate, parseLocaleDate } from '@/lib/iso-date'
 import { type Locale } from '@/i18n/routing'
 import { Calendar } from './calendar'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from './input-group'
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from './input-group'
 import { ResponsivePopover } from '@/components/responsive-popover'
 
 // react-day-picker localization for every locale next-intl ships. Typed as
@@ -105,9 +95,7 @@ export function IsoDatePicker({
   // to today otherwise. Typing a parseable date scrolls the calendar to that
   // month so the popover opens on the right page. Same set-state-during-
   // render pattern as `text` for resyncing to external value changes.
-  const [month, setMonth] = useState<Date | undefined>(
-    () => parseIsoDate(value) ?? new Date(),
-  )
+  const [month, setMonth] = useState<Date | undefined>(() => parseIsoDate(value) ?? new Date())
   const [monthSyncValue, setMonthSyncValue] = useState(value)
   if (monthSyncValue !== value) {
     setMonthSyncValue(value)

@@ -20,8 +20,7 @@ export async function RevenueSummarySection() {
 
   const earnedCurrencies = Object.keys(summary.total_earned_minor)
   const monthlyCurrencies = Object.keys(summary.total_monthly_minor)
-  const displayCurrency =
-    earnedCurrencies[0] ?? monthlyCurrencies[0] ?? FALLBACK_CURRENCY
+  const displayCurrency = earnedCurrencies[0] ?? monthlyCurrencies[0] ?? FALLBACK_CURRENCY
 
   const earnedMinor = summary.total_earned_minor[displayCurrency] ?? null
   const monthlyMinor = summary.total_monthly_minor[displayCurrency] ?? null
@@ -39,9 +38,7 @@ export async function RevenueSummarySection() {
   const activeLeasesCount = cards.filter((c) => c.monthly_minor !== null).length
 
   const endingSoonCount = summary.ending_soon.length
-  const endingSoonNames = summary.ending_soon
-    .map((entry) => entry.property_name)
-    .join(' · ')
+  const endingSoonNames = summary.ending_soon.map((entry) => entry.property_name).join(' · ')
 
   return (
     <>
@@ -55,7 +52,7 @@ export async function RevenueSummarySection() {
             sub={t('acrossProperties', { count: propertiesCount })}
             emphasize
           />
-          <div className="border-t border-border sm:border-t-0 sm:border-l">
+          <div className="border-border border-t sm:border-t-0 sm:border-l">
             <SummaryStat
               eyebrow={t('expectedMonthly')}
               value={monthlyLabel}
@@ -68,16 +65,16 @@ export async function RevenueSummarySection() {
       {endingSoonCount > 0 ? (
         <Card
           size="sm"
-          className="mb-6 flex items-start gap-3 border-warning-subtle bg-warning-subtle/40 px-4 py-3"
+          className="border-warning-subtle bg-warning-subtle/40 mb-6 flex items-start gap-3 px-4 py-3"
         >
-          <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-warning-subtle text-warning-subtle-foreground">
+          <span className="bg-warning-subtle text-warning-subtle-foreground mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full">
             <AlertCircle className="size-4" />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold text-warning-subtle-foreground">
+            <p className="text-warning-subtle-foreground text-sm font-semibold">
               {t('endingSoonCount', { count: endingSoonCount })}
             </p>
-            <p className="mt-0.5 truncate text-sm text-foreground/70">{endingSoonNames}</p>
+            <p className="text-foreground/70 mt-0.5 truncate text-sm">{endingSoonNames}</p>
           </div>
         </Card>
       ) : (
@@ -99,18 +96,18 @@ function SummaryStat({
   emphasize?: boolean
 }) {
   return (
-    <div className="px-5 py-5 sm:px-6 sm:py-7">
+    <div className="p-5 sm:px-6 sm:py-7">
       <EyebrowLabel tone="muted">{eyebrow}</EyebrowLabel>
       <p
         className={`mt-2 text-3xl tabular-nums sm:mt-3 sm:text-4xl ${
           emphasize
-            ? 'font-display font-medium tracking-[-0.015em] text-primary-subtle-foreground'
-            : 'font-mono font-medium text-foreground'
+            ? 'font-display text-primary-subtle-foreground font-medium tracking-[-0.015em]'
+            : 'text-foreground font-mono font-medium'
         }`}
       >
         {value}
       </p>
-      <p className="mt-1 text-sm text-muted-foreground sm:mt-2">{sub}</p>
+      <p className="text-muted-foreground mt-1 text-sm sm:mt-2">{sub}</p>
     </div>
   )
 }

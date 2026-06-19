@@ -20,7 +20,9 @@ describe('extractCnpjsFromText', () => {
   })
 
   it('deduplicates', () => {
-    expect(extractCnpjsFromText('49.449.868/0001-62 repeated 49.449.868/0001-62')).toEqual(['49449868000162'])
+    expect(extractCnpjsFromText('49.449.868/0001-62 repeated 49.449.868/0001-62')).toEqual([
+      '49449868000162',
+    ])
   })
 
   it('filters invalid check digits', () => {

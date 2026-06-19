@@ -66,10 +66,7 @@ export const MORE_EXPENSE_TYPES = [
 
 /** Switching `expense_type` always re-anchors `amount_behavior` to this map
  *  — no sticky overrides, the user re-confirms intent by picking a new type. */
-export const DEFAULT_AMOUNT_BEHAVIOR_BY_TYPE: Record<
-  ExpenseType,
-  ExpenseAmountBehavior
-> = {
+export const DEFAULT_AMOUNT_BEHAVIOR_BY_TYPE: Record<ExpenseType, ExpenseAmountBehavior> = {
   electricity: 'variable',
   water: 'variable',
   gas: 'variable',
@@ -89,21 +86,17 @@ export const DEFAULT_AMOUNT_BEHAVIOR_BY_TYPE: Record<
 // the user picks one. The base canonical schemas reject empty/null; the
 // wizard wraps them in `.nullable().superRefine(...)` so the section can
 // store `null` as the "not yet picked" state without coercion.
-const expenseTypeField = expenseTypeSchema
-  .nullable()
-  .superRefine((value, ctx) => {
-    if (value === null) {
-      ctx.addIssue({ code: 'custom', message: 'required' })
-    }
-  })
+const expenseTypeField = expenseTypeSchema.nullable().superRefine((value, ctx) => {
+  if (value === null) {
+    ctx.addIssue({ code: 'custom', message: 'required' })
+  }
+})
 
-const amountBehaviorField = expenseAmountBehaviorSchema
-  .nullable()
-  .superRefine((value, ctx) => {
-    if (value === null) {
-      ctx.addIssue({ code: 'custom', message: 'required' })
-    }
-  })
+const amountBehaviorField = expenseAmountBehaviorSchema.nullable().superRefine((value, ctx) => {
+  if (value === null) {
+    ctx.addIssue({ code: 'custom', message: 'required' })
+  }
+})
 
 // `undefined` (not `null`) matches `rent-dates.amount_minor` so CurrencyInput's
 // value type lines up without coercion.
@@ -142,10 +135,7 @@ export function defaultExpenseRow(): ExpenseRow {
 
 /** Re-derives `amount_behavior` and clears `amount_minor` on type change —
  *  picking a new type means the user is re-anchoring intent. */
-export function expenseRowWithType(
-  row: ExpenseRow,
-  next: ExpenseType,
-): ExpenseRow {
+export function expenseRowWithType(row: ExpenseRow, next: ExpenseType): ExpenseRow {
   return {
     ...row,
     expense_type: next,
@@ -157,16 +147,12 @@ export function expenseRowWithType(
 /** Seeds an ExpenseRow from a contract-extracted expense. Caller filters
  *  bundled expenses via `isSeedableExtraction` (bundling UI + schema fields
  *  arrive in Phase 1C task 8). */
-export function expenseRowFromContractExpense(
-  extracted: ContractExpense,
-): ExpenseRow {
+export function expenseRowFromContractExpense(extracted: ContractExpense): ExpenseRow {
   return {
     id: crypto.randomUUID(),
     expense_type: extracted.type,
     amount_behavior:
-      extracted.type !== null
-        ? DEFAULT_AMOUNT_BEHAVIOR_BY_TYPE[extracted.type]
-        : null,
+      extracted.type !== null ? DEFAULT_AMOUNT_BEHAVIOR_BY_TYPE[extracted.type] : null,
     amount_minor: undefined,
     isExtracted: true,
   }

@@ -30,7 +30,9 @@ describe('externalCall', () => {
     const result = await externalCall({
       service: 'test-service',
       operation: 'test-op',
-      fn: async () => { throw new Error('connection refused') },
+      fn: async () => {
+        throw new Error('connection refused')
+      },
     })
 
     expect(result.success).toBe(false)
@@ -45,7 +47,9 @@ describe('externalCall', () => {
     const result = await externalCall({
       service: 'test-service',
       operation: 'test-op',
-      fn: async () => { throw 'string error' },
+      fn: async () => {
+        throw 'string error'
+      },
     })
 
     expect(result.success).toBe(false)
@@ -57,7 +61,9 @@ describe('externalCall', () => {
     const result = await externalCall({
       service: 'test-service',
       operation: 'test-op',
-      fn: async () => { throw new Error('fail') },
+      fn: async () => {
+        throw new Error('fail')
+      },
     })
 
     expect(result.duration).toBeGreaterThanOrEqual(0)
@@ -83,9 +89,7 @@ describe('externalFetch', () => {
   })
 
   it('categorizes 4xx as client_error', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response('Not found', { status: 404 }),
-    )
+    vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(new Response('Not found', { status: 404 }))
 
     const result = await externalFetch({
       service: 'test-api',
@@ -115,9 +119,7 @@ describe('externalFetch', () => {
   })
 
   it('categorizes network failures', async () => {
-    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(
-      new TypeError('fetch failed'),
-    )
+    vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new TypeError('fetch failed'))
 
     const result = await externalFetch({
       service: 'test-api',

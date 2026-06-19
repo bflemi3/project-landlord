@@ -49,9 +49,7 @@ const pRuns = (runs, opts = {}) =>
   new Paragraph({
     spacing: { after: 120 },
     alignment: opts.alignment ?? AlignmentType.JUSTIFIED,
-    children: runs.map(
-      (r) => new TextRun({ text: r.text, bold: r.bold, italics: r.italics }),
-    ),
+    children: runs.map((r) => new TextRun({ text: r.text, bold: r.bold, italics: r.italics })),
   })
 
 const h1 = (text) =>
@@ -378,7 +376,7 @@ function enSynthetic1() {
           blank(),
           h2('7. UTILITIES AND SERVICES'),
           p(
-            'Tenant shall be responsible for the following utilities and services supplied to the Premises: (a) electricity, billed by Southern California Edison (EIN: 95-1240335); (b) gas service, billed by Southern California Gas Company (EIN: 95-1240705); (c) water and sewer, billed by the Los Angeles Department of Water and Power; (d) internet and cable television, at Tenant\'s option and expense. Landlord shall be responsible for trash collection and exterior landscaping.',
+            "Tenant shall be responsible for the following utilities and services supplied to the Premises: (a) electricity, billed by Southern California Edison (EIN: 95-1240335); (b) gas service, billed by Southern California Gas Company (EIN: 95-1240705); (c) water and sewer, billed by the Los Angeles Department of Water and Power; (d) internet and cable television, at Tenant's option and expense. Landlord shall be responsible for trash collection and exterior landscaping.",
           ),
           blank(),
           h2('8. USE OF PREMISES'),
@@ -388,7 +386,7 @@ function enSynthetic1() {
           blank(),
           h2('9. MAINTENANCE AND REPAIRS'),
           p(
-            'Tenant shall maintain the Premises in a clean and sanitary condition and shall promptly notify Landlord in writing of any needed repairs. Landlord shall be responsible for major structural repairs, plumbing, and electrical systems, except where damage is caused by Tenant\'s negligence or misuse.',
+            "Tenant shall maintain the Premises in a clean and sanitary condition and shall promptly notify Landlord in writing of any needed repairs. Landlord shall be responsible for major structural repairs, plumbing, and electrical systems, except where damage is caused by Tenant's negligence or misuse.",
           ),
           blank(),
           h2('10. DEFAULT AND REMEDIES'),
@@ -451,7 +449,7 @@ function enSynthetic2() {
             'Tenant shall pay to Landlord as rent for the Leased Premises the sum of One Thousand Eight Hundred Fifty and 00/100 United States Dollars ($1,850.00) per month, payable in advance on or before the fifth (5th) day of each month during the Term.',
           ),
           p(
-            'The first month\'s rent shall be paid upon execution of this lease. Subsequent payments shall be made by ACH transfer or certified funds to Landlord\'s designated account.',
+            "The first month's rent shall be paid upon execution of this lease. Subsequent payments shall be made by ACH transfer or certified funds to Landlord's designated account.",
           ),
           blank(),
           h2('ARTICLE V — RENT ESCALATION'),
@@ -466,12 +464,12 @@ function enSynthetic2() {
           blank(),
           h2('ARTICLE VII — UTILITIES'),
           p(
-            'Tenant shall pay, directly to the providers, all charges for utilities and services consumed at the Leased Premises, including but not limited to: (1) electricity, provided by Austin Energy (a division of the City of Austin); (2) water, wastewater, and trash collection, provided by Austin Water Utility; (3) natural gas, provided by Texas Gas Service (EIN: 74-1032546); (4) internet and telecommunications services, at Tenant\'s option. Landlord shall pay for pest control and quarterly HVAC servicing.',
+            "Tenant shall pay, directly to the providers, all charges for utilities and services consumed at the Leased Premises, including but not limited to: (1) electricity, provided by Austin Energy (a division of the City of Austin); (2) water, wastewater, and trash collection, provided by Austin Water Utility; (3) natural gas, provided by Texas Gas Service (EIN: 74-1032546); (4) internet and telecommunications services, at Tenant's option. Landlord shall pay for pest control and quarterly HVAC servicing.",
           ),
           blank(),
           h2('ARTICLE VIII — MAINTENANCE'),
           p(
-            'Tenant acknowledges that the Leased Premises is in good and habitable condition. Tenant shall keep and maintain the Leased Premises in clean and sanitary condition and shall be responsible for the cost of any repairs required due to Tenant\'s negligence, misuse, or abuse.',
+            "Tenant acknowledges that the Leased Premises is in good and habitable condition. Tenant shall keep and maintain the Leased Premises in clean and sanitary condition and shall be responsible for the cost of any repairs required due to Tenant's negligence, misuse, or abuse.",
           ),
           blank(),
           h2('ARTICLE IX — USE AND OCCUPANCY'),

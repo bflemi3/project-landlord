@@ -21,10 +21,10 @@ export const getLandlordHomeRevenueSummary = cache(
   },
 )
 
-export const getLandlordHomePropertyCards = cache(
-  async (): Promise<LandlordHomePropertyCard[]> => {
-    const { cards } = await getLandlordHomeData()
-    return cards.map((card): LandlordHomePropertyCard => ({
+export const getLandlordHomePropertyCards = cache(async (): Promise<LandlordHomePropertyCard[]> => {
+  const { cards } = await getLandlordHomeData()
+  return cards.map(
+    (card): LandlordHomePropertyCard => ({
       property_id: card.property_id,
       property_name: card.property_name,
       property_address: card.property_address,
@@ -35,9 +35,9 @@ export const getLandlordHomePropertyCards = cache(
       end_date: card.end_date,
       end_state: card.end_state,
       days_until_end: card.days_until_end,
-    }))
-  },
-)
+    }),
+  )
+})
 
 function emptySummary(): LandlordHomeRevenueSummary {
   return { total_earned_minor: {}, total_monthly_minor: {}, ending_soon: [] }

@@ -23,24 +23,12 @@ function pad2(n: number): string {
 // Builds a calendar-validated Date from year/month/day numbers. Returns
 // undefined when the components don't survive the round-trip (e.g., Feb 30
 // rolled over to Mar 2) so callers can treat impossible dates as "absent".
-function makeCalendarDate(
-  year: number,
-  month: number,
-  day: number,
-): Date | undefined {
-  if (
-    !Number.isInteger(year) ||
-    !Number.isInteger(month) ||
-    !Number.isInteger(day)
-  ) {
+function makeCalendarDate(year: number, month: number, day: number): Date | undefined {
+  if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
     return undefined
   }
   const date = new Date(year, month - 1, day)
-  if (
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
-  ) {
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
     return undefined
   }
   return date
@@ -66,21 +54,14 @@ export function formatIsoDate(value: Date | undefined): string | undefined {
  * Returns undefined for any other input, including incomplete or
  * calendar-invalid dates (Feb 30, month 13, etc.).
  */
-export function parseLocaleDate(
-  input: string,
-  locale: string,
-): string | undefined {
+export function parseLocaleDate(input: string, locale: string): string | undefined {
   if (!input) return undefined
 
   // ISO passthrough. Same calendar guard as parseIsoDate so a typed
   // YYYY-MM-DD can't smuggle in an impossible date.
   const isoMatch = ISO_DATE.exec(input)
   if (isoMatch) {
-    const date = makeCalendarDate(
-      Number(isoMatch[1]),
-      Number(isoMatch[2]),
-      Number(isoMatch[3]),
-    )
+    const date = makeCalendarDate(Number(isoMatch[1]), Number(isoMatch[2]), Number(isoMatch[3]))
     return date ? formatIsoDate(date) : undefined
   }
 
@@ -100,16 +81,11 @@ export function parseLocaleDate(
  * parser will accept back. Returns '' for undefined or invalid ISO so the
  * input value can be set unconditionally.
  */
-export function formatLocaleDate(
-  iso: string | undefined,
-  locale: string,
-): string {
+export function formatLocaleDate(iso: string | undefined, locale: string): string {
   const date = parseIsoDate(iso)
   if (!date) return ''
   const day = pad2(date.getDate())
   const month = pad2(date.getMonth() + 1)
   const year = date.getFullYear()
-  return isDayFirstLocale(locale)
-    ? `${day}/${month}/${year}`
-    : `${month}/${day}/${year}`
+  return isDayFirstLocale(locale) ? `${day}/${month}/${year}` : `${month}/${day}/${year}`
 }

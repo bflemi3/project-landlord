@@ -157,10 +157,7 @@ export type ComputedCard = LandlordHomePropertyCard & {
   _latest_end_date: string | null
 }
 
-export function computeCardForProperty(
-  property: PropertyRowWithUnits,
-  now: Date,
-): ComputedCard {
+export function computeCardForProperty(property: PropertyRowWithUnits, now: Date): ComputedCard {
   const units = property.units ?? []
   const activeRents: RentRow[] = []
   const earnedRents: RentRow[] = []
@@ -286,7 +283,8 @@ export async function fetchLandlordHomeData(
 ): Promise<{ cards: ComputedCard[]; summary: LandlordHomeRevenueSummary }> {
   const { data, error } = await supabase
     .from('memberships')
-    .select(`
+    .select(
+      `
       role,
       property:properties!inner (
         id,
@@ -313,7 +311,8 @@ export async function fetchLandlordHomeData(
           )
         )
       )
-    `)
+    `,
+    )
     .eq('user_id', userId)
     .eq('role', 'landlord')
     .is('deleted_at', null)
@@ -353,5 +352,4 @@ export async function fetchLandlordHomeData(
 export const landlordHomeRevenueSummaryQueryKey = () =>
   ['landlord-home', 'revenue-summary'] as const
 
-export const landlordHomePropertyCardsQueryKey = () =>
-  ['landlord-home', 'property-cards'] as const
+export const landlordHomePropertyCardsQueryKey = () => ['landlord-home', 'property-cards'] as const

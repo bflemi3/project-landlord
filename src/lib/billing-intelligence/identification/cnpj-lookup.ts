@@ -13,25 +13,18 @@ export interface CompanyInfo {
   email: string | null
   source: 'brasilapi' | 'receitaws' | 'cache'
   /** When this data was last updated (from cache or freshly fetched) */
-  lastUpdated: string         // ISO 8601 timestamp
+  lastUpdated: string // ISO 8601 timestamp
 }
 
 const CACHE_MAX_AGE_DAYS = 30
 
 function getServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
+  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
 }
 
 async function lookupFromCache(taxId: string): Promise<CompanyInfo | null> {
   const supabase = getServiceClient()
-  const { data } = await supabase
-    .from('company_cache')
-    .select('*')
-    .eq('tax_id', taxId)
-    .single()
+  const { data } = await supabase.from('company_cache').select('*').eq('tax_id', taxId).single()
 
   if (!data) return null
 
@@ -84,7 +77,15 @@ async function saveToCache(info: CompanyInfo): Promise<void> {
 
   if (existing.data) {
     // Track changes
-    const trackFields = ['legal_name', 'trade_name', 'activity_description', 'city', 'state', 'phone', 'email'] as const
+    const trackFields = [
+      'legal_name',
+      'trade_name',
+      'activity_description',
+      'city',
+      'state',
+      'phone',
+      'email',
+    ] as const
     for (const field of trackFields) {
       const oldVal = String(existing.data[field] ?? '')
       const newVal = String(dbRow[field] ?? '')
@@ -98,10 +99,7 @@ async function saveToCache(info: CompanyInfo): Promise<void> {
       }
     }
 
-    await supabase
-      .from('company_cache')
-      .update(dbRow)
-      .eq('id', existing.data.id)
+    await supabase.from('company_cache').update(dbRow).eq('id', existing.data.id)
   } else {
     await supabase.from('company_cache').insert({
       tax_id: info.cnpj,
@@ -147,13 +145,8 @@ function brasilApiToCompanyInfo(data: Record<string, unknown>): CompanyInfo {
   }
 }
 
-function receitaWsToCompanyInfo(
-  data: Record<string, unknown>,
-  fallbackCnpj: string,
-): CompanyInfo {
-  const atividades = data.atividade_principal as
-    | Array<{ code: string; text: string }>
-    | undefined
+function receitaWsToCompanyInfo(data: Record<string, unknown>, fallbackCnpj: string): CompanyInfo {
+  const atividades = data.atividade_principal as Array<{ code: string; text: string }> | undefined
   return {
     cnpj: String(data.cnpj ?? '').replace(/[.\-/]/g, '') || fallbackCnpj,
     companyName: String(data.fantasia || data.nome),
@@ -204,13 +197,17 @@ export async function lookupCnpj(cnpj: string): Promise<CompanyInfo> {
     const result = await fetchFromBrasilApi(clean)
     await saveToCache(result)
     return result
-  } catch { /* fallthrough */ }
+  } catch {
+    /* fallthrough */
+  }
 
   try {
     const result = await fetchFromReceitaWs(clean)
     await saveToCache(result)
     return result
-  } catch { /* fallthrough */ }
+  } catch {
+    /* fallthrough */
+  }
 
   throw new Error('CNPJ lookup failed: cache miss and both BrasilAPI and ReceitaWS returned errors')
 }
@@ -227,9 +224,7 @@ export type CnpjVerificationStatus = 'exists' | 'not-found' | 'unreachable'
  * scoped to vendor/utility CNPJs, and mixing in user-identity CNPJs would
  * blur orthogonal concerns.
  */
-export async function verifyCnpjExists(
-  cnpj: string,
-): Promise<CnpjVerificationStatus> {
+export async function verifyCnpjExists(cnpj: string): Promise<CnpjVerificationStatus> {
   const clean = cnpj.replace(/[.\-/]/g, '')
 
   const primary = await fetchBrasilApiCnpjData(clean)

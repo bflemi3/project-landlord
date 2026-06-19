@@ -6,7 +6,7 @@ export function Wordmark({ className, href = '/' }: { className?: string; href?:
     <Link
       href={href}
       className={cn(
-        'inline-block font-display font-semibold tracking-tight text-foreground',
+        'font-display text-foreground inline-block font-semibold tracking-tight',
         className ?? 'text-[30px]',
       )}
     >

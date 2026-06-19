@@ -1,6 +1,10 @@
 export type EmailLocale = 'en' | 'pt-BR' | 'es'
 export type InviteSource = 'waitlist' | 'direct'
-export type TenantInviteParams = { tenantName: string | null; landlordName: string; addressHtml: string }
+export type TenantInviteParams = {
+  tenantName: string | null
+  landlordName: string
+  addressHtml: string
+}
 
 export const emailTranslations = {
   en: {
@@ -9,10 +13,11 @@ export const emailTranslations = {
       subject: 'Confirm your email',
       preview: 'Confirm your email to get started with mabenn',
       heading: 'Confirm your email',
-      body: 'Thanks for signing up. Confirm your email below and you\'ll be all set to get started.',
-      bodyWithName: (name: string) => `Hi ${name}, thanks for signing up. Confirm your email below and you'll be all set to get started.`,
+      body: "Thanks for signing up. Confirm your email below and you'll be all set to get started.",
+      bodyWithName: (name: string) =>
+        `Hi ${name}, thanks for signing up. Confirm your email below and you'll be all set to get started.`,
       button: 'Confirm Email',
-      hint: 'If you didn\'t create an account, you can safely ignore this email.',
+      hint: "If you didn't create an account, you can safely ignore this email.",
     },
     resetPassword: {
       subject: 'Reset your password',
@@ -20,7 +25,7 @@ export const emailTranslations = {
       heading: 'Reset your password',
       body: 'We received a request to reset your password. Click below to set a new one.',
       button: 'Reset Password',
-      hint: 'If you didn\'t request this, you can safely ignore this email. Your password won\'t change.',
+      hint: "If you didn't request this, you can safely ignore this email. Your password won't change.",
     },
     waitlistWelcome: {
       heading: "You're on the list.",
@@ -33,8 +38,10 @@ export const emailTranslations = {
         eyebrow: 'Founding member',
         body: "You joined as a founding member — every rental free for the first year, then R$ 39/month per rental, locked for life. We've saved your spot.",
         benefit1: 'See what every rental earns and what it costs — all in one place.',
-        benefit2: 'Rent and bills tracked for you — payments matched in the background, no chasing.',
-        benefit3: 'Contracts, IPCA adjustments, and late-rent notices, handled — the structure of a property manager, without the 8–12%.',
+        benefit2:
+          'Rent and bills tracked for you — payments matched in the background, no chasing.',
+        benefit3:
+          'Contracts, IPCA adjustments, and late-rent notices, handled — the structure of a property manager, without the 8–12%.',
       },
       tenant: {
         subject: "You're in — Mabenn is free for you, forever",
@@ -43,7 +50,8 @@ export const emailTranslations = {
         body: "Mabenn is free for tenants, forever — with or without your landlord. We've saved your spot.",
         benefit1: "A clear view of your rent and bills — what's due, what's paid, no surprises.",
         benefit2: 'Build a payment record you keep — proof of on-time rent that travels with you.',
-        benefit3: 'One place for everything with your landlord — messages, requests, and agreements, all on the record.',
+        benefit3:
+          'One place for everything with your landlord — messages, requests, and agreements, all on the record.',
       },
     },
     inviteCode: {
@@ -64,12 +72,13 @@ export const emailTranslations = {
     },
     tenantInvite: {
       subject: (propertyName: string) => `You're invited to join ${propertyName} on mabenn`,
-      greeting: (name: string | null) => name ? `Hi ${name},` : 'Hi,',
+      greeting: (name: string | null) => (name ? `Hi ${name},` : 'Hi,'),
       intro: (landlordName: string) =>
         `${landlordName} has added you as a tenant and invited you to manage your billing on mabenn.`,
-      valueProp: 'You\'ll be able to view your monthly statements, see charge breakdowns, and track payments — all in one place.',
+      valueProp:
+        "You'll be able to view your monthly statements, see charge breakdowns, and track payments — all in one place.",
       button: 'Join on mabenn',
-      hint: 'If you didn\'t expect this invite, you can safely ignore this email.',
+      hint: "If you didn't expect this invite, you can safely ignore this email.",
       expiresOn: (date: string) => `This invite expires on ${date}.`,
       manualCode: (code: string) => `Or enter this code manually: ${code}`,
     },
@@ -81,7 +90,8 @@ export const emailTranslations = {
       preview: 'Confirme seu e-mail para começar a usar o mabenn',
       heading: 'Confirme seu e-mail',
       body: 'Obrigado por se cadastrar. Confirme seu e-mail abaixo e você estará pronto para começar.',
-      bodyWithName: (name: string) => `Olá ${name}, obrigado por se cadastrar. Confirme seu e-mail abaixo e você estará pronto para começar.`,
+      bodyWithName: (name: string) =>
+        `Olá ${name}, obrigado por se cadastrar. Confirme seu e-mail abaixo e você estará pronto para começar.`,
       button: 'Confirmar E-mail',
       hint: 'Se você não criou uma conta, pode ignorar este e-mail com segurança.',
     },
@@ -104,17 +114,22 @@ export const emailTranslations = {
         eyebrow: 'Membro fundador',
         body: 'Você entrou como membro fundador — cada aluguel grátis no primeiro ano, depois R$ 39/mês por aluguel, travado para sempre. Guardamos sua vaga.',
         benefit1: 'Veja quanto cada aluguel rende e quanto custa — tudo em um só lugar.',
-        benefit2: 'Aluguel e contas acompanhados para você — pagamentos identificados em segundo plano, sem precisar cobrar.',
-        benefit3: 'Contratos, reajustes pelo IPCA e avisos de atraso, resolvidos — a estrutura de uma imobiliária, sem os 8–12%.',
+        benefit2:
+          'Aluguel e contas acompanhados para você — pagamentos identificados em segundo plano, sem precisar cobrar.',
+        benefit3:
+          'Contratos, reajustes pelo IPCA e avisos de atraso, resolvidos — a estrutura de uma imobiliária, sem os 8–12%.',
       },
       tenant: {
         subject: 'Você entrou — o Mabenn é grátis para você, para sempre',
         preview: 'Grátis para sempre. Avisaremos quando o Mabenn abrir.',
         eyebrow: 'Grátis para sempre',
         body: 'O Mabenn é grátis para inquilinos, para sempre — com ou sem o seu locador. Guardamos sua vaga.',
-        benefit1: 'Uma visão clara do seu aluguel e contas — o que vence, o que está pago, sem surpresas.',
-        benefit2: 'Construa um histórico de pagamentos que é seu — comprovante de aluguel em dia que vai com você.',
-        benefit3: 'Um só lugar para tudo com o seu locador — mensagens, solicitações e acordos, tudo registrado.',
+        benefit1:
+          'Uma visão clara do seu aluguel e contas — o que vence, o que está pago, sem surpresas.',
+        benefit2:
+          'Construa um histórico de pagamentos que é seu — comprovante de aluguel em dia que vai com você.',
+        benefit3:
+          'Um só lugar para tudo com o seu locador — mensagens, solicitações e acordos, tudo registrado.',
       },
     },
     inviteCode: {
@@ -135,10 +150,11 @@ export const emailTranslations = {
     },
     tenantInvite: {
       subject: (propertyName: string) => `Você foi convidado para ${propertyName} no mabenn`,
-      greeting: (name: string | null) => name ? `Olá ${name},` : 'Olá,',
+      greeting: (name: string | null) => (name ? `Olá ${name},` : 'Olá,'),
       intro: (landlordName: string) =>
         `${landlordName} adicionou você como inquilino e convidou você para gerenciar sua cobrança no mabenn.`,
-      valueProp: 'Você poderá ver seus extratos mensais, detalhes das cobranças e acompanhar pagamentos — tudo em um só lugar.',
+      valueProp:
+        'Você poderá ver seus extratos mensais, detalhes das cobranças e acompanhar pagamentos — tudo em um só lugar.',
       button: 'Entrar no mabenn',
       hint: 'Se você não esperava este convite, pode ignorar este e-mail com segurança.',
       expiresOn: (date: string) => `Este convite expira em ${date}.`,
@@ -152,7 +168,8 @@ export const emailTranslations = {
       preview: 'Confirma tu correo para empezar a usar mabenn',
       heading: 'Confirma tu correo',
       body: 'Gracias por registrarte. Confirma tu correo a continuación y estarás listo para empezar.',
-      bodyWithName: (name: string) => `Hola ${name}, gracias por registrarte. Confirma tu correo a continuación y estarás listo para empezar.`,
+      bodyWithName: (name: string) =>
+        `Hola ${name}, gracias por registrarte. Confirma tu correo a continuación y estarás listo para empezar.`,
       button: 'Confirmar Correo',
       hint: 'Si no creaste una cuenta, puedes ignorar este correo de forma segura.',
     },
@@ -175,17 +192,22 @@ export const emailTranslations = {
         eyebrow: 'Miembro fundador',
         body: 'Entraste como miembro fundador — cada alquiler gratis el primer año, luego R$ 39/mes por alquiler, fijo de por vida. Te guardamos tu lugar.',
         benefit1: 'Mira cuánto rinde cada alquiler y cuánto cuesta — todo en un solo lugar.',
-        benefit2: 'Alquiler y cuentas controlados por ti — pagos conciliados en segundo plano, sin perseguir a nadie.',
-        benefit3: 'Contratos, ajustes por IPCA y avisos de atraso, resueltos — la estructura de una inmobiliaria, sin el 8–12%.',
+        benefit2:
+          'Alquiler y cuentas controlados por ti — pagos conciliados en segundo plano, sin perseguir a nadie.',
+        benefit3:
+          'Contratos, ajustes por IPCA y avisos de atraso, resueltos — la estructura de una inmobiliaria, sin el 8–12%.',
       },
       tenant: {
         subject: 'Estás dentro — Mabenn es gratis para ti, para siempre',
         preview: 'Gratis para siempre. Te avisaremos cuando Mabenn abra.',
         eyebrow: 'Gratis para siempre',
         body: 'Mabenn es gratis para inquilinos, para siempre — con o sin tu arrendador. Te guardamos tu lugar.',
-        benefit1: 'Una vista clara de tu alquiler y cuentas — qué vence, qué está pagado, sin sorpresas.',
-        benefit2: 'Crea un historial de pagos que es tuyo — comprobante de alquiler al día que viaja contigo.',
-        benefit3: 'Un solo lugar para todo con tu arrendador — mensajes, solicitudes y acuerdos, todo registrado.',
+        benefit1:
+          'Una vista clara de tu alquiler y cuentas — qué vence, qué está pagado, sin sorpresas.',
+        benefit2:
+          'Crea un historial de pagos que es tuyo — comprobante de alquiler al día que viaja contigo.',
+        benefit3:
+          'Un solo lugar para todo con tu arrendador — mensajes, solicitudes y acuerdos, todo registrado.',
       },
     },
     inviteCode: {
@@ -206,10 +228,11 @@ export const emailTranslations = {
     },
     tenantInvite: {
       subject: (propertyName: string) => `Te invitaron a unirte a ${propertyName} en mabenn`,
-      greeting: (name: string | null) => name ? `Hola ${name},` : 'Hola,',
+      greeting: (name: string | null) => (name ? `Hola ${name},` : 'Hola,'),
       intro: (landlordName: string) =>
         `${landlordName} te agregó como inquilino y te invitó a gestionar tu facturación en mabenn.`,
-      valueProp: 'Podrás ver tus estados de cuenta mensuales, detalle de cargos y seguimiento de pagos — todo en un solo lugar.',
+      valueProp:
+        'Podrás ver tus estados de cuenta mensuales, detalle de cargos y seguimiento de pagos — todo en un solo lugar.',
       button: 'Unirse a mabenn',
       hint: 'Si no esperabas esta invitación, puedes ignorar este correo de forma segura.',
       expiresOn: (date: string) => `Esta invitación expira el ${date}.`,

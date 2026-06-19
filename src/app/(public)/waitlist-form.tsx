@@ -145,10 +145,10 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
     <div>
       <div
         role="group"
-        className="relative mx-auto mb-2 flex w-fit rounded-full border border-white/[0.08] bg-white/[0.03] p-1"
+        className="relative mx-auto mb-2 flex w-fit rounded-full border border-white/8 bg-white/3 p-1"
       >
         <span
-          className={`pointer-events-none absolute inset-y-1 left-1 w-[112px] rounded-full bg-[#f5f0e8] transition-transform duration-300 ease-out ${
+          className={`pointer-events-none absolute inset-y-1 left-1 w-28 rounded-full bg-[#f5f0e8] transition-transform duration-300 ease-out ${
             role === 'tenant' ? 'translate-x-full' : 'translate-x-0'
           }`}
           aria-hidden
@@ -157,7 +157,7 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
           type="button"
           aria-pressed={role === 'landlord'}
           onClick={() => setRole('landlord')}
-          className={`relative z-10 w-[112px] rounded-full py-1.5 text-[13px] font-medium transition-colors ${
+          className={`relative z-10 w-28 rounded-full py-1.5 text-[13px] font-medium transition-colors ${
             role === 'landlord' ? 'text-[#1c1917]' : 'text-[#a8a29e] hover:text-[#f5f5f4]'
           }`}
         >
@@ -167,7 +167,7 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
           type="button"
           aria-pressed={role === 'tenant'}
           onClick={() => setRole('tenant')}
-          className={`relative z-10 w-[112px] rounded-full py-1.5 text-[13px] font-medium transition-colors ${
+          className={`relative z-10 w-28 rounded-full py-1.5 text-[13px] font-medium transition-colors ${
             role === 'tenant' ? 'text-[#1c1917]' : 'text-[#a8a29e] hover:text-[#f5f5f4]'
           }`}
         >
@@ -184,34 +184,38 @@ export function WaitlistForm({ buttonLabel }: WaitlistFormProps = {}) {
         {t('waitlistTenantHelper')}
       </p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-2 sm:flex-row">
-      <input
-        ref={inputRef}
-        type="email"
-        placeholder={t('waitlistPlaceholder')}
-        aria-label={t('waitlistEmailLabel')}
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        disabled={loading}
-        className="min-w-0 flex-1 rounded-full border border-white/[0.10] bg-white/[0.03] px-5 py-3 text-[14px] text-[#f5f5f4] placeholder:text-[#78716c] outline-none transition-colors focus:border-[#e9408f]/40 focus:bg-white/[0.05] disabled:opacity-50"
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#f5f0e8] px-6 py-3 text-[14px] font-medium text-[#1c1917] transition-colors hover:bg-[#ebe5d9] disabled:opacity-60"
-      >
-        {loading ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <>
-            {label}
-            <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>
-          </>
-        )}
-      </button>
+        <input
+          ref={inputRef}
+          type="email"
+          placeholder={t('waitlistPlaceholder')}
+          aria-label={t('waitlistEmailLabel')}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={loading}
+          className="min-w-0 flex-1 rounded-full border border-white/10 bg-white/3 px-5 py-3 text-[14px] text-[#f5f5f4] transition-colors outline-none placeholder:text-[#78716c] focus:border-[#e9408f]/40 focus:bg-white/5 disabled:opacity-50"
+        />
+        <button
+          type="submit"
+          disabled={loading}
+          className="group inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-[#f5f0e8] px-6 py-3 text-[14px] font-medium text-[#1c1917] transition-colors hover:bg-[#ebe5d9] disabled:opacity-60"
+        >
+          {loading ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <>
+              {label}
+              <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+                →
+              </span>
+            </>
+          )}
+        </button>
       </form>
-      <p className="mt-5 text-center text-[12.5px] leading-[1.5] text-[#78716c]">{t('ctaFinePrint')}</p>
-      <p className="mt-1.5 text-center text-[12.5px] leading-[1.5] text-[#78716c]">
+      <p className="mt-5 text-center text-[12.5px] leading-normal text-[#78716c]">
+        {t('ctaFinePrint')}
+      </p>
+      <p className="mt-1.5 text-center text-[12.5px] leading-normal text-[#78716c]">
         {t.rich('ctaConsent', {
           privacy: (chunks) => (
             <Link

@@ -11,9 +11,7 @@ import { usePropertyCreationActions } from './store-provider'
 /** Structural shape of a Zod `safeParse` result. The hook only needs the
  *  discriminated success flag plus access to the error for flattening on
  *  the failure branch — broader than a specific schema's parse type. */
-type WizardFormParseResult =
-  | { success: true; data: unknown }
-  | { success: false; error: ZodError }
+type WizardFormParseResult = { success: true; data: unknown } | { success: false; error: ZodError }
 
 interface UseWizardFormOptions {
   sectionId: SectionId
@@ -89,7 +87,7 @@ export function useWizardForm({
   }, [parseResult, touched])
 
   const setTouched = useCallback(
-    <T,>(updater: (prev: T) => T) => {
+    <T>(updater: (prev: T) => T) => {
       setTouchedAction(sectionId, updater)
     },
     [sectionId, setTouchedAction],

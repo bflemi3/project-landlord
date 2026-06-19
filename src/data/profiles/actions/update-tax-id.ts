@@ -49,9 +49,7 @@ export async function updateTaxIdCore(
   return { valid: true, fields: result.data }
 }
 
-export async function updateTaxId(
-  taxId: string,
-): Promise<ValidateState<TaxIdInput>> {
+export async function updateTaxId(taxId: string): Promise<ValidateState<TaxIdInput>> {
   const supabase = await createClient()
   return updateTaxIdCore(supabase, taxId)
 }

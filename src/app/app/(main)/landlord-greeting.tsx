@@ -12,10 +12,7 @@ function getGreetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
  * Wrapped in Suspense by the parent — streams independently.
  */
 export async function LandlordGreeting() {
-  const [profile, t] = await Promise.all([
-    getProfile(),
-    getTranslations('home'),
-  ])
+  const [profile, t] = await Promise.all([getProfile(), getTranslations('home')])
 
   const firstName = profile?.full_name?.split(' ')[0] ?? undefined
   const greetingKey = getGreetingKey()
@@ -24,14 +21,11 @@ export async function LandlordGreeting() {
 
   return (
     <div className="mb-8 flex items-center justify-between gap-4">
-      <h1 className="text-3xl font-display font-medium tracking-[-0.015em] text-foreground">
-        {greeting}{firstName ? `, ${firstName}` : ''}
+      <h1 className="font-display text-foreground text-3xl font-medium tracking-[-0.015em]">
+        {greeting}
+        {firstName ? `, ${firstName}` : ''}
       </h1>
-      <AddPropertyButton
-        ariaLabel={t('addProperty')}
-        label={t('addProperty')}
-        draftId={draftId}
-      />
+      <AddPropertyButton ariaLabel={t('addProperty')} label={t('addProperty')} draftId={draftId} />
     </div>
   )
 }

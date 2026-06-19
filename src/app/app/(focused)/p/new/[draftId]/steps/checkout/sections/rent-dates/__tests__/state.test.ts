@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  defaultRentDatesInput,
-  type RentDatesInput,
-} from '../schemas'
+import { defaultRentDatesInput, type RentDatesInput } from '../schemas'
 import { isDefault, setAllTouched } from '../state'
 
 describe('rent-dates/state — setAllTouched', () => {

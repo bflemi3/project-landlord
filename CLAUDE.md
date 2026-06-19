@@ -20,7 +20,7 @@ See `docs/project/product-pivot-long-term-rentals.md` for the full product shape
 
 ## Build status
 
-The three-pillar vision above is the target. **What's built is foundational, not the product itself** — the billing, contract, and communication pillars are largely unbuilt. **Shipped:** auth + invites, profile setup, property-creation wizard, contracts + rent tables, landing page + waitlist. **Not yet built:** essentially all of the core product — the live billing ledger, payment matching, Open Finance, DDA, bill ingestion, provider tooling, revenue tracking, reputation, disputes, communication, the AI assistant, and notifications. Domain skills carry per-area status; trust the code over any doc.
+The three-pillar vision above is the target. **What's built is foundational, not the product itself** — the billing, contract, and communication pillars are largely unbuilt. **Shipped:** auth + invites, profile setup, property-creation wizard, contracts + rent tables, the property page's Bills tab (discovery-ledger schema, summary strip, month-grouped ledger), landing page + waitlist. **Not yet built:** most of the core product — bill discovery and ingestion (LLM extraction, DDA, email/upload), payment matching, Open Finance, the Revenue/Contract/Messages tabs, revenue tracking, reputation, disputes, communication, the AI assistant, and notifications. Domain skills carry per-area status; trust the code over any doc.
 
 ---
 
@@ -62,11 +62,11 @@ When ambiguous, choose the option that keeps the product simple, preserves trust
 
 ### Build now
 
-Auth with profile setup (name, avatar, CPF), property creation from address (with utility provider derivation), multi-property support, charge definitions with bill-ownership flexibility (`landlord` or `tenant` holds each bill), contract creation and storage, IPCA-based adjustment reminders and suggestions, late-payment notice generation (Lei do Inquilinato cascade), bill ingestion for utilities (upload / email / photo) with Mabenn-built provider profiles, missing-provider flow with engineering alert, DDA condo boleto discovery via Celcoin, Open Finance bank connection for landlord and tenant (Pluggy), payment matching (CNPJ + amount + date), live billing view, monthly ledger with immutable past months, dispute flow with source document preview, tenant reputation scoring driven by concrete events, landlord reputation scoring, revenue tracking (monthly / cumulative / per-contract / per-property), tenant invites, notifications (email + in-app), audit trail, analytics from day one, public landing page, self-serve sign-up.
+Auth with profile setup (name, avatar, CPF), property creation from address (with utility provider derivation), multi-property support, charge definitions with bill-ownership flexibility (`landlord` or `tenant` holds each bill), contract creation and storage, IPCA-based adjustment reminders and suggestions, late-payment notice generation (Lei do Inquilinato cascade), bill ingestion for utilities (upload / email / photo) with LLM extraction that identifies each bill's provider (creating and linking it to the charge definition when missing), missing-provider flow with engineering alert, DDA condo boleto discovery via Celcoin, Open Finance bank connection for landlord and tenant (Pluggy), payment matching (CNPJ + amount + date), live billing view, monthly ledger with immutable past months, dispute flow with source document preview, tenant reputation scoring driven by concrete events, landlord reputation scoring, revenue tracking (monthly / cumulative / per-contract / per-property), tenant invites, notifications (email + in-app), audit trail, analytics from day one, public landing page, self-serve sign-up.
 
 ### Do not overbuild
 
-In-app payment processing or wallet logic, native apps, complex offline, heavy admin tooling, AI-first extraction, enterprise property management, over-flexible billing engines, co-landlord collaboration, overcomplicated role hierarchies, AI knowledgebase / legal advisor (phase 2+), guided eviction process workflows (phase 2+), maintenance request workflows (phase 2+), messaging hub beyond notifications (phase 2+ — will be in-app when built, not WhatsApp integration).
+In-app payment processing or wallet logic, native apps, complex offline, heavy admin tooling, per-provider parser configurations, enterprise property management, over-flexible billing engines, co-landlord collaboration, overcomplicated role hierarchies, AI knowledgebase / legal advisor (phase 2+), guided eviction process workflows (phase 2+), maintenance request workflows (phase 2+), messaging hub beyond notifications (phase 2+ — will be in-app when built, not WhatsApp integration).
 
 ### Pre-product-feature work (Phase 0 spike)
 
@@ -111,7 +111,7 @@ Navigation must feel instant. The user clicks, and within tens of ms they see th
 
 | Thought | Reality |
 |---|---|
-| "Just this once, AI extraction for one provider — we can do a profile later" | Violates "never AI-first for core billing." Build a provider profile via Mabenn engineering. |
+| "This provider's bills need a hand-built parser config" | Extraction is LLM-based — the LLM identifies the provider and extracts the fields. Provider knowledge is data (`providers` rows), not parser code. |
 | "I'll add a service-role call from TS, it's faster than a SECURITY DEFINER RPC" | Violates `auth/SKILL.md` invariant 7. Write the RPC. |
 | "Float is fine for one money field, this is just display" | Violates `data-modeling`. Use `amount_minor integer` + `currency text`. Aggregations leak through display. |
 | "This component already exists but is slightly wrong, I'll make a new one next to it" | Violates `component-library`. Edit the existing component or extend it with a variant. |
@@ -136,7 +136,7 @@ When a feature introduces a new reusable component, layout pattern, or variant, 
 Project-specific rules (generic backend wisdom omitted):
 
 - Idempotent ingestion (bill uploads, email forwards, webhook handlers)
-- Deterministic extraction via provider profiles — never AI-first for core billing
+- LLM-based bill extraction — identifies the provider on each bill (creating and linking it to the charge definition when absent) and extracts the billing fields; every extraction records its source document and outcome, and extracted data is never treated as inherently correct
 - Explicit audit trail on sensitive mutations (contracts, adjustments, disputes, payment matches, reputation events)
 - No silent mutation of financial records (ledger is immutable per past month; corrections create explicit events)
 - Payment matches must be reversible — no schema that assumes a match is final

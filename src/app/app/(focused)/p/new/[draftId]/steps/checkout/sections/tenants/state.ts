@@ -1,10 +1,7 @@
 import type { PropertyInput } from '@/schemas/property'
 
 import type { PropertyCreationStateShape } from '../../../../state/store'
-import {
-  TENANT_ROW_FIELD_NAMES,
-  type TenantRow,
-} from './schemas'
+import { TENANT_ROW_FIELD_NAMES, type TenantRow } from './schemas'
 import { validateTenants } from './validation'
 
 export type TenantsTouched = Record<string, ReadonlySet<string>>
@@ -46,9 +43,7 @@ export function clearFieldServerError(rowId: string, field: string) {
 }
 
 export function isValid(state: PropertyCreationStateShape): boolean {
-  const country =
-    (state.sectionData.property as PropertyInput | undefined)?.country_code ??
-    'BR'
+  const country = (state.sectionData.property as PropertyInput | undefined)?.country_code ?? 'BR'
   return validateTenants(state.sectionData.tenants as TenantRow[], country).ok
 }
 

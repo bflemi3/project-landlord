@@ -1,23 +1,35 @@
 'use client'
 
 import * as React from 'react'
-import { useState, useCallback, useRef, useTransition, useEffect, createContext, useContext } from 'react'
+import {
+  useState,
+  useCallback,
+  useRef,
+  useTransition,
+  useEffect,
+  createContext,
+  useContext,
+} from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldRow,
-} from '@/components/ui/field'
+import { Field, FieldDescription, FieldError, FieldRow } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { getAddressProvider } from '@/lib/address/provider'
-import { validateProperty, type ValidatePropertyState } from '@/data/properties/actions/validate-property'
+import {
+  validateProperty,
+  type ValidatePropertyState,
+} from '@/data/properties/actions/validate-property'
 import type { PropertyInput } from '@/schemas/property'
 import { CepField } from './cep-field'
 
@@ -41,7 +53,12 @@ interface PropertyFormContext {
   addressState: string
   setAddressState: (v: string) => void
   addressStateRef: React.RefObject<string>
-  handleAddressFound: (result: { street: string | null; neighborhood: string | null; city: string | null; state: string | null }) => void
+  handleAddressFound: (result: {
+    street: string | null
+    neighborhood: string | null
+    city: string | null
+    state: string | null
+  }) => void
   canContinue: boolean
   isChecking: boolean
 }
@@ -68,7 +85,14 @@ interface PropertyFormProps {
   children: React.ReactNode
 }
 
-export function PropertyForm({ onValidated, initialValues, initialErrors, excludePropertyId, className, children }: PropertyFormProps) {
+export function PropertyForm({
+  onValidated,
+  initialValues,
+  initialErrors,
+  excludePropertyId,
+  className,
+  children,
+}: PropertyFormProps) {
   const checkTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
   const addressStateRef = useRef(initialValues?.state ?? '')
 
@@ -78,9 +102,13 @@ export function PropertyForm({ onValidated, initialValues, initialErrors, exclud
   const [isChecking, startChecking] = useTransition()
   const [canContinue, setCanContinue] = useState(() => {
     if (!initialValues) return false
-    return initialValues.postal_code.length >= 8 &&
-      initialValues.street.length > 0 && initialValues.number.length > 0 &&
-      initialValues.city.length > 0 && initialValues.state.length > 0
+    return (
+      initialValues.postal_code.length >= 8 &&
+      initialValues.street.length > 0 &&
+      initialValues.number.length > 0 &&
+      initialValues.city.length > 0 &&
+      initialValues.state.length > 0
+    )
   })
   const [street, setStreet] = useState(initialValues?.street ?? '')
   const [neighborhood, setNeighborhood] = useState(initialValues?.neighborhood ?? '')
@@ -96,31 +124,41 @@ export function PropertyForm({ onValidated, initialValues, initialErrors, exclud
     const form = e.currentTarget
     clearTimeout(checkTimerRef.current)
     checkTimerRef.current = setTimeout(() => {
-      const val = (field: string) => (form.elements.namedItem(field) as HTMLInputElement)?.value.trim()
+      const val = (field: string) =>
+        (form.elements.namedItem(field) as HTMLInputElement)?.value.trim()
       setCanContinue(
         val('postal_code').replace(/\D/g, '').length === 8 &&
-        val('street').length > 0 &&
-        val('number').length > 0 &&
-        val('city').length > 0 &&
-        addressStateRef.current.length > 0,
+          val('street').length > 0 &&
+          val('number').length > 0 &&
+          val('city').length > 0 &&
+          addressStateRef.current.length > 0,
       )
     }, 150)
   }
 
-  const handleAddressFound = useCallback((result: { street: string | null; neighborhood: string | null; city: string | null; state: string | null }) => {
-    if (result.street) setStreet(result.street)
-    if (result.neighborhood) setNeighborhood(result.neighborhood)
-    if (result.city) setCity(result.city)
-    if (result.state) {
-      setAddressState(result.state)
-      addressStateRef.current = result.state
-    }
-  }, [])
+  const handleAddressFound = useCallback(
+    (result: {
+      street: string | null
+      neighborhood: string | null
+      city: string | null
+      state: string | null
+    }) => {
+      if (result.street) setStreet(result.street)
+      if (result.neighborhood) setNeighborhood(result.neighborhood)
+      if (result.city) setCity(result.city)
+      if (result.state) {
+        setAddressState(result.state)
+        addressStateRef.current = result.state
+      }
+    },
+    [],
+  )
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     const form = e.currentTarget
-    const val = (field: string) => (form.elements.namedItem(field) as HTMLInputElement)?.value.trim()
+    const val = (field: string) =>
+      (form.elements.namedItem(field) as HTMLInputElement)?.value.trim()
 
     const values: PropertyFormValues = {
       name: val('name'),
@@ -160,14 +198,29 @@ export function PropertyForm({ onValidated, initialValues, initialErrors, exclud
   }
 
   const ctx: PropertyFormContext = {
-    initialValues, errors, street, setStreet, neighborhood, setNeighborhood,
-    city, setCity, addressState, setAddressState, addressStateRef,
-    handleAddressFound, canContinue, isChecking,
+    initialValues,
+    errors,
+    street,
+    setStreet,
+    neighborhood,
+    setNeighborhood,
+    city,
+    setCity,
+    addressState,
+    setAddressState,
+    addressStateRef,
+    handleAddressFound,
+    canContinue,
+    isChecking,
   }
 
   return (
     <FormContext.Provider value={ctx}>
-      <form onSubmit={handleSubmit} onInput={handleFormInput} className={cn('flex min-h-0 flex-1 flex-col', className)}>
+      <form
+        onSubmit={handleSubmit}
+        onInput={handleFormInput}
+        className={cn('flex min-h-0 flex-1 flex-col', className)}
+      >
         {children}
       </form>
     </FormContext.Provider>
@@ -196,12 +249,8 @@ function PropertyFormName({ className, ...props }: React.ComponentProps<'div'>) 
           aria-invalid={Boolean(errors.name?.[0])}
           aria-describedby={errors.name?.[0] ? 'name-error' : 'name-hint'}
         />
-        <FieldDescription id="name-hint">
-          {t('propertyNameHint')}
-        </FieldDescription>
-        {errors.name?.[0] && (
-          <FieldError id="name-error">{t(errors.name[0])}</FieldError>
-        )}
+        <FieldDescription id="name-hint">{t('propertyNameHint')}</FieldDescription>
+        {errors.name?.[0] && <FieldError id="name-error">{t(errors.name[0])}</FieldError>}
       </Field>
     </div>
   )
@@ -214,36 +263,42 @@ function PropertyFormName({ className, ...props }: React.ComponentProps<'div'>) 
 function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'>) {
   const t = useTranslations('properties')
   const {
-    initialValues, errors, street, setStreet, neighborhood, setNeighborhood,
-    city, setCity, addressState, setAddressState, addressStateRef, handleAddressFound,
+    initialValues,
+    errors,
+    street,
+    setStreet,
+    neighborhood,
+    setNeighborhood,
+    city,
+    setCity,
+    addressState,
+    setAddressState,
+    addressStateRef,
+    handleAddressFound,
   } = useFormContext()
 
   return (
-    <div data-slot="property-form-content" className={cn('flex flex-col gap-6', className)} {...props}>
+    <div
+      data-slot="property-form-content"
+      className={cn('flex flex-col gap-6', className)}
+      {...props}
+    >
       <Field data-invalid={Boolean(errors.postal_code?.[0]) || undefined}>
-        <CepField
-          onAddressFound={handleAddressFound}
-          defaultValue={initialValues?.postal_code}
-        />
+        <CepField onAddressFound={handleAddressFound} defaultValue={initialValues?.postal_code} />
         {errors.postal_code?.[0] && (
-          <FieldError id="postal_code-error">
-            {t(errors.postal_code[0])}
-          </FieldError>
+          <FieldError id="postal_code-error">{t(errors.postal_code[0])}</FieldError>
         )}
       </Field>
 
       <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-border" />
-        <span className="text-sm font-medium text-muted-foreground">{t('addressSection')}</span>
-        <div className="h-px flex-1 bg-border" />
+        <div className="bg-border h-px flex-1" />
+        <span className="text-muted-foreground text-sm font-medium">{t('addressSection')}</span>
+        <div className="bg-border h-px flex-1" />
       </div>
 
       <div className="flex flex-col gap-4">
         <FieldRow columns={3} breakpoint="md">
-          <Field
-            className="md:col-span-2"
-            data-invalid={Boolean(errors.street?.[0]) || undefined}
-          >
+          <Field className="md:col-span-2" data-invalid={Boolean(errors.street?.[0]) || undefined}>
             <Label htmlFor="street">{t('street')}</Label>
             <Input
               id="street"
@@ -255,9 +310,7 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
               aria-invalid={Boolean(errors.street?.[0])}
               aria-describedby={errors.street?.[0] ? 'street-error' : undefined}
             />
-            {errors.street?.[0] && (
-              <FieldError id="street-error">{t(errors.street[0])}</FieldError>
-            )}
+            {errors.street?.[0] && <FieldError id="street-error">{t(errors.street[0])}</FieldError>}
           </Field>
 
           <Field data-invalid={Boolean(errors.number?.[0]) || undefined}>
@@ -271,9 +324,7 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
               aria-invalid={Boolean(errors.number?.[0])}
               aria-describedby={errors.number?.[0] ? 'number-error' : undefined}
             />
-            {errors.number?.[0] && (
-              <FieldError id="number-error">{t(errors.number[0])}</FieldError>
-            )}
+            {errors.number?.[0] && <FieldError id="number-error">{t(errors.number[0])}</FieldError>}
           </Field>
         </FieldRow>
 
@@ -301,10 +352,7 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
         </Field>
 
         <FieldRow columns={3} breakpoint="md">
-          <Field
-            className="md:col-span-2"
-            data-invalid={Boolean(errors.city?.[0]) || undefined}
-          >
+          <Field className="md:col-span-2" data-invalid={Boolean(errors.city?.[0]) || undefined}>
             <Label htmlFor="city">{t('city')}</Label>
             <Input
               id="city"
@@ -316,9 +364,7 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
               aria-invalid={Boolean(errors.city?.[0])}
               aria-describedby={errors.city?.[0] ? 'city-error' : undefined}
             />
-            {errors.city?.[0] && (
-              <FieldError id="city-error">{t(errors.city[0])}</FieldError>
-            )}
+            {errors.city?.[0] && <FieldError id="city-error">{t(errors.city[0])}</FieldError>}
           </Field>
 
           <Field data-invalid={Boolean(errors.state?.[0]) || undefined}>
@@ -339,13 +385,13 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
               </SelectTrigger>
               <SelectContent>
                 {addressProvider.states.map((s) => (
-                  <SelectItem key={s.code} value={s.code}>{s.code} — {s.name}</SelectItem>
+                  <SelectItem key={s.code} value={s.code}>
+                    {s.code} — {s.name}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {errors.state?.[0] && (
-              <FieldError id="state-error">{t(errors.state[0])}</FieldError>
-            )}
+            {errors.state?.[0] && <FieldError id="state-error">{t(errors.state[0])}</FieldError>}
           </Field>
         </FieldRow>
       </div>
@@ -361,13 +407,23 @@ function PropertyFormContent({ className, ...props }: React.ComponentProps<'div'
 // Footer — submit button
 // =============================================================================
 
-function PropertyFormFooter({ className, label, ...props }: React.ComponentProps<'div'> & { label?: string }) {
+function PropertyFormFooter({
+  className,
+  label,
+  ...props
+}: React.ComponentProps<'div'> & { label?: string }) {
   const t = useTranslations('properties')
   const { canContinue, isChecking } = useFormContext()
 
   return (
     <div data-slot="property-form-footer" className={className} {...props}>
-      <Button type="submit" className="h-12 w-full rounded-2xl" size="lg" disabled={!canContinue} loading={isChecking}>
+      <Button
+        type="submit"
+        className="h-12 w-full rounded-2xl"
+        size="lg"
+        disabled={!canContinue}
+        loading={isChecking}
+      >
         {label ?? t('continue')}
       </Button>
     </div>

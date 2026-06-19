@@ -15,9 +15,7 @@ export interface ExpensesValidation {
 
 const cache = new WeakMap<readonly ExpenseRow[], ExpensesValidation>()
 
-export function validateExpenses(
-  rows: readonly ExpenseRow[],
-): ExpensesValidation {
+export function validateExpenses(rows: readonly ExpenseRow[]): ExpensesValidation {
   const cached = cache.get(rows)
   if (cached) return cached
   const perRow = new Map<string, ExpenseRowParse>()

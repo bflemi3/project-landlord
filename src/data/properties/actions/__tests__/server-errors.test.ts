@@ -21,9 +21,7 @@ describe('hasAnyServerErrors', () => {
   })
 
   it('returns true for a non-empty leaf array nested under a row id (row shape)', () => {
-    expect(
-      hasAnyServerErrors({ 'row-1': { amount_minor: ['required'] } }),
-    ).toBe(true)
+    expect(hasAnyServerErrors({ 'row-1': { amount_minor: ['required'] } })).toBe(true)
   })
 
   it('returns false when every per-row slice is empty', () => {

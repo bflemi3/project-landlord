@@ -19,6 +19,8 @@ export function useHideAppAvatarOnMobile() {
     if (!el) return
 
     el.style.display = 'none'
-    return () => { el.style.display = '' }
+    return () => {
+      el.style.display = ''
+    }
   }, [])
 }

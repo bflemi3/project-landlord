@@ -2,16 +2,9 @@
 
 import type { PropertyInput } from '@/schemas/property'
 import { coerceCurrency } from '@/data/shared/currency'
-import {
-  CHECKOUT_SECTIONS,
-  getRequiredSectionIds,
-  type SectionId,
-} from './registry'
+import { CHECKOUT_SECTIONS, getRequiredSectionIds, type SectionId } from './registry'
 import type { SectionStatus } from './persistence'
-import {
-  deriveSectionValidity,
-  type SectionValidity,
-} from './section-validity'
+import { deriveSectionValidity, type SectionValidity } from './section-validity'
 import { usePropertyCreationState } from './store-provider'
 import type { RentDatesInput } from '../steps/checkout/sections/rent-dates/schemas'
 
@@ -67,9 +60,7 @@ export function useIsSectionActive(id: SectionId): boolean {
  */
 export function useIsSectionUpNext(id: SectionId): boolean {
   return usePropertyCreationState((s) => {
-    const upNextId = CHECKOUT_SECTIONS.find(
-      (x) => s.sectionStates[x.id] === 'upcoming',
-    )?.id
+    const upNextId = CHECKOUT_SECTIONS.find((x) => s.sectionStates[x.id] === 'upcoming')?.id
     return upNextId === id
   })
 }
@@ -168,9 +159,7 @@ export function useIsExtracted(path: ExtractedFieldPath): boolean {
   const [sectionId, ...fieldSegments] = path.split('.') as [SectionId, ...string[]]
   const getter = EXTRACTION_GETTERS[path]
 
-  const current = usePropertyCreationState((s) =>
-    readPath(s.sectionData[sectionId], fieldSegments),
-  )
+  const current = usePropertyCreationState((s) => readPath(s.sectionData[sectionId], fieldSegments))
   const extracted = usePropertyCreationState((s) =>
     getter && s.extractionResult ? getter(s.extractionResult) : undefined,
   )

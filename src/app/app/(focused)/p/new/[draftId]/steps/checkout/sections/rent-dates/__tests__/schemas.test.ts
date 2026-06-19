@@ -68,9 +68,7 @@ describe('rentDatesNoContractSchema — structural validation', () => {
   it('rejects unsupported currency codes', () => {
     const result = rentDatesNoContractSchema.safeParse({ currency: 'EUR' })
     expect(result.success).toBe(false)
-    expect(
-      result.error?.issues.some((i) => i.message === 'invalidCurrency'),
-    ).toBe(true)
+    expect(result.error?.issues.some((i) => i.message === 'invalidCurrency')).toBe(true)
   })
 
   it('accepts due_day at the lower boundary (1)', () => {
@@ -132,9 +130,7 @@ describe('rentDatesNoContractSchema — structural validation', () => {
     })
     expect(result.success).toBe(false)
     expect(
-      result.error?.issues.some(
-        (i) => i.path[0] === 'start_date' && i.message === 'invalidDate',
-      ),
+      result.error?.issues.some((i) => i.path[0] === 'start_date' && i.message === 'invalidDate'),
     ).toBe(true)
   })
 
@@ -144,9 +140,7 @@ describe('rentDatesNoContractSchema — structural validation', () => {
     })
     expect(result.success).toBe(false)
     expect(
-      result.error?.issues.some(
-        (i) => i.path[0] === 'end_date' && i.message === 'invalidDate',
-      ),
+      result.error?.issues.some((i) => i.path[0] === 'end_date' && i.message === 'invalidDate'),
     ).toBe(true)
   })
 
@@ -171,9 +165,7 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
     const result = rentDatesContractSchema.safeParse({ due_day: 5 })
     expect(result.success).toBe(false)
     expect(
-      result.error?.issues.some(
-        (i) => i.path[0] === 'amount_minor' && i.message === 'required',
-      ),
+      result.error?.issues.some((i) => i.path[0] === 'amount_minor' && i.message === 'required'),
     ).toBe(true)
   })
 
@@ -184,9 +176,7 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
     })
     expect(result.success).toBe(false)
     expect(
-      result.error?.issues.some(
-        (i) => i.path[0] === 'amount_minor' && i.message === 'required',
-      ),
+      result.error?.issues.some((i) => i.path[0] === 'amount_minor' && i.message === 'required'),
     ).toBe(true)
   })
 
@@ -194,17 +184,14 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
     const result = rentDatesContractSchema.safeParse({ amount_minor: 250_000 })
     expect(result.success).toBe(false)
     expect(
-      result.error?.issues.some(
-        (i) => i.path[0] === 'due_day' && i.message === 'required',
-      ),
+      result.error?.issues.some((i) => i.path[0] === 'due_day' && i.message === 'required'),
     ).toBe(true)
   })
 
   it('surfaces both required errors when both fields are missing', () => {
     const result = rentDatesContractSchema.safeParse({})
     expect(result.success).toBe(false)
-    const messages =
-      result.error?.issues.map((i) => `${String(i.path[0])}:${i.message}`) ?? []
+    const messages = result.error?.issues.map((i) => `${String(i.path[0])}:${i.message}`) ?? []
     expect(messages).toContain('amount_minor:required')
     expect(messages).toContain('due_day:required')
   })
@@ -233,9 +220,7 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
     })
     expect(result.success).toBe(false)
     expect(
-      result.error?.issues.some(
-        (i) => i.path[0] === 'start_date' && i.message === 'required',
-      ),
+      result.error?.issues.some((i) => i.path[0] === 'start_date' && i.message === 'required'),
     ).toBe(true)
   })
 
@@ -247,9 +232,7 @@ describe('rentDatesContractSchema — required-field enforcement', () => {
     })
     expect(result.success).toBe(false)
     expect(
-      result.error?.issues.some(
-        (i) => i.path[0] === 'end_date' && i.message === 'required',
-      ),
+      result.error?.issues.some((i) => i.path[0] === 'end_date' && i.message === 'required'),
     ).toBe(true)
   })
 
@@ -289,8 +272,7 @@ describe.each([
     expect(result.success).toBe(false)
     expect(
       result.error?.issues.some(
-        (i) =>
-          i.path[0] === 'end_date' && i.message === 'endDateBeforeStart',
+        (i) => i.path[0] === 'end_date' && i.message === 'endDateBeforeStart',
       ),
     ).toBe(true)
   })
@@ -301,9 +283,7 @@ describe.each([
       start_date: '2026-06-01',
       end_date: '2026-06-01',
     })
-    expect(
-      result.error?.issues.some((i) => i.message === 'endDateBeforeStart'),
-    ).toBeFalsy()
+    expect(result.error?.issues.some((i) => i.message === 'endDateBeforeStart')).toBeFalsy()
   })
 
   it('does not fire when only start_date is present', () => {
@@ -311,9 +291,7 @@ describe.each([
       ...baseValid,
       start_date: '2026-06-01',
     })
-    expect(
-      result.error?.issues.some((i) => i.message === 'endDateBeforeStart'),
-    ).toBeFalsy()
+    expect(result.error?.issues.some((i) => i.message === 'endDateBeforeStart')).toBeFalsy()
   })
 
   it('does not fire when only end_date is present', () => {
@@ -321,8 +299,6 @@ describe.each([
       ...baseValid,
       end_date: '2026-06-01',
     })
-    expect(
-      result.error?.issues.some((i) => i.message === 'endDateBeforeStart'),
-    ).toBeFalsy()
+    expect(result.error?.issues.some((i) => i.message === 'endDateBeforeStart')).toBeFalsy()
   })
 })

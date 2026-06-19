@@ -19,11 +19,7 @@ import {
 import { useDelayedRemoval } from '@/lib/hooks/use-delayed-removal'
 import { useRecentlyAdded } from '@/lib/hooks/use-recently-added'
 
-import {
-  defaultTenantRow,
-  TENANT_ROW_FIELD_NAMES,
-  type TenantRow,
-} from './schemas'
+import { defaultTenantRow, TENANT_ROW_FIELD_NAMES, type TenantRow } from './schemas'
 import {
   usePropertyCreationActions,
   usePropertyCreationState,
@@ -33,18 +29,12 @@ import { TenantRow as TenantRowComponent } from './tenant-row'
 
 export function TenantList() {
   const t = useTranslations('propertyCreation.checkout.tenants')
-  const {
-    setSectionData,
-    setTenantsListUI,
-    setTouched,
-    setServerErrors,
-  } = usePropertyCreationActions()
+  const { setSectionData, setTenantsListUI, setTouched, setServerErrors } =
+    usePropertyCreationActions()
   const tenantIds = usePropertyCreationState(
     useShallow((s) => (s.sectionData.tenants as TenantRow[]).map((row) => row.id)),
   )
-  const activeTenantId = usePropertyCreationState(
-    (s) => s.tenantsListUI.activeTenantId,
-  )
+  const activeTenantId = usePropertyCreationState((s) => s.tenantsListUI.activeTenantId)
   // Drives autoFocus on the new TenantForm's name input. AutoFocus only fires
   // on mount; resetting on section close is correct (no auto-focus when the
   // user reopens the section), which is exactly what `useRecentlyAdded`'s
@@ -62,9 +52,7 @@ export function TenantList() {
   const handleRemove = useCallback(
     (id: string) => {
       remove(id, () => {
-        setSectionData<TenantRow[]>('tenants', (prev) =>
-          prev.filter((row) => row.id !== id),
-        )
+        setSectionData<TenantRow[]>('tenants', (prev) => prev.filter((row) => row.id !== id))
         setServerErrors('tenants', clearRowServerErrors(id))
         setTenantsListUI((current) =>
           current.activeTenantId === id ? { activeTenantId: null } : {},
@@ -136,11 +124,7 @@ function TenantListEmptyState({ onAdd }: { onAdd: () => void }) {
   const tEmpty = useTranslations('propertyCreation.checkout.tenants.emptyState')
 
   const bullets = useMemo(
-    () => [
-      tEmpty('bulletPayments'),
-      tEmpty('bulletReminders'),
-      tEmpty('bulletLateNotices'),
-    ],
+    () => [tEmpty('bulletPayments'), tEmpty('bulletReminders'), tEmpty('bulletLateNotices')],
     [tEmpty],
   )
 

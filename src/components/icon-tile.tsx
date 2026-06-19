@@ -15,7 +15,7 @@ type IconTileTone =
 const sizeClasses: Record<IconTileSize, string> = {
   sm: 'size-8 [&_svg]:size-4',
   md: 'size-9 [&_svg]:size-4',
-  lg: 'size-10 [&_svg]:size-[18px]',
+  lg: 'size-10 [&_svg]:size-4.5',
 }
 
 const shapeClasses: Record<IconTileShape, Record<IconTileSize, string>> = {

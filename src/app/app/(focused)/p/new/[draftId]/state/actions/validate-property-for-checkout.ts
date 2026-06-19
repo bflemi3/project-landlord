@@ -50,9 +50,7 @@ export async function validatePropertyForCheckout(
             : undefined,
         },
       ],
-      ...(result.existingPropertyId
-        ? { existingPropertyId: result.existingPropertyId }
-        : {}),
+      ...(result.existingPropertyId ? { existingPropertyId: result.existingPropertyId } : {}),
     }
   }
 
@@ -61,8 +59,6 @@ export async function validatePropertyForCheckout(
     sectionErrors: {
       property: errors as Record<string, string[]>,
     },
-    ...(result.existingPropertyId
-      ? { existingPropertyId: result.existingPropertyId }
-      : {}),
+    ...(result.existingPropertyId ? { existingPropertyId: result.existingPropertyId } : {}),
   }
 }

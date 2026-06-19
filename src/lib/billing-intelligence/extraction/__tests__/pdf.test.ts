@@ -3,10 +3,11 @@ import { extractTextFromPdf } from '../pdf'
 
 vi.mock('unpdf', () => ({
   getDocumentProxy: () => Promise.resolve({ destroy: () => Promise.resolve() }),
-  extractText: () => Promise.resolve({
-    totalPages: 2,
-    text: 'Page 1 content\nPage 2 content',
-  }),
+  extractText: () =>
+    Promise.resolve({
+      totalPages: 2,
+      text: 'Page 1 content\nPage 2 content',
+    }),
 }))
 
 describe('extractTextFromPdf', () => {

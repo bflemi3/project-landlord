@@ -325,51 +325,51 @@ export type Database = {
       charge_instances: {
         Row: {
           amount_minor: number
-          charge_definition_id: string | null
+          charge_definition_id: string
           charge_source: Database["public"]["Enums"]["charge_source"]
           created_at: string
           currency: string
+          due_date: string | null
           id: string
+          issued_on: string
           landlord_fixed_minor: number | null
           landlord_percentage: number | null
-          name: string
           source_document_id: string | null
           split_type: Database["public"]["Enums"]["split_type"]
-          statement_id: string
           tenant_fixed_minor: number | null
           tenant_percentage: number | null
           updated_at: string
         }
         Insert: {
           amount_minor: number
-          charge_definition_id?: string | null
+          charge_definition_id: string
           charge_source?: Database["public"]["Enums"]["charge_source"]
           created_at?: string
           currency?: string
+          due_date?: string | null
           id?: string
+          issued_on: string
           landlord_fixed_minor?: number | null
           landlord_percentage?: number | null
-          name: string
           source_document_id?: string | null
           split_type?: Database["public"]["Enums"]["split_type"]
-          statement_id: string
           tenant_fixed_minor?: number | null
           tenant_percentage?: number | null
           updated_at?: string
         }
         Update: {
           amount_minor?: number
-          charge_definition_id?: string | null
+          charge_definition_id?: string
           charge_source?: Database["public"]["Enums"]["charge_source"]
           created_at?: string
           currency?: string
+          due_date?: string | null
           id?: string
+          issued_on?: string
           landlord_fixed_minor?: number | null
           landlord_percentage?: number | null
-          name?: string
           source_document_id?: string | null
           split_type?: Database["public"]["Enums"]["split_type"]
-          statement_id?: string
           tenant_fixed_minor?: number | null
           tenant_percentage?: number | null
           updated_at?: string
@@ -389,11 +389,65 @@ export type Database = {
             referencedRelation: "source_documents"
             referencedColumns: ["id"]
           },
+        ]
+      }
+      charge_payments: {
+        Row: {
+          amount_minor: number
+          charge_instance_id: string
+          created_at: string
+          currency: string
+          id: string
+          paid_by: string
+          paid_on: string
+          payment_method: Database["public"]["Enums"]["payment_method"] | null
+          receipt_file_path: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_minor: number
+          charge_instance_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_by: string
+          paid_on: string
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          receipt_file_path?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_minor?: number
+          charge_instance_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          paid_by?: string
+          paid_on?: string
+          payment_method?: Database["public"]["Enums"]["payment_method"] | null
+          receipt_file_path?: string | null
+          updated_at?: string
+        }
+        Relationships: [
           {
-            foreignKeyName: "charge_instances_statement_id_fkey"
-            columns: ["statement_id"]
+            foreignKeyName: "charge_payments_charge_instance_id_fkey"
+            columns: ["charge_instance_id"]
             isOneToOne: false
-            referencedRelation: "statements"
+            referencedRelation: "charge_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charge_payments_charge_instance_id_fkey"
+            columns: ["charge_instance_id"]
+            isOneToOne: false
+            referencedRelation: "charge_instances_with_payment_state"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charge_payments_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -611,6 +665,13 @@ export type Database = {
             columns: ["charge_instance_id"]
             isOneToOne: false
             referencedRelation: "charge_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "disputes_charge_instance_id_fkey"
+            columns: ["charge_instance_id"]
+            isOneToOne: false
+            referencedRelation: "charge_instances_with_payment_state"
             referencedColumns: ["id"]
           },
           {
@@ -1100,79 +1161,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "notifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      payment_events: {
-        Row: {
-          amount_minor: number
-          confirmed_at: string | null
-          confirmed_by: string | null
-          created_at: string
-          currency: string
-          id: string
-          payment_date: string | null
-          payment_method: Database["public"]["Enums"]["payment_method"] | null
-          receipt_file_path: string | null
-          rejection_reason: string | null
-          statement_id: string
-          status: Database["public"]["Enums"]["payment_status"]
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          amount_minor: number
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          created_at?: string
-          currency?: string
-          id?: string
-          payment_date?: string | null
-          payment_method?: Database["public"]["Enums"]["payment_method"] | null
-          receipt_file_path?: string | null
-          rejection_reason?: string | null
-          statement_id: string
-          status?: Database["public"]["Enums"]["payment_status"]
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          amount_minor?: number
-          confirmed_at?: string | null
-          confirmed_by?: string | null
-          created_at?: string
-          currency?: string
-          id?: string
-          payment_date?: string | null
-          payment_method?: Database["public"]["Enums"]["payment_method"] | null
-          receipt_file_path?: string | null
-          rejection_reason?: string | null
-          statement_id?: string
-          status?: Database["public"]["Enums"]["payment_status"]
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "payment_events_confirmed_by_fkey"
-            columns: ["confirmed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payment_events_statement_id_fkey"
-            columns: ["statement_id"]
-            isOneToOne: false
-            referencedRelation: "statements"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "payment_events_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1685,44 +1673,6 @@ export type Database = {
           },
         ]
       }
-      recurring_rules: {
-        Row: {
-          charge_definition_id: string
-          created_at: string
-          day_of_month: number
-          end_date: string | null
-          id: string
-          start_date: string
-          updated_at: string
-        }
-        Insert: {
-          charge_definition_id: string
-          created_at?: string
-          day_of_month?: number
-          end_date?: string | null
-          id?: string
-          start_date: string
-          updated_at?: string
-        }
-        Update: {
-          charge_definition_id?: string
-          created_at?: string
-          day_of_month?: number
-          end_date?: string | null
-          id?: string
-          start_date?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "recurring_rules_charge_definition_id_fkey"
-            columns: ["charge_definition_id"]
-            isOneToOne: false
-            referencedRelation: "charge_definitions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       rent: {
         Row: {
           adjustment_amount_minor: number | null
@@ -1912,88 +1862,6 @@ export type Database = {
           },
         ]
       }
-      statements: {
-        Row: {
-          created_at: string
-          created_by: string
-          currency: string
-          deleted_at: string | null
-          id: string
-          landlord_total_minor: number
-          period_month: number
-          period_year: number
-          previous_version_id: string | null
-          published_at: string | null
-          revision: number
-          revision_note: string | null
-          status: Database["public"]["Enums"]["statement_status"]
-          tenant_total_minor: number
-          total_amount_minor: number
-          unit_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          created_by: string
-          currency?: string
-          deleted_at?: string | null
-          id?: string
-          landlord_total_minor?: number
-          period_month: number
-          period_year: number
-          previous_version_id?: string | null
-          published_at?: string | null
-          revision?: number
-          revision_note?: string | null
-          status?: Database["public"]["Enums"]["statement_status"]
-          tenant_total_minor?: number
-          total_amount_minor?: number
-          unit_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          created_by?: string
-          currency?: string
-          deleted_at?: string | null
-          id?: string
-          landlord_total_minor?: number
-          period_month?: number
-          period_year?: number
-          previous_version_id?: string | null
-          published_at?: string | null
-          revision?: number
-          revision_note?: string | null
-          status?: Database["public"]["Enums"]["statement_status"]
-          tenant_total_minor?: number
-          total_amount_minor?: number
-          unit_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "statements_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "statements_previous_version_id_fkey"
-            columns: ["previous_version_id"]
-            isOneToOne: false
-            referencedRelation: "statements"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "statements_unit_id_fkey"
-            columns: ["unit_id"]
-            isOneToOne: false
-            referencedRelation: "units"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       tenant_splits: {
         Row: {
           charge_instance_id: string
@@ -2025,6 +1893,13 @@ export type Database = {
             columns: ["charge_instance_id"]
             isOneToOne: false
             referencedRelation: "charge_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_splits_charge_instance_id_fkey"
+            columns: ["charge_instance_id"]
+            isOneToOne: false
+            referencedRelation: "charge_instances_with_payment_state"
             referencedColumns: ["id"]
           },
           {
@@ -2153,6 +2028,43 @@ export type Database = {
       }
     }
     Views: {
+      charge_instances_with_payment_state: {
+        Row: {
+          amount_minor: number | null
+          charge_definition_id: string | null
+          charge_source: Database["public"]["Enums"]["charge_source"] | null
+          created_at: string | null
+          currency: string | null
+          due_date: string | null
+          id: string | null
+          issued_on: string | null
+          landlord_fixed_minor: number | null
+          landlord_percentage: number | null
+          outstanding_minor: number | null
+          paid_minor: number | null
+          source_document_id: string | null
+          split_type: Database["public"]["Enums"]["split_type"] | null
+          tenant_fixed_minor: number | null
+          tenant_percentage: number | null
+          updated_at: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "charge_instances_charge_definition_id_fkey"
+            columns: ["charge_definition_id"]
+            isOneToOne: false
+            referencedRelation: "charge_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "charge_instances_source_document_id_fkey"
+            columns: ["source_document_id"]
+            isOneToOne: false
+            referencedRelation: "source_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       home_action_items: {
         Row: {
           action_type: string | null
@@ -2355,8 +2267,13 @@ export type Database = {
       monthly_ledger_kind: "rent"
       monthly_ledger_status: "open" | "paid" | "overdue"
       payment_match_source_side: "landlord" | "tenant"
-      payment_method: "pix" | "bank_transfer" | "cash" | "other"
-      payment_status: "pending" | "confirmed" | "rejected"
+      payment_method:
+        | "pix"
+        | "debit_card"
+        | "credit_card"
+        | "bank_transfer"
+        | "cash"
+        | "other"
       pix_key_type: "cpf" | "email" | "phone" | "random"
       property_type: "apartment" | "house" | "commercial" | "other"
       provider_category:
@@ -2381,7 +2298,6 @@ export type Database = {
         | "complete"
         | "declined"
       split_type: "percentage" | "fixed_amount"
-      statement_status: "draft" | "published"
       user_role: "landlord" | "tenant"
     }
     CompositeTypes: {
@@ -2557,8 +2473,14 @@ export const Constants = {
       monthly_ledger_kind: ["rent"],
       monthly_ledger_status: ["open", "paid", "overdue"],
       payment_match_source_side: ["landlord", "tenant"],
-      payment_method: ["pix", "bank_transfer", "cash", "other"],
-      payment_status: ["pending", "confirmed", "rejected"],
+      payment_method: [
+        "pix",
+        "debit_card",
+        "credit_card",
+        "bank_transfer",
+        "cash",
+        "other",
+      ],
       pix_key_type: ["cpf", "email", "phone", "random"],
       property_type: ["apartment", "house", "commercial", "other"],
       provider_category: [
@@ -2586,7 +2508,6 @@ export const Constants = {
         "declined",
       ],
       split_type: ["percentage", "fixed_amount"],
-      statement_status: ["draft", "published"],
       user_role: ["landlord", "tenant"],
     },
   },

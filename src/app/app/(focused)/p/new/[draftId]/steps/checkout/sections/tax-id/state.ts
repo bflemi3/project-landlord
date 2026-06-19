@@ -1,10 +1,7 @@
 import type { PropertyInput } from '@/schemas/property'
 
 import type { PropertyCreationStateShape } from '../../../../state/store'
-import {
-  TAX_ID_INPUT_FIELD_NAMES,
-  type TaxIdInput,
-} from './schemas'
+import { TAX_ID_INPUT_FIELD_NAMES, type TaxIdInput } from './schemas'
 import { validateTaxId } from './validation'
 
 export type TaxIdSectionTouched = ReadonlySet<string>
@@ -30,9 +27,7 @@ export function clearFieldServerError(field: string) {
 }
 
 export function isValid(state: PropertyCreationStateShape): boolean {
-  const country =
-    (state.sectionData.property as PropertyInput | undefined)?.country_code ??
-    'BR'
+  const country = (state.sectionData.property as PropertyInput | undefined)?.country_code ?? 'BR'
   return validateTaxId(state.sectionData['tax-id'] as TaxIdInput, country).success
 }
 

@@ -77,103 +77,97 @@ export const CepField = memo(function CepField({
   }, [])
 
   // 8. Callbacks
-  const handleChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, '')
-    const formatted = addressProvider.formatPostalCode(raw)
+  const handleChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const raw = e.target.value.replace(/\D/g, '')
+      const formatted = addressProvider.formatPostalCode(raw)
 
-    if (isControlled) {
-      onValueChange?.(formatted)
-    } else {
-      // Uncontrolled — preserve original behavior of mutating the input value
-      // so the visible value stays formatted without forcing the parent to
-      // re-render.
-      e.target.value = formatted
-    }
+      if (isControlled) {
+        onValueChange?.(formatted)
+      } else {
+        // Uncontrolled — preserve original behavior of mutating the input value
+        // so the visible value stays formatted without forcing the parent to
+        // re-render.
+        e.target.value = formatted
+      }
 
-    setFound(false)
-    setNotFound(false)
+      setFound(false)
+      setNotFound(false)
 
-    // Cancel any pending request
-    abortControllerRef.current?.abort()
-    clearTimeout(debounceTimerRef.current)
+      // Cancel any pending request
+      abortControllerRef.current?.abort()
+      clearTimeout(debounceTimerRef.current)
 
-    if (raw.length === 8) {
-      setLooking(true)
+      if (raw.length === 8) {
+        setLooking(true)
 
-      debounceTimerRef.current = setTimeout(async () => {
-        const controller = new AbortController()
-        abortControllerRef.current = controller
+        debounceTimerRef.current = setTimeout(async () => {
+          const controller = new AbortController()
+          abortControllerRef.current = controller
 
-        try {
-          const result = await addressProvider.lookupPostalCode(raw)
+          try {
+            const result = await addressProvider.lookupPostalCode(raw)
 
-          // If this request was aborted, don't update state
-          if (controller.signal.aborted) return
+            // If this request was aborted, don't update state
+            if (controller.signal.aborted) return
 
-          if (result) {
-            onAddressFound(result)
-            setFound(true)
-          } else {
-            setNotFound(true)
+            if (result) {
+              onAddressFound(result)
+              setFound(true)
+            } else {
+              setNotFound(true)
+            }
+          } catch {
+            if (!controller.signal.aborted) {
+              setNotFound(true)
+            }
+          } finally {
+            if (!controller.signal.aborted) {
+              setLooking(false)
+            }
           }
-        } catch {
-          if (!controller.signal.aborted) {
-            setNotFound(true)
-          }
-        } finally {
-          if (!controller.signal.aborted) {
-            setLooking(false)
-          }
-        }
-      }, 300)
-    } else {
-      setLooking(false)
-    }
-  }, [isControlled, onValueChange, onAddressFound])
+        }, 300)
+      } else {
+        setLooking(false)
+      }
+    },
+    [isControlled, onValueChange, onAddressFound],
+  )
 
   // 10. Return — renders as siblings; expects a parent <Field> for layout.
   return (
     <>
-      <Label htmlFor="postal_code">{t('postalCode')}{labelExtra}</Label>
-      <FieldDescription id="postal_code-hint">
-          {t('addressHint')}
-      </FieldDescription>
+      <Label htmlFor="postal_code">
+        {t('postalCode')}
+        {labelExtra}
+      </Label>
+      <FieldDescription id="postal_code-hint">{t('addressHint')}</FieldDescription>
       <Input
         id="postal_code"
         name="postal_code"
         type="text"
         inputMode="numeric"
         placeholder={t('postalCodePlaceholder')}
-        {...(isControlled
-          ? { value: value as string }
-          : { defaultValue })}
+        {...(isControlled ? { value: value as string } : { defaultValue })}
         onChange={handleChange}
         maxLength={9}
         aria-invalid={hasError || undefined}
         aria-describedby={hasError && errorId ? errorId : 'postal_code-hint'}
       />
       {looking && (
-        <FieldDescription
-          id="postal_code-hint"
-          className="flex items-center gap-2"
-        >
+        <FieldDescription id="postal_code-hint" className="flex items-center gap-2">
           <Loader2 className="size-3 animate-spin" />
           {t('postalCodeLooking')}
         </FieldDescription>
       )}
       {found && (
-        <FieldDescription
-          id="postal_code-hint"
-          className="flex items-center gap-2 text-primary"
-        >
+        <FieldDescription id="postal_code-hint" className="text-primary flex items-center gap-2">
           <Check className="size-3" />
           {t('postalCodeFound')}
         </FieldDescription>
       )}
       {notFound && (
-        <FieldDescription id="postal_code-hint">
-          {t('postalCodeNotFound')}
-        </FieldDescription>
+        <FieldDescription id="postal_code-hint">{t('postalCodeNotFound')}</FieldDescription>
       )}
     </>
   )

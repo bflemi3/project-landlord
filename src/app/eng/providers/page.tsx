@@ -19,8 +19,8 @@ function ProviderRegistry() {
       </EmptyStateIcon>
       <EmptyStateTitle>No providers yet</EmptyStateTitle>
       <EmptyStateDescription>
-        Providers are companies whose bills are processed through the billing
-        intelligence pipeline. Add your first provider to get started.
+        Providers are companies whose bills are processed through the billing intelligence pipeline.
+        Add your first provider to get started.
       </EmptyStateDescription>
       <EmptyStateActions>
         <Button render={<Link href="/eng/providers/new" />} nativeButton={false}>

@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  createContext,
-  useContext,
-  useState,
-  useSyncExternalStore,
-  type ReactNode,
-} from 'react'
+import { createContext, useContext, useState, useSyncExternalStore, type ReactNode } from 'react'
 import { useStore } from 'zustand'
 import {
   createPropertyCreationStore,
@@ -48,9 +42,7 @@ export function PropertyCreationStoreProvider({
 function useStoreFromContext(): PropertyCreationStore {
   const store = useContext(StoreContext)
   if (!store) {
-    throw new Error(
-      'usePropertyCreation* hook must be used inside <PropertyCreationStoreProvider>',
-    )
+    throw new Error('usePropertyCreation* hook must be used inside <PropertyCreationStoreProvider>')
   }
   return store
 }
@@ -71,9 +63,7 @@ function useStoreFromContext(): PropertyCreationStore {
  *     `useShallow` from `zustand/shallow` (or select each field on its own
  *     line and compose inside the component).
  */
-export function usePropertyCreationState<T>(
-  selector: (state: PropertyCreationStoreValue) => T,
-): T {
+export function usePropertyCreationState<T>(selector: (state: PropertyCreationStoreValue) => T): T {
   const store = useStoreFromContext()
   return useStore(store, selector)
 }

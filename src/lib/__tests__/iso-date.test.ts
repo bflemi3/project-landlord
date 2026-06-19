@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  formatIsoDate,
-  formatLocaleDate,
-  parseIsoDate,
-  parseLocaleDate,
-} from '../iso-date'
+import { formatIsoDate, formatLocaleDate, parseIsoDate, parseLocaleDate } from '../iso-date'
 
 // parseIsoDate / formatIsoDate exist to keep date pickers timezone-safe. The
 // classic bug is `new Date('2026-01-01')` parsing as UTC midnight, which a

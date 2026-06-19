@@ -8,7 +8,7 @@ This product handles sensitive billing, financial, and personal data (CPF, addre
 - Role-aware access control
 - Secure document storage
 - Audit trail for sensitive changes
-- Explicit revision tracking for statements
+- Explicit correction trail for billing records (past months are immutable; corrections are recorded events)
 - Data minimization — collect only what billing requires
 - Supabase project hosted in `sa-east-1` (São Paulo)
 
@@ -38,7 +38,7 @@ All requests answered within **15 days**. Support: confirmation/access, correcti
 | Data type | Retention |
 |---|---|
 | Active account data | Account duration + 30 days |
-| Published statements | 5 years |
+| Billing records (charge instances + payments) | 5 years |
 | Payment records | 5 years |
 | Uploaded bills/documents | Tenancy + 1 year or 5 years (whichever longer) |
 | Analytics events | 2 years, then anonymize |

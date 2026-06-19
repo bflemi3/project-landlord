@@ -1,8 +1,5 @@
 import type { PropertyCreationStateShape } from '../../../../state/store'
-import {
-  EXPENSE_ROW_FIELD_NAMES,
-  type ExpenseRow,
-} from './schemas'
+import { EXPENSE_ROW_FIELD_NAMES, type ExpenseRow } from './schemas'
 import { validateExpenses } from './validation'
 
 export type ExpensesTouched = Record<string, ReadonlySet<string>>

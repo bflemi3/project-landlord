@@ -69,22 +69,40 @@ export function parseSplit(allocations: AllocationRow[]): ChargeSplit {
 
   const tenantAlloc = allocations.find((a) => a.role === 'tenant')
   const landlordAlloc = allocations.find((a) => a.role === 'landlord')
-  const allocationType = (tenantAlloc?.allocation_type ?? landlordAlloc?.allocation_type ?? 'percentage') as ChargeSplit['allocationType']
+  const allocationType = (tenantAlloc?.allocation_type ??
+    landlordAlloc?.allocation_type ??
+    'percentage') as ChargeSplit['allocationType']
 
   if (allocationType === 'fixed_amount') {
     const tenantFixed = tenantAlloc?.fixed_minor ?? 0
     const landlordFixed = landlordAlloc?.fixed_minor ?? 0
     const payer: ChargeSplit['payer'] =
       tenantFixed === 0 ? 'landlord' : landlordFixed === 0 ? 'tenant' : 'split'
-    return { payer, allocationType, tenantPercent: 0, landlordPercent: 0, tenantFixedMinor: tenantFixed, landlordFixedMinor: landlordFixed }
+    return {
+      payer,
+      allocationType,
+      tenantPercent: 0,
+      landlordPercent: 0,
+      tenantFixedMinor: tenantFixed,
+      landlordFixedMinor: landlordFixed,
+    }
   }
 
-  const tenantPct = tenantAlloc?.percentage ?? (landlordAlloc ? 100 - (landlordAlloc.percentage ?? 0) : 100)
-  const landlordPct = landlordAlloc?.percentage ?? (tenantAlloc ? 100 - (tenantAlloc.percentage ?? 0) : 0)
+  const tenantPct =
+    tenantAlloc?.percentage ?? (landlordAlloc ? 100 - (landlordAlloc.percentage ?? 0) : 100)
+  const landlordPct =
+    landlordAlloc?.percentage ?? (tenantAlloc ? 100 - (tenantAlloc.percentage ?? 0) : 0)
   const payer: ChargeSplit['payer'] =
     tenantPct === 0 ? 'landlord' : tenantPct < 100 ? 'split' : 'tenant'
 
-  return { payer, allocationType, tenantPercent: tenantPct, landlordPercent: landlordPct, tenantFixedMinor: null, landlordFixedMinor: null }
+  return {
+    payer,
+    allocationType,
+    tenantPercent: tenantPct,
+    landlordPercent: landlordPct,
+    tenantFixedMinor: null,
+    landlordFixedMinor: null,
+  }
 }
 
 // =============================================================================
@@ -99,20 +117,20 @@ export function buildAllocationRows(input: SplitInput): AllocationWrite[] {
   }
 
   const isFixed = input.splitMode === 'amount'
-  const allocationType = isFixed ? 'fixed_amount' as const : 'percentage' as const
+  const allocationType = isFixed ? ('fixed_amount' as const) : ('percentage' as const)
 
   return [
     {
       role: 'tenant',
       allocation_type: allocationType,
       percentage: isFixed ? null : input.tenantPercent,
-      fixed_minor: isFixed ? input.tenantFixedMinor ?? null : null,
+      fixed_minor: isFixed ? (input.tenantFixedMinor ?? null) : null,
     },
     {
       role: 'landlord',
       allocation_type: allocationType,
       percentage: isFixed ? null : input.landlordPercent,
-      fixed_minor: isFixed ? input.landlordFixedMinor ?? null : null,
+      fixed_minor: isFixed ? (input.landlordFixedMinor ?? null) : null,
     },
   ]
 }

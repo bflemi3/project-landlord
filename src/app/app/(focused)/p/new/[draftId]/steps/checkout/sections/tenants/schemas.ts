@@ -15,10 +15,7 @@ const rowExtensions = {
   isExtracted: z.boolean(),
 }
 
-function refineEmailByInviteNow(
-  data: { email: string; inviteNow: boolean },
-  ctx: z.RefinementCtx,
-) {
+function refineEmailByInviteNow(data: { email: string; inviteNow: boolean }, ctx: z.RefinementCtx) {
   if (data.inviteNow && data.email.length === 0) {
     ctx.addIssue({ code: 'custom', path: ['email'], message: 'required' })
   }
@@ -33,9 +30,7 @@ const tenantRowObjectSchema = tenantInputBaseSchema.extend({
   taxId: brazilTaxIdSchema,
 })
 
-export const tenantRowSchema = tenantRowObjectSchema.superRefine(
-  refineEmailByInviteNow,
-)
+export const tenantRowSchema = tenantRowObjectSchema.superRefine(refineEmailByInviteNow)
 
 export function getTenantRowSchema(countryCode = 'BR') {
   return tenantInputBaseSchema
@@ -62,10 +57,7 @@ export function defaultTenantRow(): TenantRow {
   }
 }
 
-export function tenantRowFromContractParty(
-  party: ContractParty,
-  countryCode = 'BR',
-): TenantRow {
+export function tenantRowFromContractParty(party: ContractParty, countryCode = 'BR'): TenantRow {
   return {
     id: crypto.randomUUID(),
     name: normalizeExtractedName(party.name ?? ''),

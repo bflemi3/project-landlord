@@ -17,10 +17,7 @@ vi.mock('idb-keyval', () => ({
   }),
 }))
 
-import {
-  PropertyCreationStoreProvider,
-  usePropertyCreationState,
-} from '../store-provider'
+import { PropertyCreationStoreProvider, usePropertyCreationState } from '../store-provider'
 import { useWizardForm } from '../use-wizard-form'
 
 // Schema used to produce SafeParseResult instances we feed into the hook.
@@ -34,9 +31,7 @@ const schema = z.object({
 function makeWrapper(draftId: string) {
   return function Wrapper({ children }: { children: ReactNode }) {
     return (
-      <PropertyCreationStoreProvider draftId={draftId}>
-        {children}
-      </PropertyCreationStoreProvider>
+      <PropertyCreationStoreProvider draftId={draftId}>{children}</PropertyCreationStoreProvider>
     )
   }
 }
@@ -185,9 +180,7 @@ describe('useWizardForm — setTouched dispatch', () => {
     })
 
     act(() => {
-      result.current.form.setTouched<ReadonlySet<string>>(
-        () => new Set(['street']),
-      )
+      result.current.form.setTouched<ReadonlySet<string>>(() => new Set(['street']))
     })
 
     const propertyTouched = result.current.sectionTouched.property as
@@ -220,9 +213,7 @@ describe('useWizardForm — setTouched dispatch', () => {
     })
 
     act(() => {
-      result.current.form.setTouched<ReadonlySet<string>>(
-        () => new Set(['street']),
-      )
+      result.current.form.setTouched<ReadonlySet<string>>(() => new Set(['street']))
     })
     act(() => {
       result.current.form.setTouched<ReadonlySet<string>>((prev) => {

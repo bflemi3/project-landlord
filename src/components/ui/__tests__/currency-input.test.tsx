@@ -30,19 +30,10 @@ function changeInput(value: string) {
   return fireEvent.change(getInput(), { target: { value } })
 }
 
-function ControlledCurrencyInput({
-  initialValue,
-}: {
-  initialValue?: number
-}) {
+function ControlledCurrencyInput({ initialValue }: { initialValue?: number }) {
   const [value, setValue] = useState<number | undefined>(initialValue)
 
-  return (
-    <CurrencyInput
-      value={value}
-      onValueChange={setValue}
-    />
-  )
+  return <CurrencyInput value={value} onValueChange={setValue} />
 }
 
 // ---------------------------------------------------------------------------
@@ -56,9 +47,7 @@ describe('CurrencyInput formatting', () => {
   })
 
   it('shows custom placeholder', () => {
-    render(
-      <CurrencyInput value={undefined} placeholder="—" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} placeholder="—" onValueChange={vi.fn()} />)
     expect(getInput().getAttribute('placeholder')).toBe('—')
   })
 
@@ -73,16 +62,12 @@ describe('CurrencyInput formatting', () => {
   })
 
   it('formats USD: 15099 → 150.99', () => {
-    render(
-      <CurrencyInput value={15099} currency="USD" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={15099} currency="USD" onValueChange={vi.fn()} />)
     expect((getInput() as HTMLInputElement).value).toBe('150.99')
   })
 
   it('formats USD with group separator: 1234567 → 12,345.67', () => {
-    render(
-      <CurrencyInput value={1234567} currency="USD" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={1234567} currency="USD" onValueChange={vi.fn()} />)
     expect((getInput() as HTMLInputElement).value).toBe('12,345.67')
   })
 
@@ -183,14 +168,10 @@ describe('CurrencyInput formatting', () => {
   })
 
   it('reformats display when currency switches mid-flow', () => {
-    const { rerender } = render(
-      <CurrencyInput value={15099} onValueChange={vi.fn()} />,
-    )
+    const { rerender } = render(<CurrencyInput value={15099} onValueChange={vi.fn()} />)
     expect((getInput() as HTMLInputElement).value).toBe('150,99')
 
-    rerender(
-      <CurrencyInput value={15099} currency="USD" onValueChange={vi.fn()} />,
-    )
+    rerender(<CurrencyInput value={15099} currency="USD" onValueChange={vi.fn()} />)
     expect((getInput() as HTMLInputElement).value).toBe('150.99')
   })
 })
@@ -206,16 +187,12 @@ describe('CurrencyInput currency symbol', () => {
   })
 
   it('shows $ for USD', () => {
-    render(
-      <CurrencyInput value={undefined} currency="USD" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} currency="USD" onValueChange={vi.fn()} />)
     expect(screen.getByText('$')).toBeDefined()
   })
 
   it('uses USD decimal placeholder when currency is USD', () => {
-    render(
-      <CurrencyInput value={undefined} currency="USD" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} currency="USD" onValueChange={vi.fn()} />)
     expect(getInput().getAttribute('placeholder')).toBe('0.00')
   })
 })
@@ -371,13 +348,7 @@ describe('CurrencyInput native editing', () => {
 
   it('calls onBlur when the amount input blurs', () => {
     const onBlur = vi.fn()
-    render(
-      <CurrencyInput
-        value={undefined}
-        onBlur={onBlur}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} onBlur={onBlur} onValueChange={vi.fn()} />)
 
     fireEvent.focus(getInput())
     fireEvent.blur(getInput())
@@ -481,9 +452,7 @@ describe('CurrencyInput native editing', () => {
   })
 
   it('syncs external controlled value when not focused', () => {
-    const { rerender } = render(
-      <CurrencyInput value={undefined} onValueChange={vi.fn()} />,
-    )
+    const { rerender } = render(<CurrencyInput value={undefined} onValueChange={vi.fn()} />)
     expect((getInput() as HTMLInputElement).value).toBe('')
 
     rerender(<CurrencyInput value={63000} onValueChange={vi.fn()} />)
@@ -528,20 +497,12 @@ describe('CurrencyInput variants', () => {
   })
 
   it('applies page variant', () => {
-    render(
-      <CurrencyInput value={undefined} variant="page" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} variant="page" onValueChange={vi.fn()} />)
     expect(getWrapper().className).toContain('bg-transparent')
   })
 
   it('applies underline variant', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        variant="underline"
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} variant="underline" onValueChange={vi.fn()} />)
     const cls = getWrapper().className
     expect(cls).toContain('border-b-2')
     expect(cls).toContain('bg-transparent')
@@ -559,16 +520,12 @@ describe('CurrencyInput sizes', () => {
   })
 
   it('applies lg size (h-14)', () => {
-    render(
-      <CurrencyInput value={undefined} size="lg" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} size="lg" onValueChange={vi.fn()} />)
     expect(getWrapper().className).toContain('h-14')
   })
 
   it('applies xl size (h-20 with horizontal centering)', () => {
-    render(
-      <CurrencyInput value={undefined} size="xl" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} size="xl" onValueChange={vi.fn()} />)
     expect(getWrapper().className).toContain('h-20')
     expect(getWrapper().className).toContain('justify-center')
   })
@@ -577,27 +534,13 @@ describe('CurrencyInput sizes', () => {
     // Regression: the prior xl variant used only `pb-2` for spacing, which
     // pushed content above the visual center for the boxed variants. Verify
     // we no longer carry that asymmetric padding.
-    render(
-      <CurrencyInput
-        value={undefined}
-        size="xl"
-        variant="page"
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} size="xl" variant="page" onValueChange={vi.fn()} />)
     const cls = getWrapper().className
     expect(cls).not.toMatch(/(?:^|\s)pb-2(?:\s|$)/)
   })
 
   it('xl + page variant has both fixed height and items-center for vertical centering', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        size="xl"
-        variant="page"
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} size="xl" variant="page" onValueChange={vi.fn()} />)
     const cls = getWrapper().className
     expect(cls).toContain('h-20')
     // items-center comes from the cva base; it pairs with the fixed height
@@ -634,27 +577,17 @@ describe('CurrencyInput ARIA', () => {
   })
 
   it('updates label when currency changes', () => {
-    render(
-      <CurrencyInput value={undefined} currency="USD" onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} currency="USD" onValueChange={vi.fn()} />)
     expect(getInput().getAttribute('aria-label')).toBe('Amount in USD')
   })
 
   it('forwards aria-invalid=true to wrapper', () => {
-    render(
-      <CurrencyInput value={undefined} aria-invalid onValueChange={vi.fn()} />,
-    )
+    render(<CurrencyInput value={undefined} aria-invalid onValueChange={vi.fn()} />)
     expect(getWrapper().getAttribute('aria-invalid')).toBe('true')
   })
 
   it('forwards aria-invalid=false to wrapper', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        aria-invalid={false}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} aria-invalid={false} onValueChange={vi.fn()} />)
     expect(getWrapper().getAttribute('aria-invalid')).toBe('false')
   })
 
@@ -664,16 +597,8 @@ describe('CurrencyInput ARIA', () => {
   })
 
   it('SelectTrigger has aria-label="Select currency"', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
-    expect(screen.getByRole('combobox').getAttribute('aria-label')).toBe(
-      'Select currency',
-    )
+    render(<CurrencyInput value={undefined} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
+    expect(screen.getByRole('combobox').getAttribute('aria-label')).toBe('Select currency')
   })
 
   it('amount input has inputMode=decimal', () => {
@@ -688,13 +613,7 @@ describe('CurrencyInput ARIA', () => {
 
 describe('CurrencyInput className', () => {
   it('merges custom className onto wrapper', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        className="my-custom-class"
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} className="my-custom-class" onValueChange={vi.fn()} />)
     expect(getWrapper().className).toContain('my-custom-class')
   })
 })
@@ -740,28 +659,14 @@ describe('CurrencyInput currency selector', () => {
   })
 
   it('renders Select trigger when onCurrencyChange is provided', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
     expect(screen.getByRole('combobox')).toBeDefined()
   })
 
   it('keeps the currency trigger above the hidden amount textbox', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
 
-    const selector = screen
-      .getByRole('combobox')
-      .closest('[data-slot="currency-selector"]')
+    const selector = screen.getByRole('combobox').closest('[data-slot="currency-selector"]')
 
     expect(selector).toBeDefined()
     expect(selector?.className).toContain('relative')
@@ -770,13 +675,7 @@ describe('CurrencyInput currency selector', () => {
   })
 
   it('keeps the outer input active while the currency menu is open', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
 
     const wrapper = getWrapper()
     expect(wrapper.getAttribute('data-active')).toBeNull()
@@ -800,9 +699,7 @@ describe('CurrencyInput currency selector', () => {
     // selection runs through internal pointer/keyboard tracking — so we
     // drive selection via the keyboard path the listbox supports.
     fireEvent.click(screen.getByRole('combobox'))
-    const usdOption = screen
-      .getAllByRole('option')
-      .find((o) => o.textContent?.includes('USD'))!
+    const usdOption = screen.getAllByRole('option').find((o) => o.textContent?.includes('USD'))!
     act(() => {
       ;(usdOption as HTMLElement).focus()
     })
@@ -818,38 +715,20 @@ describe('CurrencyInput currency selector', () => {
 
 describe('CurrencyInput chevron coloring', () => {
   it('mutes the chevron at /40 when value is empty', () => {
-    render(
-      <CurrencyInput
-        value={undefined}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
     const trigger = screen.getByRole('combobox')
     expect(trigger.className).toContain('[&_svg]:text-muted-foreground/40')
     expect(trigger.className).not.toContain('[&_svg]:text-foreground')
   })
 
   it('also mutes the chevron when value is exactly 0 (treated as empty)', () => {
-    render(
-      <CurrencyInput
-        value={0}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={0} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
     const trigger = screen.getByRole('combobox')
     expect(trigger.className).toContain('[&_svg]:text-muted-foreground/40')
   })
 
   it('brightens the chevron to foreground when value is present', () => {
-    render(
-      <CurrencyInput
-        value={15099}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={15099} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
     const trigger = screen.getByRole('combobox')
     expect(trigger.className).toContain('[&_svg]:text-foreground')
     expect(trigger.className).not.toContain('[&_svg]:text-muted-foreground/40')
@@ -859,41 +738,23 @@ describe('CurrencyInput chevron coloring', () => {
     // Focus-within behavior is purely CSS — jsdom does not compute pseudo-class
     // selectors, so we verify the rule is present on the trigger rather than
     // the rendered color. The CSS itself is exercised in the browser.
-    render(
-      <CurrencyInput
-        value={undefined}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    render(<CurrencyInput value={undefined} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
     const trigger = screen.getByRole('combobox')
-    expect(trigger.className).toContain(
-      'group-focus-within/currency:[&_svg]:text-primary',
-    )
+    expect(trigger.className).toContain('group-focus-within/currency:[&_svg]:text-primary')
   })
 
   it('chevron color matches the symbol color for the same state', () => {
     // Pair the assertions: when the symbol is muted/40, the chevron is too;
     // when the symbol is foreground, the chevron is too.
     const { rerender } = render(
-      <CurrencyInput
-        value={undefined}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
+      <CurrencyInput value={undefined} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />,
     )
     const symbol = screen.getByText('R$')
     let trigger = screen.getByRole('combobox')
     expect(symbol.className).toContain('text-muted-foreground/40')
     expect(trigger.className).toContain('[&_svg]:text-muted-foreground/40')
 
-    rerender(
-      <CurrencyInput
-        value={15099}
-        onCurrencyChange={vi.fn()}
-        onValueChange={vi.fn()}
-      />,
-    )
+    rerender(<CurrencyInput value={15099} onCurrencyChange={vi.fn()} onValueChange={vi.fn()} />)
     trigger = screen.getByRole('combobox')
     expect(screen.getByText('R$').className).toContain('text-foreground')
     expect(trigger.className).toContain('[&_svg]:text-foreground')

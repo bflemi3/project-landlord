@@ -33,18 +33,12 @@ import { ExpenseRow } from './expense-row'
 
 export function ExpenseList() {
   const t = useTranslations('propertyCreation.checkout.expenses')
-  const {
-    setSectionData,
-    setExpensesListUI,
-    setTouched,
-    setServerErrors,
-  } = usePropertyCreationActions()
+  const { setSectionData, setExpensesListUI, setTouched, setServerErrors } =
+    usePropertyCreationActions()
   const expenseIds = usePropertyCreationState(
     useShallow((s) => (s.sectionData.expenses as ExpenseRowType[]).map((row) => row.id)),
   )
-  const activeExpenseId = usePropertyCreationState(
-    (s) => s.expensesListUI.activeExpenseId,
-  )
+  const activeExpenseId = usePropertyCreationState((s) => s.expensesListUI.activeExpenseId)
   const { markAdded, isJustAdded } = useRecentlyAdded()
   const { isRemoving, remove } = useDelayedRemoval()
 
@@ -61,9 +55,7 @@ export function ExpenseList() {
   const handleRemove = useCallback(
     (id: string) => {
       remove(id, () => {
-        setSectionData<ExpenseRowType[]>('expenses', (prev) =>
-          prev.filter((row) => row.id !== id),
-        )
+        setSectionData<ExpenseRowType[]>('expenses', (prev) => prev.filter((row) => row.id !== id))
         setServerErrors('expenses', clearRowServerErrors(id))
         setExpensesListUI((current) =>
           current.activeExpenseId === id ? { activeExpenseId: null } : {},
@@ -130,11 +122,7 @@ function ExpenseListEmptyState({ onAdd }: { onAdd: () => void }) {
   const tEmpty = useTranslations('propertyCreation.checkout.expenses.emptyState')
 
   const bullets = useMemo(
-    () => [
-      tEmpty('bulletTracking'),
-      tEmpty('bulletPayments'),
-      tEmpty('bulletResponsibility'),
-    ],
+    () => [tEmpty('bulletTracking'), tEmpty('bulletPayments'), tEmpty('bulletResponsibility')],
     [tEmpty],
   )
 

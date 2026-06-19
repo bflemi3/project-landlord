@@ -20,15 +20,15 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div className="inline-flex items-center gap-3 text-xs text-muted-foreground/60">
+    <div className="text-muted-foreground/60 inline-flex items-center gap-3 text-xs">
       {locales.map((locale, i) => (
         <span key={locale} className="inline-flex items-center gap-3">
           {i > 0 && <span>·</span>}
           <button
             onClick={() => handleChange(locale)}
             className={cn(
-              'transition-colors hover:text-muted-foreground',
-              currentLocale === locale && 'font-medium text-muted-foreground',
+              'hover:text-muted-foreground transition-colors',
+              currentLocale === locale && 'text-muted-foreground font-medium',
             )}
           >
             {localeLabels[locale]}

@@ -31,8 +31,7 @@ function detectIOSBrowser(): IOSBrowser | null {
 const iosBrowser = detectIOSBrowser()
 
 export function useInstallPrompt() {
-  const [deferredPrompt, setDeferredPrompt] =
-    useState<BeforeInstallPromptEvent | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstalled, setIsInstalled] = useState(getIsStandalone)
 
   useEffect(() => {

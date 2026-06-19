@@ -23,8 +23,8 @@ export interface Provider {
   /** Metadata (mirrors DB but available without a query) */
   meta: {
     companyName: string
-    companyTaxId: string        // company tax ID (e.g., CNPJ in Brazil)
-    countryCode: string         // ISO 3166-1 alpha-2 (e.g., 'BR')
+    companyTaxId: string // company tax ID (e.g., CNPJ in Brazil)
+    countryCode: string // ISO 3166-1 alpha-2 (e.g., 'BR')
     displayName: string
     category: ProviderCategory
     region: string

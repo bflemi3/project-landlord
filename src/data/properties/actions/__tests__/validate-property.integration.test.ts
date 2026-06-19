@@ -1,9 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import {
-  createTestUser,
-  createTestProperty,
-  cleanupTestUser,
-} from '@/test/supabase'
+import { createTestUser, createTestProperty, cleanupTestUser } from '@/test/supabase'
 import { validatePropertyCore } from '../validate-property'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { PropertyInput } from '@/schemas/property'
@@ -50,10 +46,7 @@ describe('validatePropertyCore duplicate address check', () => {
   })
 
   it('returns provider address errors before duplicate address errors', async () => {
-    const result = await validatePropertyCore(
-      client,
-      validPropertyInput({ postal_code: '123' }),
-    )
+    const result = await validatePropertyCore(client, validPropertyInput({ postal_code: '123' }))
 
     expect(result.valid).toBe(false)
     expect(result.errors?.postal_code).toEqual(['invalidPostalCode'])

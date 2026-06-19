@@ -6,7 +6,10 @@ describe('fetchEnlivDebitos', () => {
 
   it('fetches debitos', async () => {
     vi.spyOn(globalThis, 'fetch').mockResolvedValueOnce(
-      new Response(JSON.stringify({ nome_cliente: 'Test', debitos: [{ id: '1', valor: 218.47 }] }), { status: 200 }),
+      new Response(
+        JSON.stringify({ nome_cliente: 'Test', debitos: [{ id: '1', valor: 218.47 }] }),
+        { status: 200 },
+      ),
     )
     const result = await fetchEnlivDebitos('04003232909')
     expect(result.debitos[0].valor).toBe(218.47)
@@ -34,6 +37,9 @@ describe('fetchEnlivPagas', () => {
       new Response(JSON.stringify({ nome_cliente: 'Test', debitos: [] }), { status: 200 }),
     )
     await fetchEnlivPagas('04003232909')
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/resumo-pagas?page=1'), expect.anything())
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringContaining('/resumo-pagas?page=1'),
+      expect.anything(),
+    )
   })
 })

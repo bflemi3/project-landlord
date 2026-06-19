@@ -81,30 +81,38 @@ export function EmailLayout({ preview, locale = 'en', header, children }: EmailL
               hidden, full-width nowrap line makes the bump "overflow" and Gmail leaves
               sizes alone. Gmail ignores display:none, hence the bg-matched white color.
               See emailonacid.com / css-tricks.com (override-gmail-mobile-optimized). */}
-          <div style={{ display: 'none', whiteSpace: 'nowrap', font: '15px courier', color: '#ffffff' }}>
+          <div
+            style={{
+              display: 'none',
+              whiteSpace: 'nowrap',
+              font: '15px courier',
+              color: '#ffffff',
+            }}
+          >
             {' — '.repeat(60)}
           </div>
           <Container className="em-pad-container mx-auto my-10 max-w-[480px] px-6">
-            <Section className="text-center mb-8">
+            <Section className="mb-8 text-center">
               <Img
                 src={`${BASE_URL}/brand/wordmark-light.png`}
                 alt="mabenn"
                 height="28"
                 className="mx-auto my-0"
-                style={{ fontFamily: 'Inter, sans-serif', fontWeight: 700, fontSize: '24px', color: '#18181b' }}
+                style={{
+                  fontFamily: 'Inter, sans-serif',
+                  fontWeight: 700,
+                  fontSize: '24px',
+                  color: '#18181b',
+                }}
               />
             </Section>
-            <Section className="bg-card rounded-2xl border border-solid border-card-border overflow-hidden">
+            <Section className="bg-card border-card-border overflow-hidden rounded-2xl border border-solid">
               {header}
-              <Section className="em-pad-section p-8">
-                {children}
-              </Section>
+              <Section className="em-pad-section p-8">{children}</Section>
             </Section>
-            <Hr className="mx-0 my-8 w-full border border-solid border-card-border" />
+            <Hr className="border-card-border mx-0 my-8 w-full border border-solid" />
             <Section className="text-center">
-              <Text className="text-sm text-muted m-0">
-                {t.footer}
-              </Text>
+              <Text className="text-muted m-0 text-sm">{t.footer}</Text>
             </Section>
           </Container>
         </Body>

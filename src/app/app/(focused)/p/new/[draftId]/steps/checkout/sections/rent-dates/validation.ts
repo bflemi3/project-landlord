@@ -2,14 +2,9 @@
 // (contract vs no_contract). See `expenses/validation.ts` for the pattern.
 
 import type { CheckoutPath } from '../../../../state/registry'
-import {
-  rentDatesSchemaFor,
-  type RentDatesInput,
-} from './schemas'
+import { rentDatesSchemaFor, type RentDatesInput } from './schemas'
 
-export type RentDatesParse = ReturnType<
-  ReturnType<typeof rentDatesSchemaFor>['safeParse']
->
+export type RentDatesParse = ReturnType<ReturnType<typeof rentDatesSchemaFor>['safeParse']>
 
 // `null` is the pre-Step-1-commit path sentinel; encode it as a Map key so
 // each (slice, path) tuple gets one cached parse.

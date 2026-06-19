@@ -67,30 +67,18 @@ function ListRowButton({
 }
 
 function ListRowLeading({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="list-row-leading"
-      className={cn('shrink-0', className)}
-      {...props}
-    />
-  )
+  return <div data-slot="list-row-leading" className={cn('shrink-0', className)} {...props} />
 }
 
 function ListRowBody({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="list-row-body"
-      className={cn('min-w-0 flex-1', className)}
-      {...props}
-    />
-  )
+  return <div data-slot="list-row-body" className={cn('min-w-0 flex-1', className)} {...props} />
 }
 
 function ListRowTitle({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       data-slot="list-row-title"
-      className={cn('text-base font-medium text-foreground', className)}
+      className={cn('text-foreground text-base font-medium', className)}
       {...props}
     />
   )
@@ -100,27 +88,21 @@ function ListRowDescription({ className, ...props }: React.ComponentProps<'p'>) 
   return (
     <p
       data-slot="list-row-description"
-      className={cn('mt-0.5 text-sm text-muted-foreground', className)}
+      className={cn('text-muted-foreground mt-0.5 text-sm', className)}
       {...props}
     />
   )
 }
 
 function ListRowTrailing({ className, ...props }: React.ComponentProps<'div'>) {
-  return (
-    <div
-      data-slot="list-row-trailing"
-      className={cn('shrink-0', className)}
-      {...props}
-    />
-  )
+  return <div data-slot="list-row-trailing" className={cn('shrink-0', className)} {...props} />
 }
 
 function ListRowChevron({ className, ...props }: React.ComponentProps<'svg'>) {
   return (
     <ChevronRight
       data-slot="list-row-chevron"
-      className={cn('size-4 shrink-0 text-muted-foreground/40', className)}
+      className={cn('text-muted-foreground/40 size-4 shrink-0', className)}
       {...props}
     />
   )
@@ -130,7 +112,7 @@ function List({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="list"
-      className={cn('divide-y divide-border/70 dark:divide-border/80', className)}
+      className={cn('divide-border/70 dark:divide-border/80 divide-y', className)}
       {...props}
     />
   )

@@ -2,14 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import type { TypedSupabaseClient } from '@/lib/supabase/types'
-import {
-  getPropertyInputSchema,
-  type PropertyInput,
-} from '@/schemas/property'
-import {
-  zodIssuesToFieldErrors,
-  type ValidateState,
-} from '@/lib/validation'
+import { getPropertyInputSchema, type PropertyInput } from '@/schemas/property'
+import { zodIssuesToFieldErrors, type ValidateState } from '@/lib/validation'
 
 export interface ValidatePropertyState extends ValidateState<PropertyInput> {
   existingPropertyId?: string
@@ -25,9 +19,7 @@ export async function validatePropertyCore(
   if (!propertyResult.success) {
     return {
       valid: false,
-      errors: zodIssuesToFieldErrors<PropertyInput>(
-        propertyResult.error.issues,
-      ),
+      errors: zodIssuesToFieldErrors<PropertyInput>(propertyResult.error.issues),
     }
   }
 
@@ -58,14 +50,21 @@ export async function validatePropertyCore(
     const { data: existing } = await query.single()
 
     if (existing) {
-      return { valid: false, existingPropertyId: existing.id, errors: { general: ['duplicateAddress'] } }
+      return {
+        valid: false,
+        existingPropertyId: existing.id,
+        errors: { general: ['duplicateAddress'] },
+      }
     }
   }
 
   return { valid: true, fields: validatedFields }
 }
 
-export async function validateProperty(fields: PropertyInput, excludePropertyId?: string): Promise<ValidatePropertyState> {
+export async function validateProperty(
+  fields: PropertyInput,
+  excludePropertyId?: string,
+): Promise<ValidatePropertyState> {
   const supabase = await createClient()
   return validatePropertyCore(supabase, fields, excludePropertyId)
 }

@@ -8,9 +8,7 @@ import {
   taxIdBaseSchema,
 } from '../tax-id'
 
-function firstIssue(
-  result: ReturnType<typeof brazilTaxIdSchema.safeParse>,
-): string | undefined {
+function firstIssue(result: ReturnType<typeof brazilTaxIdSchema.safeParse>): string | undefined {
   if (result.success) return undefined
   return result.error.issues[0]?.message
 }

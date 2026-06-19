@@ -61,17 +61,11 @@ describe('assertExtracted — nested objects', () => {
     expect(errors).toEqual([])
   })
   it('reports path for nested mismatches', () => {
-    const errors = assertExtracted(
-      { rent: { amount: { equals: 500 } } },
-      { rent: { amount: 400 } },
-    )
+    const errors = assertExtracted({ rent: { amount: { equals: 500 } } }, { rent: { amount: 400 } })
     expect(errors[0]).toContain('rent.amount')
   })
   it('reports when a nested object is missing', () => {
-    const errors = assertExtracted(
-      { rent: { amount: { equals: 500 } } },
-      { rent: null },
-    )
+    const errors = assertExtracted({ rent: { amount: { equals: 500 } } }, { rent: null })
     expect(errors.length).toBeGreaterThan(0)
     expect(errors[0]).toContain('rent')
   })
@@ -96,10 +90,7 @@ describe('assertExtracted — list specs', () => {
       {
         landlords: {
           length: 2,
-          items: [
-            { name: { normalizedEquals: 'alex' } },
-            { name: { normalizedEquals: 'daiana' } },
-          ],
+          items: [{ name: { normalizedEquals: 'alex' } }, { name: { normalizedEquals: 'daiana' } }],
         },
       },
       { landlords: [{ name: 'Daiana' }, { name: 'Alex' }] },
@@ -111,10 +102,7 @@ describe('assertExtracted — list specs', () => {
     const errors = assertExtracted(
       {
         landlords: {
-          items: [
-            { name: { normalizedEquals: 'alex' } },
-            { name: { normalizedEquals: 'alex' } },
-          ],
+          items: [{ name: { normalizedEquals: 'alex' } }, { name: { normalizedEquals: 'alex' } }],
         },
       },
       { landlords: [{ name: 'Alex' }] },
@@ -144,12 +132,7 @@ describe('assertExtracted — list specs', () => {
         },
       },
       {
-        expenses: [
-          { type: 'electricity' },
-          { type: 'water' },
-          { type: 'gas' },
-          { type: 'other' },
-        ],
+        expenses: [{ type: 'electricity' }, { type: 'water' }, { type: 'gas' }, { type: 'other' }],
       },
     )
     expect(errors).toEqual([])

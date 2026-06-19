@@ -26,10 +26,7 @@ import { BankSectionSkeleton } from '../checkout/sections/bank'
  */
 export function StepOneSkeletonLayout() {
   return (
-    <DetailPageLayoutBody
-      data-slot="step-one-skeleton-layout"
-      className="mt-8 md:mt-6"
-    >
+    <DetailPageLayoutBody data-slot="step-one-skeleton-layout" className="mt-8 md:mt-6">
       <DetailPageLayoutMain>
         <div className="flex flex-col gap-4 md:gap-6">
           <PropertySectionSkeleton active />
@@ -44,7 +41,7 @@ export function StepOneSkeletonLayout() {
       <DetailPageLayoutSidebar className="md:sticky md:top-6">
         <div
           data-slot="step-one-summary-skeleton"
-          className="hidden rounded-card border border-transparent bg-card p-6 shadow-lg dark:border-border dark:shadow-none md:flex md:flex-col md:gap-6"
+          className="rounded-card bg-card dark:border-border hidden border border-transparent p-6 shadow-lg md:flex md:flex-col md:gap-6 dark:shadow-none"
         >
           <div className="space-y-2">
             <Skeleton className="h-4 w-32 rounded-full" />
@@ -64,7 +61,7 @@ export function StepOneSkeletonLayout() {
 
       <div
         data-slot="step-one-mobile-bottom-skeleton"
-        className="sticky bottom-0 -mx-6 mt-6 shrink-0 border-t border-border bg-background px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden"
+        className="border-border bg-background sticky bottom-0 -mx-6 mt-6 shrink-0 border-t px-6 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] md:hidden"
       >
         <div className="mb-2 flex items-center justify-center gap-2">
           {CHECKOUT_SECTIONS.map((s) => (

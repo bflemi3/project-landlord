@@ -5,10 +5,7 @@ import { EmptyState } from './home-content'
 import { GreetingSkeleton } from './home-skeletons'
 
 async function EmptyGreeting() {
-  const [profile, t] = await Promise.all([
-    getProfile(),
-    getTranslations('home'),
-  ])
+  const [profile, t] = await Promise.all([getProfile(), getTranslations('home')])
 
   const firstName = profile?.full_name?.split(' ')[0] ?? undefined
   const hour = new Date().getHours()
@@ -16,9 +13,7 @@ async function EmptyGreeting() {
   const greeting = t(greetingKey)
   const draftId = crypto.randomUUID()
 
-  return (
-    <EmptyState firstName={firstName} greeting={greeting} draftId={draftId} />
-  )
+  return <EmptyState firstName={firstName} greeting={greeting} draftId={draftId} />
 }
 
 /**
@@ -27,12 +22,10 @@ async function EmptyGreeting() {
  */
 export function EmptyHome() {
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex flex-1 flex-col items-center justify-center px-6 pb-8 pt-4 md:pt-14">
-        <SuspenseFadeIn fallback={<GreetingSkeleton />}>
-          <EmptyGreeting />
-        </SuspenseFadeIn>
-      </div>
+    <div className="flex flex-1 flex-col items-center justify-center">
+      <SuspenseFadeIn fallback={<GreetingSkeleton />}>
+        <EmptyGreeting />
+      </SuspenseFadeIn>
     </div>
   )
 }

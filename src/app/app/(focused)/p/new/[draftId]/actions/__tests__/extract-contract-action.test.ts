@@ -20,11 +20,7 @@ function makeFormData(file: File | Blob | null, fileType = 'pdf'): FormData {
   return fd
 }
 
-function makeFile(
-  content: string,
-  name = 'contract.pdf',
-  type = 'application/pdf',
-): File {
+function makeFile(content: string, name = 'contract.pdf', type = 'application/pdf'): File {
   return new File([content], name, { type })
 }
 
@@ -139,7 +135,11 @@ describe('extractContractAction', () => {
     })
 
     const fd = makeFormData(
-      makeFile('docx content', 'contract.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'),
+      makeFile(
+        'docx content',
+        'contract.docx',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      ),
       'docx',
     )
     const result = await extractContractAction(fd)

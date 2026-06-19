@@ -6,7 +6,8 @@
     "retry": "Intentar de nuevo",
     "back": "Volver",
     "taxIdLabel": "Identificación fiscal",
-    "taxIdLabelCpfOrCnpj": "CPF o CNPJ"
+    "taxIdLabelCpfOrCnpj": "CPF o CNPJ",
+    "close": "Cerrar"
   },
   "auth": {
     "tagline": "Administración de propiedades sin la inmobiliaria.",
@@ -640,19 +641,6 @@
         "typeRequired": "Elige un tipo de gasto.",
         "invalidAmount": "Ingresa un monto válido.",
         "tooLarge": "El monto es demasiado alto.",
-        "typeOptions": {
-          "electricity": "Electricidad",
-          "water": "Agua",
-          "gas": "Gas",
-          "internet": "Internet",
-          "condo": "Expensas",
-          "trash": "Basura",
-          "sewer": "Cloacas",
-          "cable": "Cable",
-          "insurance": "Seguro",
-          "maintenance": "Mantenimiento",
-          "other": "Otro"
-        },
         "amountBehavior": {
           "fixedLabel": "Monto fijo",
           "fixedTrigger": "Mismo monto cada mes",
@@ -885,8 +873,7 @@
         "contract": {
           "title": "Contrato",
           "uploaded": "Contrato subido",
-          "uploadFailed": "Tu contrato no terminó de subir.",
-          "reupload": "Volver a subir el contrato"
+          "uploadFailed": "Tu contrato no terminó de subir."
         },
         "tenants": {
           "title": "Inquilinos",
@@ -976,5 +963,83 @@
       "registerFailed": "No pudimos guardar la conexión. Inténtalo nuevamente.",
       "disconnectFailed": "No pudimos desconectar este banco. Inténtalo nuevamente."
     }
+  },
+  "property": {
+    "tabs": {
+      "revenue": "Ingresos",
+      "rent": "Alquiler",
+      "bills": "Gastos",
+      "contract": "Contrato",
+      "messages": "Mensajes"
+    },
+    "placeholders": {
+      "revenue": "Tus ingresos por alquiler — del mes, del año y totales — aparecerán aquí.",
+      "rent": "Tu alquiler — lo que vence, lo pagado y tu historial — aparecerá aquí.",
+      "bills": "El registro de gastos llegará aquí próximamente.",
+      "contract": "Tu contrato, ajustes y notificaciones aparecerán aquí.",
+      "messages": "La conversación del alquiler aparecerá aquí."
+    },
+    "contractStatus": {
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "none": "Sin contrato"
+    },
+    "summary": {
+      "due": "Por pagar",
+      "dueYours": "Debes",
+      "paid": "Pagado",
+      "paidYours": "Pagaste",
+      "awaiting": "En espera",
+      "awaitingBills": "{count, plural, =0 {todas las facturas recibidas} one {# factura} other {# facturas}}",
+      "unknown": "desconocido",
+      "total": "total",
+      "you": "tú"
+    },
+    "bills": {
+      "statuses": {
+        "paid": "Pagada",
+        "due": "Por pagar",
+        "awaiting": "En espera",
+        "overdue": "Vencida"
+      },
+      "filters": {
+        "company": "Empresa",
+        "status": "Estado",
+        "date": "Fecha"
+      },
+      "banner": "{amount} vencido",
+      "bannerYourShare": "tu parte {amount}",
+      "bannerNoneYours": "no debes nada",
+      "partialPaid": "{paid} de {total} pagado",
+      "showMonth": "Mostrar {month}",
+      "emptyMonth": "No hay facturas este mes",
+      "emptyTitle": "Aún no hay facturas",
+      "emptyDescription": "Las facturas aparecen aquí a medida que se descubren para esta propiedad.",
+      "awaitingInfoLabel": "¿Qué significa en espera?",
+      "awaitingTooltip": "Facturas que esperamos este mes pero que aún no se han emitido. Los importes son estimaciones basadas en los últimos 3 meses."
+    },
+    "menu": {
+      "open": "Opciones de la propiedad",
+      "delete": "Eliminar propiedad"
+    },
+    "deleteDialog": {
+      "title": "¿Eliminar {name}?",
+      "description": "Esto elimina permanentemente la propiedad, las unidades, el alquiler, los contratos, los gastos, las membresías y las invitaciones. Inquilinos y propietarios conservan sus cuentas.",
+      "confirm": "Eliminar",
+      "cancel": "Cancelar"
+    }
+  },
+  "expenseTypes": {
+    "electricity": "Electricidad",
+    "water": "Agua",
+    "gas": "Gas",
+    "internet": "Internet",
+    "condo": "Expensas",
+    "trash": "Basura",
+    "sewer": "Cloacas",
+    "cable": "Cable",
+    "insurance": "Seguro",
+    "maintenance": "Mantenimiento",
+    "other": "Otro"
   }
 }

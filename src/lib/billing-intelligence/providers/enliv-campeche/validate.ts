@@ -18,18 +18,28 @@ export async function validateEnlivExtraction(
       return {
         valid: false,
         source: 'api',
-        discrepancies: [{ field: 'barcode', extracted: extractedBarcode, expected: 'no matching debito found' }],
+        discrepancies: [
+          { field: 'barcode', extracted: extractedBarcode, expected: 'no matching debito found' },
+        ],
       }
     }
 
     const apiAmountMinor = toMinorUnits(matchingDebito.valor)
     if (apiAmountMinor !== extraction.billing.amountDue) {
-      discrepancies.push({ field: 'amountDue', extracted: extraction.billing.amountDue, expected: apiAmountMinor })
+      discrepancies.push({
+        field: 'amountDue',
+        extracted: extraction.billing.amountDue,
+        expected: apiAmountMinor,
+      })
     }
 
     const apiDate = normalizeDate(matchingDebito.vencimento)
     if (apiDate !== extraction.billing.dueDate) {
-      discrepancies.push({ field: 'dueDate', extracted: extraction.billing.dueDate, expected: apiDate })
+      discrepancies.push({
+        field: 'dueDate',
+        extracted: extraction.billing.dueDate,
+        expected: apiDate,
+      })
     }
 
     return { valid: discrepancies.length === 0, source: 'api', discrepancies }

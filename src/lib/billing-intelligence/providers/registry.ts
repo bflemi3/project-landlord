@@ -5,9 +5,7 @@ import { enlivCampeche } from './enliv-campeche'
  * All registered provider code modules.
  * To add a new provider: create the module, import it, add to this array.
  */
-const providers: Provider[] = [
-  enlivCampeche,
-]
+const providers: Provider[] = [enlivCampeche]
 
 /** Find a provider by its profile UUID (provider_invoice_profiles.id) */
 export function getProviderByProfileId(profileId: string): Provider | undefined {

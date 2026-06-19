@@ -46,11 +46,7 @@ export function ContractUploadError({
   type MessageKey = Parameters<typeof t>[0]
   const Icon = isWarning ? AlertTriangle : FileWarning
   const CtaIcon =
-    code === 'unsupported_language'
-      ? ArrowRight
-      : RETRY_CODES.includes(code)
-        ? RefreshCw
-        : Upload
+    code === 'unsupported_language' ? ArrowRight : RETRY_CODES.includes(code) ? RefreshCw : Upload
   const tone = isWarning ? 'warning' : 'destructive'
 
   return (
@@ -66,15 +62,13 @@ export function ContractUploadError({
           <Icon />
         </EmptyStateIcon>
         <EmptyStateTitle>{t(`${code}.title` as MessageKey)}</EmptyStateTitle>
-        <EmptyStateDescription>
-          {t(`${code}.message` as MessageKey)}
-        </EmptyStateDescription>
+        <EmptyStateDescription>{t(`${code}.message` as MessageKey)}</EmptyStateDescription>
         {showCta && (
           <EmptyStateActions>
             <Button
               data-slot="file-upload-error-action"
               variant="secondary"
-              className="border border-border"
+              className="border-border border"
               onClick={onCta}
             >
               <CtaIcon data-icon="inline-start" />

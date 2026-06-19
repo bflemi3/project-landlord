@@ -18,21 +18,15 @@ export function InviteCode({ code, signUpUrl, source = 'direct', locale = 'en' }
 
   return (
     <EmailLayout preview={variant.preview} locale={locale}>
-      <Text className="text-2xl font-bold text-foreground m-0 mb-4">
-        {variant.heading}
-      </Text>
-      <Text className="text-base leading-6 text-secondary-foreground m-0 mb-6">
-        {variant.body}
-      </Text>
-      <Section className="bg-secondary rounded-xl p-4 text-center mb-2">
-        <Text className="text-[28px] font-bold text-foreground tracking-[4px] m-0 font-mono">
+      <Text className="text-foreground m-0 mb-4 text-2xl font-bold">{variant.heading}</Text>
+      <Text className="text-secondary-foreground m-0 mb-6 text-base leading-6">{variant.body}</Text>
+      <Section className="bg-secondary mb-2 rounded-xl p-4 text-center">
+        <Text className="text-foreground m-0 font-mono text-[28px] font-bold tracking-[4px]">
           {code}
         </Text>
       </Section>
       <EmailButton href={signUpUrl}>{t.button}</EmailButton>
-      <Text className="text-sm text-muted mt-2 mb-0">
-        {t.hint}
-      </Text>
+      <Text className="text-muted mt-2 mb-0 text-sm">{t.hint}</Text>
     </EmailLayout>
   )
 }

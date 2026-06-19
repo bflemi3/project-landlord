@@ -27,10 +27,7 @@ export function useRecentlyAdded(): UseRecentlyAddedReturn {
     setRecentId(id)
   }, [])
 
-  const isJustAdded = useCallback(
-    (id: string) => id === recentId,
-    [recentId],
-  )
+  const isJustAdded = useCallback((id: string) => id === recentId, [recentId])
 
   return { recentId, markAdded, isJustAdded }
 }

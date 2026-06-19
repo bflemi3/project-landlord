@@ -97,13 +97,15 @@ describe('normalizeMonth', () => {
 
 describe('normalizeBarcode', () => {
   it('strips spaces, dots, and dashes', () => {
-    expect(normalizeBarcode('74891.16009 06660.307304 32263.871033 5 14260000021847'))
-      .toBe('74891160090666030730432263871033514260000021847')
+    expect(normalizeBarcode('74891.16009 06660.307304 32263.871033 5 14260000021847')).toBe(
+      '74891160090666030730432263871033514260000021847',
+    )
   })
 
   it('handles already-clean barcode', () => {
-    expect(normalizeBarcode('74891160090666030730432263871033514260000021847'))
-      .toBe('74891160090666030730432263871033514260000021847')
+    expect(normalizeBarcode('74891160090666030730432263871033514260000021847')).toBe(
+      '74891160090666030730432263871033514260000021847',
+    )
   })
 
   it('handles empty string', () => {
@@ -125,7 +127,7 @@ describe('parseBRL', () => {
   })
 
   it('parses large amounts', () => {
-    expect(parseBRL('12.345.678,90')).toBe(12345678.90)
+    expect(parseBRL('12.345.678,90')).toBe(12345678.9)
   })
 
   it('throws on empty string', () => {

@@ -34,8 +34,7 @@ function detectFileType(file: File): 'pdf' | 'docx' | null {
   const name = file.name.toLowerCase()
   if (file.type === 'application/pdf' || name.endsWith('.pdf')) return 'pdf'
   if (
-    file.type ===
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
     name.endsWith('.docx')
   ) {
     return 'docx'
@@ -253,15 +252,12 @@ export function UploadContract() {
   ) : null
 
   return (
-    <div
-      className="flex flex-col gap-8 pt-8"
-      data-slot="upload-contract"
-    >
+    <div className="flex flex-col gap-8 pt-8" data-slot="upload-contract">
       <div className="flex flex-col gap-2">
-        <h1 className="text-3xl font-display font-medium tracking-[-0.015em] text-foreground">{t('upload.title')}</h1>
-        <p className="text-base text-muted-foreground">
-          {t('upload.description')}
-        </p>
+        <h1 className="font-display text-foreground text-3xl font-medium tracking-[-0.015em]">
+          {t('upload.title')}
+        </h1>
+        <p className="text-muted-foreground text-base">{t('upload.description')}</p>
       </div>
 
       <FileUpload
@@ -285,7 +281,7 @@ export function UploadContract() {
       <button
         type="button"
         onClick={handleNoContract}
-        className="self-start text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground self-start text-sm underline underline-offset-4"
       >
         {t('upload.noContractLink')}
       </button>

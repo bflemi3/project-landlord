@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AlertCircle, Copy, Check } from 'lucide-react'
-import { InfoBox, InfoBoxIcon, InfoBoxContent } from '@/components/info-box'
+import { Alert, AlertBody } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 
 export function ErrorBox({ message }: { message: string }) {
@@ -15,19 +15,14 @@ export function ErrorBox({ message }: { message: string }) {
   }
 
   return (
-    <InfoBox variant="destructive">
-      <InfoBoxIcon><AlertCircle /></InfoBoxIcon>
-      <InfoBoxContent>
-        <pre className="whitespace-pre-wrap font-mono text-sm">{message}</pre>
-      </InfoBoxContent>
-      <Button
-        variant="ghost"
-        size="icon"
-        type="button"
-        onClick={handleCopy}
-      >
+    <Alert variant="destructive">
+      <AlertCircle />
+      <AlertBody>
+        <pre className="font-mono text-sm whitespace-pre-wrap">{message}</pre>
+      </AlertBody>
+      <Button variant="ghost" size="icon" type="button" onClick={handleCopy}>
         {copied ? <Check /> : <Copy />}
       </Button>
-    </InfoBox>
+    </Alert>
   )
 }

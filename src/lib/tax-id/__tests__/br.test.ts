@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import {
-  detectTaxIdKindBR,
-  formatTaxIdBR,
-  isValidTaxIdBR,
-} from '../br'
+import { detectTaxIdKindBR, formatTaxIdBR, isValidTaxIdBR } from '../br'
 
 describe('formatTaxIdBR', () => {
   it('returns empty string for empty input', () => {

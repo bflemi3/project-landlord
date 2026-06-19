@@ -95,12 +95,8 @@ describe('contractExtractionResultSchema', () => {
       indexName: 'IPCA',
       value: null,
     },
-    landlords: [
-      { name: 'Maria Silva', taxId: '123.456.789-00', email: 'maria@example.com' },
-    ],
-    tenants: [
-      { name: 'Joao Santos', taxId: '987.654.321-00', email: 'joao@example.com' },
-    ],
+    landlords: [{ name: 'Maria Silva', taxId: '123.456.789-00', email: 'maria@example.com' }],
+    tenants: [{ name: 'Joao Santos', taxId: '987.654.321-00', email: 'joao@example.com' }],
     expenses: [
       {
         type: 'electricity',
@@ -188,7 +184,7 @@ describe('contractExtractionResultSchema', () => {
   it('requires rent amount to be an integer (minor units)', () => {
     const withFloat = {
       ...validResult,
-      rent: { ...validResult.rent, amount: 2500.50 },
+      rent: { ...validResult.rent, amount: 2500.5 },
     }
     expect(() => contractExtractionResultSchema.parse(withFloat)).toThrow()
   })
@@ -327,9 +323,7 @@ describe('contractExtractionLlmSchema (LLM-facing, sentinel-shaped)', () => {
     rentAdjustment: null,
     landlords: [{ name: 'Ana', taxId: '', email: '' }],
     tenants: [{ name: 'Bob', taxId: '', email: '' }],
-    expenses: [
-      { type: 'water' as const, bundledInto: null, providerName: '', providerTaxId: '' },
-    ],
+    expenses: [{ type: 'water' as const, bundledInto: null, providerName: '', providerTaxId: '' }],
   }
 
   it('accepts the sentinel shape the LLM is instructed to produce', () => {
@@ -437,13 +431,17 @@ describe('expense type on contractExtractionResultSchema', () => {
 
     const esNative = {
       ...makeValidResult(),
-      expenses: [{ type: 'energía eléctrica', bundledInto: null, providerName: null, providerTaxId: null }],
+      expenses: [
+        { type: 'energía eléctrica', bundledInto: null, providerName: null, providerTaxId: null },
+      ],
     }
     expect(() => contractExtractionResultSchema.parse(esNative)).toThrow()
 
     const freeform = {
       ...makeValidResult(),
-      expenses: [{ type: 'property_tax', bundledInto: null, providerName: null, providerTaxId: null }],
+      expenses: [
+        { type: 'property_tax', bundledInto: null, providerName: null, providerTaxId: null },
+      ],
     }
     expect(() => contractExtractionResultSchema.parse(freeform)).toThrow()
   })

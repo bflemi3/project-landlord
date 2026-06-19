@@ -1,9 +1,5 @@
 import type { BillExtractionResult } from '../types'
-import type {
-  LoadedTestCase,
-  TestCaseResult,
-  AccuracyReport,
-} from './types'
+import type { LoadedTestCase, TestCaseResult, AccuracyReport } from './types'
 import { compareAllFields } from './compare'
 
 export interface RunTestCaseInput {

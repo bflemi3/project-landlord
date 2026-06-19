@@ -5,18 +5,8 @@ import { X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useMediaQuery } from '@/lib/hooks/use-media-query'
 import { Button } from '@/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Sheet, SheetClose, SheetContent, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 interface ResponsivePopoverContextValue {
   isDesktop: boolean
@@ -35,10 +25,7 @@ interface ResponsivePopoverProps {
 export function ResponsivePopover({ open, onOpenChange, children }: ResponsivePopoverProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
-  const value = React.useMemo<ResponsivePopoverContextValue>(
-    () => ({ isDesktop }),
-    [isDesktop],
-  )
+  const value = React.useMemo<ResponsivePopoverContextValue>(() => ({ isDesktop }), [isDesktop])
 
   if (isDesktop) {
     return (
@@ -73,16 +60,21 @@ function ResponsivePopoverTrigger({ render, children }: ResponsivePopoverTrigger
   )
 }
 
-interface ResponsivePopoverContentProps
-  extends Omit<React.ComponentProps<typeof PopoverContent>, 'title'> {
-  /** Sr-only title for the mobile sheet variant. Required for accessibility. */
+interface ResponsivePopoverContentProps extends Omit<
+  React.ComponentProps<typeof PopoverContent>,
+  'title'
+> {
+  /** Title for the mobile sheet variant. Required for accessibility. */
   title: string
+  /** Show the title as a visible header inline with the close button (mobile). Default: sr-only. */
+  showTitle?: boolean
   /** Override the sheet content className on mobile. */
   sheetClassName?: string
 }
 
 function ResponsivePopoverContent({
   title,
+  showTitle = false,
   className,
   sheetClassName,
   children,
@@ -103,20 +95,35 @@ function ResponsivePopoverContent({
       side="bottom"
       showCloseButton={false}
       className={cn(
-        'flex flex-col gap-0 rounded-t-3xl bg-background px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] text-foreground',
+        'bg-background text-foreground flex flex-col gap-0 rounded-t-3xl pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]',
         sheetClassName,
       )}
     >
-      <SheetTitle className="sr-only">{title}</SheetTitle>
-      <div className="flex items-center justify-end pb-2">
-        <SheetClose
-          render={
-            <Button variant="ghost" size="icon-sm" aria-label="Close">
-              <X />
-            </Button>
-          }
-        />
-      </div>
+      {showTitle ? (
+        <div className="flex items-center gap-3 px-3 pb-2">
+          <SheetTitle className="text-muted-foreground text-sm font-medium">{title}</SheetTitle>
+          <SheetClose
+            render={
+              <Button variant="ghost" size="icon-sm" aria-label="Close" className="ml-auto">
+                <X />
+              </Button>
+            }
+          />
+        </div>
+      ) : (
+        <>
+          <SheetTitle className="sr-only">{title}</SheetTitle>
+          <div className="flex items-center justify-end pb-2">
+            <SheetClose
+              render={
+                <Button variant="ghost" size="icon-sm" aria-label="Close">
+                  <X />
+                </Button>
+              }
+            />
+          </div>
+        </>
+      )}
       {children}
     </SheetContent>
   )

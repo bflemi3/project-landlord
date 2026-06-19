@@ -3,12 +3,7 @@
 import { useMemo, useState } from 'react'
 import { cva } from 'class-variance-authority'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from '@/components/ui/select'
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import {
   MAX_MINOR_UNITS,
   SUPPORTED_CURRENCIES,
@@ -50,19 +45,13 @@ const CURRENCY_CONFIG: Record<
 // Formatting helpers
 // ---------------------------------------------------------------------------
 
-function formatMinorUnits(
-  minorUnits: number,
-  currency: SupportedCurrency,
-): string {
-  const { decimalSeparator, fractionDigits, groupSeparator } =
-    CURRENCY_CONFIG[currency]
+function formatMinorUnits(minorUnits: number, currency: SupportedCurrency): string {
+  const { decimalSeparator, fractionDigits, groupSeparator } = CURRENCY_CONFIG[currency]
   const scale = 10 ** fractionDigits
   const whole = Math.floor(minorUnits / scale)
   const fraction = minorUnits % scale
 
-  const integerStr = whole
-    .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, groupSeparator)
+  const integerStr = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, groupSeparator)
   const decimalStr = fraction.toString().padStart(fractionDigits, '0')
 
   return `${integerStr}${decimalSeparator}${decimalStr}`
@@ -82,39 +71,29 @@ function splitFormattedAmount(
   }
 }
 
-function parseCurrencyText(
-  raw: string,
-  currency: SupportedCurrency,
-): number | undefined {
+function parseCurrencyText(raw: string, currency: SupportedCurrency): number | undefined {
   const config = CURRENCY_CONFIG[currency]
   const trimmed = raw.trim()
   if (!trimmed) return undefined
 
-  const withoutSymbol = trimmed
-    .replace(config.symbol, '')
-    .replace(/\s/g, '')
+  const withoutSymbol = trimmed.replace(config.symbol, '').replace(/\s/g, '')
 
   const decimalIndex = Math.max(
     ...config.decimalAliases.map((alias) => withoutSymbol.lastIndexOf(alias)),
   )
 
-  const possibleFractionPart =
-    decimalIndex >= 0 ? withoutSymbol.slice(decimalIndex + 1) : ''
+  const possibleFractionPart = decimalIndex >= 0 ? withoutSymbol.slice(decimalIndex + 1) : ''
   const possibleFractionDigits = possibleFractionPart.replace(/\D/g, '')
-  const hasDecimalPart =
-    decimalIndex >= 0 && possibleFractionDigits.length <= config.fractionDigits
+  const hasDecimalPart = decimalIndex >= 0 && possibleFractionDigits.length <= config.fractionDigits
 
-  const integerPart = hasDecimalPart
-    ? withoutSymbol.slice(0, decimalIndex)
-    : withoutSymbol
+  const integerPart = hasDecimalPart ? withoutSymbol.slice(0, decimalIndex) : withoutSymbol
   const fractionPart = hasDecimalPart ? possibleFractionPart : ''
 
   const wholeDigits = integerPart.replace(/\D/g, '')
   const fractionDigits = fractionPart.replace(/\D/g, '')
   if (!wholeDigits && !fractionDigits) return undefined
 
-  const wholeMinor = Number.parseInt(wholeDigits || '0', 10) *
-    (10 ** config.fractionDigits)
+  const wholeMinor = Number.parseInt(wholeDigits || '0', 10) * 10 ** config.fractionDigits
   const normalizedFraction = fractionDigits
     .slice(0, config.fractionDigits)
     .padEnd(config.fractionDigits, '0')
@@ -129,42 +108,39 @@ function parseCurrencyText(
 // Variants
 // ---------------------------------------------------------------------------
 
-const currencyInputVariants = cva(
-  'group/currency relative flex items-center transition-colors',
-  {
-    variants: {
-      variant: {
-        card: [
-          'border-input bg-muted rounded-md border',
-          'focus-within:border-ring focus-within:ring-ring/25 focus-within:ring-2',
-          'data-[active=true]:border-ring data-[active=true]:ring-ring/25 data-[active=true]:ring-2',
-          'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
-        ].join(' '),
-        page: [
-          'border-input rounded-md border bg-transparent',
-          'focus-within:border-ring focus-within:ring-ring/25 focus-within:ring-2',
-          'data-[active=true]:border-ring data-[active=true]:ring-ring/25 data-[active=true]:ring-2',
-          'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
-          'dark:bg-input/30',
-        ].join(' '),
-        underline: [
-          'border-b-2 border-border bg-transparent',
-          'focus-within:border-primary',
-          'data-[active=true]:border-primary',
-        ].join(' '),
-      },
-      size: {
-        default: 'h-12 gap-1 px-4',
-        lg: 'h-14 gap-2 px-4',
-        // Fixed height so items-center vertically centers the content for
-        // every variant. (The previous pb-2-only approach skewed alignment
-        // for the boxed card / page variants.)
-        xl: 'h-20 justify-center gap-2 px-4',
-      },
+const currencyInputVariants = cva('group/currency relative flex items-center transition-colors', {
+  variants: {
+    variant: {
+      card: [
+        'border-input bg-muted rounded-md border',
+        'focus-within:border-ring focus-within:ring-ring/25 focus-within:ring-2',
+        'data-[active=true]:border-ring data-[active=true]:ring-ring/25 data-[active=true]:ring-2',
+        'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+      ].join(' '),
+      page: [
+        'border-input rounded-md border bg-transparent',
+        'focus-within:border-ring focus-within:ring-ring/25 focus-within:ring-2',
+        'data-[active=true]:border-ring data-[active=true]:ring-ring/25 data-[active=true]:ring-2',
+        'aria-invalid:border-destructive aria-invalid:ring-destructive/20',
+        'dark:bg-input/30',
+      ].join(' '),
+      underline: [
+        'border-b-2 border-border bg-transparent',
+        'focus-within:border-primary',
+        'data-[active=true]:border-primary',
+      ].join(' '),
     },
-    defaultVariants: { variant: 'card', size: 'default' },
+    size: {
+      default: 'h-12 gap-1 px-4',
+      lg: 'h-14 gap-2 px-4',
+      // Fixed height so items-center vertically centers the content for
+      // every variant. (The previous pb-2-only approach skewed alignment
+      // for the boxed card / page variants.)
+      xl: 'h-20 justify-center gap-2 px-4',
+    },
   },
-)
+  defaultVariants: { variant: 'card', size: 'default' },
+})
 
 const symbolVariants = cva('shrink-0 font-mono font-medium transition-colors select-none', {
   variants: {
@@ -265,8 +241,7 @@ function CurrencyInput({
   }))
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
 
-  const controlledDraft =
-    value !== undefined && value > 0 ? formatMinorUnits(value, currency) : ''
+  const controlledDraft = value !== undefined && value > 0 ? formatMinorUnits(value, currency) : ''
   const currentDraft = inputState.isFocused ? inputState.draft : controlledDraft
 
   const placeholderText = useMemo(() => {
@@ -275,8 +250,7 @@ function CurrencyInput({
   }, [currency, placeholder])
 
   const hasDisplayValue = currentDraft.trim().length > 0
-  const showFormattedDisplay =
-    hasDisplayValue && !inputState.isFocused && !disabled
+  const showFormattedDisplay = hasDisplayValue && !inputState.isFocused && !disabled
   const formattedDisplay = showFormattedDisplay
     ? splitFormattedAmount(currentDraft, currency)
     : null
@@ -325,10 +299,7 @@ function CurrencyInput({
   function handleBlur() {
     onBlur?.()
 
-    if (
-      inputState.lastParsedValue !== undefined &&
-      inputState.lastParsedValue > 0
-    ) {
+    if (inputState.lastParsedValue !== undefined && inputState.lastParsedValue > 0) {
       setInputState({
         draft: formatMinorUnits(inputState.lastParsedValue, currency),
         isFocused: false,
@@ -378,7 +349,7 @@ function CurrencyInput({
             <SelectTrigger
               aria-label="Select currency"
               className={cn(
-                'h-auto w-auto min-w-0 shrink-0 cursor-pointer gap-1 border-0 bg-transparent p-0 rounded-none shadow-none focus-visible:border-0 focus-visible:ring-0',
+                'size-auto min-w-0 shrink-0 cursor-pointer gap-1 rounded-none border-0 bg-transparent p-0 shadow-none focus-visible:border-0 focus-visible:ring-0',
                 // Chevron tracks the symbol's color states so the selector
                 // reads as one unit rather than icon + glyph at different
                 // brightnesses.
@@ -388,9 +359,7 @@ function CurrencyInput({
                 'group-data-[active=true]/currency:[&_svg]:text-primary',
               )}
             >
-              <span className={symbolClassName}>
-                {config.symbol}
-              </span>
+              <span className={symbolClassName}>{config.symbol}</span>
             </SelectTrigger>
             <SelectContent align="start">
               {SUPPORTED_CURRENCIES.map((c) => (
@@ -403,30 +372,19 @@ function CurrencyInput({
           </Select>
         </div>
       ) : (
-        <span className={symbolClassName}>
-          {config.symbol}
-        </span>
+        <span className={symbolClassName}>{config.symbol}</span>
       )}
 
-      <div
-        data-slot="currency-amount"
-        className="relative flex min-w-0 flex-1 items-baseline"
-      >
+      <div data-slot="currency-amount" className="relative flex min-w-0 flex-1 items-baseline">
         {showFormattedDisplay && formattedDisplay ? (
           <div
             data-slot="currency-amount-display"
             className="pointer-events-none flex items-baseline"
           >
-            <span
-              data-slot="currency-amount-integer"
-              className={displayIntegerVariants({ size })}
-            >
+            <span data-slot="currency-amount-integer" className={displayIntegerVariants({ size })}>
               {formattedDisplay.integer}
             </span>
-            <span
-              data-slot="currency-amount-decimal"
-              className={displayDecimalVariants({ size })}
-            >
+            <span data-slot="currency-amount-decimal" className={displayDecimalVariants({ size })}>
               {formattedDisplay.decimal}
             </span>
           </div>
@@ -446,7 +404,7 @@ function CurrencyInput({
           disabled={disabled}
           className={cn(
             inputVariants({ size }),
-            showFormattedDisplay && 'absolute inset-0 h-full w-full opacity-0',
+            showFormattedDisplay && 'absolute inset-0 size-full opacity-0',
           )}
           aria-describedby={ariaDescribedBy}
           aria-invalid={ariaInvalid}

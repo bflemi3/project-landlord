@@ -30,9 +30,7 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
     getRemainingSectionCount({ sectionStates: s.sectionStates }),
   )
   const hasInvalidSection = usePropertyCreationState(
-    useShallow((s) =>
-      Object.values(deriveAllSectionValidities(s)).some((v) => v === 'invalid'),
-    ),
+    useShallow((s) => Object.values(deriveAllSectionValidities(s)).some((v) => v === 'invalid')),
   )
   const { onCreateProperty, isSubmitting } = useCheckoutContext()
 
@@ -40,15 +38,13 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
     <aside
       data-slot="checkout-summary"
       className={cn(
-        'rounded-card border border-transparent dark:border-border bg-card p-6 shadow-lg dark:shadow-none flex flex-col gap-6',
+        'rounded-card dark:border-border bg-card flex flex-col gap-6 border border-transparent p-6 shadow-lg dark:shadow-none',
         className,
       )}
     >
       <div data-slot="checkout-summary-header">
-        <h2 className="text-base font-semibold text-foreground">
-          {t('summary.title')}
-        </h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <h2 className="text-foreground text-base font-semibold">{t('summary.title')}</h2>
+        <p className="text-muted-foreground mt-1 text-sm">
           {t('summary.remaining', {
             count: remaining,
             total: TOTAL_SECTIONS,
@@ -71,9 +67,7 @@ export function CheckoutSummary({ className }: CheckoutSummaryProps) {
         {isSubmitting ? t('cta.creating') : t('cta.create')}
       </Button>
       {(remaining > 0 || hasInvalidSection) && (
-        <p className="text-center text-sm text-muted-foreground -mt-3">
-          {t('cta.hint')}
-        </p>
+        <p className="text-muted-foreground -mt-3 text-center text-sm">{t('cta.hint')}</p>
       )}
     </aside>
   )

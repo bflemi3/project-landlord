@@ -71,10 +71,7 @@ describe('createPropertyCore — validation', () => {
     expect(result.ok).toBe(false)
     if (result.ok) return
     expect(result.sectionErrors?.property).toBeDefined()
-    const propertySlice = result.sectionErrors?.property as Record<
-      string,
-      string[]
-    >
+    const propertySlice = result.sectionErrors?.property as Record<string, string[]>
     expect(propertySlice.street).toContain('required')
     expect(vi.mocked(supabase.rpc)).not.toHaveBeenCalled()
   })
@@ -151,9 +148,7 @@ describe('createPropertyCore — validation', () => {
 
     expect(result.ok).toBe(false)
     if (result.ok) return
-    const propertySlice = result.sectionErrors?.property as
-      | Record<string, string[]>
-      | undefined
+    const propertySlice = result.sectionErrors?.property as Record<string, string[]> | undefined
     expect(propertySlice?.postal_code).toContain('invalidPostalCode')
     expect(propertySlice?.state).toContain('invalidState')
     expect(vi.mocked(supabase.rpc)).not.toHaveBeenCalled()

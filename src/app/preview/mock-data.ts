@@ -1,5 +1,16 @@
-export type { PropertySetupProgress, PendingInvite, UrgentAction, PropertyStatus, PropertyOperationalData } from '@/lib/types/property'
-import type { PropertySetupProgress, PendingInvite, UrgentAction, PropertyOperationalData } from '@/lib/types/property'
+export type {
+  PropertySetupProgress,
+  PendingInvite,
+  UrgentAction,
+  PropertyStatus,
+  PropertyOperationalData,
+} from '@/lib/types/property'
+import type {
+  PropertySetupProgress,
+  PendingInvite,
+  UrgentAction,
+  PropertyOperationalData,
+} from '@/lib/types/property'
 
 /** Preview-only type — the real app uses useHomeProperties instead */
 export interface PreviewMembership {
@@ -29,8 +40,11 @@ export interface HomeScreenData {
 // Mock data for each case
 // =============================================================================
 
-export const PREVIEW_STATES: Record<string, { label: string; description: string; data: HomeScreenData }> = {
-  'empty': {
+export const PREVIEW_STATES: Record<
+  string,
+  { label: string; description: string; data: HomeScreenData }
+> = {
+  empty: {
     label: 'No properties',
     description: 'Brand new user, just signed up. Sees role choice.',
     data: {
@@ -47,13 +61,28 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
     description: 'Created property but skipped tenants and charges.',
     data: {
       firstName: 'Brandon',
-      memberships: [{
-        id: 'mem-1',
-        role: 'landlord',
-        property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
-      }],
+      memberships: [
+        {
+          id: 'mem-1',
+          role: 'landlord',
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
+        },
+      ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: false, tenantsAccepted: false, chargesConfigured: false, firstStatementPublished: false },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: false,
+          tenantsAccepted: false,
+          chargesConfigured: false,
+          firstStatementPublished: false,
+        },
       },
       pendingInvites: {},
       chargeCount: {},
@@ -62,19 +91,36 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
 
   'one-incomplete-invited-pending': {
     label: '1 property — tenant invited, pending',
-    description: 'Invited a tenant but they haven\'t accepted yet. Charges configured.',
+    description: "Invited a tenant but they haven't accepted yet. Charges configured.",
     data: {
       firstName: 'Brandon',
-      memberships: [{
-        id: 'mem-1',
-        role: 'landlord',
-        property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
-      }],
+      memberships: [
+        {
+          id: 'mem-1',
+          role: 'landlord',
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
+        },
+      ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: false, chargesConfigured: true, firstStatementPublished: false },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: false,
+          chargesConfigured: true,
+          firstStatementPublished: false,
+        },
       },
       pendingInvites: {
-        'prop-1': [{ email: 'erica@example.com', name: 'Erica Faust', sentAt: '2026-03-24T10:00:00Z' }],
+        'prop-1': [
+          { email: 'erica@example.com', name: 'Erica Faust', sentAt: '2026-03-24T10:00:00Z' },
+        ],
       },
       chargeCount: { 'prop-1': 4 },
     },
@@ -85,13 +131,28 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
     description: 'Set up charges but no tenants invited.',
     data: {
       firstName: 'Brandon',
-      memberships: [{
-        id: 'mem-1',
-        role: 'landlord',
-        property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
-      }],
+      memberships: [
+        {
+          id: 'mem-1',
+          role: 'landlord',
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
+        },
+      ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: false, tenantsAccepted: false, chargesConfigured: true, firstStatementPublished: false },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: false,
+          tenantsAccepted: false,
+          chargesConfigured: true,
+          firstStatementPublished: false,
+        },
       },
       pendingInvites: {},
       chargeCount: { 'prop-1': 7 },
@@ -103,13 +164,28 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
     description: 'Tenants accepted, charges configured, ready to publish first statement.',
     data: {
       firstName: 'Brandon',
-      memberships: [{
-        id: 'mem-1',
-        role: 'landlord',
-        property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
-      }],
+      memberships: [
+        {
+          id: 'mem-1',
+          role: 'landlord',
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
+        },
+      ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: false },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: false,
+        },
       },
       pendingInvites: {},
       chargeCount: { 'prop-1': 4 },
@@ -121,18 +197,41 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
     description: 'Statements published, payments flowing. Calm state.',
     data: {
       firstName: 'Brandon',
-      memberships: [{
-        id: 'mem-1',
-        role: 'landlord',
-        property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
-      }],
+      memberships: [
+        {
+          id: 'mem-1',
+          role: 'landlord',
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
+        },
+      ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: true },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: true,
+        },
       },
       pendingInvites: {},
       chargeCount: { 'prop-1': 6 },
       operationalData: {
-        'prop-1': { status: 'healthy', nextDueDate: '2026-04-10', billingCycle: 'March 2026', unpaidCount: 0, totalDueMinor: 0, expectedRevenueMinor: 320000, pendingBillCount: 0 },
+        'prop-1': {
+          status: 'healthy',
+          nextDueDate: '2026-04-10',
+          billingCycle: 'March 2026',
+          unpaidCount: 0,
+          totalDueMinor: 0,
+          expectedRevenueMinor: 320000,
+          pendingBillCount: 0,
+        },
       },
     },
   },
@@ -146,30 +245,93 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
         {
           id: 'mem-1',
           role: 'landlord',
-          property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
         },
         {
           id: 'mem-2',
           role: 'landlord',
-          property: { id: 'prop-2', name: 'Rua Augusta 123', street: 'Rua Augusta', number: '123', city: 'São Paulo', state: 'SP' },
+          property: {
+            id: 'prop-2',
+            name: 'Rua Augusta 123',
+            street: 'Rua Augusta',
+            number: '123',
+            city: 'São Paulo',
+            state: 'SP',
+          },
         },
         {
           id: 'mem-3',
           role: 'landlord',
-          property: { id: 'prop-3', name: 'Beach House', street: 'Rua das Flores', number: '45', city: 'Rio de Janeiro', state: 'RJ' },
+          property: {
+            id: 'prop-3',
+            name: 'Beach House',
+            street: 'Rua das Flores',
+            number: '45',
+            city: 'Rio de Janeiro',
+            state: 'RJ',
+          },
         },
       ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: true },
-        'prop-2': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: true },
-        'prop-3': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: true },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: true,
+        },
+        'prop-2': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: true,
+        },
+        'prop-3': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: true,
+        },
       },
       pendingInvites: {},
       chargeCount: { 'prop-1': 6, 'prop-2': 3, 'prop-3': 4 },
       operationalData: {
-        'prop-1': { status: 'healthy', nextDueDate: '2026-04-10', billingCycle: 'March 2026', unpaidCount: 0, totalDueMinor: 0, expectedRevenueMinor: 485000, pendingBillCount: 0 },
-        'prop-2': { status: 'healthy', nextDueDate: '2026-04-10', billingCycle: 'March 2026', unpaidCount: 0, totalDueMinor: 0, expectedRevenueMinor: 220000, pendingBillCount: 2 },
-        'prop-3': { status: 'healthy', nextDueDate: '2026-04-10', billingCycle: 'March 2026', unpaidCount: 0, totalDueMinor: 0, expectedRevenueMinor: 180000, pendingBillCount: 0 },
+        'prop-1': {
+          status: 'healthy',
+          nextDueDate: '2026-04-10',
+          billingCycle: 'March 2026',
+          unpaidCount: 0,
+          totalDueMinor: 0,
+          expectedRevenueMinor: 485000,
+          pendingBillCount: 0,
+        },
+        'prop-2': {
+          status: 'healthy',
+          nextDueDate: '2026-04-10',
+          billingCycle: 'March 2026',
+          unpaidCount: 0,
+          totalDueMinor: 0,
+          expectedRevenueMinor: 220000,
+          pendingBillCount: 2,
+        },
+        'prop-3': {
+          status: 'healthy',
+          nextDueDate: '2026-04-10',
+          billingCycle: 'March 2026',
+          unpaidCount: 0,
+          totalDueMinor: 0,
+          expectedRevenueMinor: 180000,
+          pendingBillCount: 0,
+        },
       },
     },
   },
@@ -183,24 +345,60 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
         {
           id: 'mem-1',
           role: 'landlord',
-          property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
         },
         {
           id: 'mem-2',
           role: 'landlord',
-          property: { id: 'prop-2', name: 'Rua Augusta 123', street: 'Rua Augusta', number: '123', city: 'São Paulo', state: 'SP' },
+          property: {
+            id: 'prop-2',
+            name: 'Rua Augusta 123',
+            street: 'Rua Augusta',
+            number: '123',
+            city: 'São Paulo',
+            state: 'SP',
+          },
         },
       ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: true },
-        'prop-2': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: false, chargesConfigured: false, firstStatementPublished: false },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: true,
+        },
+        'prop-2': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: false,
+          chargesConfigured: false,
+          firstStatementPublished: false,
+        },
       },
       pendingInvites: {
-        'prop-2': [{ email: 'maria@example.com', name: 'Maria Silva', sentAt: '2026-03-25T08:00:00Z' }],
+        'prop-2': [
+          { email: 'maria@example.com', name: 'Maria Silva', sentAt: '2026-03-25T08:00:00Z' },
+        ],
       },
       chargeCount: { 'prop-1': 6, 'prop-2': 0 },
       operationalData: {
-        'prop-1': { status: 'healthy', nextDueDate: '2026-04-10', billingCycle: 'March 2026', unpaidCount: 0, totalDueMinor: 0, expectedRevenueMinor: 485000, pendingBillCount: 0 },
+        'prop-1': {
+          status: 'healthy',
+          nextDueDate: '2026-04-10',
+          billingCycle: 'March 2026',
+          unpaidCount: 0,
+          totalDueMinor: 0,
+          expectedRevenueMinor: 485000,
+          pendingBillCount: 0,
+        },
       },
     },
   },
@@ -214,23 +412,65 @@ export const PREVIEW_STATES: Record<string, { label: string; description: string
         {
           id: 'mem-1',
           role: 'landlord',
-          property: { id: 'prop-1', name: 'Sun Club 7127', street: 'Avenida Campeche', number: '533', city: 'Florianópolis', state: 'SC' },
+          property: {
+            id: 'prop-1',
+            name: 'Sun Club 7127',
+            street: 'Avenida Campeche',
+            number: '533',
+            city: 'Florianópolis',
+            state: 'SC',
+          },
         },
         {
           id: 'mem-2',
           role: 'landlord',
-          property: { id: 'prop-2', name: 'Rua Augusta 123', street: 'Rua Augusta', number: '123', city: 'São Paulo', state: 'SP' },
+          property: {
+            id: 'prop-2',
+            name: 'Rua Augusta 123',
+            street: 'Rua Augusta',
+            number: '123',
+            city: 'São Paulo',
+            state: 'SP',
+          },
         },
       ],
       setupProgress: {
-        'prop-1': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: true },
-        'prop-2': { propertyCreated: true, tenantsInvited: true, tenantsAccepted: true, chargesConfigured: true, firstStatementPublished: true },
+        'prop-1': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: true,
+        },
+        'prop-2': {
+          propertyCreated: true,
+          tenantsInvited: true,
+          tenantsAccepted: true,
+          chargesConfigured: true,
+          firstStatementPublished: true,
+        },
       },
       pendingInvites: {},
       chargeCount: { 'prop-1': 6, 'prop-2': 3 },
       operationalData: {
-        'prop-1': { status: 'overdue', nextDueDate: '2026-03-10', billingCycle: 'March 2026', unpaidCount: 1, totalDueMinor: 180000, expectedRevenueMinor: 485000, pendingBillCount: 0 },
-        'prop-2': { status: 'attention', nextDueDate: '2026-04-10', billingCycle: 'March 2026', unpaidCount: 0, totalDueMinor: 0, expectedRevenueMinor: 220000, pendingBillCount: 1 },
+        'prop-1': {
+          status: 'overdue',
+          nextDueDate: '2026-03-10',
+          billingCycle: 'March 2026',
+          unpaidCount: 1,
+          totalDueMinor: 180000,
+          expectedRevenueMinor: 485000,
+          pendingBillCount: 0,
+        },
+        'prop-2': {
+          status: 'attention',
+          nextDueDate: '2026-04-10',
+          billingCycle: 'March 2026',
+          unpaidCount: 0,
+          totalDueMinor: 0,
+          expectedRevenueMinor: 220000,
+          pendingBillCount: 1,
+        },
       },
       urgentActions: [
         {

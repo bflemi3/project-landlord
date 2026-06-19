@@ -4,10 +4,8 @@ import { cn } from '@/lib/utils'
 function DetailPageLayout({ className, children, ...props }: React.ComponentProps<'div'>) {
   return (
     <div className={cn('flex h-full flex-col', className)} {...props}>
-      <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4 md:pt-6">
-        <div className="mx-auto max-w-4xl">
-          {children}
-        </div>
+      <div className="flex-1 overflow-y-auto px-6 py-4 md:pt-6">
+        <div className="mx-auto max-w-4xl">{children}</div>
       </div>
     </div>
   )
@@ -26,7 +24,9 @@ function DetailPageLayoutBody({ className, children, ...props }: React.Component
 }
 
 function DetailPageLayoutMain({ className, ...props }: React.ComponentProps<'div'>) {
-  return <div data-slot="detail-page-main" className={cn('flex-1 space-y-8', className)} {...props} />
+  return (
+    <div data-slot="detail-page-main" className={cn('flex-1 space-y-8', className)} {...props} />
+  )
 }
 
 function DetailPageLayoutSidebar({ className, ...props }: React.ComponentProps<'div'>) {

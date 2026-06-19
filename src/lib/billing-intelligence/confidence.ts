@@ -13,16 +13,16 @@ import type {
  */
 const SOURCE_METHOD_SCORES: Record<BillExtractionSource, number> = {
   api: 0.95,
-  dda: 0.90,
-  pdf: 0.80,
-  'web-scrape': 0.70,
+  dda: 0.9,
+  pdf: 0.8,
+  'web-scrape': 0.7,
   email: 0.65,
-  ocr: 0.50,
+  ocr: 0.5,
 }
 
 /** Get the base reliability score for a source method. */
 export function getSourceMethodScore(method: BillExtractionSource): number {
-  return SOURCE_METHOD_SCORES[method] ?? 0.50
+  return SOURCE_METHOD_SCORES[method] ?? 0.5
 }
 
 /**
@@ -79,9 +79,7 @@ interface ConfidenceInput {
  * Validation is an independent dimension set per field if a second source is available.
  * Status routing is computed per field from both dimensions.
  */
-export function buildBillExtractionConfidence(
-  input: ConfidenceInput,
-): BillExtractionConfidence {
+export function buildBillExtractionConfidence(input: ConfidenceInput): BillExtractionConfidence {
   const methodScore = getSourceMethodScore(input.sourceMethod)
 
   const fields: Record<string, FieldConfidence> = {}
@@ -105,10 +103,18 @@ export function buildBillExtractionConfidence(
     }
 
     switch (status) {
-      case 'confirmed': confirmed++; break
-      case 'high': high++; break
-      case 'needs-review': needsReview++; break
-      case 'failed': failed++; break
+      case 'confirmed':
+        confirmed++
+        break
+      case 'high':
+        high++
+        break
+      case 'needs-review':
+        needsReview++
+        break
+      case 'failed':
+        failed++
+        break
     }
   }
 

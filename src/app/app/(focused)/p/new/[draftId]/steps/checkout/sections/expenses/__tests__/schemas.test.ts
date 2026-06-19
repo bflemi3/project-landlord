@@ -55,9 +55,7 @@ describe('expenseRowSchema — happy paths', () => {
   })
 
   it('accepts isExtracted=true', () => {
-    expect(
-      expenseRowSchema.safeParse(valid({ isExtracted: true })).success,
-    ).toBe(true)
+    expect(expenseRowSchema.safeParse(valid({ isExtracted: true })).success).toBe(true)
   })
 })
 
@@ -67,9 +65,7 @@ describe('expenseRowSchema — bookkeeping fields', () => {
   })
 
   it('requires isExtracted to be a boolean', () => {
-    expect(
-      expenseRowSchema.safeParse({ ...valid(), isExtracted: undefined }).success,
-    ).toBe(false)
+    expect(expenseRowSchema.safeParse({ ...valid(), isExtracted: undefined }).success).toBe(false)
   })
 })
 
@@ -109,10 +105,7 @@ describe('expenseRowSchema — expense_type', () => {
 describe('expenseRowSchema — amount_behavior', () => {
   for (const behavior of EXPENSE_AMOUNT_BEHAVIORS) {
     it(`accepts "${behavior}"`, () => {
-      expect(
-        expenseRowSchema.safeParse(valid({ amount_behavior: behavior }))
-          .success,
-      ).toBe(true)
+      expect(expenseRowSchema.safeParse(valid({ amount_behavior: behavior })).success).toBe(true)
     })
   }
 
@@ -133,22 +126,15 @@ describe('expenseRowSchema — amount_behavior', () => {
 
 describe('expenseRowSchema — amount_minor', () => {
   it('accepts undefined (optional)', () => {
-    expect(
-      expenseRowSchema.safeParse(valid({ amount_minor: undefined })).success,
-    ).toBe(true)
+    expect(expenseRowSchema.safeParse(valid({ amount_minor: undefined })).success).toBe(true)
   })
 
   it('accepts a positive integer', () => {
-    expect(expenseRowSchema.safeParse(valid({ amount_minor: 1 })).success).toBe(
-      true,
-    )
+    expect(expenseRowSchema.safeParse(valid({ amount_minor: 1 })).success).toBe(true)
   })
 
   it('accepts MAX_MINOR_UNITS exactly', () => {
-    expect(
-      expenseRowSchema.safeParse(valid({ amount_minor: MAX_MINOR_UNITS }))
-        .success,
-    ).toBe(true)
+    expect(expenseRowSchema.safeParse(valid({ amount_minor: MAX_MINOR_UNITS })).success).toBe(true)
   })
 
   it('rejects zero with "invalidAmount" (positive only)', () => {
@@ -170,9 +156,7 @@ describe('expenseRowSchema — amount_minor', () => {
   })
 
   it('rejects values exceeding MAX_MINOR_UNITS with "tooLarge"', () => {
-    const r = expenseRowSchema.safeParse(
-      valid({ amount_minor: MAX_MINOR_UNITS + 1 }),
-    )
+    const r = expenseRowSchema.safeParse(valid({ amount_minor: MAX_MINOR_UNITS + 1 }))
     expect(r.success).toBe(false)
     expect(firstIssue(r, 'amount_minor')).toBe('tooLarge')
   })
@@ -216,15 +200,9 @@ describe('expenseRowWithType', () => {
   })
 
   it('seeds amount_behavior from DEFAULT_AMOUNT_BEHAVIOR_BY_TYPE', () => {
-    expect(expenseRowWithType(defaultExpenseRow(), 'gas').amount_behavior).toBe(
-      'variable',
-    )
-    expect(
-      expenseRowWithType(defaultExpenseRow(), 'internet').amount_behavior,
-    ).toBe('fixed')
-    expect(
-      expenseRowWithType(defaultExpenseRow(), 'maintenance').amount_behavior,
-    ).toBe('unknown')
+    expect(expenseRowWithType(defaultExpenseRow(), 'gas').amount_behavior).toBe('variable')
+    expect(expenseRowWithType(defaultExpenseRow(), 'internet').amount_behavior).toBe('fixed')
+    expect(expenseRowWithType(defaultExpenseRow(), 'maintenance').amount_behavior).toBe('unknown')
   })
 
   it('clears amount_minor when switching types', () => {

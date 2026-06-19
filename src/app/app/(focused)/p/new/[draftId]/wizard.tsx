@@ -1,12 +1,6 @@
 'use client'
 
-import {
-  startTransition,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { startTransition, useCallback, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
@@ -26,10 +20,7 @@ import {
 } from './state/use-property-creation'
 import { hasWizardWork } from './state/derivations'
 import { buildSubmitInputFromStore } from './state/build-submit-input'
-import {
-  dispatchServerErrorsResponse,
-  firstFailingSectionId,
-} from './state/server-errors-dispatch'
+import { dispatchServerErrorsResponse, firstFailingSectionId } from './state/server-errors-dispatch'
 import { WizardHydrationFallback } from './wizard-hydration-fallback'
 import { PropertyCreationSuccessScreen } from './success-screen'
 
@@ -183,23 +174,17 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
         // so unrelated continue-action successes don't reset siblings.
         dispatchServerErrorsResponse(response, dispatchActions)
         setSubmitSummary(summary)
-        captureEvent(
-          summary.is_idempotent_replay
-            ? 'property_create_replay'
-            : 'property_created',
-          {
-            property_id: summary.property_id,
-            has_contract: summary.contract !== null,
-            has_rent: summary.rent !== null,
-            expense_count: summary.expenses.count,
-            tenant_invited_count: summary.tenants.invited_count,
-            tenant_deferred_count: summary.tenants.deferred_count,
-            provider_request_new_count:
-              summary.provider_requests.new_count ?? 0,
-            is_idempotent_replay: summary.is_idempotent_replay,
-            tax_id_updated: summary.tax_id_updated,
-          },
-        )
+        captureEvent(summary.is_idempotent_replay ? 'property_create_replay' : 'property_created', {
+          property_id: summary.property_id,
+          has_contract: summary.contract !== null,
+          has_rent: summary.rent !== null,
+          expense_count: summary.expenses.count,
+          tenant_invited_count: summary.tenants.invited_count,
+          tenant_deferred_count: summary.tenants.deferred_count,
+          provider_request_new_count: summary.provider_requests.new_count ?? 0,
+          is_idempotent_replay: summary.is_idempotent_replay,
+          tax_id_updated: summary.tax_id_updated,
+        })
         return
       }
 
@@ -209,9 +194,7 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
       // existing `useGlobalErrorsToast` subscription.
       dispatchServerErrorsResponse(response, dispatchActions)
       if (!response.ok) {
-        const firstFailing = firstFailingSectionId(
-          storeApi.getState().sectionServerErrors,
-        )
+        const firstFailing = firstFailingSectionId(storeApi.getState().sectionServerErrors)
         if (firstFailing) openSection(firstFailing)
       }
     } catch (error) {
@@ -257,10 +240,7 @@ export function PropertyCreationWizard({ draftId }: { draftId: string }) {
         onBack={handleBack}
         onExit={handleExit}
       >
-        <PropertyCreationTopBar
-          backLabel={t('back')}
-          exitLabel={t('exit')}
-        />
+        <PropertyCreationTopBar backLabel={t('back')} exitLabel={t('exit')} />
         {step === 1 ? (
           <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable]">
             <div className="mx-auto flex w-full max-w-5xl flex-col px-6 pb-8">
@@ -353,24 +333,22 @@ function useDevSuccessPreview({
     if (process.env.NODE_ENV === 'production') return
     if (!preview) return
     let cancelled = false
-    void import('@/data/properties/actions/__fixtures__/submit-summary.mock').then(
-      (mod) => {
-        if (cancelled) return
-        const fixture =
-          preview === 'success-minimal'
-            ? mod.submitSummaryMinimal
-            : preview === 'success-warnings'
-              ? mod.submitSummaryWithWarnings
-              : preview === 'success-replay'
-                ? mod.submitSummaryReplay
-                : preview === 'success'
-                  ? mod.submitSummaryFull
-                  : null
-        if (!fixture) return
-        clearPersisted()
-        setSubmitSummary(fixture)
-      },
-    )
+    void import('@/data/properties/actions/__fixtures__/submit-summary.mock').then((mod) => {
+      if (cancelled) return
+      const fixture =
+        preview === 'success-minimal'
+          ? mod.submitSummaryMinimal
+          : preview === 'success-warnings'
+            ? mod.submitSummaryWithWarnings
+            : preview === 'success-replay'
+              ? mod.submitSummaryReplay
+              : preview === 'success'
+                ? mod.submitSummaryFull
+                : null
+      if (!fixture) return
+      clearPersisted()
+      setSubmitSummary(fixture)
+    })
     return () => {
       cancelled = true
     }

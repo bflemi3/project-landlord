@@ -1,5 +1,6 @@
 import * as React from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Dot } from '@/components/ui/dot'
 import { cn } from '@/lib/utils'
 
 type StatusBadgeVariant =
@@ -44,14 +45,12 @@ function StatusBadge({
       className={cn(
         'gap-1.5',
         variant === 'default' && 'text-muted-foreground',
-        variant === 'draft' && 'border-dashed border-white/20 text-muted-foreground',
+        variant === 'draft' && 'text-muted-foreground border-dashed border-white/20',
         className,
       )}
       {...props}
     >
-      {!NO_DOT.has(variant) && (
-        <span className="size-1.5 shrink-0 rounded-full bg-current" aria-hidden />
-      )}
+      {!NO_DOT.has(variant) && <Dot />}
       {children}
     </Badge>
   )

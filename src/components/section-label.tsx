@@ -12,7 +12,7 @@ function SectionLabel({
   return (
     <Comp
       data-slot="section-label"
-      className={cn('mb-4 text-sm font-medium text-muted-foreground', className)}
+      className={cn('text-muted-foreground mb-4 text-sm font-medium', className)}
       {...props}
     />
   )

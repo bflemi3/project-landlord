@@ -18,10 +18,7 @@ import { describe, it, expect, afterAll } from 'vitest'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { extractContract } from '../extract-contract'
-import type {
-  ContractExtractionResponse,
-  ContractExtractionTelemetry,
-} from '../types'
+import type { ContractExtractionResponse, ContractExtractionTelemetry } from '../types'
 import { assertExtracted, type ExpectedNode } from './assertions'
 
 const FIXTURES = join(__dirname, 'fixtures')
@@ -69,7 +66,7 @@ function logTelemetry(name: string, t: ContractExtractionTelemetry, costUsd: num
     `${t.durationMs}ms`,
     fmtUsd(costUsd),
   ]
-  // eslint-disable-next-line no-console
+
   console.log(`  [${name}] ${parts.join('  ')}`)
 }
 
@@ -159,25 +156,24 @@ describe('extractContract — integration (real LLM)', () => {
       },
     )
 
-    // eslint-disable-next-line no-console
     console.log('\n  ──────── LLM usage summary ────────')
-    // eslint-disable-next-line no-console
+
     console.log(`  fixtures:         ${report.length}`)
-    // eslint-disable-next-line no-console
+
     console.log(`  input tokens:     ${totals.inputTokens}`)
-    // eslint-disable-next-line no-console
+
     console.log(`  output tokens:    ${totals.outputTokens}`)
-    // eslint-disable-next-line no-console
+
     console.log(`  cache-write:      ${totals.cacheWriteTokens}`)
-    // eslint-disable-next-line no-console
+
     console.log(`  cache-read:       ${totals.cacheReadTokens}`)
-    // eslint-disable-next-line no-console
+
     console.log(`  total duration:   ${totals.durationMs}ms`)
-    // eslint-disable-next-line no-console
+
     console.log(`  estimated cost:   ${fmtUsd(totals.costUsd)}`)
-    // eslint-disable-next-line no-console
+
     console.log(`  avg per fixture:  ${fmtUsd(totals.costUsd / report.length)}`)
-    // eslint-disable-next-line no-console
+
     console.log('  ───────────────────────────────────\n')
   })
 })

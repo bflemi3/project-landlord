@@ -1,6 +1,6 @@
 ---
 name: component-library
-description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/InfoBox, when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel, when hand-rolling a status pill / dot+label chip (use StatusBadge or Badge) or a tabbed/segmented nav (use ui/tabs), or when reaching for the magenta highlight/spotlight accent.
+description: Use when adding a new file under src/components/, when JSX in a page repeats a pattern already covered by PropertyCard/ListRow/Card/Alert, when reaching for raw color utilities (bg-*, text-*) instead of IconTile/EyebrowLabel/SectionLabel, when hand-rolling a status pill / dot+label chip (use StatusBadge or Badge), a bare indicator dot (use ui/dot), a "Type · Provider" expense label (use ExpenseName), or a tabbed/segmented nav (use ui/tabs), or when reaching for the magenta highlight/spotlight accent.
 paths:
   - "src/**/*.tsx"
 ---
@@ -33,11 +33,13 @@ paths:
 
 Small building blocks for consistent editorial surfaces. Always compose these instead of reaching for raw utility classes for eyebrows, section labels, icon surfaces, or list rows.
 
+- **Dot** (`src/components/ui/dot.tsx`) — the dot-shaped indicator (StatusBadge's lead, AlertDot, tab/attention markers, contract status, progress dots). `tone`: current (default, inherits text color) / primary / success / warning / info / destructive / muted / highlight; `size` xs/sm/md; `pulse` boolean for the live "ping" halo. Never hand-roll a `rounded-full bg-*` span.
 - **EyebrowLabel** (`src/components/eyebrow-label.tsx`) — uppercase micro-label above a title. `tone`: primary / muted / foreground / highlight.
 - **SectionLabel** (`src/components/section-label.tsx`) — section heading above a grouped block (`<h3>` default; override via `as="h2" | "h4"`).
 - **IconTile** (`src/components/icon-tile.tsx`) — rounded surface for a single lucide icon. `size` sm/md/lg, `shape` square/circle, `tone` primary/muted/success/warning/info/destructive/highlight. Uses semantic subtle pairs — never hardcode color utilities for icon surfaces.
 - **ListRow** family (`src/components/list-row.tsx`) — `List`, `ListRow` / `ListRowButton`, `ListRowLeading`, `ListRowBody`, `ListRowTitle`, `ListRowDescription`, `ListRowTrailing`, `ListRowChevron`, plus `listRowClassName()` helper. Variants: `solid` and `dashed` render their own chrome; `embedded` is chromeless for rows inside a `Card size="none"` + `List`.
 - **StatusBadge** (`src/components/status-badge.tsx`) — dot-led status pill. Pass intent (`paid` / `pending` / `overdue` / `disputed` / `rejected` / `published` / `draft` / `default`), not chrome — it composes `ui/badge` and prepends a `bg-current` dot. Reach for this for any status indicator; never hand-roll a pill or dot+label. Forwards `spotlight`.
+- **ExpenseName** (`src/components/expense-name.tsx`) — the one way an expense/bill is named: localized type word prominent (`expenseTypes.*` keys), provider muted ("Energia · ENEL"); provider `null` renders the type word alone. Props: `type` (ExpenseType enum), `provider` (string | null). Labels derive from structured data — never compose or split a "Type · Provider" string by hand.
 
 ### Status pills, badges & tabs
 
@@ -65,8 +67,8 @@ Compound: `EmptyState`, `EmptyStateIcon` (wraps an `IconTile`), `EmptyStateTitle
 ### Explainer Card (`src/components/explainer-card.tsx`)
 Compound: `ExplainerCard`, `ExplainerCardTitle`, `ExplainerCardDescription`, `ExplainerCardContent`, `ExplainerCardList` / `ExplainerCardListItem`, `ExplainerCardAction`. Calm, centered "why this matters" card with `bg-muted/40` chrome — used inside checkout/wizard sections (e.g. Tenants empty state, Tax ID "why we ask", Expenses empty state). `Description` is the optional one-line value statement; `Content` is a free slot for richer bodies and auto-tints lucide icons with `text-primary`. Use `ExplainerCardList` + `ExplainerCardListItem` for bullet lists (each item renders with a `<Check>` prefix automatically — never hand-roll the `<ul>` markup). Distinct from `EmptyState` — reach for that one for full-page sparse states with a circle icon tile.
 
-### Info Box (`src/components/info-box.tsx`)
-Variants: default, warning, success, destructive. Parts: `InfoBox`, `InfoBoxIcon`, `InfoBoxContent`, `InfoBoxDivider`.
+### Alert (`src/components/ui/alert.tsx`)
+Borderless subtle-surface notice — replaces the retired InfoBox. Variants: neutral, info, success, warning, destructive. Sizes: `default` (icon + title + description) and `banner` (one truncating line, dot-led, trailing action). Parts: `Alert`, `AlertDot`, `AlertBody`, `AlertTitle`, `AlertDescription`, `AlertAction`. Design locked 2026-06-10.
 
 ### Urgent Action List (`src/components/urgent-action-list.tsx`)
 Composes `Card size="none"` + `List` + embedded `ListRow` + `IconTile`. Use as the reference pattern for any home-screen "needs your attention" list.

@@ -5,16 +5,12 @@ import { Constants } from '@/lib/types/database'
 import type { Database } from '@/lib/types/database'
 
 type PropertyType = Database['public']['Enums']['property_type']
-const PROPERTY_TYPES = Constants.public.Enums
-  .property_type as readonly PropertyType[]
+const PROPERTY_TYPES = Constants.public.Enums.property_type as readonly PropertyType[]
 
 export const propertyInputBaseSchema = z.object({
   name: z.string().max(100, { error: 'tooLong' }).default(''),
   country_code: z.string().default('BR'),
-  property_type: z
-    .enum(PROPERTY_TYPES, { error: 'invalidPropertyType' })
-    .nullable()
-    .default(null),
+  property_type: z.enum(PROPERTY_TYPES, { error: 'invalidPropertyType' }).nullable().default(null),
 })
 
 export const propertyAddressInputBaseSchema = z.object({
@@ -44,47 +40,63 @@ export const propertyAddressInputBaseSchema = z.object({
 
 const BRAZILIAN_POSTAL_CODE_RE = /^(?:\d{5}-\d{3}|\d{8})$/
 const BRAZILIAN_STATE_CODES = new Set([
-  'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA',
-  'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN',
-  'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO',
+  'AC',
+  'AL',
+  'AP',
+  'AM',
+  'BA',
+  'CE',
+  'DF',
+  'ES',
+  'GO',
+  'MA',
+  'MT',
+  'MS',
+  'MG',
+  'PA',
+  'PB',
+  'PR',
+  'PE',
+  'PI',
+  'RJ',
+  'RN',
+  'RS',
+  'RO',
+  'RR',
+  'SC',
+  'SP',
+  'SE',
+  'TO',
 ])
 
 export const brazilAddressSchema = propertyAddressInputBaseSchema.extend({
-  postal_code: propertyAddressInputBaseSchema.shape.postal_code.superRefine(
-    (value, ctx) => {
-      if (value.length === 0) return
-      if (!BRAZILIAN_POSTAL_CODE_RE.test(value)) {
-        ctx.addIssue({ code: 'custom', message: 'invalidPostalCode' })
-      }
-    },
-  ),
+  postal_code: propertyAddressInputBaseSchema.shape.postal_code.superRefine((value, ctx) => {
+    if (value.length === 0) return
+    if (!BRAZILIAN_POSTAL_CODE_RE.test(value)) {
+      ctx.addIssue({ code: 'custom', message: 'invalidPostalCode' })
+    }
+  }),
   city: propertyAddressInputBaseSchema.shape.city.superRefine((value, ctx) => {
     if (value.length === 0 || value.length > 100) return
     if (/\d/.test(value)) {
       ctx.addIssue({ code: 'custom', message: 'invalidCity' })
     }
   }),
-  state: propertyAddressInputBaseSchema.shape.state.superRefine(
-    (value, ctx) => {
-      if (value.length === 0 || value.length > 100) return
-      if (!BRAZILIAN_STATE_CODES.has(value.toUpperCase())) {
-        ctx.addIssue({ code: 'custom', message: 'invalidState' })
-      }
-    },
-  ),
+  state: propertyAddressInputBaseSchema.shape.state.superRefine((value, ctx) => {
+    if (value.length === 0 || value.length > 100) return
+    if (!BRAZILIAN_STATE_CODES.has(value.toUpperCase())) {
+      ctx.addIssue({ code: 'custom', message: 'invalidState' })
+    }
+  }),
 })
 
 export const fallbackAddressSchema = propertyAddressInputBaseSchema.extend({
-  postal_code: propertyAddressInputBaseSchema.shape.postal_code
-    .optional()
-    .default(''),
+  postal_code: propertyAddressInputBaseSchema.shape.postal_code.optional().default(''),
   number: propertyAddressInputBaseSchema.shape.number.optional().default(''),
   state: propertyAddressInputBaseSchema.shape.state.optional().default(''),
 })
 
-export const propertyInputSchema = propertyInputBaseSchema.extend(
-  brazilAddressSchema.shape,
-)
+export const propertyInputSchema = propertyInputBaseSchema.extend(brazilAddressSchema.shape)
 
 function preprocessPropertyFormData(value: unknown): unknown {
   if (!(value instanceof FormData)) return value

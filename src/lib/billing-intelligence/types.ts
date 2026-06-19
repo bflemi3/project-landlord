@@ -8,9 +8,9 @@
  */
 export interface BillExtractionResult {
   provider: {
-    profileId: string         // provider_invoice_profiles.id (links to DB)
+    profileId: string // provider_invoice_profiles.id (links to DB)
     companyName: string
-    taxId: string             // company tax ID (e.g., CNPJ in Brazil, RFC in Mexico)
+    taxId: string // company tax ID (e.g., CNPJ in Brazil, RFC in Mexico)
     category: ProviderCategory
   }
   customer: {
@@ -19,20 +19,20 @@ export interface BillExtractionResult {
     /** Customer tax ID as printed on the bill */
     taxId: string
     taxIdType: TaxIdType
-    countryCode: string       // ISO 3166-1 alpha-2 (e.g., 'BR')
+    countryCode: string // ISO 3166-1 alpha-2 (e.g., 'BR')
     /** Provider-specific account identifier (installation number, account number, etc.) */
     accountNumber: string
   }
   billing: {
-    referenceMonth: string    // YYYY-MM (normalized)
-    dueDate: string           // YYYY-MM-DD (normalized)
-    amountDue: number         // integer minor units (centavos)
-    currency: string          // 'BRL'
+    referenceMonth: string // YYYY-MM (normalized)
+    dueDate: string // YYYY-MM-DD (normalized)
+    amountDue: number // integer minor units (centavos)
+    currency: string // 'BRL'
   }
   /** Usage/consumption data — optional, varies by provider type */
   consumption?: {
     value: number
-    unit: string              // 'kWh', 'm³', 'GB', etc.
+    unit: string // 'kWh', 'm³', 'GB', etc.
   }
   payment: {
     linhaDigitavel?: string
@@ -64,7 +64,7 @@ export interface FieldConfidence {
   /** 0-1: how sure are we this matches reality? null if not validated */
   validation?: number
   /** Which source was used for validation */
-  validationSource?: string   // 'api', 'web', 'barcode-math', etc.
+  validationSource?: string // 'api', 'web', 'barcode-math', etc.
   /** Routing status derived from extraction + validation */
   status: FieldStatus
 }
@@ -125,8 +125,8 @@ export interface ValidationResult {
 
 export interface PaymentStatus {
   paid: boolean
-  paidDate?: string           // YYYY-MM-DD
-  paidAmount?: number         // integer minor units
+  paidDate?: string // YYYY-MM-DD
+  paidAmount?: number // integer minor units
   source: 'provider-api' | 'open-finance' | 'dda' | 'user-confirmed' | 'provider-web-scrape'
   /** User ID when source is 'user-confirmed' */
   confirmedBy?: string

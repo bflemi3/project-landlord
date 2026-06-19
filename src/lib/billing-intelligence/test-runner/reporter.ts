@@ -15,16 +15,22 @@ export function formatReport(report: AccuracyReport): string {
 
   // Identification (only if tested)
   if (report.identification.tested > 0) {
-    lines.push(`Identification: ${report.identification.passed}/${report.identification.tested} passed`)
+    lines.push(
+      `Identification: ${report.identification.passed}/${report.identification.tested} passed`,
+    )
     if (report.identification.failed > 0) {
-      lines.push(`  ${report.identification.failed} failed — fix identification before trusting extraction accuracy`)
+      lines.push(
+        `  ${report.identification.failed} failed — fix identification before trusting extraction accuracy`,
+      )
     }
     lines.push('')
   }
 
   // Extraction
   const ext = report.extraction
-  lines.push(`Extraction: ${(ext.accuracy * 100).toFixed(1)}% (${ext.passedFields}/${ext.totalFields} fields across ${ext.casesScored} cases)`)
+  lines.push(
+    `Extraction: ${(ext.accuracy * 100).toFixed(1)}% (${ext.passedFields}/${ext.totalFields} fields across ${ext.casesScored} cases)`,
+  )
   lines.push('')
 
   // Per-field breakdown
