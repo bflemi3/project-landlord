@@ -11,21 +11,10 @@
 -- Fixed UUIDs so the seed is deterministic and re-runnable.
 --
 -- All bill/payment dates are RELATIVE to the run date: history sits on a
--- month grid (1–3 months back via pg_temp.month_day), current-month dates
+-- month grid (1–3 months back via month_day() in seed_helpers.sql), current-month dates
 -- clamp to today, and "due" rows anchor to current_date + N so they stay
 -- genuinely due whenever the seed runs.
 -- =============================================================================
-
--- Day `day_of_month` of the month `months_ago` months before the current one.
--- pg_temp: session-scoped, vanishes after the seed run.
-create function pg_temp.month_day(months_ago int, day_of_month int) returns date
-language sql stable as $$
-  select (
-    date_trunc('month', current_date)
-    - make_interval(months => months_ago)
-    + make_interval(days => day_of_month - 1)
-  )::date
-$$;
 
 -- -----------------------------------------------------------------------------
 -- 1. Auth users (+ identities). handle_new_user trigger creates the profiles.
@@ -177,34 +166,34 @@ insert into responsibility_allocations (charge_definition_id, role, allocation_t
 -- -----------------------------------------------------------------------------
 insert into charge_instances (id, charge_definition_id, amount_minor, issued_on, due_date, tenant_percentage, landlord_percentage) values
   -- P1 Energia (variable, tenant, split 50/50): months -3/-2 paid, last month partial (→ overdue)
-  ('33333333-0000-0000-0000-000000000001', '44444444-0000-0000-0000-000000000001', 32000, pg_temp.month_day(3, 2),  pg_temp.month_day(3, 20), 10000, 0),
-  ('33333333-0000-0000-0000-000000000002', '44444444-0000-0000-0000-000000000001', 28800, pg_temp.month_day(2, 3),  pg_temp.month_day(2, 20), 10000, 0),
-  ('33333333-0000-0000-0000-000000000003', '44444444-0000-0000-0000-000000000001', 41500, pg_temp.month_day(1, 4),  pg_temp.month_day(1, 20), 10000, 0),
+  ('33333333-0000-0000-0000-000000000001', '44444444-0000-0000-0000-000000000001', 32000, public.month_day(3, 2),  public.month_day(3, 20), 10000, 0),
+  ('33333333-0000-0000-0000-000000000002', '44444444-0000-0000-0000-000000000001', 28800, public.month_day(2, 3),  public.month_day(2, 20), 10000, 0),
+  ('33333333-0000-0000-0000-000000000003', '44444444-0000-0000-0000-000000000001', 41500, public.month_day(1, 4),  public.month_day(1, 20), 10000, 0),
   -- P1 Água (variable, tenant): months -3/-2 paid, last month OVERDUE
-  ('33333333-0000-0000-0000-000000000004', '44444444-0000-0000-0000-000000000002', 9600, pg_temp.month_day(3, 10), pg_temp.month_day(3, 25), 10000, 0),
-  ('33333333-0000-0000-0000-000000000005', '44444444-0000-0000-0000-000000000002', 11200, pg_temp.month_day(2, 11), pg_temp.month_day(2, 25), 10000, 0),
-  ('33333333-0000-0000-0000-000000000006', '44444444-0000-0000-0000-000000000002', 8800, pg_temp.month_day(1, 12), pg_temp.month_day(1, 25), 10000, 0),
+  ('33333333-0000-0000-0000-000000000004', '44444444-0000-0000-0000-000000000002', 9600, public.month_day(3, 10), public.month_day(3, 25), 10000, 0),
+  ('33333333-0000-0000-0000-000000000005', '44444444-0000-0000-0000-000000000002', 11200, public.month_day(2, 11), public.month_day(2, 25), 10000, 0),
+  ('33333333-0000-0000-0000-000000000006', '44444444-0000-0000-0000-000000000002', 8800, public.month_day(1, 12), public.month_day(1, 25), 10000, 0),
   -- P1 Condomínio (fixed, landlord): -3 on-time, -2 LATE, -1 paid
-  ('33333333-0000-0000-0000-000000000007', '44444444-0000-0000-0000-000000000003', 48000, pg_temp.month_day(3, 5),  pg_temp.month_day(3, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000008', '44444444-0000-0000-0000-000000000003', 48000, pg_temp.month_day(2, 5),  pg_temp.month_day(2, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000009', '44444444-0000-0000-0000-000000000003', 48000, pg_temp.month_day(1, 5),  pg_temp.month_day(1, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000007', '44444444-0000-0000-0000-000000000003', 48000, public.month_day(3, 5),  public.month_day(3, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000008', '44444444-0000-0000-0000-000000000003', 48000, public.month_day(2, 5),  public.month_day(2, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000009', '44444444-0000-0000-0000-000000000003', 48000, public.month_day(1, 5),  public.month_day(1, 10), 0, 10000),
   -- P1 Internet (fixed, tenant): only 2 instances (partial avg), NULL due_date
-  ('33333333-0000-0000-0000-00000000000a', '44444444-0000-0000-0000-000000000004', 15900, pg_temp.month_day(2, 6),  null,                     10000, 0),
-  ('33333333-0000-0000-0000-00000000000b', '44444444-0000-0000-0000-000000000004', 15900, pg_temp.month_day(1, 6),  null,                     10000, 0),
+  ('33333333-0000-0000-0000-00000000000a', '44444444-0000-0000-0000-000000000004', 15900, public.month_day(2, 6),  null,                     10000, 0),
+  ('33333333-0000-0000-0000-00000000000b', '44444444-0000-0000-0000-000000000004', 15900, public.month_day(1, 6),  null,                     10000, 0),
   -- P1 Gás (variable, tenant): single instance, DUE (due date always ahead of today)
-  ('33333333-0000-0000-0000-00000000000c', '44444444-0000-0000-0000-000000000005', 7400, pg_temp.month_day(1, 25), current_date + 10,        10000, 0),
+  ('33333333-0000-0000-0000-00000000000c', '44444444-0000-0000-0000-000000000005', 7400, public.month_day(1, 25), current_date + 10,        10000, 0),
   -- P2 Energia · CPFL (variable, tenant): all paid
-  ('33333333-0000-0000-0000-00000000000d', '44444444-0000-0000-0000-000000000007', 21000, pg_temp.month_day(3, 8),  pg_temp.month_day(3, 22), 10000, 0),
-  ('33333333-0000-0000-0000-00000000000e', '44444444-0000-0000-0000-000000000007', 19500, pg_temp.month_day(2, 9),  pg_temp.month_day(2, 22), 10000, 0),
-  ('33333333-0000-0000-0000-00000000000f', '44444444-0000-0000-0000-000000000007', 24000, pg_temp.month_day(1, 10), pg_temp.month_day(1, 22), 10000, 0),
+  ('33333333-0000-0000-0000-00000000000d', '44444444-0000-0000-0000-000000000007', 21000, public.month_day(3, 8),  public.month_day(3, 22), 10000, 0),
+  ('33333333-0000-0000-0000-00000000000e', '44444444-0000-0000-0000-000000000007', 19500, public.month_day(2, 9),  public.month_day(2, 22), 10000, 0),
+  ('33333333-0000-0000-0000-00000000000f', '44444444-0000-0000-0000-000000000007', 24000, public.month_day(1, 10), public.month_day(1, 22), 10000, 0),
   -- P2 Condomínio (fixed, landlord): all paid
-  ('33333333-0000-0000-0000-000000000010', '44444444-0000-0000-0000-000000000008', 65000, pg_temp.month_day(3, 5),  pg_temp.month_day(3, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000011', '44444444-0000-0000-0000-000000000008', 65000, pg_temp.month_day(2, 5),  pg_temp.month_day(2, 10), 0, 10000),
-  ('33333333-0000-0000-0000-000000000012', '44444444-0000-0000-0000-000000000008', 65000, pg_temp.month_day(1, 5),  pg_temp.month_day(1, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000010', '44444444-0000-0000-0000-000000000008', 65000, public.month_day(3, 5),  public.month_day(3, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000011', '44444444-0000-0000-0000-000000000008', 65000, public.month_day(2, 5),  public.month_day(2, 10), 0, 10000),
+  ('33333333-0000-0000-0000-000000000012', '44444444-0000-0000-0000-000000000008', 65000, public.month_day(1, 5),  public.month_day(1, 10), 0, 10000),
   -- P2 Internet · Claro (fixed, tenant): -2/-1 paid, current month DUE
-  ('33333333-0000-0000-0000-000000000013', '44444444-0000-0000-0000-000000000009', 12000, pg_temp.month_day(2, 6),  pg_temp.month_day(2, 15), 10000, 0),
-  ('33333333-0000-0000-0000-000000000014', '44444444-0000-0000-0000-000000000009', 12000, pg_temp.month_day(1, 6),  pg_temp.month_day(1, 15), 10000, 0),
-  ('33333333-0000-0000-0000-000000000015', '44444444-0000-0000-0000-000000000009', 12000, pg_temp.month_day(0, 1),  current_date + 4,         10000, 0);
+  ('33333333-0000-0000-0000-000000000013', '44444444-0000-0000-0000-000000000009', 12000, public.month_day(2, 6),  public.month_day(2, 15), 10000, 0),
+  ('33333333-0000-0000-0000-000000000014', '44444444-0000-0000-0000-000000000009', 12000, public.month_day(1, 6),  public.month_day(1, 15), 10000, 0),
+  ('33333333-0000-0000-0000-000000000015', '44444444-0000-0000-0000-000000000009', 12000, public.month_day(0, 1),  current_date + 4,         10000, 0);
 
 -- Per-tenant split on P1 Energia (Rafael / Marina 50/50).
 insert into tenant_splits (charge_instance_id, user_id, percentage) values
@@ -222,31 +211,31 @@ insert into tenant_splits (charge_instance_id, user_id, percentage) values
 -- -----------------------------------------------------------------------------
 insert into charge_payments (charge_instance_id, paid_by, amount_minor, paid_on, payment_method) values
   -- P1 Energia: -3 both halves, -2 both halves, -1 only Rafael's half
-  ('33333333-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001', 16000, pg_temp.month_day(3, 18), 'pix'),
-  ('33333333-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002', 16000, pg_temp.month_day(3, 19), 'pix'),
-  ('33333333-0000-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000001', 14400, pg_temp.month_day(2, 19), 'pix'),
-  ('33333333-0000-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 14400, pg_temp.month_day(2, 15), 'credit_card'),
-  ('33333333-0000-0000-0000-000000000003', 'bbbbbbbb-0000-0000-0000-000000000001', 20750, pg_temp.month_day(1, 19), 'pix'),
+  ('33333333-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000001', 16000, public.month_day(3, 18), 'pix'),
+  ('33333333-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002', 16000, public.month_day(3, 19), 'pix'),
+  ('33333333-0000-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000001', 14400, public.month_day(2, 19), 'pix'),
+  ('33333333-0000-0000-0000-000000000002', 'bbbbbbbb-0000-0000-0000-000000000002', 14400, public.month_day(2, 15), 'credit_card'),
+  ('33333333-0000-0000-0000-000000000003', 'bbbbbbbb-0000-0000-0000-000000000001', 20750, public.month_day(1, 19), 'pix'),
   -- P1 Água: -3/-2 paid by Rafael
-  ('33333333-0000-0000-0000-000000000004', 'bbbbbbbb-0000-0000-0000-000000000001',  9600, pg_temp.month_day(3, 24), 'pix'),
-  ('33333333-0000-0000-0000-000000000005', 'bbbbbbbb-0000-0000-0000-000000000001', 11200, pg_temp.month_day(2, 23), 'pix'),
+  ('33333333-0000-0000-0000-000000000004', 'bbbbbbbb-0000-0000-0000-000000000001',  9600, public.month_day(3, 24), 'pix'),
+  ('33333333-0000-0000-0000-000000000005', 'bbbbbbbb-0000-0000-0000-000000000001', 11200, public.month_day(2, 23), 'pix'),
   -- P1 Condomínio: -3 on-time, -2 LATE (paid day 18 vs due day 10), -1 on-time
-  ('33333333-0000-0000-0000-000000000007', 'aaaaaaaa-0000-0000-0000-000000000001', 48000, pg_temp.month_day(3, 9),  'bank_transfer'),
-  ('33333333-0000-0000-0000-000000000008', 'aaaaaaaa-0000-0000-0000-000000000001', 48000, pg_temp.month_day(2, 18), 'bank_transfer'),
-  ('33333333-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000001', 48000, pg_temp.month_day(1, 10), 'bank_transfer'),
+  ('33333333-0000-0000-0000-000000000007', 'aaaaaaaa-0000-0000-0000-000000000001', 48000, public.month_day(3, 9),  'bank_transfer'),
+  ('33333333-0000-0000-0000-000000000008', 'aaaaaaaa-0000-0000-0000-000000000001', 48000, public.month_day(2, 18), 'bank_transfer'),
+  ('33333333-0000-0000-0000-000000000009', 'aaaaaaaa-0000-0000-0000-000000000001', 48000, public.month_day(1, 10), 'bank_transfer'),
   -- P1 Internet: -2 paid by Marina, -1 unpaid (due, null due_date)
-  ('33333333-0000-0000-0000-00000000000a', 'bbbbbbbb-0000-0000-0000-000000000002', 15900, pg_temp.month_day(2, 10), 'debit_card'),
+  ('33333333-0000-0000-0000-00000000000a', 'bbbbbbbb-0000-0000-0000-000000000002', 15900, public.month_day(2, 10), 'debit_card'),
   -- P2 Energia · CPFL: all paid by João
-  ('33333333-0000-0000-0000-00000000000d', 'bbbbbbbb-0000-0000-0000-000000000003', 21000, pg_temp.month_day(3, 20), 'pix'),
-  ('33333333-0000-0000-0000-00000000000e', 'bbbbbbbb-0000-0000-0000-000000000003', 19500, pg_temp.month_day(2, 21), 'debit_card'),
-  ('33333333-0000-0000-0000-00000000000f', 'bbbbbbbb-0000-0000-0000-000000000003', 24000, pg_temp.month_day(1, 21), 'pix'),
+  ('33333333-0000-0000-0000-00000000000d', 'bbbbbbbb-0000-0000-0000-000000000003', 21000, public.month_day(3, 20), 'pix'),
+  ('33333333-0000-0000-0000-00000000000e', 'bbbbbbbb-0000-0000-0000-000000000003', 19500, public.month_day(2, 21), 'debit_card'),
+  ('33333333-0000-0000-0000-00000000000f', 'bbbbbbbb-0000-0000-0000-000000000003', 24000, public.month_day(1, 21), 'pix'),
   -- P2 Condomínio: all paid by LL1
-  ('33333333-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000001', 65000, pg_temp.month_day(3, 9),  'bank_transfer'),
-  ('33333333-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000001', 65000, pg_temp.month_day(2, 9),  'bank_transfer'),
-  ('33333333-0000-0000-0000-000000000012', 'aaaaaaaa-0000-0000-0000-000000000001', 65000, pg_temp.month_day(1, 9),  'bank_transfer'),
+  ('33333333-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000001', 65000, public.month_day(3, 9),  'bank_transfer'),
+  ('33333333-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000001', 65000, public.month_day(2, 9),  'bank_transfer'),
+  ('33333333-0000-0000-0000-000000000012', 'aaaaaaaa-0000-0000-0000-000000000001', 65000, public.month_day(1, 9),  'bank_transfer'),
   -- P2 Internet · Claro: -2/-1 paid by João, current month unpaid (due)
-  ('33333333-0000-0000-0000-000000000013', 'bbbbbbbb-0000-0000-0000-000000000003', 12000, pg_temp.month_day(2, 14), 'pix'),
-  ('33333333-0000-0000-0000-000000000014', 'bbbbbbbb-0000-0000-0000-000000000003', 12000, pg_temp.month_day(1, 14), 'pix');
+  ('33333333-0000-0000-0000-000000000013', 'bbbbbbbb-0000-0000-0000-000000000003', 12000, public.month_day(2, 14), 'pix'),
+  ('33333333-0000-0000-0000-000000000014', 'bbbbbbbb-0000-0000-0000-000000000003', 12000, public.month_day(1, 14), 'pix');
 
 -- -----------------------------------------------------------------------------
 -- 7. Current-month bills for P1 — populates the live Bills summary
@@ -258,11 +247,14 @@ insert into charge_payments (charge_instance_id, paid_by, amount_minor, paid_on,
 --    Condomínio is split 50/50 LL↔tenant (5000/5000) and the LL has only
 --    partially paid their half → exercises the "you · R$X" share line.
 insert into charge_instances (id, charge_definition_id, amount_minor, issued_on, due_date, tenant_percentage, landlord_percentage) values
-  ('33333333-0000-0000-0000-000000000016', '44444444-0000-0000-0000-000000000003', 48000, least(pg_temp.month_day(0, 5), current_date), current_date + 5,  5000,  5000),
-  ('33333333-0000-0000-0000-000000000017', '44444444-0000-0000-0000-000000000004', 15900, least(pg_temp.month_day(0, 6), current_date), current_date + 9,  10000, 0),
-  ('33333333-0000-0000-0000-000000000018', '44444444-0000-0000-0000-000000000001', 38000, least(pg_temp.month_day(0, 3), current_date), current_date + 9,  10000, 0),
-  ('33333333-0000-0000-0000-000000000019', '44444444-0000-0000-0000-000000000002', 10000, least(pg_temp.month_day(0, 4), current_date), current_date + 14, 10000, 0);
+  ('33333333-0000-0000-0000-000000000016', '44444444-0000-0000-0000-000000000003', 48000, least(public.month_day(0, 5), current_date), current_date + 5,  5000,  5000),
+  ('33333333-0000-0000-0000-000000000017', '44444444-0000-0000-0000-000000000004', 15900, least(public.month_day(0, 6), current_date), current_date + 9,  10000, 0),
+  ('33333333-0000-0000-0000-000000000018', '44444444-0000-0000-0000-000000000001', 38000, least(public.month_day(0, 3), current_date), current_date + 9,  10000, 0),
+  ('33333333-0000-0000-0000-000000000019', '44444444-0000-0000-0000-000000000002', 10000, least(public.month_day(0, 4), current_date), current_date + 14, 10000, 0);
 
 insert into charge_payments (charge_instance_id, paid_by, amount_minor, paid_on, payment_method) values
-  ('33333333-0000-0000-0000-000000000016', 'aaaaaaaa-0000-0000-0000-000000000001', 10000, least(pg_temp.month_day(0, 9), current_date),  'bank_transfer'),
-  ('33333333-0000-0000-0000-000000000017', 'bbbbbbbb-0000-0000-0000-000000000002', 15900, least(pg_temp.month_day(0, 10), current_date), 'debit_card');
+  ('33333333-0000-0000-0000-000000000016', 'aaaaaaaa-0000-0000-0000-000000000001', 10000, least(public.month_day(0, 9), current_date),  'bank_transfer'),
+  ('33333333-0000-0000-0000-000000000017', 'bbbbbbbb-0000-0000-0000-000000000002', 15900, least(public.month_day(0, 10), current_date), 'debit_card');
+
+-- Drop the seed-only helper from seed_helpers.sql.
+drop function public.month_day(int, int);
