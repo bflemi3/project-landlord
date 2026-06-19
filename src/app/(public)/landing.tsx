@@ -2157,13 +2157,13 @@ function ReportingMockup() {
 
 function Comparison() {
   const t = useTranslations('landing')
-  const rows = [
-    { label: t('compRow1Label'), pm: t('compRow1PM'), mabenn: t('compRow1Mabenn') },
-    { label: t('compRow2Label'), pm: t('compRow2PM'), mabenn: t('compRow2Mabenn') },
-    { label: t('compRow3Label'), pm: t('compRow3PM'), mabenn: t('compRow3Mabenn') },
-    { label: t('compRow4Label'), pm: t('compRow4PM'), mabenn: t('compRow4Mabenn') },
-    { label: t('compRow5Label'), pm: t('compRow5PM'), mabenn: t('compRow5Mabenn') },
-  ]
+  const rows = Array.from({ length: 8 }, (_, i) => i + 1)
+    .filter((n) => t.has(`compRow${n}Label`))
+    .map((n) => ({
+      label: t(`compRow${n}Label`),
+      pm: t(`compRow${n}PM`),
+      mabenn: t(`compRow${n}Mabenn`),
+    }))
   return (
     <section id="comparison" className="relative px-6 py-32 md:py-40">
       <div className="mx-auto max-w-4xl">
