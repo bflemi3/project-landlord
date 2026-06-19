@@ -161,7 +161,7 @@ For small Brazilian landlords managing their own properties and the tenants who 
 
 The fee/control wedge (formerly Pillar 5 "You stay in control") is not a pillar — it's the comparison closer at the end of the page. The disruption shows in the contrast, not in claims about ourselves.
 
-**Note for AI copy generation:** Not every surface needs all four. On the canonical landing page, Pillars 2 → 3 → 4 run first (operational engine + two-sided design), then Pillar 1 (revenue moment) climaxes the story as the bridge to the comparison closer. Pillar 1 is the *emotional* anchor — the headline value — but it sits mid-page so the reader has the operational and trust context first. Other surfaces (about page, feature pages, blog) can lead with any single pillar.
+**Note for AI copy generation:** Not every surface needs all four. Pillar 1 (revenue) is the landlord's *emotional* anchor — the headline value — but on the refreshed canonical landing page (2026-06; see the §11 callout) it is no longer a standalone mid-page pivot: it's folded into the **Reporting** feature section and carried strongly by the hero visual. The page is now task-led (jobs grid → how it works → feature run), not pillar-led. Other surfaces (about page, feature pages, blog) can still lead with any single pillar, including a dedicated revenue moment where it earns its place.
 
 ---
 
@@ -408,7 +408,7 @@ Concrete situations that anchor marketing copy, page sections, blog posts, ads, 
 - Specific
 - Warm (not corporate, not cold)
 - Trustworthy
-- Disruptive but honest (per the landing-page spec: punchy headlines, plain body copy, no jargon)
+- Disruptive but honest (per the landing-page spec: a punchy *hero* headline, plain body copy, no jargon) — but section headers and list-item titles stay plain noun labels, never editorial sentences (load-bearing guardrail; see §11 and §13). "Punchy" applies to the hero, not to section/item titles.
 
 ### How the product should sound
 - Like a financial product you actually trust (Mercury at its best)
@@ -467,7 +467,19 @@ Concrete situations that anchor marketing copy, page sections, blog posts, ads, 
 
 Recommended narrative flow for the public-facing homepage and other marketing pages. Each section below describes the **pattern** an AI can generate from — followed by the concrete mapping to the current canonical landing page (per `docs/superpowers/specs/2026-05-22-landing-page-pivot-redesign-design.md`).
 
-Not every marketing page needs all of these sections. Sections 8.3 (founder beat), 8.5 (trust band), and 8.7 (FAQ) are optional add-ons; the canonical landing page is the eight-section default (1 Hero → 2 Problem → 3 Solution → 4 How it works → 5 Workflows → 6 Revenue moment → 7 Comparison → 8 Two-sides → 9 CTA, with the optional bands inserted between 8 and 9). Use the order as a default sequence and drop sections that don't earn their place on a given page.
+Not every marketing page needs all of these sections. Use the order as a default sequence and drop sections that don't earn their place on a given page.
+
+> **Canonical landing page refreshed (2026-06) — task-led IA.** The home page was reworked for clarity, conversion, and attribution per `docs/superpowers/specs/landing-page-clarity-seo-refresh.md`. That spec's §3 is now the authority for the canonical page's section order; the pattern sections below remain valid generation templates, but the canonical page no longer follows the old pillar-led "eight-section default" (1 Hero → 2 Problem → 3 Solution → 4 How it works → 5 Workflows → 6 Revenue moment → 7 Comparison → 8 Two-sides → 9 CTA). What changed:
+>
+> - **Task-led, jobs-before-mechanisms.** The page opens with the literal jobs — Hero → **Quick jobs grid** (6 cards: Rent & bills · Reporting · Contracts · Maintenance · Messages · Everything in one place) → **How it works** (4 steps) — then the feature run, *then* comparison / pricing / trust. The mechanism (how detection works) never precedes the job it serves. The hero H1 is now the task itself — **"Manage your rental without a property manager."** / *"Administre seu aluguel sem imobiliária."* — not the brand line. "Property management without the property manager." stays alive as the OG/social hook and the comparison-closer rhyme, not the H1.
+> - **Revenue is one job among several, folded into Reporting.** The old "revenue moment climaxes mid-page" staging is retired. Revenue now lives inside a broader **Reporting** feature section: revenue (month/year/lifetime) + costs (condo, IPTU, maintenance, mortgage) + net return after costs + estimated property value + current rent benchmarked against comparable properties. Revenue stays the strongest single element of the hero visual and the Reporting mockup, but it is no longer a standalone emotional-pivot section. For landlord copy, "lead with revenue" still means emotional priority, not literal scroll position.
+> - **Hero has a quieter secondary CTA.** Primary `Join the waitlist`; secondary ghost **`See how it works`** that scrolls to the How-it-works section. Pattern for any landlord landing page: one loud primary + one quiet anchor secondary.
+> - **Feature sections carry ordinal eyebrows** (`01`–`05`) and a plain noun-phrase headline (see the guardrail below). Order: 01 Rent & bills → 02 Contracts → 03 Messages & maintenance → 04 Reporting → 05 Track record & screening → Comparison → Pricing → Two-sided → Trust & security → Founder → FAQ → Final CTA.
+> - **Trust band, founder beat, and FAQ now ship** (the §11.8.3 / 8.5 / 8.7 "not yet on the page" notes are superseded). Trust & security sits after Two-sided, before Founder; the founder beat is a real two-founder bio (Brandon + Lucas); FAQ is 12 questions in visitor-concern order.
+> - **Progressive waitlist (in progress).** The inline email input becomes the gate: submitting an email opens a `ResponsiveModal` with richer lead fields (role, rental count, current workflow, optional note) plus first-touch UTM capture. The single-field form described in §11.9 is the current shipped behavior; this enhancement replaces it when the slice lands.
+> - **Sell-as-shipped (D1)** — already the doc's position (Conflict #3, §14 avoid-list); the refresh reaffirms it. No availability/automation hedging; keep only honest, load-bearing trust statements (read-only bank access, never moves money, doesn't show the other side's bank feed, a lawyer is still the right call for complex disputes).
+> - **Plain headers and plain list-item titles (copy guardrail).** Section headers are plain noun labels that match the jobs-grid card ("Contracts", "Messages & maintenance", "Reporting", "Track record & screening") — not editorial sentences. **List-item titles follow the same rule** (e.g. Reputation / Shareable anywhere / Tenant screening — never "Trust that's earned — and easy to check"). A small amount of editorial language in body copy is fine; headers and item titles stay straightforward.
+> - **No new rule/skill (D7).** This guidance doc is the only place the refresh is recorded.
 
 **The canonical landing page is landlord-focused.** Tenant value is carried in the two-sides use-cases section (Section 11.8 below; canonical landing page Section 7), but the page sells to the landlord. A dedicated tenant-facing page will be built in a future cycle.
 
@@ -491,9 +503,8 @@ Not every marketing page needs all of these sections. Sections 8.3 (founder beat
   - Headline is 3 lines max, sentence case, Fraunces serif.
   - Subhead anchors geography (Brazilian landlords) and the wedge (8–12%).
   - **For pages targeting the DIY segment specifically**, the wedge shifts from 8–12% to time-and-anxiety. Alt subhead direction: "Rent tracking, contracts, and the lifecycle paperwork — for the Brazilian landlords already doing this themselves." The canonical landlord page leads with 8–12% because it's the cleanest contrast; DIY-targeted variants lead with the evenings, the WhatsApp threads, and the lawyer bills the DIY landlord pays instead.
-  - No eyebrow. The subhead carries positioning.
   - No exclamation marks. Quiet conviction.
-- **Canonical landing page:** Headline `Property management / without the / property manager.` Subhead `Rent tracking, contracts, and the lifecycle paperwork — for Brazilian landlords who'd rather keep the 8–12%.`
+- **Canonical landing page (refreshed 2026-06 — task-led):** Eyebrow `For landlords who rent directly in Brazil`. Headline `Manage your rental without a property manager.` Subhead `Track rent, bills, contracts, renewals, maintenance, and important messages in one place — clear for you and your tenant.` Primary CTA `Join the waitlist`; quieter secondary `See how it works` (anchors to How it works). The old brand line `Property management without the property manager.` is retained as the OG/social hook, not the H1. (Pre-refresh the hero ran no eyebrow; the task-led version adds the audience eyebrow above the H1.)
 
 ---
 
@@ -549,7 +560,7 @@ Not every marketing page needs all of these sections. Sections 8.3 (founder beat
   - Pillar order matters. On the canonical landing page, the workflows section runs Pillar 2 → 3 → 4 (rent/bills → contract → both-sides/trust); Pillar 1 (revenue) lives in its own dedicated section after — see 11.6 below. The value compounds: tracking → lifecycle → portable identity → revenue payoff.
   - Mechanism-triplet chips under each pillar are the right place for the implementation detail.
   - Each mockup must use tabular figures, real BRL amounts, real Brazilian provider names where applicable (ENEL, Sabesp, Vivo), and one `detected today/yesterday` micro-signal.
-- **Canonical landing page:** Sections 2, 3, and 4 — Pillar 2 (live billing view), Pillar 3 (contract timeline with IPCA proposal), Pillar 4 (two reputation cards). Pillar 1 (revenue moment) lives separately in canonical Section 5 — see 11.6 below.
+- **Canonical landing page (refreshed 2026-06):** The pillars now map to the ordinal feature run — `01` Rent & bills, `02` Contracts, `03` Messages & maintenance, `04` Reporting (revenue folded in here), `05` Track record & screening — each a plain-headed feature section with a product mockup. See the §11 refresh callout for the full order.
 
 ---
 
@@ -563,7 +574,7 @@ Not every marketing page needs all of these sections. Sections 8.3 (founder beat
   - This is the **single most important section for the landlord**. Give it real estate (`120px` above and below per the landing-page spec).
   - The chart should *animate in once* on scroll-in (left-to-right stroke draw, ~900ms ease-out).
   - View-dimension chips below the chart: this month / this year + lifetime / across properties.
-- **Canonical landing page:** Section 5 ("Watch your rental income grow"). Bridge between pillars and the comparison closer.
+- **Canonical landing page (refreshed 2026-06):** No longer a standalone "revenue moment" pivot. Revenue is now one beat inside the **Reporting** feature section (`04`), which also covers costs, net return after costs, estimated property value, and rent vs. comparable properties. The revenue dashboard remains the strongest element of the hero visual and the Reporting mockup, but the dedicated mid-page revenue section (with its `120px` rhythm and once-only chart draw) was folded into Reporting. This pattern entry stays valid for *other* surfaces (about page, a revenue-led feature page) where a dedicated revenue moment still earns its place.
 
 ---
 
@@ -609,7 +620,7 @@ Not every marketing page needs all of these sections. Sections 8.3 (founder beat
   - Sign with both founders' real names — **Brandon** (American) and **Lucas** (Brazilian). Don't write in a single "I" voice and don't collapse to "the founding team." The copy is sourced from an AI interview with both, not fabricated (see §13 → Founder beat copy).
   - No "we're disrupting" language. No "we believe" generic mission statements. The narrative is the credential — Brazilian specifics, real cities, real cost of the problem.
   - This section is optional. A tight landing page can skip it if other trust signals are doing the work. It becomes more valuable as launch approaches (last-mile trust before conversion).
-- **Canonical landing page:** Not yet on the page. Earns its place when the founder voice and the build progress justify the real estate. Slots between Section 7 (two-sides) and the trust band on longer pages.
+- **Canonical landing page (refreshed 2026-06 — now shipped):** Live as the **Founder** section, after Trust & security and before the FAQ. A real two-founder bio (Brandon + Lucas, with photo) — three short paragraphs (Brandon's perspective as tenant and self-managing landlord → Lucas's perspective as a lifelong tenant → why we built it), signed by both. Not the earlier placeholder.
 
 ---
 
@@ -624,7 +635,7 @@ Not every marketing page needs all of these sections. Sections 8.3 (founder beat
   - Keep the words "LGPD" and "read-only" — they're the trust signals BR readers scan for. Don't soften into "compliant with data laws" or "secure bank access."
   - Do not link out to `/privacidade` here — that's footer real estate. The chip is the signal; the policy is the proof.
   - No emoji. No exclamation marks. No "world-class security" filler.
-- **Canonical landing page:** Not yet on the page. Earns its place between Section 7 (two-sides) and Section 8 (CTA) when the band lands — narrow ribbon, ~48px vertical rhythm, same shell tone as the page.
+- **Canonical landing page (refreshed 2026-06 — now shipped):** Live as the **Trust & security** band, placed after the Two-sided section and before the Founder beat. Three chips: read-only bank access, hosted in Brazil, LGPD. A bordered confidence ribbon, distinct from its neighbors.
 
 ---
 
@@ -639,7 +650,7 @@ Not every marketing page needs all of these sections. Sections 8.3 (founder beat
   - Each answer is 1–2 sentences. Honest, not defensive. No "great question!" preamble.
   - Don't link out to `/privacidade` or pricing here. The section is the trust signal; deep dives belong in their own surfaces.
   - This section earns its place when the visitor has unanswered objections that prevent waitlist conversion. On a tight landing page, the data/trust band (8.5) and the closer math do most of the work; FAQ is for longer pages or when waitlist conversion is the explicit goal.
-- **Canonical landing page:** Not yet on the page. Earns its place when funnel data suggests visitors are bouncing on unanswered objections. Until then, a tight page is the better default.
+- **Canonical landing page (refreshed 2026-06 — now shipped):** Live as the **FAQ** section before the final CTA — 12 questions in visitor-concern order, with `FAQPage` JSON-LD sourced from the same message keys (so the structured data can't drift). Grew past the 5-question flat-list threshold, so it renders as an accordion.
 
 ---
 
@@ -732,7 +743,7 @@ A shared vocabulary so different agents name the same section the same way. Thes
 ### Marketing-page layout
 
 - **Mobile-first single column.** Outer container `max-width: ~640px`.
-- **Section vertical rhythm:** `48–80px`. The revenue moment gets `120px` above and below — it is the page's emotional pivot.
+- **Section vertical rhythm:** `48–80px`. On surfaces that use a dedicated revenue moment, give it `120px` above and below. (The refreshed canonical landing page folds revenue into the Reporting feature section rather than a standalone pivot — see the §11 callout.)
 - **Mockups break the container edge by exactly 14px to alternating sides.** "Screenshots peeking" treatment. Locked to 14px — no drift.
 
 ### Hero-specific
@@ -767,13 +778,13 @@ Three-column chip rows under each pillar. Three columns on desktop, stacked on m
 
 Search and link-sharing decide whether a marketing page is ever seen. Rules:
 
-- **Title:** `Mabenn | <positioning>`. Home: `Mabenn | Property management without the property manager`. Subpages: `<Page> | Mabenn`. Sentence-case `Mabenn` (meta is prose — see §1 Brand mark), ≤ ~60 chars, **pipe separator** (more compact in a browser tab than an em dash).
-- **Description:** ≤ ~155 chars, on-positioning. **The §10 avoid-list applies to meta exactly as to body copy** — e.g. never "Everything a property manager does" (overclaim) in a title, description, or OG card. Home (EN): "Rent tracking, contracts, and the lifecycle paperwork for Brazilian landlords — the work a property manager does, without the 8–12% fee."
-- **OG / Twitter:** og + twitter title = the hero line, "Property management without the property manager." `summary_large_image`. `og:site_name` = `Mabenn`. Image 1200×630, follows the mockup/visual rules above (Fraunces headline + one product peek, warm dark, one coral accent, no emoji, no stock).
+- **Title:** `Mabenn | <positioning>`. Sentence-case `Mabenn` (meta is prose — see §1 Brand mark), ≤ ~60 chars, **pipe separator** (more compact in a browser tab than an em dash). Refreshed (2026-06) for search intent — Home (EN, `mabenn.com`): `Mabenn | Rental management for Brazilian landlords`; Home (PT-BR, `mabenn.com.br`): `Mabenn | Administração de aluguel sem imobiliária`. Subpages: `<Page> | Mabenn`. The titles target the phrases people search (`rental management` / `administração de aluguel sem imobiliária`), not the brand line — "property management" is the foil, not us. Source of truth: `MARKETING_META` in `src/lib/marketing-meta.ts`.
+- **Description:** ≤ ~155 chars, on-positioning. **The §10 avoid-list applies to meta exactly as to body copy** — e.g. never "Everything a property manager does" (overclaim) in a title, description, or OG card. Home (EN): "Manage your rental without a property manager — rent tracking, contracts, and the lifecycle paperwork for Brazilian landlords, without the 8–12% fee." Home (PT-BR): "Administre seu aluguel sem imobiliária — recebimento de aluguel, contratos e toda a papelada da locação, sem a taxa de 8–12%."
+- **OG / Twitter:** og + twitter title = the brand hook, "Rental management without the property manager." / "Administração de aluguel sem imobiliária." (sourced from `MARKETING_META.ogTitle`, which also feeds the Organization `slogan`). `summary_large_image`. `og:site_name` = `Mabenn`. Image 1200×630, follows the mockup/visual rules above (Fraunces headline + one product peek, warm dark, one coral accent, no emoji, no stock).
 - **Localize by domain, not cookie.** Social crawlers send no `NEXT_LOCALE` cookie, so the only locale signal they carry is the host: `mabenn.com → en`, `mabenn.com.br → pt-BR`. Resolve locale from the host in a `generateMetadata` and localize title, description, and OG image per host. A static `export const metadata` serves one locale (en) to *every* crawler — don't use it for a multi-locale site.
 - **OG images:** generated per locale at request time via `next/og` `ImageResponse`, selected by host (`src/app/(public)/opengraph-image.tsx` + `twitter-image.tsx`) — a warm-dark Fraunces typographic card with the localized hero line and one coral accent. A hand-designed product-peek static PNG can replace it later if the card warrants it. ES has no public URL yet → no ES OG until it's routed.
 - **hreflang / canonical:** advertise an alternate only for each *routable* locale — `en → https://mabenn.com`, `pt-BR → https://mabenn.com.br`, plus `x-default → https://mabenn.com`. Do **not** advertise an `es` alternate until ES has its own URL (today it would collide with the en page).
-- **Structured data (JSON-LD):** `Organization` on the home page (name `Mabenn`, url, logo). Add `FAQPage` when the FAQ section (§11.8.7) ships — it's rich-result eligible. Don't assert a `price` in a `SoftwareApplication` offer pre-launch — `"0"` reads as free; the product is R$ 49/mo with a free first rental.
+- **Structured data (JSON-LD):** on the home page, an `@graph` of `Organization` (name `Mabenn`, url, logo, both founders) + `SoftwareApplication` + `FAQPage` (`src/app/(public)/page.tsx`). The `SoftwareApplication` now carries an `offers` node — **R$ 49/mo per rental, BRL**, via a `UnitPriceSpecification` (monthly, per rental). Assert the real list price, not `"0"` (which reads as free); the founding-member discount is intentionally **not** encoded — the structured offer is the standard one. `FAQPage` `mainEntity` is sourced from the same `messages/*.json` keys the visible FAQ renders (Q1–12), so the two can't drift.
 - **Already provided by the app shell (don't duplicate):** `metadataBase`, `robots.ts` (disallows `/app`, `/auth`, etc.), `sitemap.ts`, icons, manifest. Add new marketing routes to `sitemap.ts` as they ship.
 
 ---
@@ -782,7 +793,8 @@ Search and link-sharing decide whether a marketing page is ever seen. Rules:
 
 ### Strong headlines
 
-- Property management without the property manager.
+- Manage your rental without a property manager. *(canonical hero H1 — task-led, 2026-06)*
+- Property management without the property manager. *(brand line — OG/social hook + comparison-closer rhyme, not the H1)*
 - Watch your rental income grow.
 - Stay on top of rent and bills.
 - Never forget the adjustment again.
@@ -999,12 +1011,13 @@ Use Section 11 as the default flow. Drop any section that doesn't earn its place
 ### How to generate copy
 
 - Default to declarative sentences. State what's true. No conditional hedging.
-- Lead with **revenue** for landlord-facing content. "How much am I making?" is the headline value; tracking is the supporting evidence. *"Lead" here means emotional priority, not literal scroll position — on the canonical landing page the revenue section climaxes mid-page (canonical §5) after the operational pillars set it up. Don't move the revenue dashboard into the hero.*
+- Lead with **revenue** for landlord-facing content. "How much am I making?" is the headline value; tracking is the supporting evidence. *"Lead" here means emotional priority, not literal scroll position. On the refreshed canonical landing page (2026-06) revenue is folded into the Reporting feature section and carried by the hero visual rather than staged as a standalone mid-page moment — don't move the revenue dashboard into the hero, and don't assume every page has a dedicated revenue section.*
 - Lead with **portable record** for tenant-facing content. Tenant value = the receipts they take with them.
 - Lead with **two sides** for general / both-audience content.
 - Use real Brazilian context — `R$`, IPCA, Lei do Inquilinato, ENEL/Sabesp/Vivo, fiadores, caução, condomínio, boletos. PT-BR institutional terms stay PT-BR across all locales.
 - Never use the words / phrases in Section 10's "avoid" list.
 - Sentence case headlines. No exclamation marks. No emoji. Tabular figures for money.
+- **Plain section headers and list-item titles.** Section headers and feature/list-item titles are plain noun labels (e.g. "Contracts", "Messages & maintenance", "Reporting", "Track record & screening"; item titles like "Reputation", "Tenant screening") — not editorial sentences ("Trust that's earned — and easy to check"). A small amount of editorial language belongs in *body* copy, not in headers or item titles. This is a load-bearing guardrail from the 2026-06 landing refresh — see §11.
 
 ### Localization
 

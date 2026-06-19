@@ -2096,25 +2096,58 @@ export type Database = {
       }
       waitlist: {
         Row: {
+          completed_at: string | null
           created_at: string
           email: string
+          feedback: string | null
           id: string
+          landing_path: string | null
           locale: string
+          property_count: string | null
+          referrer: string | null
           role: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          workflow: string[] | null
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string
           email: string
+          feedback?: string | null
           id?: string
+          landing_path?: string | null
           locale?: string
+          property_count?: string | null
+          referrer?: string | null
           role?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          workflow?: string[] | null
         }
         Update: {
+          completed_at?: string | null
           created_at?: string
           email?: string
+          feedback?: string | null
           id?: string
+          landing_path?: string | null
           locale?: string
+          property_count?: string | null
+          referrer?: string | null
           role?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          workflow?: string[] | null
         }
         Relationships: []
       }
@@ -2253,6 +2286,32 @@ export type Database = {
           is_expired: boolean
           property_name: string
         }[]
+      }
+      waitlist_capture: {
+        Args: {
+          p_email: string
+          p_landing_path?: string
+          p_locale?: string
+          p_referrer?: string
+          p_role?: string
+          p_utm_campaign?: string
+          p_utm_content?: string
+          p_utm_medium?: string
+          p_utm_source?: string
+          p_utm_term?: string
+        }
+        Returns: boolean
+      }
+      waitlist_complete: {
+        Args: {
+          p_email: string
+          p_feedback?: string
+          p_locale?: string
+          p_property_count?: string
+          p_role?: string
+          p_workflow?: string[]
+        }
+        Returns: boolean
       }
     }
     Enums: {

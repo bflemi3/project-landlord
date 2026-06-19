@@ -28,7 +28,8 @@ El encargado es el canal de comunicación entre tú, Mabenn y la Autoridad Nacio
 En la fase actual, previa al lanzamiento, Mabenn recopila solo lo mínimo necesario para administrar la lista de espera:
 
 - **Dirección de correo electrónico** — para confirmar tu inscripción y avisarte cuando el producto se lance.
-- **Indicación de rol** — si te inscribiste como arrendador o inquilino.
+- **Indicaciones de perfil que proporcionas** — si eres arrendador, inquilino, ambos, una inmobiliaria/administrador u otro; aproximadamente cuántos alquileres tienes; cómo los administras hoy (puedes elegir más de una opción); y una respuesta abierta y opcional sobre lo más difícil de administrar alquileres. Las proporcionas para ayudarnos a adaptar el producto; la respuesta abierta es opcional.
+- **Atribución de marketing** — si llegas al sitio por un enlace de campaña o referencia, registramos los parámetros de campaña presentes en la URL (UTM source, medium, campaign, content y term), el sitio de origen y la página en la que llegaste, para entender qué canales traen personas a la lista de espera.
 - **Datos de uso anónimos** — descritos en "Cookies y tecnologías de seguimiento", más abajo.
 
 En esta fase **no** recopilamos CPF, direcciones de inmuebles, datos bancarios, comprobantes de pago ni documentos.
@@ -55,7 +56,7 @@ Recopilamos solo los datos personales necesarios para su finalidad (minimizació
 
 Tratamos datos personales solo cuando existe una base legal en la LGPD. La lista siguiente describe la finalidad y la base legal de cada categoría.
 
-- **Lista de espera (correo y rol)** — para administrar la lista de espera y notificarte sobre el lanzamiento. Base legal: **consentimiento** (Art. 7, I).
+- **Lista de espera (correo, indicaciones de perfil y atribución de marketing)** — para administrar la lista de espera, notificarte sobre el lanzamiento, adaptar el producto a cómo alquilas y entender qué canales traen personas a la lista. Base legal: **consentimiento** (Art. 7, I), que otorgas al unirte y puedes revocar en cualquier momento.
 - **Cuenta, perfil y datos de inmuebles** — para crear y mantener tu cuenta y tus inmuebles. Base legal: **ejecución de contrato** (Art. 7, V).
 - **Contratos, cobros, pagos, boletos, libro mayor y documentos** — para prestar el servicio de gestión de alquileres: seguimiento del alquiler y las facturas, conciliación de pagos, generación de ajustes y notificaciones, y mantenimiento del registro del alquiler. Base legal: **ejecución de contrato** (Art. 7, V).
 - **Datos bancarios vía Open Finance** — para detectar y conciliar pagos de alquiler y facturas a partir de las cuentas que autorizaste. Base legal: **ejecución de contrato** (Art. 7, V), previa tu autorización explícita ante el proveedor de Open Finance.
@@ -80,7 +81,7 @@ La base de datos principal de Mabenn está alojada en Brasil, en la región `sa-
 
 ## Plazos de conservación
 
-Conservamos los datos personales solo durante el tiempo necesario para las finalidades para las que se recopilaron, o durante el plazo exigido por ley. En la fase de lista de espera, conservamos tu correo hasta el lanzamiento o hasta que solicites su eliminación. Cuando el producto esté disponible, aplicaremos los siguientes plazos:
+Conservamos los datos personales solo durante el tiempo necesario para las finalidades para las que se recopilaron, o durante el plazo exigido por ley. En la fase de lista de espera, conservamos tu información de la lista de espera (correo, las indicaciones de perfil que proporcionaste y los datos de atribución) hasta el lanzamiento o hasta que solicites su eliminación. Cuando el producto esté disponible, aplicaremos los siguientes plazos:
 
 - **Datos de cuenta activa** — duración de la cuenta + 30 días.
 - **Extractos publicados** — 5 años.
@@ -106,7 +107,7 @@ Para ejercer cualquiera de estos derechos, escribe a privacidade@mabenn.com.br.
 
 ## Cookies y tecnologías de seguimiento
 
-Mientras solo navegas por las páginas públicas, Mabenn usa análisis de uso de forma **anónima**, sobre la base del interés legítimo — no identificamos a los visitantes que solo navegan. Cuando te unes a la lista de espera y nos proporcionas tu correo, comenzamos a asociar tu actividad de análisis con tu correo, sobre la base del consentimiento que otorgas al unirte a la lista, para medir la conversión y preparar el lanzamiento. Dentro del producto autenticado, el análisis es identificado sobre la base del interés legítimo, y puedes desactivarlo en cualquier momento mediante una opción de exclusión (opt-out) en tu cuenta.
+Mientras solo navegas por las páginas públicas, Mabenn usa análisis de uso de forma **anónima**, sobre la base del interés legítimo — no identificamos a los visitantes que solo navegan. Si llegas por un enlace de campaña o referencia, los parámetros de campaña en la URL (parámetros UTM), el sitio de origen y tu página de llegada se registran con fines de medición; mientras solo navegas, esto forma parte del análisis anónimo. Cuando te unes a la lista de espera y nos proporcionas tu correo, comenzamos a asociar tu actividad de análisis con tu correo — y registramos esa atribución junto con tu inscripción — sobre la base del consentimiento que otorgas al unirte a la lista, para medir la conversión y preparar el lanzamiento. Dentro del producto autenticado, el análisis es identificado sobre la base del interés legítimo, y puedes desactivarlo en cualquier momento mediante una opción de exclusión (opt-out) en tu cuenta.
 
 ## Seguridad e incidentes
 

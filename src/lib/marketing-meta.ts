@@ -33,18 +33,18 @@ type MetaCopy = {
 // (see docs/marketing/positioning-and-messaging-foundation.md §14 → Localization).
 export const MARKETING_META: Record<MarketingLocale, MetaCopy> = {
   en: {
-    title: 'Mabenn | Property management without the property manager',
+    title: 'Mabenn | Rental management for Brazilian landlords',
     description:
-      'Rent tracking, contracts, and the lifecycle paperwork for Brazilian landlords — the work a property manager does, without the 8–12% fee.',
-    ogTitle: 'Property management without the property manager.',
+      'Manage your rental without a property manager — rent tracking, contracts, and the lifecycle paperwork for Brazilian landlords, without the 8–12% fee.',
+    ogTitle: 'Rental management without the property manager.',
     ogKicker: 'Take back the 8–12%.',
     ogLocale: 'en_US',
   },
   'pt-BR': {
-    title: 'Mabenn | Administração de imóveis sem a imobiliária',
+    title: 'Mabenn | Administração de aluguel sem imobiliária',
     description:
-      'Controle de aluguel, contratos e toda a papelada para locadores brasileiros — o trabalho da imobiliária, sem a taxa de 8–12%.',
-    ogTitle: 'Administração de imóveis sem a imobiliária.',
+      'Administre seu aluguel sem imobiliária — recebimento de aluguel, contratos e toda a papelada da locação, sem a taxa de 8–12%.',
+    ogTitle: 'Administração de aluguel sem imobiliária.',
     ogKicker: 'Recupere os 8–12%.',
     ogLocale: 'pt_BR',
   },
