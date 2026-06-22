@@ -77,6 +77,9 @@ type PluggyTransaction = {
   amount: number
   currencyCode: string
   type: 'CREDIT' | 'DEBIT'
+  // Pluggy: 'PENDING' (placeholder amount/date, may change) or 'POSTED'
+  // (settled). Absent defaults to POSTED. We only act on settled transactions.
+  status?: 'PENDING' | 'POSTED'
   paymentData?: {
     payer?: { name?: string; documentNumber?: { type?: string; value?: string } }
     receiver?: { name?: string; documentNumber?: { type?: string; value?: string } }
@@ -254,6 +257,11 @@ async function handleTransactionsEvent(
     }
 
     for (const tx of transactions) {
+      // Skip PENDING placeholders — their amount/date can change on settlement,
+      // so matching them risks a confirmed match against a figure that later
+      // moves. The settled version arrives as transactions/updated and is
+      // processed then. (status absent ⇒ POSTED.)
+      if (tx.status === 'PENDING') continue
       try {
         const { data, error } = await admin.rpc('apply_pluggy_transaction', {
           p_bank_account_id: bankAccountId,

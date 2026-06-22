@@ -317,9 +317,12 @@ create trigger generate_rent_ledger_after_insert
 --
 -- Steps:
 --   1. Validate inputs; resolve the connecting user from the bank_account.
---   2. Insert bank_transactions row; ON CONFLICT DO NOTHING (idempotent).
---      If no row was actually inserted, short-circuit (duplicate replay).
---   3. If credit (amount_minor > 0), find candidate ledger rows:
+--   2. Upsert the bank_transactions row. A new row inserts; a redelivery whose
+--      amount/date/currency changed (PENDING -> settled) updates in place; an
+--      unchanged replay is suppressed and short-circuits as a duplicate. If the
+--      row already holds an active match, short-circuit (already_matched) so a
+--      settled update doesn't disturb a confirmed match.
+--   3. If credit (amount_minor > 0) and unmatched, find candidate ledger rows:
 --        kind='rent', bill_holder='tenant', status='open',
 --        currency = tx.currency, amount_minor = tx.amount,
 --        |due_date - posted_at::date| <= 10 days,
@@ -391,13 +394,44 @@ begin
     v_amount, v_currency, v_description,
     v_counterparty_cpf, v_counterparty_name, p_transaction
   )
-  on conflict (bank_account_id, pluggy_transaction_id) do nothing
+  -- A transaction first seen as PENDING (placeholder amount/date) settles later
+  -- and is redelivered as transactions/updated. Refresh the stored row when a
+  -- match-relevant field actually changed, so the re-match below can run. An
+  -- unchanged replay leaves the row untouched (the WHERE suppresses the UPDATE,
+  -- so RETURNING yields nothing) and short-circuits as a duplicate — preserving
+  -- idempotency and avoiding audit-trigger noise.
+  on conflict (bank_account_id, pluggy_transaction_id) do update
+     set posted_at         = excluded.posted_at,
+         amount_minor      = excluded.amount_minor,
+         currency          = excluded.currency,
+         description       = excluded.description,
+         counterparty_cpf  = excluded.counterparty_cpf,
+         counterparty_name = excluded.counterparty_name,
+         raw               = excluded.raw
+   where bank_transactions.amount_minor is distinct from excluded.amount_minor
+      or bank_transactions.posted_at    is distinct from excluded.posted_at
+      or bank_transactions.currency     is distinct from excluded.currency
   returning id into v_bank_transaction_id;
 
-  -- Duplicate replay — no new row, no further work.
+  -- Unchanged replay: insert conflicted and no match-relevant field changed, so
+  -- the UPDATE was suppressed and nothing was returned. Already processed.
   if v_bank_transaction_id is null then
     return jsonb_build_object(
       'success', true, 'matched', false, 'reason', 'duplicate'
+    );
+  end if;
+
+  -- If this transaction already holds an active (non-reversed) match, leave it.
+  -- A settled update must not silently disturb a confirmed match; PENDING rows
+  -- are unmatched, so the candidate matching below is what flips PENDING ->
+  -- settled into a match.
+  if exists (
+    select 1 from payment_matches
+     where bank_transaction_id = v_bank_transaction_id
+       and reversed_at is null
+  ) then
+    return jsonb_build_object(
+      'success', true, 'matched', true, 'reason', 'already_matched'
     );
   end if;
 
