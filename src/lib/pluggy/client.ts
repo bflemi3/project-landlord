@@ -78,13 +78,21 @@ export async function getApiKey(): Promise<string> {
 /**
  * Mint a short-lived connect_token the browser hands to the Pluggy Connect widget.
  * Pass `itemId` to enter update / reconnect mode for an existing item.
+ *
+ * Always pass `clientUserId` (our own user id). Pluggy stamps it onto every
+ * item created/updated with this token, so on ingest we can verify the item
+ * actually belongs to the caller (`registerPluggyItem`). Without it, any item
+ * id is registerable by any authenticated user — see the ownership check there.
  */
 export async function createConnectToken(
-  options: { itemId?: string } = {},
+  options: { itemId?: string; clientUserId?: string } = {},
 ): Promise<PluggyConnectTokenResponse> {
+  const body: Record<string, string> = {}
+  if (options.itemId) body.itemId = options.itemId
+  if (options.clientUserId) body.clientUserId = options.clientUserId
   const res = await pluggyFetch('/connect_token', {
     method: 'POST',
-    body: JSON.stringify(options.itemId ? { itemId: options.itemId } : {}),
+    body: JSON.stringify(body),
   })
   if (!res.ok) {
     throw new Error(

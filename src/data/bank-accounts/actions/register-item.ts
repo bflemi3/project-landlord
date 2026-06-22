@@ -13,6 +13,7 @@ export type RegisterPluggyItemResult =
         | 'unauthenticated'
         | 'pluggy_fetch_failed'
         | 'invalid_input'
+        | 'item_ownership_mismatch'
         | 'rpc_error'
     }
 
@@ -44,6 +45,21 @@ export async function registerPluggyItem(
   } catch (err) {
     console.error('[bank-accounts] Pluggy item/accounts fetch failed:', err)
     return { success: false, reason: 'pluggy_fetch_failed' }
+  }
+
+  // Ownership gate. The item is fetched with the app-wide Pluggy key, which can
+  // read ANY item under our Pluggy client — so a user who learns another user's
+  // item id could otherwise register someone else's bank accounts under their
+  // own account. We stamp clientUserId at connect_token mint (see
+  // createConnectToken); reject any item not stamped with the caller's id.
+  // Strict equality also rejects pre-clientUserId dev items (null) — acceptable
+  // pre-production; such a user simply reconnects to re-stamp the item.
+  if (item.clientUserId !== user.id) {
+    console.error('[bank-accounts] Pluggy item ownership mismatch', {
+      pluggyItemId,
+      itemOwner: item.clientUserId ?? null,
+    })
+    return { success: false, reason: 'item_ownership_mismatch' }
   }
 
   const { data, error } = await supabase.rpc('register_bank_item', {

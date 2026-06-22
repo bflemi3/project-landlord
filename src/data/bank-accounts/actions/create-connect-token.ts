@@ -21,7 +21,11 @@ export async function createPluggyConnectToken(
   if (!user) return { success: false, reason: 'unauthenticated' }
 
   try {
-    const { accessToken } = await createConnectToken(options)
+    // Bind the item to this user so registerPluggyItem can verify ownership.
+    const { accessToken } = await createConnectToken({
+      ...options,
+      clientUserId: user.id,
+    })
     return { success: true, accessToken }
   } catch (err) {
     console.error('[bank-accounts] createConnectToken failed:', err)

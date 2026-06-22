@@ -19,6 +19,9 @@ export type PluggyItemStatus =
 export type PluggyItem = {
   id: string
   status: PluggyItemStatus
+  // The id we stamped via connect_token's clientUserId. Used on ingest to
+  // verify the item belongs to the caller. Null for items created without it.
+  clientUserId?: string | null
   connector: {
     id: number
     name: string
