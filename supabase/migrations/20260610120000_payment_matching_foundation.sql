@@ -129,12 +129,31 @@ create table payment_matches (
   bank_transaction_id   uuid not null references bank_transactions(id) on delete restrict,
   matched_at            timestamptz not null default now(),
   -- Null = system match. Populated when a human manually confirms / re-matches.
-  matched_by            uuid references profiles(id),
+  -- ON DELETE SET NULL: deleting a user nullifies who-acted but retains the
+  -- audited match (a payment record, 5-year retention per security-lgpd). The
+  -- actor columns carry no PII, so nullifying is the correct erasure behavior.
+  matched_by            uuid references profiles(id) on delete set null,
   source_side           payment_match_source_side not null,
   reversed_at           timestamptz,
-  reversed_by           uuid references profiles(id),
+  reversed_by           uuid references profiles(id) on delete set null,
   reversal_reason       text
 );
+
+-- LGPD erasure path (account deletion, not yet built — decision recorded here so
+-- the schema is laid down deliberately):
+--   • payment_matches and monthly_ledger are payment records (5-year retention)
+--     and must survive account deletion — hence monthly_ledger_id /
+--     bank_transaction_id stay ON DELETE RESTRICT (protect the financial record)
+--     and the actor columns above are SET NULL (retain match, drop the actor).
+--   • bank_transactions holds the PII (counterparty CPF/name, raw payload) AND
+--     backs the payment record. user_id is deliberately LEFT as ON DELETE
+--     CASCADE for now: combined with the RESTRICT above, deleting a profile that
+--     has any matched payment FAILS LOUDLY rather than silently orphaning PII.
+--     The account-deletion pipeline must ANONYMIZE bank_transactions in place
+--     (null the PII columns, scrub raw) and RETAIN the row, so the 5-year
+--     payment record stays intact. Flipping user_id to SET NULL before that
+--     pipeline exists would turn the loud failure into silent incomplete
+--     erasure — worse under LGPD. Revisit this FK when building deletion.
 
 comment on table payment_matches is
   'Reversible link between a bank_transaction and a monthly_ledger entry. '
