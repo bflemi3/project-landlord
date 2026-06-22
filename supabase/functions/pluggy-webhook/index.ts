@@ -107,6 +107,27 @@ async function getTransactions(opts: {
   return data.results ?? []
 }
 
+// Minor-unit exponent per ISO-4217 currency. Most are 2; a few are 0 (JPY, CLP)
+// or 3 (BHD, KWD). A bare `* 100` bakes a 2-decimal assumption into money,
+// violating the multi-country data-model principle (amount_minor + currency).
+// Default 2 covers BRL and everything we expect today; extend as needed.
+const CURRENCY_MINOR_EXPONENT: Record<string, number> = {
+  BRL: 2,
+  USD: 2,
+  EUR: 2,
+  JPY: 0,
+  CLP: 0,
+  BHD: 3,
+  KWD: 3,
+}
+
+// Currency-aware decimal → minor units. Inputs from Pluggy are already at the
+// currency's precision, so float * 10^exponent + round is exact in practice.
+function toMinorUnits(amount: number, currencyCode: string): number {
+  const exponent = CURRENCY_MINOR_EXPONENT[currencyCode?.toUpperCase()] ?? 2
+  return Math.round(amount * 10 ** exponent)
+}
+
 // -----------------------------------------------------------------------------
 // Pluggy → RPC payload shape.
 // -----------------------------------------------------------------------------
@@ -115,7 +136,7 @@ function toRpcTransaction(tx: PluggyTransaction): Record<string, unknown> {
     // Persisted columns
     id: tx.id,
     date: tx.date,
-    amount_minor: Math.round(tx.amount * 100),
+    amount_minor: toMinorUnits(tx.amount, tx.currencyCode),
     currency: tx.currencyCode,
     description: tx.description ?? null,
     counterparty_cpf:
