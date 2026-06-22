@@ -14,8 +14,11 @@
  *                                                 apply_pluggy_transaction RPC
  *   • anything else                             → log + 202
  *
- * Per-transaction errors are logged and the batch continues — Pluggy retries
- * are safe because the RPC is idempotent on (bank_account_id, pluggy_transaction_id).
+ * Per-transaction errors are logged and the batch continues. Response status:
+ * 202 on success or a partial batch (some transactions written); 5xx when the
+ * batch wrote nothing but hit errors, or the handler threw — so Pluggy
+ * redelivers. Retries are safe because the RPC is idempotent on
+ * (bank_account_id, pluggy_transaction_id). See the status logic in Deno.serve.
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -310,15 +313,36 @@ Deno.serve(async (req) => {
           ...stats,
         }),
       )
+      // A 2xx tells Pluggy delivery succeeded — it will NOT redeliver. If the
+      // batch wrote nothing but hit errors (e.g. the transactions fetch failed),
+      // the failure is systemic and those credits are lost unless we ask for a
+      // retry. Return 5xx so Pluggy redelivers; the inserts are idempotent
+      // (ON CONFLICT DO NOTHING), so a retry is safe.
+      //
+      // A partial batch (processed > 0 alongside errors) is acked: redelivering
+      // an otherwise-good batch to re-drive one poison transaction would loop
+      // until Pluggy's retry limit (storm). Those individual failures are
+      // captured in the per-transaction error logs above for follow-up.
+      //
+      // VERIFY before relying on retries: confirm against Pluggy's webhook docs
+      // that (a) non-2xx triggers redelivery with backoff, and (b) repeated 5xx
+      // does NOT auto-disable the webhook subscription. 5xx is strictly safer
+      // than the previous always-202 regardless, but (b) is the one downside to
+      // rule out. The repo has no captured evidence of this contract yet.
+      if (stats.processed === 0 && stats.errors > 0) {
+        return new Response(null, { status: 503 })
+      }
     }
   } catch (err) {
-    // Log and 202 anyway — Pluggy retries are safe (idempotent inserts).
     console.error(
       JSON.stringify({
         msg: 'pluggy.webhook.handler_error',
         error: err instanceof Error ? err.message : 'unknown',
       }),
     )
+    // The handler threw before completing, so nothing reliable was written.
+    // 5xx so Pluggy redelivers (retry is safe — idempotent inserts).
+    return new Response(null, { status: 503 })
   }
 
   return new Response(null, { status: 202 })
