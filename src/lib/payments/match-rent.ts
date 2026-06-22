@@ -45,8 +45,10 @@ export function matchRentCredit(input: {
     if (c.currency !== transaction.currency) return false
     if (c.amount_minor !== transaction.amount_minor) return false
     // Compare against the due_date as a date — treat as midnight UTC, then
-    // measure full days. The SQL side does `abs(due_date - posted_at::date)`
-    // which is in days; both implementations agree at the day boundary.
+    // measure full days. The SQL side does
+    // `abs(due_date - (posted_at at time zone 'UTC')::date)` in days; both
+    // implementations resolve the posted date in UTC, so they agree at the
+    // day boundary regardless of DB session timezone.
     const dueIso = `${c.due_date}T00:00:00Z`
     const txDate = transaction.posted_at.slice(0, 10) + 'T00:00:00Z'
     return daysBetween(dueIso, txDate) <= MATCH_WINDOW_DAYS
