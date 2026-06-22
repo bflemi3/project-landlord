@@ -278,12 +278,17 @@ begin
 end;
 $$;
 
-revoke all on function generate_rent_ledger_entries(uuid) from public, anon;
-grant execute on function generate_rent_ledger_entries(uuid) to authenticated;
+-- Service-role only. The function is SECURITY DEFINER with no membership check
+-- and takes an arbitrary p_rent_id, so an authenticated grant would let any
+-- user materialize ledger rows on a property they don't belong to. The rent
+-- AFTER INSERT trigger calls it as definer (so the trigger path is unaffected),
+-- and the future cron job runs as service_role. No client code calls it.
+revoke all on function generate_rent_ledger_entries(uuid) from public, anon, authenticated;
+grant execute on function generate_rent_ledger_entries(uuid) to service_role;
 
 comment on function generate_rent_ledger_entries(uuid) is
-  'Generates monthly_ledger rows for a rent. Idempotent. Called by the rent '
-  'AFTER INSERT trigger and by a future cron job for open-ended contracts.';
+  'Generates monthly_ledger rows for a rent. Idempotent. Service-role only; '
+  'called by the rent AFTER INSERT trigger (as definer) and a future cron job.';
 
 -- AFTER INSERT trigger on rent — every code path that inserts a rent row
 -- gets the ledger populated automatically. The trigger fn is a thin wrapper
