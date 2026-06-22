@@ -226,7 +226,8 @@ begin
          start_date, end_date
     into v_rent
     from rent
-   where id = p_rent_id;
+   where id = p_rent_id
+     and deleted_at is null;
 
   if not found then
     return jsonb_build_object('success', false, 'reason', 'not_found');
@@ -420,6 +421,18 @@ begin
          and ml.currency    = v_currency
          and ml.amount_minor = v_amount
          and abs(ml.due_date - v_posted_at::date) <= 10
+         -- Skip obligations whose tenancy was soft-deleted after the ledger was
+         -- generated. The matcher reads monthly_ledger directly and never joins
+         -- rent, so without this a credit could auto-match a phantom obligation
+         -- for a rental that no longer exists.
+         and (
+           ml.rent_id is null
+           or exists (
+             select 1 from rent r
+              where r.id = ml.rent_id
+                and r.deleted_at is null
+           )
+         )
          and exists (
            select 1
              from units u
@@ -545,7 +558,7 @@ do $$
 declare
   r record;
 begin
-  for r in select id from rent loop
+  for r in select id from rent where deleted_at is null loop
     perform generate_rent_ledger_entries(r.id);
   end loop;
 end;
