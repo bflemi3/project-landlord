@@ -15,10 +15,13 @@
  *   • anything else                             → log + 202
  *
  * Per-transaction errors are logged and the batch continues. Response status:
- * 202 on success or a partial batch (some transactions written); 5xx when the
- * batch wrote nothing but hit errors, or the handler threw — so Pluggy
- * redelivers. Retries are safe because the RPC is idempotent on
- * (bank_account_id, pluggy_transaction_id). See the status logic in Deno.serve.
+ * 202 on success or a partial batch (some transactions written, only
+ * per-transaction errors); 5xx when an account's transactions fetch failed
+ * (systemic — must retry, even alongside a successful sibling account), when the
+ * batch wrote nothing but hit per-transaction errors, or when the handler threw.
+ * Retries are safe: the apply RPC upserts on conflict and re-matches only
+ * unmatched rows, so a redelivery never double-pays. See the status logic in
+ * Deno.serve.
  */
 
 import { createClient } from '@supabase/supabase-js'
@@ -142,7 +145,11 @@ function toRpcTransaction(tx: PluggyTransaction): Record<string, unknown> {
     id: tx.id,
     date: tx.date,
     amount_minor: toMinorUnits(tx.amount, tx.currencyCode),
-    currency: tx.currencyCode,
+    // Normalize to upper-case ISO-4217 — the matcher compares currency
+    // case-sensitively against the ledger ('BRL'), and toMinorUnits already
+    // resolves its exponent case-insensitively, so a lower-case 'brl' would
+    // otherwise compute the right amount yet never match.
+    currency: tx.currencyCode?.toUpperCase() ?? tx.currencyCode,
     description: tx.description ?? null,
     counterparty_cpf:
       tx.paymentData?.payer?.documentNumber?.value ??
@@ -202,12 +209,19 @@ async function handleItemEvent(
 async function handleTransactionsEvent(
   admin: ReturnType<typeof createClient>,
   body: PluggyWebhookBody,
-): Promise<{ matched: number; processed: number; errors: number }> {
+): Promise<{ matched: number; processed: number; errors: number; fetchErrors: number }> {
   let matched = 0
   let processed = 0
+  // Per-transaction RPC failures (poison messages — retrying the whole batch
+  // wouldn't help and risks a storm).
   let errors = 0
+  // Per-account transactions-fetch failures (systemic — the transactions were
+  // never seen, so the batch must be redelivered). Tracked separately so a
+  // failed account on a multi-account item still triggers a retry even when a
+  // sibling account succeeded.
+  let fetchErrors = 0
   if (!body.itemId) {
-    return { matched, processed, errors }
+    return { matched, processed, errors, fetchErrors }
   }
 
   // Resolve account ids from the event (preferred) or fall back to all
@@ -247,7 +261,7 @@ async function handleTransactionsEvent(
         pageSize: 200,
       })
     } catch (err) {
-      errors += 1
+      fetchErrors += 1
       console.error(
         JSON.stringify({
           msg: 'pluggy.webhook.fetch_failed',
@@ -281,7 +295,11 @@ async function handleTransactionsEvent(
           continue
         }
         processed += 1
-        if ((data as { matched?: boolean })?.matched) {
+        // Count only newly-created matches. 'already_matched' returns
+        // matched:true for a settled redelivery of a tx that was already
+        // matched, but no new match was made — don't inflate the metric.
+        const result = data as { matched?: boolean; reason?: string }
+        if (result?.matched && result.reason !== 'already_matched') {
           matched += 1
         }
       } catch (err) {
@@ -296,7 +314,7 @@ async function handleTransactionsEvent(
       }
     }
   }
-  return { matched, processed, errors }
+  return { matched, processed, errors, fetchErrors }
 }
 
 // -----------------------------------------------------------------------------
@@ -344,23 +362,28 @@ Deno.serve(async (req) => {
           ...stats,
         }),
       )
-      // A 2xx tells Pluggy delivery succeeded — it will NOT redeliver. If the
-      // batch wrote nothing but hit errors (e.g. the transactions fetch failed),
-      // the failure is systemic and those credits are lost unless we ask for a
-      // retry. Return 5xx so Pluggy redelivers; the inserts are idempotent
-      // (ON CONFLICT DO NOTHING), so a retry is safe.
+      // A 2xx tells Pluggy delivery succeeded — it will NOT redeliver. Return
+      // 5xx so Pluggy redelivers when the failure is systemic and recoverable:
+      //   • fetchErrors > 0 — an account's transactions fetch failed, so those
+      //     transactions were never seen. This must retry even if a SIBLING
+      //     account on the same multi-account item succeeded, or that account's
+      //     credits are dropped permanently.
+      //   • processed === 0 && errors > 0 — the whole batch hit per-transaction
+      //     RPC errors and nothing was written.
+      // Re-matching is safe: the apply RPC upserts on conflict and re-runs the
+      // matcher only for unmatched rows, so a redelivery never double-pays.
       //
-      // A partial batch (processed > 0 alongside errors) is acked: redelivering
-      // an otherwise-good batch to re-drive one poison transaction would loop
-      // until Pluggy's retry limit (storm). Those individual failures are
-      // captured in the per-transaction error logs above for follow-up.
+      // A partial batch (some transactions written, only per-transaction errors)
+      // is acked: redelivering an otherwise-good batch to re-drive one poison
+      // transaction would loop until Pluggy's retry limit (storm). Those
+      // failures are captured in the per-transaction error logs above.
       //
       // VERIFY before relying on retries: confirm against Pluggy's webhook docs
       // that (a) non-2xx triggers redelivery with backoff, and (b) repeated 5xx
       // does NOT auto-disable the webhook subscription. 5xx is strictly safer
       // than the previous always-202 regardless, but (b) is the one downside to
       // rule out. The repo has no captured evidence of this contract yet.
-      if (stats.processed === 0 && stats.errors > 0) {
+      if (stats.fetchErrors > 0 || (stats.processed === 0 && stats.errors > 0)) {
         return new Response(null, { status: 503 })
       }
     }
