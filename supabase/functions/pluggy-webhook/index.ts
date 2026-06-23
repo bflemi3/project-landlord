@@ -382,12 +382,21 @@ Deno.serve(async (req) => {
       // transaction would loop until Pluggy's retry limit (storm). Those
       // failures are captured in the per-transaction error logs above.
       //
-      // VERIFY before relying on retries: confirm against Pluggy's webhook docs
-      // that (a) non-2xx triggers redelivery with backoff, and (b) repeated 5xx
-      // does NOT auto-disable the webhook subscription. 5xx is strictly safer
-      // than the previous always-202 regardless, but (b) is the one downside to
-      // rule out. The repo has no captured evidence of this contract yet.
+      // Pluggy's retry contract (confirmed): a non-2xx is redelivered up to 9
+      // times — 3 initial retries, then 6 more with exponential backoff — after
+      // which the event is dropped. It does NOT auto-disable the subscription.
+      // So 5xx safely buys up to 9 retries; a failure that persists past that is
+      // permanently lost (the case a future dead-letter job would catch). The
+      // retry request is logged below so persistent failures are observable.
       if (stats.fetchErrors > 0 || (stats.processed === 0 && stats.errors > 0)) {
+        console.error(
+          JSON.stringify({
+            msg: 'pluggy.webhook.retry_requested',
+            itemId: body.itemId ?? null,
+            reason: stats.fetchErrors > 0 ? 'fetch_failed' : 'all_transactions_failed',
+            ...stats,
+          }),
+        )
         return new Response(null, { status: 503 })
       }
     }
