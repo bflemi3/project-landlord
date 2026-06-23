@@ -28,7 +28,9 @@ const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 const PLUGGY_CLIENT_ID = Deno.env.get('PLUGGY_CLIENT_ID') ?? ''
 const PLUGGY_CLIENT_SECRET = Deno.env.get('PLUGGY_CLIENT_SECRET') ?? ''
-const PLUGGY_BASE_URL = 'https://api.pluggy.ai'
+// Env-overridable so local e2e tests can point it at a mock Pluggy server
+// (scripts/test-payment-matching.sh). Defaults to the real API in production.
+const PLUGGY_BASE_URL = Deno.env.get('PLUGGY_BASE_URL') ?? 'https://api.pluggy.ai'
 
 function constantTimeEqual(a: string, b: string): boolean {
   if (a.length !== b.length) return false
