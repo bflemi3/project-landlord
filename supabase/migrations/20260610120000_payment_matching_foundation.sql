@@ -476,8 +476,7 @@ begin
          -- Explicit UTC basis. v_posted_at is timestamptz; a bare ::date cast
          -- would resolve in the session TimeZone, so a credit near midnight
          -- could land on a different calendar day under a non-UTC session and
-         -- shift the +/-10-day boundary. UTC also matches the TS reference
-         -- matcher (match-rent.ts slices the UTC date), so the two stay aligned.
+         -- shift the +/-10-day boundary.
          and abs(ml.due_date - (v_posted_at at time zone 'UTC')::date) <= 10
          -- Skip obligations whose tenancy was soft-deleted after the ledger was
          -- generated. The matcher reads monthly_ledger directly and never joins

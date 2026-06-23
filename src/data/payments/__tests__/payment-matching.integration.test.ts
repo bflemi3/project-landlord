@@ -240,8 +240,8 @@ describe('payment matching: ledger generation', () => {
 
 // =============================================================================
 // Matcher RPC + reversal — exercises apply_pluggy_transaction & unmatch_payment
-// against real DB state. Mirrors the pure-logic edge cases from
-// src/lib/payments/__tests__/match-rent.test.ts (M1..M6).
+// against real DB state: amount-exact, ±10d window, ambiguity, currency mismatch,
+// soft-delete, settle re-match, and actor-FK erasure.
 // =============================================================================
 describe('payment matching: apply_pluggy_transaction RPC', () => {
   const admin = getAdminClient()
