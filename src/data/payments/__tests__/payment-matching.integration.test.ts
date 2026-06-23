@@ -530,4 +530,158 @@ describe('payment matching: apply_pluggy_transaction RPC', () => {
     })
     expect(error?.code).toBe('42501')
   })
+
+  // ---------------------------------------------------------------------------
+  // M11 — soft-deleted rent: matcher skips its open ledger obligations (#7)
+  // ---------------------------------------------------------------------------
+  it('M11: a soft-deleted rent is not matched (phantom-obligation guard)', async () => {
+    const s = await setup()
+    try {
+      // Soft-delete the tenancy after its ledger was generated.
+      const { error: delErr } = await admin
+        .from('rent')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', s.rentId)
+      if (delErr) throw new Error(`soft-delete rent failed: ${delErr.message}`)
+
+      // A credit that would otherwise match the July obligation exactly.
+      const result = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-02T10:00:00Z', amount_minor: 250_000 }),
+      )
+      expect(result.success).toBe(true)
+      expect(result.matched).toBe(false)
+
+      // Obligations remain open — nothing flipped to paid on a dead tenancy.
+      const ledger = await readLedger(admin, s.rentId)
+      expect(ledger.length).toBeGreaterThan(0)
+      expect(ledger.every((r) => r.status === 'open')).toBe(true)
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
+
+  // ---------------------------------------------------------------------------
+  // M12 — PENDING→settled: a changed redelivery that now matches re-matches (#6)
+  // ---------------------------------------------------------------------------
+  it('M12: re-applying a transaction with a changed, now-matching amount matches', async () => {
+    const s = await setup()
+    try {
+      const id = `tx-resettle-${Date.now()}`
+      // First sighting: amount matches no open obligation → no match, row stored.
+      const first = await callApply(
+        s.bankAccountId,
+        tx({ id, date: '2026-07-02T10:00:00Z', amount_minor: 999_999 }),
+      )
+      expect(first.success).toBe(true)
+      expect(first.matched).toBe(false)
+
+      // Same tx id, settled to the real (matching) amount → upsert + re-match.
+      const second = await callApply(
+        s.bankAccountId,
+        tx({ id, date: '2026-07-02T10:00:00Z', amount_minor: 250_000 }),
+      )
+      expect(second.success).toBe(true)
+      expect(second.matched).toBe(true)
+      expect(second.ledger_id).toBeTruthy()
+
+      // Updated in place — still exactly one bank_transaction at the new amount.
+      const { data: bts } = await admin
+        .from('bank_transactions')
+        .select('id, amount_minor')
+        .eq('bank_account_id', s.bankAccountId)
+      expect(bts).toHaveLength(1)
+      expect(bts?.[0]?.amount_minor).toBe(250_000)
+
+      const { data: ledger } = await admin
+        .from('monthly_ledger')
+        .select('status')
+        .eq('id', second.ledger_id!)
+        .single()
+      expect(ledger?.status).toBe('paid')
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
+
+  // ---------------------------------------------------------------------------
+  // M13 — a changed redelivery of an already-matched tx is left undisturbed (#6)
+  // ---------------------------------------------------------------------------
+  it('M13: changed redelivery of an already-matched transaction returns already_matched', async () => {
+    const s = await setup()
+    try {
+      const id = `tx-settled-${Date.now()}`
+      const first = await callApply(
+        s.bankAccountId,
+        tx({ id, date: '2026-07-02T10:00:00Z', amount_minor: 250_000 }),
+      )
+      expect(first.matched).toBe(true)
+
+      // Same id redelivered with a changed amount: the confirmed match is kept.
+      const second = await callApply(
+        s.bankAccountId,
+        tx({ id, date: '2026-07-02T10:00:00Z', amount_minor: 240_000 }),
+      )
+      expect(second.success).toBe(true)
+      expect(second.reason).toBe('already_matched')
+
+      // Ledger still paid; still exactly one active (non-reversed) match.
+      const { data: ledger } = await admin
+        .from('monthly_ledger')
+        .select('status')
+        .eq('id', first.ledger_id!)
+        .single()
+      expect(ledger?.status).toBe('paid')
+      const { data: matches } = await admin
+        .from('payment_matches')
+        .select('id')
+        .eq('monthly_ledger_id', first.ledger_id!)
+        .is('reversed_at', null)
+      expect(matches).toHaveLength(1)
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
+
+  // ---------------------------------------------------------------------------
+  // M14 — deleting a match actor SET NULLs matched_by, retains the match (#8)
+  // ---------------------------------------------------------------------------
+  it('M14: deleting a payment_matches actor nullifies matched_by, retains the row', async () => {
+    const s = await setup()
+    const actor = await createTestUser()
+    try {
+      const first = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-02T10:00:00Z', amount_minor: 250_000 }),
+      )
+      expect(first.matched).toBe(true)
+
+      // Attribute the match to a separate actor profile, then delete that user.
+      const { error: updErr } = await admin
+        .from('payment_matches')
+        .update({ matched_by: actor.userId })
+        .eq('id', first.match_id!)
+      if (updErr) throw new Error(`set matched_by failed: ${updErr.message}`)
+
+      const { error: delErr } = await admin.auth.admin.deleteUser(actor.userId)
+      if (delErr) throw new Error(`delete actor failed: ${delErr.message}`)
+
+      // The match row survives with matched_by nulled — the financial record
+      // (5-year retention) is retained while the actor reference is erased.
+      const { data: match } = await admin
+        .from('payment_matches')
+        .select('id, matched_by')
+        .eq('id', first.match_id!)
+        .single()
+      expect(match).toBeTruthy()
+      expect(match?.matched_by).toBeNull()
+    } finally {
+      await cleanupTestUser(s.user.userId)
+      try {
+        await cleanupTestUser(actor.userId)
+      } catch {
+        /* actor deleted in the test body */
+      }
+    }
+  })
 })
