@@ -24,7 +24,9 @@
  * Deno.serve.
  */
 
-import { createClient } from '@supabase/supabase-js'
+import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+
+import type { Database } from '../../../src/lib/types/database.ts'
 
 const WEBHOOK_TOKEN = Deno.env.get('PLUGGY_WEBHOOK_TOKEN') ?? ''
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? ''
@@ -141,7 +143,9 @@ function toMinorUnits(amount: number, currencyCode: string): number {
 // -----------------------------------------------------------------------------
 function toRpcTransaction(tx: PluggyTransaction): Record<string, unknown> {
   return {
-    // Persisted columns
+    // Full payload first so bank_transactions.raw keeps everything; the derived
+    // columns below intentionally override the raw fields they're computed from.
+    ...tx,
     id: tx.id,
     date: tx.date,
     amount_minor: toMinorUnits(tx.amount, tx.currencyCode),
@@ -157,8 +161,6 @@ function toRpcTransaction(tx: PluggyTransaction): Record<string, unknown> {
       null,
     counterparty_name:
       tx.paymentData?.payer?.name ?? tx.paymentData?.receiver?.name ?? null,
-    // Full payload retained on bank_transactions.raw
-    ...tx,
   }
 }
 
@@ -185,7 +187,7 @@ const ITEM_RECONNECT_EVENTS = new Set([
 const TX_EVENTS = new Set(['transactions/created', 'transactions/updated'])
 
 async function handleItemEvent(
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient<Database>,
   body: PluggyWebhookBody,
 ): Promise<void> {
   if (!body.itemId) return
@@ -207,7 +209,7 @@ async function handleItemEvent(
 }
 
 async function handleTransactionsEvent(
-  admin: ReturnType<typeof createClient>,
+  admin: SupabaseClient<Database>,
   body: PluggyWebhookBody,
 ): Promise<{ matched: number; processed: number; errors: number; fetchErrors: number }> {
   let matched = 0
@@ -281,7 +283,9 @@ async function handleTransactionsEvent(
       try {
         const { data, error } = await admin.rpc('apply_pluggy_transaction', {
           p_bank_account_id: bankAccountId,
-          p_transaction: toRpcTransaction(tx),
+          // Cast matches the Node caller (src/data/payments/actions/apply-transaction.ts):
+          // the JSONB arg is an open Record, not the generated Json type.
+          p_transaction: toRpcTransaction(tx) as never,
         })
         if (error) {
           errors += 1
@@ -346,7 +350,7 @@ Deno.serve(async (req) => {
     }),
   )
 
-  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  const admin = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
 
