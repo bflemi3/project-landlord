@@ -736,4 +736,27 @@ describe('payment matching: apply_pluggy_transaction RPC', () => {
       await cleanupTestUser(s.user.userId)
     }
   })
+
+  // ---------------------------------------------------------------------------
+  // M18 — a debit (negative amount) is recorded but never matches
+  // ---------------------------------------------------------------------------
+  it('M18: a debit does not match (only credits feed the matcher)', async () => {
+    const s = await setup()
+    try {
+      const result = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-02T10:00:00Z', amount_minor: -250_000 }),
+      )
+      expect(result.success).toBe(true)
+      expect(result.matched).toBe(false)
+      // The debit is still recorded (the insert precedes the credit guard).
+      const { data: bt } = await admin
+        .from('bank_transactions')
+        .select('amount_minor')
+        .eq('bank_account_id', s.bankAccountId)
+      expect((bt ?? []).some((r) => r.amount_minor === -250_000)).toBe(true)
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
 })
