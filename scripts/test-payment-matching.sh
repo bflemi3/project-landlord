@@ -75,11 +75,15 @@ cleanup() {
        select id from bank_transactions where pluggy_transaction_id like '${RUN_ID}-%'
      );
     delete from bank_transactions where pluggy_transaction_id like '${RUN_ID}-%';
-    -- The section-6 ambiguity test inserts a rent_id-null duplicate ledger row
-    -- on this rent's unit; remove it so re-running against the same rent doesn't
-    -- see a phantom second candidate. Real ledger rows always have rent_id set.
+    -- The section-6 ambiguity test inserts a rent_id-null, kind='rent' duplicate
+    -- ledger row on this rent's unit; remove it so re-running against the same
+    -- rent doesn't see a phantom second candidate. Scope to kind='rent': a
+    -- rent-kind row with no rent_id is only ever this test artifact, whereas
+    -- future non-rent obligations (condo/utility) legitimately have rent_id null
+    -- and must not be touched.
     delete from monthly_ledger
      where rent_id is null
+       and kind = 'rent'
        and unit_id = (select unit_id from rent where id = '$RENT_ID');
 SQL
   if [ "$exit_code" = "0" ]; then

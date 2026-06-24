@@ -739,8 +739,13 @@ describe('payment matching: apply_pluggy_transaction RPC', () => {
 
   // ---------------------------------------------------------------------------
   // M18 — a debit (negative amount) is recorded but never matches
+  //
+  // Note: matched:false here is inherent, not a test of the `v_amount <= 0`
+  // guard — ledger amounts are CHECK(>= 0), so a negative amount can never equal
+  // one regardless of the guard. The distinctive coverage is that the debit is
+  // still persisted (for the books) rather than dropped.
   // ---------------------------------------------------------------------------
-  it('M18: a debit does not match (only credits feed the matcher)', async () => {
+  it('M18: a debit is recorded but does not match', async () => {
     const s = await setup()
     try {
       const result = await callApply(
