@@ -532,6 +532,47 @@ describe('payment matching: apply_pluggy_transaction RPC', () => {
   })
 
   // ---------------------------------------------------------------------------
+  // An authenticated non-landlord cannot unmatch (is_unit_landlord authz)
+  // ---------------------------------------------------------------------------
+  it('an authenticated non-landlord cannot unmatch (not_authorized)', async () => {
+    const s = await setup()
+    const other = await createTestUser()
+    try {
+      const matched = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-02T10:00:00Z', amount_minor: 250_000 }),
+      )
+      expect(matched.matched).toBe(true)
+
+      // A different authenticated user (not the unit's landlord) is rejected by
+      // the in-function is_unit_landlord check, not just the grant boundary.
+      const { data, error } = await other.client.rpc('unmatch_payment', {
+        p_payment_match_id: matched.match_id!,
+        p_reason: 'not my match',
+      })
+      expect(error).toBeNull()
+      const res = data as unknown as UnmatchResult
+      expect(res.success).toBe(false)
+      expect(res.reason).toBe('not_authorized')
+
+      // The match is untouched — still active.
+      const { data: pm } = await admin
+        .from('payment_matches')
+        .select('reversed_at')
+        .eq('id', matched.match_id!)
+        .single()
+      expect(pm?.reversed_at).toBeNull()
+    } finally {
+      await cleanupTestUser(s.user.userId)
+      try {
+        await cleanupTestUser(other.userId)
+      } catch {
+        /* no-op */
+      }
+    }
+  })
+
+  // ---------------------------------------------------------------------------
   // M11 — soft-deleted rent: matcher skips its open ledger obligations (#7)
   // ---------------------------------------------------------------------------
   it('M11: a soft-deleted rent is not matched (phantom-obligation guard)', async () => {
@@ -760,6 +801,38 @@ describe('payment matching: apply_pluggy_transaction RPC', () => {
         .select('amount_minor')
         .eq('bank_account_id', s.bankAccountId)
       expect((bt ?? []).some((r) => r.amount_minor === -250_000)).toBe(true)
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
+
+  // ---------------------------------------------------------------------------
+  // M19 — a late payment matches an obligation flipped to 'overdue'
+  // ---------------------------------------------------------------------------
+  it('M19: a credit matches an obligation flipped to overdue', async () => {
+    const s = await setup()
+    try {
+      // Simulate a future overdue-marking job flipping the July obligation.
+      const { error: updErr } = await admin
+        .from('monthly_ledger')
+        .update({ status: 'overdue' })
+        .eq('rent_id', s.rentId)
+        .eq('period_month', 7)
+      if (updErr) throw new Error(`flip overdue failed: ${updErr.message}`)
+
+      const result = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-02T10:00:00Z', amount_minor: 250_000 }),
+      )
+      expect(result.success).toBe(true)
+      expect(result.matched).toBe(true)
+
+      const { data: ledger } = await admin
+        .from('monthly_ledger')
+        .select('status')
+        .eq('id', result.ledger_id!)
+        .single()
+      expect(ledger?.status).toBe('paid')
     } finally {
       await cleanupTestUser(s.user.userId)
     }
