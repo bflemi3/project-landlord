@@ -468,7 +468,11 @@ begin
     with candidates as (
       select ml.id
         from monthly_ledger ml
-       where ml.status      = 'open'
+         -- 'overdue' is included so a late payment still matches an obligation
+         -- that a future overdue-marking job has flipped open -> overdue. The
+         -- +/-10-day window exists precisely for late payments, so excluding
+         -- overdue rows would make the matcher blind to exactly that case.
+       where ml.status in ('open', 'overdue')
          and ml.kind        = 'rent'
          and ml.bill_holder = 'tenant'
          and ml.currency    = v_currency
@@ -510,11 +514,23 @@ begin
     v_ledger_id := v_candidate_ids[1];
   end;
 
-  insert into payment_matches (
-    monthly_ledger_id, bank_transaction_id, source_side
-  )
-  values (v_ledger_id, v_bank_transaction_id, 'landlord')
-  returning id into v_match_id;
+  -- Insert the match inside a sub-block so that a concurrent delivery which
+  -- matched this same open ledger row first (violating the partial unique index
+  -- uq_payment_matches_ledger_active) degrades to a clean no-op instead of
+  -- escaping as an unhandled exception surfaced to the webhook as rpc_error.
+  -- The candidate SELECT is not row-locked, so two credits can both see the row
+  -- open; the unique index is the serialization point and the loser backs off.
+  begin
+    insert into payment_matches (
+      monthly_ledger_id, bank_transaction_id, source_side
+    )
+    values (v_ledger_id, v_bank_transaction_id, 'landlord')
+    returning id into v_match_id;
+  exception when unique_violation then
+    return jsonb_build_object(
+      'success', true, 'matched', false, 'reason', 'race_lost'
+    );
+  end;
 
   update monthly_ledger
      set status  = 'paid',
