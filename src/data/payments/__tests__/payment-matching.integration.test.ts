@@ -837,4 +837,40 @@ describe('payment matching: apply_pluggy_transaction RPC', () => {
       await cleanupTestUser(s.user.userId)
     }
   })
+
+  // ---------------------------------------------------------------------------
+  // M20 — a credit stored before any candidate existed re-matches once one
+  // appears (e.g. bank connected + rent received before the contract was set up)
+  // ---------------------------------------------------------------------------
+  it('M20: a stored-unmatched credit re-matches once a candidate appears', async () => {
+    const s = await setup({ rentAmount: 199_999 })
+    const t = tx({
+      id: `tx-late-${Date.now()}`,
+      date: '2026-07-02T10:00:00Z',
+      amount_minor: 250_000,
+    })
+    try {
+      // No 250k obligation exists yet → the credit is stored but unmatched.
+      const first = await callApply(s.bankAccountId, t)
+      expect(first.success).toBe(true)
+      expect(first.matched).toBe(false)
+
+      // A 250k obligation now appears (a second rent on the same unit).
+      await insertRent(s.user.client, s.user.userId, s.unitId, {
+        amount_minor: 250_000,
+        start_date: '2026-06-01',
+        end_date: '2026-11-30',
+        due_day_of_month: 5,
+      })
+
+      // Re-delivering the SAME (unchanged) credit now matches — the duplicate
+      // short-circuit must not block re-matching of a still-unmatched credit.
+      const second = await callApply(s.bankAccountId, t)
+      expect(second.success).toBe(true)
+      expect(second.matched).toBe(true)
+      expect(second.ledger_id).toBeTruthy()
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
 })

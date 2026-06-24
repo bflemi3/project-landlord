@@ -432,18 +432,39 @@ begin
       or bank_transactions.currency     is distinct from excluded.currency
   returning id into v_bank_transaction_id;
 
-  -- Unchanged replay: insert conflicted and no match-relevant field changed, so
-  -- the UPDATE was suppressed and nothing was returned. Already processed.
+  -- Unchanged replay: the conflict's WHERE suppressed the UPDATE, so RETURNING
+  -- yielded nothing. Resolve the existing row id. If it already holds an active
+  -- match this is a genuine duplicate (no-op). Otherwise the credit is stored
+  -- but still unmatched — fall through and re-attempt matching: a candidate
+  -- ledger row may have appeared since it was first stored (e.g. the bank was
+  -- connected, and the credit received, before the contract/ledger existed), and
+  -- the 90-day re-fetch re-presents the credit on a later webhook.
   if v_bank_transaction_id is null then
-    return jsonb_build_object(
-      'success', true, 'matched', false, 'reason', 'duplicate'
-    );
+    select id into v_bank_transaction_id
+      from bank_transactions
+     where bank_account_id = p_bank_account_id
+       and pluggy_transaction_id = v_pluggy_tx_id;
+    if exists (
+      select 1 from payment_matches
+       where bank_transaction_id = v_bank_transaction_id
+         and reversed_at is null
+    ) then
+      return jsonb_build_object(
+        'success', true, 'matched', false, 'reason', 'duplicate'
+      );
+    end if;
   end if;
 
   -- If this transaction already holds an active (non-reversed) match, leave it.
-  -- A settled update must not silently disturb a confirmed match; PENDING rows
-  -- are unmatched, so the candidate matching below is what flips PENDING ->
-  -- settled into a match.
+  -- A settled update must not silently disturb a confirmed match.
+  --
+  -- KNOWN LIMITATION: if a matched credit is redelivered with a CHANGED amount
+  -- (a corrected settle), the upsert refreshes bank_transactions.amount_minor
+  -- but this guard returns early, so the ledger stays 'paid' linked to a
+  -- transaction whose amount no longer equals the obligation. This is deliberate
+  -- (never auto-reverse a confirmed payment); reconciling such a mismatch
+  -- belongs to the future dispute / match-review flow, which can surface it and
+  -- let a human unmatch. Tracked as a follow-up.
   if exists (
     select 1 from payment_matches
      where bank_transaction_id = v_bank_transaction_id
@@ -452,6 +473,14 @@ begin
     return jsonb_build_object(
       'success', true, 'matched', true, 'reason', 'already_matched'
     );
+  end if;
+
+  -- Defense in depth: never match a PENDING transaction (its amount/date are
+  -- placeholders that can still change). The webhook already skips these, but
+  -- guarding here protects any other caller of this RPC. The row is still stored
+  -- above for record-keeping.
+  if coalesce(p_transaction ->> 'status', 'POSTED') = 'PENDING' then
+    return jsonb_build_object('success', true, 'matched', false);
   end if;
 
   -- Only credits feed the rent matcher. Debits land for record-keeping.
