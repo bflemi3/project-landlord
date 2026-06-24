@@ -100,21 +100,35 @@ async function getTransactions(opts: {
   from?: string
   pageSize?: number
 }): Promise<PluggyTransaction[]> {
-  const params = new URLSearchParams({ itemId: opts.itemId })
-  if (opts.accountId) params.set('accountId', opts.accountId)
-  if (opts.from) params.set('from', opts.from)
-  params.set('pageSize', String(opts.pageSize ?? 200))
-
   const apiKey = await pluggyAuth()
-  const res = await fetch(`${PLUGGY_BASE_URL}/transactions?${params.toString()}`, {
-    method: 'GET',
-    headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
-  })
-  if (!res.ok) {
-    throw new Error(`Pluggy /transactions failed (${res.status})`)
+  const pageSize = opts.pageSize ?? 200
+  const all: PluggyTransaction[] = []
+  // Loop pages — a single page caps at pageSize, and on a first sync / busy
+  // account anything past page 1 would otherwise be silently dropped (the
+  // webhook acks 202, so Pluggy never redelivers the missed rows). Bounded by
+  // the response's totalPages and a hard page cap as a safety valve.
+  for (let page = 1; page <= 50; page++) {
+    const params = new URLSearchParams({ itemId: opts.itemId })
+    if (opts.accountId) params.set('accountId', opts.accountId)
+    if (opts.from) params.set('from', opts.from)
+    params.set('pageSize', String(pageSize))
+    params.set('page', String(page))
+
+    const res = await fetch(`${PLUGGY_BASE_URL}/transactions?${params.toString()}`, {
+      method: 'GET',
+      headers: { 'X-API-KEY': apiKey, 'Content-Type': 'application/json' },
+    })
+    if (!res.ok) {
+      throw new Error(`Pluggy /transactions failed (${res.status})`)
+    }
+    const data = (await res.json()) as {
+      results?: PluggyTransaction[]
+      totalPages?: number
+    }
+    all.push(...(data.results ?? []))
+    if (!data.totalPages || page >= data.totalPages) break
   }
-  const data = (await res.json()) as { results: PluggyTransaction[] }
-  return data.results ?? []
+  return all
 }
 
 // Minor-unit exponent per ISO-4217 currency. Most are 2; a few are 0 (JPY, CLP)
@@ -227,13 +241,15 @@ async function handleTransactionsEvent(
   }
 
   // Resolve account ids from the event (preferred) or fall back to all
-  // accounts under this item.
+  // accounts under this item — but only for an item that is still connected.
+  // A disconnected (revoked) consent must not keep ingesting transactions.
   let accountIds = body.accountIds ?? []
   if (accountIds.length === 0) {
     const { data: accts } = await admin
       .from('bank_accounts')
-      .select('pluggy_account_id, bank_items!inner(pluggy_item_id)')
+      .select('pluggy_account_id, bank_items!inner(pluggy_item_id, disconnected_at)')
       .eq('bank_items.pluggy_item_id', body.itemId)
+      .is('bank_items.disconnected_at', null)
     accountIds = (accts ?? []).map((a) => (a as { pluggy_account_id: string }).pluggy_account_id)
   }
 
@@ -257,9 +273,16 @@ async function handleTransactionsEvent(
 
     let transactions: PluggyTransaction[] = []
     try {
+      // Bound the fetch to the last 90 days: the matcher only considers credits
+      // within ±10 days of an open due date, so older history is never matchable
+      // and re-fetching all of it on every webhook is wasted work.
+      const from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10)
       transactions = await getTransactions({
         itemId: body.itemId,
         accountId: pluggyAccountId,
+        from,
         pageSize: 200,
       })
     } catch (err) {
