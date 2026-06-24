@@ -267,11 +267,16 @@ async function handleTransactionsEvent(
   }
 
   for (const pluggyAccountId of accountIds) {
-    // Look up our internal bank_account row from the Pluggy account id.
+    // Look up our internal bank_account row from the Pluggy account id, but only
+    // while its parent item is still connected. accountIds can come straight
+    // from the event body, so the disconnected-consent check must be enforced
+    // here too (not only on the fallback query above) — otherwise a transactions
+    // event naming a revoked account would keep ingesting.
     const { data: acctRow, error: acctErr } = await admin
       .from('bank_accounts')
-      .select('id')
+      .select('id, bank_items!inner(disconnected_at)')
       .eq('pluggy_account_id', pluggyAccountId)
+      .is('bank_items.disconnected_at', null)
       .maybeSingle()
     if (acctErr || !acctRow) {
       console.error(
