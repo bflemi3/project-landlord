@@ -8,8 +8,6 @@ import type {
   PluggyAuthResponse,
   PluggyConnectTokenResponse,
   PluggyItem,
-  PluggyTransaction,
-  PluggyTransactionsResponse,
 } from './types'
 
 const PLUGGY_BASE_URL = 'https://api.pluggy.ai'
@@ -122,40 +120,6 @@ export async function getAccounts(itemId: string): Promise<PluggyAccount[]> {
     )
   }
   const data = (await res.json()) as PluggyAccountsResponse
-  return data.results
-}
-
-/**
- * Fetch transactions for a Pluggy item (optionally scoped to one account and
- * a date range). Called by the Pluggy webhook handler on `transactions/*`
- * events. Pagination is one page at a time — callers paginate via `page`.
- */
-export async function getTransactions(
-  itemId: string,
-  opts: {
-    accountId?: string
-    from?: string // YYYY-MM-DD
-    to?: string // YYYY-MM-DD
-    pageSize?: number
-    page?: number
-  } = {},
-): Promise<PluggyTransaction[]> {
-  const params = new URLSearchParams({ itemId })
-  if (opts.accountId) params.set('accountId', opts.accountId)
-  if (opts.from) params.set('from', opts.from)
-  if (opts.to) params.set('to', opts.to)
-  if (opts.pageSize) params.set('pageSize', String(opts.pageSize))
-  if (opts.page) params.set('page', String(opts.page))
-
-  const res = await pluggyFetch(`/transactions?${params.toString()}`, {
-    method: 'GET',
-  })
-  if (!res.ok) {
-    throw new Error(
-      `Pluggy GET /transactions failed (${res.status}): ${await safeReadText(res)}`,
-    )
-  }
-  const data = (await res.json()) as PluggyTransactionsResponse
   return data.results
 }
 
