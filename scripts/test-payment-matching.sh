@@ -234,7 +234,14 @@ WEBHOOK_TOKEN=$(grep -E '^PLUGGY_WEBHOOK_TOKEN=' .env.local | head -1 | cut -d= 
 assert_status() {
   local expected="$1"; shift
   local got
-  got=$(curl -s -o /dev/null -w '%{http_code}' "$@")
+  # These checks never legitimately return 502/503 (the handler answers
+  # 405/401/400/202); a 5xx here means the edge runtime spun a fresh worker
+  # that's still compiling on a cold start, so retry rather than fail.
+  for _ in $(seq 1 12); do
+    got=$(curl -s -o /dev/null -w '%{http_code}' "$@")
+    [ "$got" != "502" ] && [ "$got" != "503" ] && break
+    sleep 0.5
+  done
   if [ "$got" = "$expected" ]; then ok "$expected — $*"
   else fail "expected $expected, got $got — $*"; fi
 }
