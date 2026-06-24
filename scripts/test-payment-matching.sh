@@ -23,7 +23,7 @@ set -euo pipefail
 # -----------------------------------------------------------------------------
 # Config
 # -----------------------------------------------------------------------------
-RENT_ID="${1:-d2c2120c-3a95-4d57-8572-e37515f78238}"
+RENT_ID="${1:?usage: scripts/test-payment-matching.sh <rent_id>  (seed one with scripts/seed-payment-test.mjs)}"
 MOCK_PORT=8787
 WEBHOOK_URL="http://127.0.0.1:54321/functions/v1/pluggy-webhook"
 DB_CONTAINER="supabase_db_mabenn"
@@ -37,15 +37,12 @@ PIDS=()
 # container) and fall back to host.docker.internal. Override with MOCK_HOST=…
 if [ -z "${MOCK_HOST:-}" ]; then
   _net=$(docker inspect "$DB_CONTAINER" -f '{{range $k,$v := .NetworkSettings.Networks}}{{$k}}{{end}}' 2>/dev/null)
-  MOCK_HOST=$(docker network inspect "$_net" -f '{{range .IPAM.Config}}{{.Gateway}}{{end}}' 2>/dev/null)
+  # Space-separate gateways and take the first — a dual-stack network has both an
+  # IPv4 and IPv6 IPAM.Config entry, and we want the IPv4 gateway.
+  MOCK_HOST=$(docker network inspect "$_net" -f '{{range .IPAM.Config}}{{.Gateway}} {{end}}' 2>/dev/null | awk '{print $1}')
   MOCK_HOST="${MOCK_HOST:-host.docker.internal}"
 fi
 
-# Add Supabase CLI to PATH if not already there.
-SUPABASE_CLI_DIR="/home/lmota/.npm/_npx/aa8e5c70f9d8d161/node_modules/@supabase/cli-linux-x64/bin"
-if [ -d "$SUPABASE_CLI_DIR" ] && ! command -v supabase >/dev/null 2>&1; then
-  export PATH="$SUPABASE_CLI_DIR:$PATH"
-fi
 
 # -----------------------------------------------------------------------------
 # Output helpers
@@ -78,6 +75,12 @@ cleanup() {
        select id from bank_transactions where pluggy_transaction_id like '${RUN_ID}-%'
      );
     delete from bank_transactions where pluggy_transaction_id like '${RUN_ID}-%';
+    -- The section-6 ambiguity test inserts a rent_id-null duplicate ledger row
+    -- on this rent's unit; remove it so re-running against the same rent doesn't
+    -- see a phantom second candidate. Real ledger rows always have rent_id set.
+    delete from monthly_ledger
+     where rent_id is null
+       and unit_id = (select unit_id from rent where id = '$RENT_ID');
 SQL
   if [ "$exit_code" = "0" ]; then
     rm -rf "$TMP_DIR"
