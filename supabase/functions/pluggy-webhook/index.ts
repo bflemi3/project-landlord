@@ -127,6 +127,19 @@ async function getTransactions(opts: {
     }
     all.push(...(data.results ?? []))
     if (!data.totalPages || page >= data.totalPages) break
+    if (page === 50) {
+      // Hit the safety cap with pages still remaining. Bounded to near-
+      // unreachable by the 90-day window, but log it so the rare truncation is
+      // observable rather than a silent ceiling that drops transactions.
+      console.error(
+        JSON.stringify({
+          msg: 'pluggy.webhook.transactions.page_cap_hit',
+          itemId: opts.itemId,
+          accountId: opts.accountId ?? null,
+          totalPages: data.totalPages,
+        }),
+      )
+    }
   }
   return all
 }
