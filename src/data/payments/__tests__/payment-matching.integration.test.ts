@@ -684,4 +684,56 @@ describe('payment matching: apply_pluggy_transaction RPC', () => {
       }
     }
   })
+
+  // ---------------------------------------------------------------------------
+  // M15 — currency mismatch: a non-BRL credit does not match a BRL obligation
+  // ---------------------------------------------------------------------------
+  it('M15: a credit in a different currency does not match', async () => {
+    const s = await setup()
+    try {
+      const result = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-02T10:00:00Z', amount_minor: 250_000, currency: 'USD' }),
+      )
+      expect(result.success).toBe(true)
+      expect(result.matched).toBe(false)
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
+
+  // ---------------------------------------------------------------------------
+  // M16 — outside the ±10-day window: no match
+  // ---------------------------------------------------------------------------
+  it('M16: a credit outside the ±10-day window does not match', async () => {
+    const s = await setup()
+    try {
+      // July rent is due 2026-07-05; the nearest obligations are 15+ days away.
+      const result = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-20T10:00:00Z', amount_minor: 250_000 }),
+      )
+      expect(result.success).toBe(true)
+      expect(result.matched).toBe(false)
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
+
+  // ---------------------------------------------------------------------------
+  // M17 — amount off by one minor unit: no match (exact amount required)
+  // ---------------------------------------------------------------------------
+  it('M17: a credit off by one cent does not match', async () => {
+    const s = await setup()
+    try {
+      const result = await callApply(
+        s.bankAccountId,
+        tx({ date: '2026-07-02T10:00:00Z', amount_minor: 249_999 }),
+      )
+      expect(result.success).toBe(true)
+      expect(result.matched).toBe(false)
+    } finally {
+      await cleanupTestUser(s.user.userId)
+    }
+  })
 })
