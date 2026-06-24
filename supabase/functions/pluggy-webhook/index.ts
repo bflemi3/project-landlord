@@ -213,11 +213,13 @@ const ITEM_RECONNECT_EVENTS = new Set([
 ])
 const TX_EVENTS = new Set(['transactions/created', 'transactions/updated'])
 
+// Returns false if the status update failed, so the caller can 503 and let
+// Pluggy redeliver (the update is idempotent, so a retry is safe).
 async function handleItemEvent(
   admin: SupabaseClient<Database>,
   body: PluggyWebhookBody,
-): Promise<void> {
-  if (!body.itemId) return
+): Promise<boolean> {
+  if (!body.itemId) return true
   const nextStatus = ITEM_OK_EVENTS.has(body.event ?? '')
     ? 'connected'
     : 'reconnect_required'
@@ -232,7 +234,9 @@ async function handleItemEvent(
     console.error(
       JSON.stringify({ msg: 'pluggy.webhook.item.update_failed', error: error.message }),
     )
+    return false
   }
+  return true
 }
 
 async function handleTransactionsEvent(
@@ -266,6 +270,13 @@ async function handleTransactionsEvent(
     accountIds = (accts ?? []).map((a) => (a as { pluggy_account_id: string }).pluggy_account_id)
   }
 
+  // Bound the fetch to the last 90 days: the matcher only considers credits
+  // within ±10 days of an open due date, so older history is never matchable and
+  // re-fetching it on every webhook is wasted work. Computed once for the batch.
+  const from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10)
+
   for (const pluggyAccountId of accountIds) {
     // Look up our internal bank_account row from the Pluggy account id, but only
     // while its parent item is still connected. accountIds can come straight
@@ -291,12 +302,6 @@ async function handleTransactionsEvent(
 
     let transactions: PluggyTransaction[] = []
     try {
-      // Bound the fetch to the last 90 days: the matcher only considers credits
-      // within ±10 days of an open due date, so older history is never matchable
-      // and re-fetching all of it on every webhook is wasted work.
-      const from = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10)
       transactions = await getTransactions({
         itemId: body.itemId,
         accountId: pluggyAccountId,
@@ -397,7 +402,11 @@ Deno.serve(async (req) => {
 
   try {
     if (body.event && (ITEM_OK_EVENTS.has(body.event) || ITEM_RECONNECT_EVENTS.has(body.event))) {
-      await handleItemEvent(admin, body)
+      // A failed status update is a systemic failure (like a failed tx fetch) —
+      // 503 so Pluggy redelivers, mirroring the transactions path.
+      if (!(await handleItemEvent(admin, body))) {
+        return new Response(null, { status: 503 })
+      }
     } else if (body.event && TX_EVENTS.has(body.event)) {
       const stats = await handleTransactionsEvent(admin, body)
       console.log(

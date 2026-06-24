@@ -432,14 +432,17 @@ begin
       or bank_transactions.currency     is distinct from excluded.currency
   returning id into v_bank_transaction_id;
 
-  -- Unchanged replay: the conflict's WHERE suppressed the UPDATE, so RETURNING
-  -- yielded nothing. Resolve the existing row id. If it already holds an active
-  -- match this is a genuine duplicate (no-op). Otherwise the credit is stored
-  -- but still unmatched — fall through and re-attempt matching: a candidate
-  -- ledger row may have appeared since it was first stored (e.g. the bank was
-  -- connected, and the credit received, before the contract/ledger existed), and
-  -- the 90-day re-fetch re-presents the credit on a later webhook.
+  -- Resolve the active-match status, branching on whether this was an unchanged
+  -- replay (RETURNING null) or a fresh insert / changed update. Each branch
+  -- probes payment_matches at most once.
   if v_bank_transaction_id is null then
+    -- Unchanged replay: the conflict's WHERE suppressed the UPDATE. Resolve the
+    -- existing row id. If it already holds an active match this is a genuine
+    -- duplicate (no-op). Otherwise the credit is stored but still unmatched —
+    -- fall through and re-attempt matching: a candidate ledger row may have
+    -- appeared since it was first stored (e.g. the bank was connected, and the
+    -- credit received, before the contract/ledger existed), and the 90-day
+    -- re-fetch re-presents the credit on a later webhook.
     select id into v_bank_transaction_id
       from bank_transactions
      where bank_account_id = p_bank_account_id
@@ -453,26 +456,27 @@ begin
         'success', true, 'matched', false, 'reason', 'duplicate'
       );
     end if;
-  end if;
-
-  -- If this transaction already holds an active (non-reversed) match, leave it.
-  -- A settled update must not silently disturb a confirmed match.
-  --
-  -- KNOWN LIMITATION: if a matched credit is redelivered with a CHANGED amount
-  -- (a corrected settle), the upsert refreshes bank_transactions.amount_minor
-  -- but this guard returns early, so the ledger stays 'paid' linked to a
-  -- transaction whose amount no longer equals the obligation. This is deliberate
-  -- (never auto-reverse a confirmed payment); reconciling such a mismatch
-  -- belongs to the future dispute / match-review flow, which can surface it and
-  -- let a human unmatch. Tracked as a follow-up.
-  if exists (
-    select 1 from payment_matches
-     where bank_transaction_id = v_bank_transaction_id
-       and reversed_at is null
-  ) then
-    return jsonb_build_object(
-      'success', true, 'matched', true, 'reason', 'already_matched'
-    );
+  else
+    -- Fresh insert or a changed (settled) update. If it already holds an active
+    -- match, leave it — a settled update must not silently disturb a confirmed
+    -- match.
+    --
+    -- KNOWN LIMITATION: if a matched credit is redelivered with a CHANGED amount
+    -- (a corrected settle), the upsert refreshes bank_transactions.amount_minor
+    -- but this guard returns early, so the ledger stays 'paid' linked to a
+    -- transaction whose amount no longer equals the obligation. This is
+    -- deliberate (never auto-reverse a confirmed payment); reconciling such a
+    -- mismatch belongs to the future dispute / match-review flow. Tracked as a
+    -- follow-up.
+    if exists (
+      select 1 from payment_matches
+       where bank_transaction_id = v_bank_transaction_id
+         and reversed_at is null
+    ) then
+      return jsonb_build_object(
+        'success', true, 'matched', true, 'reason', 'already_matched'
+      );
+    end if;
   end if;
 
   -- Defense in depth: never match a PENDING transaction (its amount/date are
