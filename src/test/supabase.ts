@@ -65,6 +65,18 @@ export async function createTestProperty(
 /** Delete a test user and all their data. */
 export async function cleanupTestUser(userId: string): Promise<void> {
   const admin = getAdminClient()
+  // payment_matches FKs to monthly_ledger / bank_transactions are ON DELETE
+  // RESTRICT, so deleting the property (→ units → monthly_ledger) or the user
+  // (→ bank_accounts → bank_transactions) would otherwise be blocked and the
+  // error silently swallowed, leaking rows. Clear the matches first.
+  const { data: txs } = await admin
+    .from('bank_transactions')
+    .select('id')
+    .eq('user_id', userId)
+  const txIds = (txs ?? []).map((t) => t.id)
+  if (txIds.length > 0) {
+    await admin.from('payment_matches').delete().in('bank_transaction_id', txIds)
+  }
   await admin.from('properties').delete().eq('created_by', userId)
   await admin.auth.admin.deleteUser(userId)
 }

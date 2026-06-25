@@ -698,7 +698,7 @@
       "bank": {
         "title": "Conta bancária",
         "subtitle": "Onde os aluguéis serão depositados.",
-        "placeholder": "Configuração da conta bancária em breve."
+        "nudge": "Conecte agora para que os pagamentos de aluguel e contas sejam reconhecidos automaticamente quando o imóvel entrar em vigor. Você pode fazer isso depois nas configurações."
       },
       "summary": {
         "title": "Configurar imóvel",
@@ -914,6 +914,7 @@
     "title": "Configurações",
     "profile": "Perfil",
     "payment": "Pagamento",
+    "bankAccounts": "Contas bancárias",
     "appearance": "Aparência",
     "account": "Conta",
     "noName": "Nome não definido",
@@ -948,6 +949,32 @@
     "privacy": {
       "title": "Política de Privacidade",
       "description": "Como a Mabenn coleta, usa e protege seus dados pessoais conforme a LGPD."
+    }
+  },
+  "bankAccounts": {
+    "sectionTitle": "Contas bancárias",
+    "sectionDescription": "Conecte seu banco para que os pagamentos sejam reconhecidos automaticamente. A Mabenn nunca movimenta dinheiro — apenas observa transferências recebidas do seu inquilino ou pagamentos das contas do imóvel.",
+    "empty": {
+      "title": "Nenhum banco conectado",
+      "body": "Conecte um banco para ativar o reconhecimento automático de pagamentos. Usamos Open Finance (Pluggy) — suas credenciais nunca passam pela Mabenn."
+    },
+    "connectCta": "Conectar banco",
+    "connecting": "Abrindo…",
+    "status": {
+      "connected": "Conectado",
+      "reconnectRequired": "Reconectar",
+      "disconnected": "Desconectado"
+    },
+    "actions": {
+      "menu": "Abrir ações",
+      "reconnect": "Reconectar",
+      "disconnect": "Desconectar",
+      "disconnectConfirm": "Desconectar este banco? Os próximos pagamentos só serão reconhecidos depois que você reconectar."
+    },
+    "errors": {
+      "tokenFailed": "Não conseguimos abrir a conexão com o banco. Tente novamente em instantes.",
+      "registerFailed": "Não conseguimos salvar a conexão. Tente novamente.",
+      "disconnectFailed": "Não conseguimos desconectar este banco. Tente novamente."
     }
   }
 }

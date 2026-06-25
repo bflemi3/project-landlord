@@ -69,7 +69,7 @@ export function BackButton({ className, label, href, onClick }: BackButtonProps)
 
   if (href) {
     return (
-      <Button className={className} variant="link" render={<Link href={href} />}>
+      <Button className={className} variant="link" render={<Link href={href} />} nativeButton={false}>
         <ChevronLeft />
         {label ?? t('back')}
       </Button>

@@ -4,7 +4,11 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import posthog from 'posthog-js'
-import { LogOut, User, CreditCard, Palette, Camera, Sun, Moon, Monitor } from 'lucide-react'
+import { LogOut, User, CreditCard, Landmark, Palette, Camera, Sun, Moon, Monitor } from 'lucide-react'
+
+import { Suspense } from 'react'
+import { BankAccountsPanel } from '@/components/bank-accounts/bank-accounts-panel'
+import { BankAccountsPanelSkeleton } from '@/components/bank-accounts/bank-accounts-panel-skeleton'
 
 import {
   type UseMutationResult,
@@ -85,7 +89,7 @@ export function UserMenuTrigger() {
 // Settings modal content
 // =============================================================================
 
-type SettingsSection = 'profile' | 'payment' | 'appearance'
+type SettingsSection = 'profile' | 'payment' | 'bank' | 'appearance'
 
 function UserSettingsModal({
   open,
@@ -100,6 +104,7 @@ function UserSettingsModal({
   const sections: { key: SettingsSection; label: string; icon: React.ElementType }[] = [
     { key: 'profile', label: t('profile'), icon: User },
     { key: 'payment', label: t('payment'), icon: CreditCard },
+    { key: 'bank', label: t('bankAccounts'), icon: Landmark },
     { key: 'appearance', label: t('appearance'), icon: Palette },
   ]
 
@@ -161,6 +166,7 @@ function UserSettingsModal({
           <div className="min-h-[200px] flex-1 md:min-h-[280px]">
             {activeSection === 'profile' && <ProfileSection />}
             {activeSection === 'payment' && <PaymentSection />}
+            {activeSection === 'bank' && <BankAccountsSection />}
             {activeSection === 'appearance' && <AppearanceSection />}
           </div>
         </div>
@@ -540,6 +546,23 @@ function LanguageField() {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+// =============================================================================
+// Bank accounts section — wraps the shared BankAccountsPanel
+// =============================================================================
+
+function BankAccountsSection() {
+  const t = useTranslations('bankAccounts')
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">{t('sectionDescription')}</p>
+      <Suspense fallback={<BankAccountsPanelSkeleton />}>
+        <BankAccountsPanel surface="settings" />
+      </Suspense>
     </div>
   )
 }

@@ -78,6 +78,167 @@ export type Database = {
           },
         ]
       }
+      bank_accounts: {
+        Row: {
+          account_subtype: string | null
+          account_type: string
+          bank_item_id: string
+          created_at: string
+          currency_code: string
+          id: string
+          masked_number: string | null
+          name: string
+          pluggy_account_id: string
+          user_id: string
+        }
+        Insert: {
+          account_subtype?: string | null
+          account_type: string
+          bank_item_id: string
+          created_at?: string
+          currency_code?: string
+          id?: string
+          masked_number?: string | null
+          name: string
+          pluggy_account_id: string
+          user_id: string
+        }
+        Update: {
+          account_subtype?: string | null
+          account_type?: string
+          bank_item_id?: string
+          created_at?: string
+          currency_code?: string
+          id?: string
+          masked_number?: string | null
+          name?: string
+          pluggy_account_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_accounts_bank_item_id_fkey"
+            columns: ["bank_item_id"]
+            isOneToOne: false
+            referencedRelation: "bank_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_accounts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_items: {
+        Row: {
+          connected_at: string
+          created_at: string
+          disconnected_at: string | null
+          id: string
+          institution_id: string
+          institution_name: string
+          pluggy_item_id: string
+          status: Database["public"]["Enums"]["bank_item_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          connected_at?: string
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          institution_id: string
+          institution_name: string
+          pluggy_item_id: string
+          status?: Database["public"]["Enums"]["bank_item_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          connected_at?: string
+          created_at?: string
+          disconnected_at?: string | null
+          id?: string
+          institution_id?: string
+          institution_name?: string
+          pluggy_item_id?: string
+          status?: Database["public"]["Enums"]["bank_item_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_items_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bank_transactions: {
+        Row: {
+          amount_minor: number
+          bank_account_id: string
+          counterparty_cpf: string | null
+          counterparty_name: string | null
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          pluggy_transaction_id: string
+          posted_at: string
+          raw: Json
+          user_id: string
+        }
+        Insert: {
+          amount_minor: number
+          bank_account_id: string
+          counterparty_cpf?: string | null
+          counterparty_name?: string | null
+          created_at?: string
+          currency: string
+          description?: string | null
+          id?: string
+          pluggy_transaction_id: string
+          posted_at: string
+          raw: Json
+          user_id: string
+        }
+        Update: {
+          amount_minor?: number
+          bank_account_id?: string
+          counterparty_cpf?: string | null
+          counterparty_name?: string | null
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          pluggy_transaction_id?: string
+          posted_at?: string
+          raw?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bank_transactions_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "bank_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bank_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       charge_definitions: {
         Row: {
           amount_behavior: Database["public"]["Enums"]["expense_amount_behavior"]
@@ -836,6 +997,72 @@ export type Database = {
           },
         ]
       }
+      monthly_ledger: {
+        Row: {
+          amount_minor: number
+          bill_holder: Database["public"]["Enums"]["user_role"]
+          created_at: string
+          currency: string
+          due_date: string
+          id: string
+          kind: Database["public"]["Enums"]["monthly_ledger_kind"]
+          paid_at: string | null
+          period_month: number
+          period_year: number
+          rent_id: string | null
+          status: Database["public"]["Enums"]["monthly_ledger_status"]
+          unit_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount_minor: number
+          bill_holder: Database["public"]["Enums"]["user_role"]
+          created_at?: string
+          currency: string
+          due_date: string
+          id?: string
+          kind: Database["public"]["Enums"]["monthly_ledger_kind"]
+          paid_at?: string | null
+          period_month: number
+          period_year: number
+          rent_id?: string | null
+          status?: Database["public"]["Enums"]["monthly_ledger_status"]
+          unit_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount_minor?: number
+          bill_holder?: Database["public"]["Enums"]["user_role"]
+          created_at?: string
+          currency?: string
+          due_date?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["monthly_ledger_kind"]
+          paid_at?: string | null
+          period_month?: number
+          period_year?: number
+          rent_id?: string | null
+          status?: Database["public"]["Enums"]["monthly_ledger_status"]
+          unit_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_ledger_rent_id_fkey"
+            columns: ["rent_id"]
+            isOneToOne: false
+            referencedRelation: "rent"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monthly_ledger_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -947,6 +1174,71 @@ export type Database = {
           {
             foreignKeyName: "payment_events_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_matches: {
+        Row: {
+          bank_transaction_id: string
+          id: string
+          matched_at: string
+          matched_by: string | null
+          monthly_ledger_id: string
+          reversal_reason: string | null
+          reversed_at: string | null
+          reversed_by: string | null
+          source_side: Database["public"]["Enums"]["payment_match_source_side"]
+        }
+        Insert: {
+          bank_transaction_id: string
+          id?: string
+          matched_at?: string
+          matched_by?: string | null
+          monthly_ledger_id: string
+          reversal_reason?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
+          source_side: Database["public"]["Enums"]["payment_match_source_side"]
+        }
+        Update: {
+          bank_transaction_id?: string
+          id?: string
+          matched_at?: string
+          matched_by?: string | null
+          monthly_ledger_id?: string
+          reversal_reason?: string | null
+          reversed_at?: string | null
+          reversed_by?: string | null
+          source_side?: Database["public"]["Enums"]["payment_match_source_side"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_matches_bank_transaction_id_fkey"
+            columns: ["bank_transaction_id"]
+            isOneToOne: false
+            referencedRelation: "bank_transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_matches_matched_by_fkey"
+            columns: ["matched_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_matches_monthly_ledger_id_fkey"
+            columns: ["monthly_ledger_id"]
+            isOneToOne: false
+            referencedRelation: "monthly_ledger"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_matches_reversed_by_fkey"
+            columns: ["reversed_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -1913,6 +2205,10 @@ export type Database = {
       }
     }
     Functions: {
+      apply_pluggy_transaction: {
+        Args: { p_bank_account_id: string; p_transaction: Json }
+        Returns: Json
+      }
       create_property: {
         Args: {
           p_contract?: Json
@@ -1947,6 +2243,11 @@ export type Database = {
         Args: { p_provider_id: string }
         Returns: string[]
       }
+      disconnect_bank_item: { Args: { p_bank_item_id: string }; Returns: Json }
+      generate_rent_ledger_entries: {
+        Args: { p_rent_id: string }
+        Returns: Json
+      }
       is_property_landlord: { Args: { prop_id: string }; Returns: boolean }
       is_property_member: { Args: { prop_id: string }; Returns: boolean }
       is_unit_landlord: { Args: { p_unit_id: string }; Returns: boolean }
@@ -1957,11 +2258,24 @@ export type Database = {
       }
       normalize_provider_name: { Args: { p_input: string }; Returns: string }
       redeem_invite: { Args: { invite_code: string }; Returns: Json }
+      register_bank_item: {
+        Args: {
+          p_accounts: Json
+          p_institution_id: string
+          p_institution_name: string
+          p_pluggy_item_id: string
+        }
+        Returns: Json
+      }
       replace_allocations: {
         Args: { p_allocations: Json; p_charge_definition_id: string }
         Returns: undefined
       }
       unaccent: { Args: { "": string }; Returns: string }
+      unmatch_payment: {
+        Args: { p_payment_match_id: string; p_reason: string }
+        Returns: Json
+      }
       validate_invite_code: { Args: { invite_code: string }; Returns: boolean }
       validate_invite_with_context: {
         Args: { invite_code: string }
@@ -2009,6 +2323,7 @@ export type Database = {
         | "revise"
         | "confirm"
         | "reject"
+      bank_item_status: "connected" | "reconnect_required" | "disconnected"
       charge_source: "manual" | "imported" | "corrected"
       dispute_status: "open" | "resolved"
       expense_amount_behavior: "fixed" | "variable" | "unknown"
@@ -2037,6 +2352,9 @@ export type Database = {
         | "expired"
         | "cancelled"
         | "not_invited"
+      monthly_ledger_kind: "rent"
+      monthly_ledger_status: "open" | "paid" | "overdue"
+      payment_match_source_side: "landlord" | "tenant"
       payment_method: "pix" | "bank_transfer" | "cash" | "other"
       payment_status: "pending" | "confirmed" | "rejected"
       pix_key_type: "cpf" | "email" | "phone" | "random"
@@ -2204,6 +2522,7 @@ export const Constants = {
         "confirm",
         "reject",
       ],
+      bank_item_status: ["connected", "reconnect_required", "disconnected"],
       charge_source: ["manual", "imported", "corrected"],
       dispute_status: ["open", "resolved"],
       expense_amount_behavior: ["fixed", "variable", "unknown"],
@@ -2235,6 +2554,9 @@ export const Constants = {
         "cancelled",
         "not_invited",
       ],
+      monthly_ledger_kind: ["rent"],
+      monthly_ledger_status: ["open", "paid", "overdue"],
+      payment_match_source_side: ["landlord", "tenant"],
       payment_method: ["pix", "bank_transfer", "cash", "other"],
       payment_status: ["pending", "confirmed", "rejected"],
       pix_key_type: ["cpf", "email", "phone", "random"],

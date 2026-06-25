@@ -154,6 +154,7 @@ Wireframes in `docs/wireframes/` are low-fidelity structural guides. Use them fo
 ### Rules (`.claude/rules/`)
 
 - **Security & LGPD** — `security-lgpd.md`
+- **Authorization, lifecycle & external contracts** — `authorization-and-lifecycle.md`
 - **Database migrations** — `database-migrations.md`
 - **Linear + GitHub workflow** — `linear-github.md`
 - **Versioning & releases** — `versioning-releases.md`

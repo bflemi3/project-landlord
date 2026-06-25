@@ -28,6 +28,7 @@ digraph planning {
   "User confirms understanding?" [shape=diamond];
   "Codebase read\n(files, patterns, state)" [shape=box];
   "Scan skills/rules for relevance" [shape=box];
+  "Adversarial pass\n(trust / lifecycle / contracts)" [shape=box];
   "Scope check: ≤7 tasks?" [shape=diamond];
   "Decompose into separate plans\nPresent to user" [shape=box];
   "Write plan" [shape=box];
@@ -43,7 +44,8 @@ digraph planning {
   "User confirms understanding?" -> "Codebase read\n(files, patterns, state)" [label="yes"];
   "User confirms understanding?" -> "Read relevant spec sections" [label="no, correct and re-read"];
   "Codebase read\n(files, patterns, state)" -> "Scan skills/rules for relevance";
-  "Scan skills/rules for relevance" -> "Scope check: ≤7 tasks?";
+  "Scan skills/rules for relevance" -> "Adversarial pass\n(trust / lifecycle / contracts)";
+  "Adversarial pass\n(trust / lifecycle / contracts)" -> "Scope check: ≤7 tasks?";
   "Scope check: ≤7 tasks?" -> "Write plan" [label="yes"];
   "Scope check: ≤7 tasks?" -> "Decompose into separate plans\nPresent to user" [label="no"];
   "Decompose into separate plans\nPresent to user" -> "Write plan" [label="user picks one"];
@@ -133,6 +135,18 @@ Example: "**Check:** `frontend-patterns` (data fetching, hook ordering), `databa
 
 Only include pointers that are genuinely relevant to the task. Don't list every skill.
 
+## Adversarial Pass
+
+**Reading the spec and docs tells you how the thing works. It does not tell you how it fails.** Plans that only encode "how it works" produce code that passes the happy path and breaks at the boundary — authorization holes, dropped data on failure, phantom rows, backwards external contracts. The planner read the docs to *build*; now read them to *break*.
+
+This pass is mandatory whenever any task touches a **trust boundary** (takes a client- or external-supplied id), an **external integration** (third-party API or webhook), or **persistence** (a migration, RPC, or query that writes or selects rows). If no task touches any of these, state that and skip.
+
+**`.claude/rules/authorization-and-lifecycle.md` is the source of truth for what to interrogate** — its three classes (provenance & ownership · lifecycle · external contracts), with the Required items, anti-examples, and smells. Do not restate them here; load the rule and apply it. This section only governs *how the pass works inside planning*:
+
+- Interrogate every in-scope task against all three classes in the rule.
+- **Write the answer into the relevant task** — the ownership check, the enumerated lifecycle transitions, the cited external contract and its failure path become part of what the executor builds, not implicit knowledge left in the planner's head.
+- A confident wrong external-contract claim is the highest-leverage failure to catch here: it ships as authoritative prose into both the code and the reviewer's trust (this is how `202`-means-retry reached production). When unsure, the task must direct the executor to verify against a real payload before committing the strategy.
+
 ## Plan Format
 
 **Save to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
@@ -191,7 +205,9 @@ After writing the plan, review it yourself before presenting to the user. This c
 
 9. **Vertical slice check** — Is this plan a vertical slice with a visible deliverable? Or is it a horizontal layer (all migrations, all components, all utilities) divorced from a working feature? If horizontal, loop back to the Scope Gate and re-decompose as vertical slices.
 
-For checks 1-5 and 7-8, fix issues inline — no need to re-review. For #6 (plan too large) and #9 (horizontal layer), do not fix inline — loop back to the Scope Gate and decompose.
+10. **Adversarial pass landed** — For every task touching a trust boundary, external integration, or persistence, did the Adversarial Pass findings (ownership check, lifecycle transitions, cited external contract + failure path) actually get written *into the task*? If they live only in your head or got skipped, fix the task.
+
+For checks 1-5, 7-8, and 10, fix issues inline — no need to re-review. For #6 (plan too large) and #9 (horizontal layer), do not fix inline — loop back to the Scope Gate and decompose.
 
 ## What This Skill Does NOT Do
 
